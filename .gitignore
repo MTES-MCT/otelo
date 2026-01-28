@@ -1,0 +1,37 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+.next
+build
+
+# Environment files
+.env*
+!.env.example
+!.env.dist
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# IDE
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Test coverage
+coverage
+
+# Cache
+.cache
+.turbo
+.temp
+.tmp
+
+apps/api/.cache/*

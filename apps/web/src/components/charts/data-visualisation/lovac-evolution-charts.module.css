@@ -1,0 +1,80 @@
+.chartContainer {
+  display: flex;
+  gap: 2rem;
+  height: 700px;
+  width: 100%;
+}
+
+/* Tooltip styles */
+.tooltip {
+  background-color: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  min-width: 280px;
+}
+
+.tooltipYear {
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0 12px 0;
+  color: #161616;
+}
+
+.tooltipList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tooltipItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.tooltipColorBox {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.tooltipLabel {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #161616;
+}
+
+.tooltipValue {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #000091;
+}
+
+/* Legend styles */
+.legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 16px 0;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legendColorBox {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  font-size: 0.8125rem;
+  color: #161616;
+}

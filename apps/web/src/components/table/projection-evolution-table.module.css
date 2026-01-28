@@ -1,0 +1,74 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.title {
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-decoration: underline;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #a0a0a0;
+}
+
+.headerCell {
+  border: 1px solid #a0a0a0;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  text-align: center;
+  background-color: #f8f8f8;
+  font-weight: normal;
+}
+
+.emptyCell {
+  border: 1px solid #a0a0a0;
+}
+
+.sectionCell {
+  border: 1px solid #a0a0a0;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.scenarioCell {
+  border: 1px solid #a0a0a0;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.dataCell {
+  border: 1px solid #a0a0a0;
+  min-width: 5rem;
+  height: 1.5rem;
+  padding: 0.5rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.75rem;
+  }
+
+  .headerCell,
+  .sectionCell,
+  .scenarioCell {
+    padding: 0.25rem;
+    font-size: 0.75rem;
+  }
+}

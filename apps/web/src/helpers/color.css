@@ -1,0 +1,217 @@
+.fr-text-default--grey {
+  color: #3a3a3a !important;
+}
+.fr-text-default--info {
+  color: #0063cb !important;
+}
+.fr-text-default--success {
+  color: #18753c !important;
+}
+.fr-text-default--warning {
+  color: #b34000 !important;
+}
+.fr-text-default--error {
+  color: #ce0500 !important;
+}
+.fr-text-title--grey {
+  color: #161616 !important;
+}
+.fr-text-title--blue-france {
+  color: #000091 !important;
+}
+.fr-text-title--red-marianne {
+  color: #c9191e !important;
+}
+.fr-text-label--grey {
+  color: #161616 !important;
+}
+.fr-text-label--blue-france {
+  color: #000091 !important;
+}
+.fr-text-label--red-marianne {
+  color: #c9191e !important;
+}
+.fr-text-label--green-tilleul-verveine {
+  color: #66673d !important;
+}
+.fr-text-label--green-bourgeon {
+  color: #447049 !important;
+}
+.fr-text-label--green-emeraude {
+  color: #297254 !important;
+}
+.fr-text-label--green-menthe {
+  color: #37635f !important;
+}
+.fr-text-label--green-archipel {
+  color: #006a6f !important;
+}
+.fr-text-label--blue-ecume {
+  color: #2f4077 !important;
+}
+.fr-text-label--blue-cumulus {
+  color: #3558a2 !important;
+}
+.fr-text-label--purple-glycine {
+  color: #6e445a !important;
+}
+.fr-text-label--pink-macaron {
+  color: #8d533e !important;
+}
+.fr-text-label--pink-tuile {
+  color: #a94645 !important;
+}
+.fr-text-label--yellow-tournesol {
+  color: #716043 !important;
+}
+.fr-text-label--yellow-moutarde {
+  color: #695240 !important;
+}
+.fr-text-label--orange-terre-battue {
+  color: #755348 !important;
+}
+.fr-text-label--brown-cafe-creme {
+  color: #685c48 !important;
+}
+.fr-text-label--brown-caramel {
+  color: #845d48 !important;
+}
+.fr-text-label--brown-opera {
+  color: #745b47 !important;
+}
+.fr-text-label--beige-gris-galet {
+  color: #6a6156 !important;
+}
+.fr-text-mention--grey {
+  color: #666 !important;
+}
+.fr-text-inverted--grey {
+  color: #fff !important;
+}
+.fr-text-inverted--blue-france {
+  color: #f5f5fe !important;
+}
+.fr-text-inverted--red-marianne {
+  color: #fef4f4 !important;
+}
+.fr-text-inverted--info {
+  color: #f4f6ff !important;
+}
+.fr-text-inverted--success {
+  color: #dffee6 !important;
+}
+.fr-text-inverted--warning {
+  color: #fff4f3 !important;
+}
+.fr-text-inverted--error {
+  color: #fff4f4 !important;
+}
+.fr-text-inverted--green-tilleul-verveine {
+  color: #fef7da !important;
+}
+.fr-text-inverted--green-bourgeon {
+  color: #e6feda !important;
+}
+.fr-text-inverted--green-emeraude {
+  color: #e3fdeb !important;
+}
+.fr-text-inverted--green-menthe {
+  color: #dffdf7 !important;
+}
+.fr-text-inverted--green-archipel {
+  color: #e5fbfd !important;
+}
+.fr-text-inverted--blue-ecume {
+  color: #f4f6fe !important;
+}
+.fr-text-inverted--blue-cumulus {
+  color: #f3f6fe !important;
+}
+.fr-text-inverted--purple-glycine {
+  color: #fef3fd !important;
+}
+.fr-text-inverted--pink-macaron {
+  color: #fef4f2 !important;
+}
+.fr-text-inverted--pink-tuile {
+  color: #fef4f3 !important;
+}
+.fr-text-inverted--yellow-tournesol {
+  color: #fef6e3 !important;
+}
+.fr-text-inverted--yellow-moutarde {
+  color: #fef5e8 !important;
+}
+.fr-text-inverted--orange-terre-battue {
+  color: #fef4f2 !important;
+}
+.fr-text-inverted--brown-cafe-creme {
+  color: #fbf6ed !important;
+}
+.fr-text-inverted--brown-caramel,
+.fr-text-inverted--brown-opera {
+  color: #fbf5f2 !important;
+}
+.fr-text-inverted--beige-gris-galet {
+  color: #f9f6f2 !important;
+}
+.fr-text-action-high--grey {
+  color: #161616 !important;
+}
+.fr-text-action-high--blue-france {
+  color: #000091 !important;
+}
+.fr-text-action-high--red-marianne {
+  color: #c9191e !important;
+}
+.fr-text-action-high--green-tilleul-verveine {
+  color: #66673d !important;
+}
+.fr-text-action-high--green-bourgeon {
+  color: #447049 !important;
+}
+.fr-text-action-high--green-emeraude {
+  color: #297254 !important;
+}
+.fr-text-action-high--green-menthe {
+  color: #37635f !important;
+}
+.fr-text-action-high--green-archipel {
+  color: #006a6f !important;
+}
+.fr-text-action-high--blue-ecume {
+  color: #2f4077 !important;
+}
+.fr-text-action-high--blue-cumulus {
+  color: #3558a2 !important;
+}
+.fr-text-action-high--purple-glycine {
+  color: #6e445a !important;
+}
+.fr-text-action-high--pink-macaron {
+  color: #8d533e !important;
+}
+.fr-text-action-high--pink-tuile {
+  color: #a94645 !important;
+}
+.fr-text-action-high--yellow-tournesol {
+  color: #716043 !important;
+}
+.fr-text-action-high--yellow-moutarde {
+  color: #695240 !important;
+}
+.fr-text-action-high--orange-terre-battue {
+  color: #755348 !important;
+}
+.fr-text-action-high--brown-cafe-creme {
+  color: #685c48 !important;
+}
+.fr-text-action-high--brown-caramel {
+  color: #845d48 !important;
+}
+.fr-text-action-high--brown-opera {
+  color: #745b47 !important;
+}
+.fr-text-action-high--beige-gris-galet {
+  color: #6a6156 !important;
+}

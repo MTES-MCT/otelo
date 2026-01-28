@@ -1,0 +1,4 @@
+.chartContainer {
+  background: var(--background-alt-grey);
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 18, 0.16);
+}

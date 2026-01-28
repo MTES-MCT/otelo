@@ -1,0 +1,59 @@
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0 2rem;
+}
+
+.labelCards {
+  font-weight: bold;
+}
+
+.checkbox {
+  margin: 0;
+}
+
+.tagContainer {
+  display: inline-flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.cardList {
+  margin: 0;
+}
+
+.cardListItem {
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+.cardMention {
+  color: var(--text-mention-grey);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.spinnerContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

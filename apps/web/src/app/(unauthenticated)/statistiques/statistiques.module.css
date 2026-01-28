@@ -1,0 +1,39 @@
+.section1 {
+  min-height: 600px;
+}
+
+.cardStatContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cardStat {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 12rem;
+  height: 100%;
+}
+
+.cardStatContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+  border-radius: 0.5rem;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.stat {
+  font-size: 3rem;
+  line-height: 1.2;
+}
+
+.metric {
+  font-size: 1.2rem;
+  font-weight: bold;
+}

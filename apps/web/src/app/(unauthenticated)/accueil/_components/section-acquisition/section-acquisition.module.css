@@ -1,0 +1,35 @@
+.section {
+  background-color: var(--background-flat-blue-france);
+  padding-block: 8rem;
+
+  @media (max-width: 767px) {
+    padding-block: 4rem;
+  }
+}
+
+.row {
+  @media (max-width: 767px) {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+  }
+}
+
+.button {
+  background-color: var(--background-open-blue-france);
+  color: var(--text-label-blue-france);
+
+  &&:hover:not(:disabled) {
+    background-color: var(--background-open-blue-france-hover);
+  }
+}
+
+.text {
+  color: var(--text-inverted-blue-france);
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.center {
+  text-align: center;
+}

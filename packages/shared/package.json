@@ -1,0 +1,41 @@
+{
+  "name": "@shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./enums": {
+      "types": "./dist/enums/index.d.ts",
+      "import": "./dist/enums/index.js",
+      "require": "./dist/enums/index.cjs"
+    },
+    "./schemas": {
+      "types": "./dist/schemas/index.d.ts",
+      "import": "./dist/schemas/index.js",
+      "require": "./dist/schemas/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "biome check src",
+    "lint:fix": "biome check src --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@types/node": "catalog:",
+    "tsup": "^8.5.0",
+    "typescript": "catalog:"
+  }
+}

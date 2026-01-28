@@ -1,0 +1,40 @@
+.statisticsSection {
+  background-color: rgba(245, 245, 254, 0.5);
+  padding-inline: 4rem;
+}
+
+.statisticsTitle {
+  font-size: 1.75rem;
+  line-height: 1.5;
+  font-weight: 700;
+  color: var(--text-title-blue-france);
+  margin-bottom: 5rem;
+
+  @media (max-width: 767px) {
+    text-align: center;
+  }
+}
+
+.statItem {
+  width: 85%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-title-blue-france);
+  margin-bottom: 2.5rem;
+}
+
+.statDescription {
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.linkContainer {
+  margin-top: 2rem;
+  text-align: center;
+}

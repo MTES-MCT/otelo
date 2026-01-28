@@ -1,0 +1,13 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.title {
+  color: var(--text-title-blue-france);
+}
+
+.item {
+  min-height: 136px;
+}

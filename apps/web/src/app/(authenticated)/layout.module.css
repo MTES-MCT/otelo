@@ -1,0 +1,8 @@
+.container {
+  flex: 1;
+}
+
+.containerResults {
+  background-color: var(--artwork-decorative-blue-france);
+  flex: 1;
+}

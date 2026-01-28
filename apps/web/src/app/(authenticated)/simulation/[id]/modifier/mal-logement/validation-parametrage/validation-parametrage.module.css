@@ -1,0 +1,104 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  padding-top: 1rem;
+}
+
+.subContainer {
+  background-color: var(--background-default-grey);
+}
+
+.sectionContainer {
+  flex: 1;
+  padding: 1rem;
+  background-color: var(--background-default-grey);
+}
+
+.horizonSubContainer {
+  display: flex;
+  gap: 1rem;
+}
+
+.hebergesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.hebergesSubContainer {
+  display: flex;
+  gap: 1rem;
+}
+
+.card {
+  background-color: var(--background-default-grey);
+  padding: 1rem;
+}
+
+.cardFlex {
+  flex: 1;
+}
+
+.inputGroup {
+  display: flex;
+  gap: 1rem;
+}
+
+.inputGroupColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inputFlex {
+  flex: 1;
+}
+
+.checkboxContainer {
+  display: flex;
+  gap: 1rem;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.greyBackground {
+  background-color: var(--background-default-grey);
+}
+
+.inadequationContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inadequationInputs {
+  display: flex;
+  gap: 1rem;
+}
+
+.qualityContainer {
+  display: flex;
+  gap: 1rem;
+}
+
+.qualityCard {
+  flex: 1;
+  padding: 1rem;
+}
+
+.qualityInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.qualityInputGroup {
+  display: flex;
+  gap: 1rem;
+}

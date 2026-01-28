@@ -1,0 +1,6 @@
+/* Modal actions container */
+.modalActions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-around;
+}

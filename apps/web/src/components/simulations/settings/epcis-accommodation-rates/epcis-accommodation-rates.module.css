@@ -1,0 +1,14 @@
+.shadow {
+  box-shadow:
+    -4px 0 6px -2px rgba(0, 0, 18, 0.1),
+    4px 0 6px -2px rgba(0, 0, 18, 0.1);
+  clip-path: inset(0 -10px 0 -10px);
+}
+
+.shadowWithBottom {
+  box-shadow:
+    -4px 0 6px -2px rgba(0, 0, 18, 0.1),
+    4px 0 6px -2px rgba(0, 0, 18, 0.1),
+    0 4px 6px -2px rgba(0, 0, 18, 0.1);
+  clip-path: inset(0 -10px -10px -10px);
+}

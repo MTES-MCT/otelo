@@ -1,0 +1,20 @@
+.sideMenuContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.ctaContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.padRight {
+  padding-right: 2rem;
+}
+
+.button {
+  width: 100%;
+  justify-content: center;
+}

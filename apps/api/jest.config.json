@@ -1,0 +1,26 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "./",
+  "testRegex": ".*\\.spec\\.ts$",
+  "moduleNameMapper": {
+    "^@test/(.*)$": "<rootDir>/test/$1",
+    "^~/(.*)$": "<rootDir>/src/$1"
+  },
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "collectCoverageFrom": ["src/**/*.(t|j)s"],
+  "coveragePathIgnorePatterns": [
+    "src/main.module.ts",
+    "src/main.ts",
+    "src/schemas/*",
+    "src/db/prisma.service.ts",
+    "src/common/decorators/*",
+    ".module.ts",
+    ".decorator.ts",
+    ".config.ts"
+  ],
+  "coverageDirectory": "../coverage",
+  "testEnvironment": "node",
+  "clearMocks": true
+}

@@ -1,0 +1,12 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.typeSelectionContainer {
+  display: flex;
+  justify-content: center;
+  background-color: white;
+  padding: 2.5rem 1.5rem 1rem 2.5rem;
+}

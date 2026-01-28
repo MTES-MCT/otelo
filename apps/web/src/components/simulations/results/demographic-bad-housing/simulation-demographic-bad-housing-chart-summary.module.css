@@ -1,0 +1,29 @@
+.arrowIcon {
+  vertical-align: middle;
+}
+
+.barContainer {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.barWrapper {
+  display: flex;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barDemography {
+  background-color: var(--blue-france-sun-113-625);
+  height: 100%;
+  transition: width 0.3s ease;
+  margin-right: 4px;
+}
+
+.barBadHousing {
+  background-color: var(--blue-france-925-125);
+  height: 100%;
+  transition: width 0.3s ease;
+  margin-left: 4px;
+}

@@ -1,0 +1,28 @@
+.arrowIcon::before {
+  --icon-size: 1rem;
+}
+
+.chevronContainer {
+  position: relative;
+  height: 14px;
+}
+
+.chevronWrapper {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.chevron {
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+}
+
+.chevronDemography {
+  border-bottom: 14px solid var(--blue-france-sun-113-625);
+}
+
+.chevronBadHousing {
+  border-bottom: 14px solid var(--blue-france-925-125);
+}

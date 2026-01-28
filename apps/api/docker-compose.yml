@@ -1,0 +1,13 @@
+name: otelo-v4-api
+
+services:
+  database:
+    image: postgres:16.1-alpine
+    restart: unless-stopped
+    ports:
+      - '5442:5432'
+    environment:
+      POSTGRES_USER: otelo
+      POSTGRES_PASSWORD: otelo
+      POSTGRES_DB: otelo
+ 
