@@ -9,6 +9,7 @@
     "node": "24"
   },
   "scripts": {
+    "scalingo-prebuild": "cd ../.. && pnpm install --frozen-lockfile && pnpm build:shared",
     "build": "nest build",
     "dev": "nest start --watch --exec \"node -r tsconfig-paths/register\"",
     "start": "nest start",

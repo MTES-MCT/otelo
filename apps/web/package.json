@@ -7,6 +7,7 @@
     "node": "24"
   },
   "scripts": {
+    "scalingo-prebuild": "cd ../.. && pnpm install --frozen-lockfile && pnpm build:shared",
     "predev": "react-dsfr update-icons",
     "prebuild": "react-dsfr update-icons",
     "dev": "next dev",
