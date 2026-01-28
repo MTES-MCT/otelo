@@ -5,6 +5,9 @@
   "author": "KGALLET",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": "24"
+  },
   "scripts": {
     "build": "nest build",
     "dev": "nest start --watch --exec \"node -r tsconfig-paths/register\"",
