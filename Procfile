@@ -1,1 +1,1 @@
-web: pnpm --filter $APP_NAME run start
+web: pnpm --filter $BUILD_TARGET run start
