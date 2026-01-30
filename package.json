@@ -12,12 +12,10 @@
     "build:shared": "pnpm --filter @shared build",
     "build:api": "pnpm --filter @otelo/api build",
     "build:web": "pnpm --filter @otelo/web build",
-    "dev": "pnpm --parallel -r dev",
-    "dev:api": "pnpm --filter @otelo/api dev",
-    "dev:web": "pnpm --filter @otelo/web dev",
     "lint": "biome check .",
     "lint:fix": "biome check . --fix",
-    "clean": "rm -rf apps/*/node_modules apps/*/.next apps/*/dist packages/*/node_modules packages/*/dist node_modules"
+    "clean": "rm -rf apps/*/node_modules apps/*/.next apps/*/dist packages/*/node_modules packages/*/dist node_modules",
+    "scalingo-postbuild": "node scripts/scalingo-postbuild.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:"

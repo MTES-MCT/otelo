@@ -2,6 +2,8 @@
 const nextConfig = {
   transpilePackages: ['@shared'],
   turbopack: {},
+  output: 'standalone',
+  
   webpack: (config) => {
     config.module.rules.push({
       test: /\.woff2$/,

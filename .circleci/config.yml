@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   skip: theodo/skip@0.1.2
   queue: eddiewebb/queue@3.2.1
+
 executors:
   node:
     docker:
@@ -21,16 +22,19 @@ parameters:
 
 workflows:
   version: 2
-  otelo-api:
+  otelo:
     jobs:
       - prepare_workspace_dependencies
       - lint:
           requires:
             - prepare_workspace_dependencies
-      - build:
+      - build_api:
           requires:
             - prepare_workspace_dependencies
-    
+      - build_web:
+          requires:
+            - prepare_workspace_dependencies
+
 jobs:
   prepare_workspace_dependencies:
     executor: node
@@ -47,34 +51,51 @@ jobs:
           paths:
             - << pipeline.parameters.virtual_store_dir >>
             - ./node_modules
-      
+
   lint:
     executor: node
     steps:
       - checkout
       - install_dependencies
-      - prisma_generate
       - run:
           name: 'Lint'
           command: pnpm lint
 
-  build:
+  build_api:
     executor: node
     steps:
       - checkout
       - install_dependencies
       - prisma_generate
       - run:
-          name: 'Build'
-          command: pnpm build 
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: 'Build API'
+          command: pnpm build:api
+
+  build_web:
+    executor: node
+    steps:
+      - checkout
+      - install_dependencies
+      - create_dotenv_file
+      - run:
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: 'Build Web'
+          command: pnpm build:web
 
 commands:
   install_pnpm:
     steps:
       - run:
-          name: 'Install pnpm'
-          command: sudo npm install -g pnpm
-          
+          name: 'Install pnpm via corepack'
+          command: |
+            corepack enable
+            corepack prepare --activate
+
   install_dependencies:
     steps:
       - install_pnpm
@@ -89,6 +110,10 @@ commands:
     steps:
       - run:
           name: 'Prisma generate'
-          command: pnpm prisma generate
-          environment:
-            DATABASE_URL: $DATABASE_URL
+          command: pnpm --filter @otelo/api exec prisma generate
+
+  create_dotenv_file:
+    steps:
+      - run:
+          name: 'Create .env file from .env.dist'
+          command: cp apps/web/.env.dist apps/web/.env

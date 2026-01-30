@@ -1,0 +1,5 @@
+.circleci
+.git
+*.md
+apps/api/.cache
+apps/web/.next/cache
