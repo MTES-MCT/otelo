@@ -14,7 +14,8 @@
     "build:web": "pnpm --filter @otelo/web build",
     "lint": "biome check .",
     "lint:fix": "biome check . --fix",
-    "clean": "rm -rf apps/*/node_modules apps/*/.next apps/*/dist packages/*/node_modules packages/*/dist node_modules"
+    "clean": "rm -rf apps/*/node_modules apps/*/.next apps/*/dist packages/*/node_modules packages/*/dist node_modules",
+    "scalingo-postbuild": "node scripts/scalingo-postbuild.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:"
