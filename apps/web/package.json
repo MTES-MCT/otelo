@@ -11,7 +11,7 @@
     "prebuild": "react-dsfr update-icons",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node .next/standalone/apps/web/server.js",
     "lint": "biome check src",
     "lint:format": "biome check src --fix"
   },
