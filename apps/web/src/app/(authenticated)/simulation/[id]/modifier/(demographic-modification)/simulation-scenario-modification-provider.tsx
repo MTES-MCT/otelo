@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from 'react'
 import { TEpcisAccommodationRates } from '@shared'
+import { createContext, useContext, useState } from 'react'
 import { TScenario } from '~/schemas/scenario'
 
 export interface SimulationInitialSettings {

@@ -1,14 +1,13 @@
-import { z } from 'zod'
 import {
-  ZEpciCalculationResult as ZEpciCalculationResultBase,
-  ZCalculationResult as ZCalculationResultBase,
   ZChartData,
   ZChartDataResult,
+  ZEpciCalculationResult as ZEpciCalculationResultBase,
   ZFlowRequirementChartData,
   ZFlowRequirementChartDataResult,
   ZSitadelData,
   ZSitadelDataResult,
 } from '@shared'
+import { z } from 'zod'
 
 export const ZDemographicEvolution = z.object({
   data: z.array(
@@ -33,7 +32,14 @@ export type TDemographicEvolutionOmphale = z.infer<typeof ZDemographicEvolution>
 
 // Re-export shared schemas
 export { ZChartData, ZChartDataResult, ZFlowRequirementChartData, ZFlowRequirementChartDataResult, ZSitadelData, ZSitadelDataResult }
-export type { TChartData, TChartDataResult, TFlowRequirementChartData, TFlowRequirementChartDataResult, TSitadelData, TSitadelDataResult } from '@shared'
+export type {
+  TChartData,
+  TChartDataResult,
+  TFlowRequirementChartData,
+  TFlowRequirementChartDataResult,
+  TSitadelData,
+  TSitadelDataResult,
+} from '@shared'
 
 // Web version of ZEpciCalculationResult (same as shared)
 export const ZEpciCalculationResult = ZEpciCalculationResultBase

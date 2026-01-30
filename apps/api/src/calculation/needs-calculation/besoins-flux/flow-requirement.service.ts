@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { TFlowRequirementChartData, TFlowRequirementChartDataResult } from '@shared'
 import { BaseCalculator, CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import {
   DemographicEvolutionService,
@@ -6,7 +7,6 @@ import {
 } from '~/calculation/needs-calculation/besoins-flux/evolution-demographique-b21/demographic-evolution.service'
 import { RenewalHousingStockService } from '~/calculation/needs-calculation/besoins-flux/occupation-renouvellement-parc-logements-b22/renewal-housing-stock.service'
 import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
-import { TFlowRequirementChartData, TFlowRequirementChartDataResult } from '@shared'
 import { EOmphale, TDemographicEvolution, TGetDemographicEvolution } from '~/schemas/demographic-evolution/demographic-evolution'
 import { TStockRequirementsResults } from '~/schemas/results/results'
 import { TScenario } from '~/schemas/scenarios/scenario'

@@ -1,10 +1,10 @@
 'use client'
 
 import { Range } from '@codegouvfr/react-dsfr/Range'
+import { TAccommodationRates } from '@shared'
 import { FC, useState } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
-import { TAccommodationRates } from '@shared'
 
 export const ModifyAllEpcisAccommodationRange: FC = () => {
   const { simulationSettings, updateAllRates } = useSimulationSettings()

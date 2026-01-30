@@ -2,8 +2,8 @@
 
 import Button from '@codegouvfr/react-dsfr/Button'
 import { Tag } from '@codegouvfr/react-dsfr/Tag'
-import { useState } from 'react'
 import { TEpci } from '@shared'
+import { useState } from 'react'
 import { TSimulationWithResults } from '~/schemas/simulation'
 import { formatDecohabitation, formatScenario } from '~/utils/omphale-label'
 import styles from './simulation-settings-dropdown.module.css'

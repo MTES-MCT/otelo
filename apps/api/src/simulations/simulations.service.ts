@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
+import { TEpci } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
 import { Simulation } from '~/generated/prisma/client'
 import { ScenariosService } from '~/scenarios/scenarios.service'
-import { TEpci } from '@shared'
 import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
 import { TCloneSimulationDto, TSimulationWithEpci, TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'
@@ -146,7 +146,6 @@ export class SimulationsService {
       where: { id: originalId, userId },
     })
 
-    // biome-ignore lint/correctness/noUnusedVariables: we dont want the id in the spreaded object
     const { userId: _, id, ...scenarioData } = originalSimulation.scenario
 
     const clonedScenario = await this.scenariosService.create(userId, {

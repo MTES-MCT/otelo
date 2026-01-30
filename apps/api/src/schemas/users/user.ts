@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { ZUserBase } from '@shared'
+import { z } from 'zod'
 import { Role } from '~/generated/prisma/enums'
 
 // Extend the base user schema with API-specific fields

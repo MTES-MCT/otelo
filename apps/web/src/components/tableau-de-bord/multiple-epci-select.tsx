@@ -2,8 +2,8 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
-import { ComponentProps } from 'react'
 import { TEpci } from '@shared'
+import { ComponentProps } from 'react'
 
 type MultipleEpciSelectProps = {
   epcis: TEpci[]

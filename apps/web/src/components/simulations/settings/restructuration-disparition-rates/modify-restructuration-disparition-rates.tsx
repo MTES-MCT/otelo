@@ -3,6 +3,7 @@
 import { RiIconClassName } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
 import Tabs from '@codegouvfr/react-dsfr/Tabs'
+import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
@@ -11,7 +12,6 @@ import styles from '~/components/simulations/settings/epcis-accommodation-rates/
 import { ModifyAllEpcisRestructurationRatesView } from '~/components/simulations/settings/restructuration-disparition-rates/modify-all-epcis-restructuration-rates-view'
 import { ModifyRestructurationDisparitionRatesInput } from '~/components/simulations/settings/restructuration-disparition-rates/modify-restructuration-disparition-rates.input'
 import { RestructurationRatesToggleSwitch } from '~/components/simulations/settings/restructuration-disparition-rates/restructuration-rates-toggle-switch'
-import { TEpcisAccommodationRates } from '@shared'
 
 interface ModifyRestructurationDisparitionRatesProps {
   epcis: Array<{ code: string; name: string; region: string }>

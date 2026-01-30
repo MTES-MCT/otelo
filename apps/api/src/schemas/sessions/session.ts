@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { ZCommonDateFields } from '@shared'
+import { z } from 'zod'
 
 export const ZSession = ZCommonDateFields.omit({
   updatedAt: true,

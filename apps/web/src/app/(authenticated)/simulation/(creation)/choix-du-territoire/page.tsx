@@ -1,6 +1,6 @@
+import { TEpci } from '@shared'
 import classNames from 'classnames'
 import type { Metadata } from 'next'
-import { TEpci } from '@shared'
 import { getBassinEpcis } from '~/server-only/epcis/get-bassin-epcis'
 import classes from './choix-du-territoire.module.css'
 import { WrapperSimulationTypePage } from './wrapper-simulation-type-page'

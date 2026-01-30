@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { TEpci } from '@shared'
 import { BadQualityService } from '~/bad-quality/bad-quality.service'
 import { DemographicEvolutionService } from '~/demographic-evolution/demographic-evolution.service'
 import { EpcisService } from '~/epcis/epcis.service'
@@ -9,7 +10,6 @@ import { NoAccommodationService } from '~/no-accommodation/no-accommodation.serv
 import { PhysicalInadequationService } from '~/physical-inadequation/physical-inadequation.service'
 import { RpInseeService } from '~/rp-insee/rp-insee.service'
 import { TDataVisualisationQuery, TInadequateHousing } from '~/schemas/data-visualisation/data-visualisation'
-import { TEpci } from '@shared'
 import { SitadelService } from '~/sitadel/sitadel.service'
 import { VacancyService } from '~/vacancy/vacancy.service'
 

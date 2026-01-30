@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { TCalculationResult, TEpci } from '@shared'
 import { BaseCalculator, CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { HostedService } from '~/calculation/needs-calculation/besoins-stock/heberges-b12/hosted.service'
 import { FinancialInadequationService } from '~/calculation/needs-calculation/besoins-stock/inadequation-financiere-b13/financial-inadequation.service'
 import { BadQualityService } from '~/calculation/needs-calculation/besoins-stock/mauvaise-qualite-b14/bad-quality.service'
 import { RatioCalculationService } from '~/calculation/ratio-calculation/ratio-calculation.service'
 import { PrismaService } from '~/db/prisma.service'
-import { TCalculationResult } from '@shared'
-import { TEpci } from '@shared'
 import { TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'
 
 @Injectable()

@@ -1,6 +1,6 @@
+import { TEpci } from '@shared'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '~/lib/auth/auth.config'
-import { TEpci } from '@shared'
 
 export const getBassinEpcis = async (epci: string) => {
   const session = await getServerSession(authOptions)

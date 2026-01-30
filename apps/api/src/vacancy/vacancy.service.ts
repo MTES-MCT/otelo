@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
+import { TEpci } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
 import { VacancyAccommodation } from '~/generated/prisma/client'
 import { TVacancyAccommodationDataTable, TVacancyAccommodationEvolution } from '~/schemas/data-visualisation/data-visualisation'
-import { TEpci } from '@shared'
 
 const createTableData = (results: TVacancyAccommodationEvolution[]): TVacancyAccommodationDataTable => {
   return results.reduce((acc, { data, epci }) => {

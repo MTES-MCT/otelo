@@ -1,7 +1,7 @@
+import { TEpci } from '@shared'
 import { notFound } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '~/lib/auth/auth.config'
-import { TEpci } from '@shared'
 import { TSimulationWithRelations } from '~/schemas/simulation'
 
 export const getDashboardList = async () => {

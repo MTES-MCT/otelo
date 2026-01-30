@@ -2,13 +2,13 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
+import { TEpci } from '@shared'
 import { useRouter } from 'next/navigation'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { useEffect, useState } from 'react'
 import { AutocompleteInput } from '~/components/simulations/autocomplete/autocomplete-input'
 import { useEpcis } from '~/hooks/use-epcis'
 import { GeoApiCommuneResult, GeoApiEpciResult } from '~/hooks/use-geoapi-search'
-import { TEpci } from '@shared'
 import { EpciGroupNameInput } from './epci-group-name-input'
 
 type BassinHabitatSelectionProps = {

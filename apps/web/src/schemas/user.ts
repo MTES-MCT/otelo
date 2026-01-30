@@ -1,5 +1,5 @@
+import { UserType, ZUserBase } from '@shared'
 import { z } from 'zod'
-import { ZUserBase, UserType } from '@shared'
 
 export { UserType }
 

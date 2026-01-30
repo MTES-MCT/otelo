@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from '~/db/prisma.service'
 import { TEpcisAccommodationRates } from '@shared'
+import { PrismaService } from '~/db/prisma.service'
 import { VacancyService } from '~/vacancy/vacancy.service'
 
 @Injectable()

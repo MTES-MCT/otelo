@@ -2,6 +2,7 @@
 
 import { RiIconClassName } from '@codegouvfr/react-dsfr'
 import Tabs from '@codegouvfr/react-dsfr/Tabs'
+import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
@@ -11,7 +12,6 @@ import ModifyParcsComparisonCharts from '~/components/simulations/settings/epcis
 import { SecondaryRatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/secondary-rates-toggle-switch'
 import { ModifySecondaryAccommodationRateInput } from '~/components/simulations/settings/modify-accommodation-rate-input'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
-import { TEpcisAccommodationRates } from '@shared'
 import styles from './epcis-accommodation-rates.module.css'
 
 interface ModifyEpcisSecondaryAccomodationRatesProps {

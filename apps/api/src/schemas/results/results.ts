@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { ZResultsBase, ZStockRequirementsResults as ZStockRequirementsResultsBase } from '@shared'
+import { z } from 'zod'
 
 export const ZStockRequirementsResults = ZStockRequirementsResultsBase
 export type TStockRequirementsResults = z.infer<typeof ZStockRequirementsResultsBase>

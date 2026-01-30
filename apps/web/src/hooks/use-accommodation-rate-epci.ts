@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
 import { TEpcisAccommodationRates } from '@shared'
+import { useQuery } from '@tanstack/react-query'
 
 export const useAccommodationRatesByEpci = (epcis: Array<string>) => {
   const getAccommodationRatesByEpci = async (): Promise<TEpcisAccommodationRates> => {

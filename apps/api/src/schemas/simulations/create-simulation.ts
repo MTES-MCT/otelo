@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { ZEpci } from '@shared'
+import { z } from 'zod'
 import { ZInitScenario } from '~/schemas/scenarios/scenario'
 import { ZSimulation } from './simulation'
 

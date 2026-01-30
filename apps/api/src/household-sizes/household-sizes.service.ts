@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { TEpci } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
 import { THouseholdSizesChart, THouseholdSizesDataResults } from '~/schemas/data-visualisation/data-visualisation'
-import { TEpci } from '@shared'
 
 @Injectable()
 export class HouseholdSizesService {

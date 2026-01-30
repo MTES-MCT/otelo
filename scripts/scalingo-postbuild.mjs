@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { rmSync, existsSync } from 'node:fs'
+import { existsSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
 const BUILD_TARGET = process.env.BUILD_TARGET

@@ -1,7 +1,7 @@
 import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
+import { TEpci } from '@shared'
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs'
 import { ComponentProps } from 'react'
-import { TEpci } from '@shared'
 
 type CheckboxEpcisProps = {
   epcis: TEpci[]

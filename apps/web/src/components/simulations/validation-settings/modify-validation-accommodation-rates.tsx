@@ -3,13 +3,13 @@
 import { fr, RiIconClassName } from '@codegouvfr/react-dsfr'
 import Input from '@codegouvfr/react-dsfr/Input'
 import Tabs from '@codegouvfr/react-dsfr/Tabs'
+import { TEpcisAccommodationRates } from '@shared'
 import { parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
 import { tss } from 'tss-react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { useBassinEpcis } from '~/hooks/use-bassin-epcis'
 import { useEpcis } from '~/hooks/use-epcis'
-import { TEpcisAccommodationRates } from '@shared'
 
 interface TabChildrenProps {
   rates: TEpcisAccommodationRates[string]

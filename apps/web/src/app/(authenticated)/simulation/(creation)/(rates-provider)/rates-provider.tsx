@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
 import { TAccommodationRates } from '@shared'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 
 export interface RateSettings {
   vacancyRate: number

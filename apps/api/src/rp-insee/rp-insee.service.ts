@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { TEpci } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
 import { TRPDataResults, TRPDataTable } from '~/schemas/data-visualisation/data-visualisation'
-import { TEpci } from '@shared'
 
 const createTableData = (results: TRPDataResults[], type: 'menage' | 'population' | 'secondaryAccommodation' | 'vacant'): TRPDataTable => {
   return results.reduce((acc, { data, epci }) => {
