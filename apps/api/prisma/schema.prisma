@@ -209,6 +209,8 @@ model Epci {
   socialParc                        SocialParc?
   vacancyAccommodation              VacancyAccommodation[]
   simulations                       Simulation[]                        @relation("EpciToSimulation")
+  neighborsFrom                     EPCINeighbor[]                      @relation("EPCINeighborFrom")
+  neighborsTo                       EPCINeighbor[]                      @relation("EPCINeighborTo")
 
   @@map("epcis")
 }
@@ -590,6 +592,28 @@ model EPCIContiguity {
 
   @@id([epciCode, contiguousEpciCode])
   @@map("epci_contiguity")
+}
+
+model EPCINeighbor {
+  epciCode         String          @map("epci_code")
+  neighborEpciCode String          @map("neighbor_epci_code")
+  category         NeighborCategory
+  rank             Int
+  score            Float
+  epci             Epci             @relation("EPCINeighborFrom", fields: [epciCode], references: [code])
+  neighborEpci     Epci             @relation("EPCINeighborTo", fields: [neighborEpciCode], references: [code])
+
+  @@id([epciCode, neighborEpciCode, category])
+  @@index([epciCode, category])
+  @@map("epci_neighbors")
+}
+
+enum NeighborCategory {
+  gen
+  logvac
+  mlgmt
+  projdem
+  ressec
 }
 
 model EpciGroup {

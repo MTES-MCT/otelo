@@ -66,6 +66,11 @@ const getMenuConnected = (pathname: string, isAdmin = false): MainNavigationProp
     text: 'Infographies',
   },
   {
+    isActive: pathname === '/territoires-voisins',
+    linkProps: { href: '/territoires-voisins', target: '_self' },
+    text: 'Territoires voisins',
+  },
+  {
     isActive: ['/guide', '/ressources', '/retours-d-experience', '/faq'].includes(pathname),
     menuLinks: [
       {

@@ -40,6 +40,11 @@ if (BUILD_TARGET === '@otelo/web') {
   rm('apps/api')
   rm('.cache')
 } else {
+  console.log('Running prisma migrate deploy...\n')
+  execSync('pnpm --filter @otelo/api prisma migrate deploy', {
+    stdio: 'inherit',
+    cwd: ROOT,
+  })
   rm('apps/web')
 }
 
