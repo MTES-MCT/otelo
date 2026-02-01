@@ -59,8 +59,8 @@ export const TerritoiresVoisinsPage = () => {
 
   return (
     <div className={classNames('fr-container', styles.pageContainer)}>
-      <div className={styles.header}>
-        <h1 className={styles.headerTitle}>Territoires voisins</h1>
+      <div className="fr-mb-4w">
+        <h1 className="fr-mb-3v">Territoires voisins</h1>
         <p className={classNames('fr-text-mention--grey', styles.headerDescription)}>
           Explorez les EPCI les plus proches de votre territoire selon différentes dimensions socio-démographiques. Sélectionnez un EPCI et
           une catégorie pour visualiser ses territoires voisins sur la carte.
@@ -108,17 +108,19 @@ export const TerritoiresVoisinsPage = () => {
           <TerritoiresVoisinsMapWrapper epci={epci} neighbors={neighbors} />
         </div>
         {hasData && (
-          <div className={classNames('fr-flex fr-flex-gap-6v fr-align-items-center fr-flex-wrap', styles.legend)}>
-            <div className="fr-flex fr-align-items-center fr-flex-gap-2v fr-text--sm">
-              <span className={styles.legendSwatch} style={{ background: '#000091' }} />
-              <span>EPCI sélectionné</span>
+          <div className={styles.legend}>
+            <div className={styles.legendItem}>
+              <span className={styles.legendColorBox} style={{ backgroundColor: '#000091' }} />
+              <span className={styles.legendLabel}>EPCI sélectionné</span>
             </div>
-            <div className="fr-flex fr-align-items-center fr-flex-gap-2v fr-text--sm">
-              <span className={styles.legendSwatch} style={{ background: '#F95C5E' }} />
-              <span>Territoires voisins</span>
+            <div className={styles.legendItem}>
+              <span className={styles.legendColorBox} style={{ backgroundColor: '#F95C5E' }} />
+              <span className={styles.legendLabel}>Territoires voisins</span>
             </div>
-            <div className="fr-flex fr-align-items-center fr-flex-gap-2v fr-text--sm fr-text-mention--grey" style={{ marginLeft: 'auto' }}>
-              Catégorie : <strong>{CATEGORY_LABELS[category]}</strong>
+            <div className={styles.legendItem}>
+              <span className={styles.legendLabel} style={{ color: 'var(--text-mention-grey)' }}>
+                Catégorie : <strong>{CATEGORY_LABELS[category]}</strong>
+              </span>
             </div>
           </div>
         )}

@@ -3,24 +3,19 @@
   padding: 2rem;
 }
 
-.header {
-  margin-bottom: 2rem;
-}
-
-.headerTitle {
-  margin-bottom: 0.5rem;
-}
-
 .headerDescription {
   max-width: 800px;
 }
 
 .controls {
   margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .mapSection {
   position: relative;
+  z-index: 0;
   background: var(--background-default-grey);
   border-radius: 8px;
   overflow: hidden;
@@ -32,16 +27,29 @@
 }
 
 .legend {
-  padding: 1rem 1.5rem;
-  background: var(--background-raised-grey);
-  border-top: 1px solid var(--border-default-grey);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1rem 0;
 }
 
-.legendSwatch {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legendColorBox {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.legendLabel {
+  font-size: 0.8125rem;
+  color: #161616;
 }
 
 .neighborsList {
@@ -209,47 +217,9 @@
   border-bottom: 1px solid var(--border-default-grey);
 }
 
-.proximityScore {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 0;
-}
-
-.proximityScoreLabel {
-  flex: 1;
-  font-size: 0.875rem;
-}
-
-.proximityScoreValue {
-  font-size: 1.125rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
 .loadingOverlay {
   position: absolute;
   inset: 0;
   background: rgba(255, 255, 255, 0.7);
   z-index: 1000;
-}
-
-.tooltip {
-  background: white;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  font-size: 0.8125rem;
-  border: 1px solid var(--border-default-grey);
-  pointer-events: none;
-}
-
-.tooltipName {
-  font-weight: 600;
-  margin-bottom: 0.125rem;
-}
-
-.tooltipCode {
-  color: var(--text-mention-grey);
-  font-size: 0.75rem;
 }
