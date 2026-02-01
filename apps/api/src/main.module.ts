@@ -19,6 +19,7 @@ import { DemographicEvolutionModule } from './demographic-evolution/demographic-
 import { DemographicEvolutionCustomModule } from './demographic-evolution-custom/demographic-evolution-custom.module'
 import { EmailModule } from './email/email.module'
 import { EpciGroupsModule } from './epci-groups/epci-groups.module'
+import { EpciNeighborsModule } from './epci-neighbors/epci-neighbors.module'
 import { EpcisModule } from './epcis/epcis.module'
 import { ExportPowerpointModule } from './export-powerpoint/export-powerpoint.module'
 import { FilocomModule } from './filocom/filocom.module'
@@ -49,6 +50,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     UsersModule,
     AuthModule,
     EpcisModule,
+    EpciNeighborsModule,
     EpciGroupsModule,
     SimulationsModule,
     CalculationModule,

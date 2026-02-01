@@ -423,6 +423,7 @@ export const ModelName = {
   Sitadel: 'Sitadel',
   RP: 'RP',
   EPCIContiguity: 'EPCIContiguity',
+  EPCINeighbor: 'EPCINeighbor',
   EpciGroup: 'EpciGroup',
   EpciGroupEpcis: 'EpciGroupEpcis',
   DemographicEvolutionOmphaleCustom: 'DemographicEvolutionOmphaleCustom',
@@ -444,7 +445,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userWhitelist" | "account" | "session" | "export" | "emailVerification" | "userAccountResetToken" | "scenario" | "bassin" | "ePCIScenario" | "epci" | "simulation" | "demographicEvolutionOmphale" | "demographicEvolutionPopulation" | "physicalInadequation_Filo" | "physicalInadequation_RP" | "financialInadequation" | "hostedFilocom" | "hostedFiness" | "hostedSne" | "socialParc" | "hotel" | "makeShiftHousing_RP" | "makeShiftHousing_SNE" | "homeless" | "badQuality_Filocom" | "badQuality_RP" | "badQuality_Fonciers" | "filocomFlux" | "vacancyAccommodation" | "sitadel" | "rP" | "ePCIContiguity" | "epciGroup" | "epciGroupEpcis" | "demographicEvolutionOmphaleCustom" | "impersonationSession" | "simulationResults" | "householdSizes"
+    modelProps: "user" | "userWhitelist" | "account" | "session" | "export" | "emailVerification" | "userAccountResetToken" | "scenario" | "bassin" | "ePCIScenario" | "epci" | "simulation" | "demographicEvolutionOmphale" | "demographicEvolutionPopulation" | "physicalInadequation_Filo" | "physicalInadequation_RP" | "financialInadequation" | "hostedFilocom" | "hostedFiness" | "hostedSne" | "socialParc" | "hotel" | "makeShiftHousing_RP" | "makeShiftHousing_SNE" | "homeless" | "badQuality_Filocom" | "badQuality_RP" | "badQuality_Fonciers" | "filocomFlux" | "vacancyAccommodation" | "sitadel" | "rP" | "ePCIContiguity" | "ePCINeighbor" | "epciGroup" | "epciGroupEpcis" | "demographicEvolutionOmphaleCustom" | "impersonationSession" | "simulationResults" | "householdSizes"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2890,6 +2891,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    EPCINeighbor: {
+      payload: Prisma.$EPCINeighborPayload<ExtArgs>
+      fields: Prisma.EPCINeighborFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EPCINeighborFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EPCINeighborFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload>
+        }
+        findFirst: {
+          args: Prisma.EPCINeighborFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EPCINeighborFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload>
+        }
+        findMany: {
+          args: Prisma.EPCINeighborFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload>[]
+        }
+        create: {
+          args: Prisma.EPCINeighborCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload>
+        }
+        createMany: {
+          args: Prisma.EPCINeighborCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EPCINeighborCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload>[]
+        }
+        delete: {
+          args: Prisma.EPCINeighborDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload>
+        }
+        update: {
+          args: Prisma.EPCINeighborUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload>
+        }
+        deleteMany: {
+          args: Prisma.EPCINeighborDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EPCINeighborUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EPCINeighborUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload>[]
+        }
+        upsert: {
+          args: Prisma.EPCINeighborUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EPCINeighborPayload>
+        }
+        aggregate: {
+          args: Prisma.EPCINeighborAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEPCINeighbor>
+        }
+        groupBy: {
+          args: Prisma.EPCINeighborGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EPCINeighborGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EPCINeighborCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EPCINeighborCountAggregateOutputType> | number
+        }
+      }
+    }
     EpciGroup: {
       payload: Prisma.$EpciGroupPayload<ExtArgs>
       fields: Prisma.EpciGroupFieldRefs
@@ -3895,6 +3970,17 @@ export const EPCIContiguityScalarFieldEnum = {
 export type EPCIContiguityScalarFieldEnum = (typeof EPCIContiguityScalarFieldEnum)[keyof typeof EPCIContiguityScalarFieldEnum]
 
 
+export const EPCINeighborScalarFieldEnum = {
+  epciCode: 'epciCode',
+  neighborEpciCode: 'neighborEpciCode',
+  category: 'category',
+  rank: 'rank',
+  score: 'score'
+} as const
+
+export type EPCINeighborScalarFieldEnum = (typeof EPCINeighborScalarFieldEnum)[keyof typeof EPCINeighborScalarFieldEnum]
+
+
 export const EpciGroupScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -4205,6 +4291,20 @@ export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMode
 
 
 /**
+ * Reference to a field of type 'NeighborCategory'
+ */
+export type EnumNeighborCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NeighborCategory'>
+    
+
+
+/**
+ * Reference to a field of type 'NeighborCategory[]'
+ */
+export type ListEnumNeighborCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NeighborCategory[]'>
+    
+
+
+/**
  * Reference to a field of type 'Json'
  */
 export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
@@ -4337,6 +4437,7 @@ export type GlobalOmitConfig = {
   sitadel?: Prisma.SitadelOmit
   rP?: Prisma.RPOmit
   ePCIContiguity?: Prisma.EPCIContiguityOmit
+  ePCINeighbor?: Prisma.EPCINeighborOmit
   epciGroup?: Prisma.EpciGroupOmit
   epciGroupEpcis?: Prisma.EpciGroupEpcisOmit
   demographicEvolutionOmphaleCustom?: Prisma.DemographicEvolutionOmphaleCustomOmit

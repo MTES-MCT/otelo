@@ -338,6 +338,23 @@ export type FloatWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
 }
 
+export type EnumNeighborCategoryFilter<$PrismaModel = never> = {
+  equals?: $Enums.NeighborCategory | Prisma.EnumNeighborCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.NeighborCategory[] | Prisma.ListEnumNeighborCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.NeighborCategory[] | Prisma.ListEnumNeighborCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumNeighborCategoryFilter<$PrismaModel> | $Enums.NeighborCategory
+}
+
+export type EnumNeighborCategoryWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NeighborCategory | Prisma.EnumNeighborCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.NeighborCategory[] | Prisma.ListEnumNeighborCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.NeighborCategory[] | Prisma.ListEnumNeighborCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumNeighborCategoryWithAggregatesFilter<$PrismaModel> | $Enums.NeighborCategory
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNeighborCategoryFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNeighborCategoryFilter<$PrismaModel>
+}
+
 export type JsonFilter<$PrismaModel = never> =
 | Prisma.PatchUndefined<
     Prisma.Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -713,6 +730,23 @@ export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatFilter<$PrismaModel>
   _min?: Prisma.NestedFloatFilter<$PrismaModel>
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
+}
+
+export type NestedEnumNeighborCategoryFilter<$PrismaModel = never> = {
+  equals?: $Enums.NeighborCategory | Prisma.EnumNeighborCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.NeighborCategory[] | Prisma.ListEnumNeighborCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.NeighborCategory[] | Prisma.ListEnumNeighborCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumNeighborCategoryFilter<$PrismaModel> | $Enums.NeighborCategory
+}
+
+export type NestedEnumNeighborCategoryWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NeighborCategory | Prisma.EnumNeighborCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.NeighborCategory[] | Prisma.ListEnumNeighborCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.NeighborCategory[] | Prisma.ListEnumNeighborCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumNeighborCategoryWithAggregatesFilter<$PrismaModel> | $Enums.NeighborCategory
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNeighborCategoryFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNeighborCategoryFilter<$PrismaModel>
 }
 
 export type NestedJsonFilter<$PrismaModel = never> =

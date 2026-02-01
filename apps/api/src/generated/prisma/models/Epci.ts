@@ -205,6 +205,8 @@ export type EpciWhereInput = {
   socialParc?: Prisma.XOR<Prisma.SocialParcNullableScalarRelationFilter, Prisma.SocialParcWhereInput> | null
   vacancyAccommodation?: Prisma.VacancyAccommodationListRelationFilter
   simulations?: Prisma.SimulationListRelationFilter
+  neighborsFrom?: Prisma.EPCINeighborListRelationFilter
+  neighborsTo?: Prisma.EPCINeighborListRelationFilter
 }
 
 export type EpciOrderByWithRelationInput = {
@@ -241,6 +243,8 @@ export type EpciOrderByWithRelationInput = {
   socialParc?: Prisma.SocialParcOrderByWithRelationInput
   vacancyAccommodation?: Prisma.VacancyAccommodationOrderByRelationAggregateInput
   simulations?: Prisma.SimulationOrderByRelationAggregateInput
+  neighborsFrom?: Prisma.EPCINeighborOrderByRelationAggregateInput
+  neighborsTo?: Prisma.EPCINeighborOrderByRelationAggregateInput
 }
 
 export type EpciWhereUniqueInput = Prisma.AtLeast<{
@@ -280,6 +284,8 @@ export type EpciWhereUniqueInput = Prisma.AtLeast<{
   socialParc?: Prisma.XOR<Prisma.SocialParcNullableScalarRelationFilter, Prisma.SocialParcWhereInput> | null
   vacancyAccommodation?: Prisma.VacancyAccommodationListRelationFilter
   simulations?: Prisma.SimulationListRelationFilter
+  neighborsFrom?: Prisma.EPCINeighborListRelationFilter
+  neighborsTo?: Prisma.EPCINeighborListRelationFilter
 }, "code">
 
 export type EpciOrderByWithAggregationInput = {
@@ -335,6 +341,8 @@ export type EpciCreateInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateInput = {
@@ -370,6 +378,8 @@ export type EpciUncheckedCreateInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUpdateInput = {
@@ -405,6 +415,8 @@ export type EpciUpdateInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateInput = {
@@ -440,6 +452,8 @@ export type EpciUncheckedUpdateInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateManyInput = {
@@ -900,6 +914,34 @@ export type EpciUpdateOneRequiredWithoutContiguousToNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EpciUpdateToOneWithWhereWithoutContiguousToInput, Prisma.EpciUpdateWithoutContiguousToInput>, Prisma.EpciUncheckedUpdateWithoutContiguousToInput>
 }
 
+export type EpciCreateNestedOneWithoutNeighborsFromInput = {
+  create?: Prisma.XOR<Prisma.EpciCreateWithoutNeighborsFromInput, Prisma.EpciUncheckedCreateWithoutNeighborsFromInput>
+  connectOrCreate?: Prisma.EpciCreateOrConnectWithoutNeighborsFromInput
+  connect?: Prisma.EpciWhereUniqueInput
+}
+
+export type EpciCreateNestedOneWithoutNeighborsToInput = {
+  create?: Prisma.XOR<Prisma.EpciCreateWithoutNeighborsToInput, Prisma.EpciUncheckedCreateWithoutNeighborsToInput>
+  connectOrCreate?: Prisma.EpciCreateOrConnectWithoutNeighborsToInput
+  connect?: Prisma.EpciWhereUniqueInput
+}
+
+export type EpciUpdateOneRequiredWithoutNeighborsFromNestedInput = {
+  create?: Prisma.XOR<Prisma.EpciCreateWithoutNeighborsFromInput, Prisma.EpciUncheckedCreateWithoutNeighborsFromInput>
+  connectOrCreate?: Prisma.EpciCreateOrConnectWithoutNeighborsFromInput
+  upsert?: Prisma.EpciUpsertWithoutNeighborsFromInput
+  connect?: Prisma.EpciWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EpciUpdateToOneWithWhereWithoutNeighborsFromInput, Prisma.EpciUpdateWithoutNeighborsFromInput>, Prisma.EpciUncheckedUpdateWithoutNeighborsFromInput>
+}
+
+export type EpciUpdateOneRequiredWithoutNeighborsToNestedInput = {
+  create?: Prisma.XOR<Prisma.EpciCreateWithoutNeighborsToInput, Prisma.EpciUncheckedCreateWithoutNeighborsToInput>
+  connectOrCreate?: Prisma.EpciCreateOrConnectWithoutNeighborsToInput
+  upsert?: Prisma.EpciUpsertWithoutNeighborsToInput
+  connect?: Prisma.EpciWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EpciUpdateToOneWithWhereWithoutNeighborsToInput, Prisma.EpciUpdateWithoutNeighborsToInput>, Prisma.EpciUncheckedUpdateWithoutNeighborsToInput>
+}
+
 export type EpciCreateNestedOneWithoutEpciGroupEpcisInput = {
   create?: Prisma.XOR<Prisma.EpciCreateWithoutEpciGroupEpcisInput, Prisma.EpciUncheckedCreateWithoutEpciGroupEpcisInput>
   connectOrCreate?: Prisma.EpciCreateOrConnectWithoutEpciGroupEpcisInput
@@ -988,6 +1030,8 @@ export type EpciCreateWithoutBassinInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutBassinInput = {
@@ -1022,6 +1066,8 @@ export type EpciUncheckedCreateWithoutBassinInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutBassinInput = {
@@ -1092,6 +1138,8 @@ export type EpciCreateWithoutEpciScenarioInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutEpciScenarioInput = {
@@ -1126,6 +1174,8 @@ export type EpciUncheckedCreateWithoutEpciScenarioInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutEpciScenarioInput = {
@@ -1176,6 +1226,8 @@ export type EpciUpdateWithoutEpciScenarioInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutEpciScenarioInput = {
@@ -1210,6 +1262,8 @@ export type EpciUncheckedUpdateWithoutEpciScenarioInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutSimulationsInput = {
@@ -1244,6 +1298,8 @@ export type EpciCreateWithoutSimulationsInput = {
   sitadel?: Prisma.SitadelCreateNestedManyWithoutEpciInput
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutSimulationsInput = {
@@ -1278,6 +1334,8 @@ export type EpciUncheckedCreateWithoutSimulationsInput = {
   sitadel?: Prisma.SitadelUncheckedCreateNestedManyWithoutEpciInput
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutSimulationsInput = {
@@ -1333,6 +1391,8 @@ export type EpciCreateWithoutDemographicEvolutionsOmphaleInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutDemographicEvolutionsOmphaleInput = {
@@ -1367,6 +1427,8 @@ export type EpciUncheckedCreateWithoutDemographicEvolutionsOmphaleInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutDemographicEvolutionsOmphaleInput = {
@@ -1417,6 +1479,8 @@ export type EpciUpdateWithoutDemographicEvolutionsOmphaleInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutDemographicEvolutionsOmphaleInput = {
@@ -1451,6 +1515,8 @@ export type EpciUncheckedUpdateWithoutDemographicEvolutionsOmphaleInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutDemographicEvolutionPopulationInput = {
@@ -1485,6 +1551,8 @@ export type EpciCreateWithoutDemographicEvolutionPopulationInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutDemographicEvolutionPopulationInput = {
@@ -1519,6 +1587,8 @@ export type EpciUncheckedCreateWithoutDemographicEvolutionPopulationInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutDemographicEvolutionPopulationInput = {
@@ -1569,6 +1639,8 @@ export type EpciUpdateWithoutDemographicEvolutionPopulationInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutDemographicEvolutionPopulationInput = {
@@ -1603,6 +1675,8 @@ export type EpciUncheckedUpdateWithoutDemographicEvolutionPopulationInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutPhysicalInadequations_FiloInput = {
@@ -1637,6 +1711,8 @@ export type EpciCreateWithoutPhysicalInadequations_FiloInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutPhysicalInadequations_FiloInput = {
@@ -1671,6 +1747,8 @@ export type EpciUncheckedCreateWithoutPhysicalInadequations_FiloInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutPhysicalInadequations_FiloInput = {
@@ -1721,6 +1799,8 @@ export type EpciUpdateWithoutPhysicalInadequations_FiloInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutPhysicalInadequations_FiloInput = {
@@ -1755,6 +1835,8 @@ export type EpciUncheckedUpdateWithoutPhysicalInadequations_FiloInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutPhysicalInadequations_RPInput = {
@@ -1789,6 +1871,8 @@ export type EpciCreateWithoutPhysicalInadequations_RPInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutPhysicalInadequations_RPInput = {
@@ -1823,6 +1907,8 @@ export type EpciUncheckedCreateWithoutPhysicalInadequations_RPInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutPhysicalInadequations_RPInput = {
@@ -1873,6 +1959,8 @@ export type EpciUpdateWithoutPhysicalInadequations_RPInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutPhysicalInadequations_RPInput = {
@@ -1907,6 +1995,8 @@ export type EpciUncheckedUpdateWithoutPhysicalInadequations_RPInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutFinancialInadequationsInput = {
@@ -1941,6 +2031,8 @@ export type EpciCreateWithoutFinancialInadequationsInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutFinancialInadequationsInput = {
@@ -1975,6 +2067,8 @@ export type EpciUncheckedCreateWithoutFinancialInadequationsInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutFinancialInadequationsInput = {
@@ -2025,6 +2119,8 @@ export type EpciUpdateWithoutFinancialInadequationsInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutFinancialInadequationsInput = {
@@ -2059,6 +2155,8 @@ export type EpciUncheckedUpdateWithoutFinancialInadequationsInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutHostedFilocomInput = {
@@ -2093,6 +2191,8 @@ export type EpciCreateWithoutHostedFilocomInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutHostedFilocomInput = {
@@ -2127,6 +2227,8 @@ export type EpciUncheckedCreateWithoutHostedFilocomInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutHostedFilocomInput = {
@@ -2177,6 +2279,8 @@ export type EpciUpdateWithoutHostedFilocomInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutHostedFilocomInput = {
@@ -2211,6 +2315,8 @@ export type EpciUncheckedUpdateWithoutHostedFilocomInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutHostedFinessInput = {
@@ -2245,6 +2351,8 @@ export type EpciCreateWithoutHostedFinessInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutHostedFinessInput = {
@@ -2279,6 +2387,8 @@ export type EpciUncheckedCreateWithoutHostedFinessInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutHostedFinessInput = {
@@ -2329,6 +2439,8 @@ export type EpciUpdateWithoutHostedFinessInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutHostedFinessInput = {
@@ -2363,6 +2475,8 @@ export type EpciUncheckedUpdateWithoutHostedFinessInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutHostedSneInput = {
@@ -2397,6 +2511,8 @@ export type EpciCreateWithoutHostedSneInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutHostedSneInput = {
@@ -2431,6 +2547,8 @@ export type EpciUncheckedCreateWithoutHostedSneInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutHostedSneInput = {
@@ -2481,6 +2599,8 @@ export type EpciUpdateWithoutHostedSneInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutHostedSneInput = {
@@ -2515,6 +2635,8 @@ export type EpciUncheckedUpdateWithoutHostedSneInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutSocialParcInput = {
@@ -2549,6 +2671,8 @@ export type EpciCreateWithoutSocialParcInput = {
   sitadel?: Prisma.SitadelCreateNestedManyWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutSocialParcInput = {
@@ -2583,6 +2707,8 @@ export type EpciUncheckedCreateWithoutSocialParcInput = {
   sitadel?: Prisma.SitadelUncheckedCreateNestedManyWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutSocialParcInput = {
@@ -2633,6 +2759,8 @@ export type EpciUpdateWithoutSocialParcInput = {
   sitadel?: Prisma.SitadelUpdateManyWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutSocialParcInput = {
@@ -2667,6 +2795,8 @@ export type EpciUncheckedUpdateWithoutSocialParcInput = {
   sitadel?: Prisma.SitadelUncheckedUpdateManyWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutHotelInput = {
@@ -2701,6 +2831,8 @@ export type EpciCreateWithoutHotelInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutHotelInput = {
@@ -2735,6 +2867,8 @@ export type EpciUncheckedCreateWithoutHotelInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutHotelInput = {
@@ -2785,6 +2919,8 @@ export type EpciUpdateWithoutHotelInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutHotelInput = {
@@ -2819,6 +2955,8 @@ export type EpciUncheckedUpdateWithoutHotelInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutMakeshiftHousingRPInput = {
@@ -2853,6 +2991,8 @@ export type EpciCreateWithoutMakeshiftHousingRPInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutMakeshiftHousingRPInput = {
@@ -2887,6 +3027,8 @@ export type EpciUncheckedCreateWithoutMakeshiftHousingRPInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutMakeshiftHousingRPInput = {
@@ -2937,6 +3079,8 @@ export type EpciUpdateWithoutMakeshiftHousingRPInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutMakeshiftHousingRPInput = {
@@ -2971,6 +3115,8 @@ export type EpciUncheckedUpdateWithoutMakeshiftHousingRPInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutMakeshiftHousingSNEInput = {
@@ -3005,6 +3151,8 @@ export type EpciCreateWithoutMakeshiftHousingSNEInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutMakeshiftHousingSNEInput = {
@@ -3039,6 +3187,8 @@ export type EpciUncheckedCreateWithoutMakeshiftHousingSNEInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutMakeshiftHousingSNEInput = {
@@ -3089,6 +3239,8 @@ export type EpciUpdateWithoutMakeshiftHousingSNEInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutMakeshiftHousingSNEInput = {
@@ -3123,6 +3275,8 @@ export type EpciUncheckedUpdateWithoutMakeshiftHousingSNEInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutHomelessInput = {
@@ -3157,6 +3311,8 @@ export type EpciCreateWithoutHomelessInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutHomelessInput = {
@@ -3191,6 +3347,8 @@ export type EpciUncheckedCreateWithoutHomelessInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutHomelessInput = {
@@ -3241,6 +3399,8 @@ export type EpciUpdateWithoutHomelessInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutHomelessInput = {
@@ -3275,6 +3435,8 @@ export type EpciUncheckedUpdateWithoutHomelessInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutBadQualityFilocomInput = {
@@ -3309,6 +3471,8 @@ export type EpciCreateWithoutBadQualityFilocomInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutBadQualityFilocomInput = {
@@ -3343,6 +3507,8 @@ export type EpciUncheckedCreateWithoutBadQualityFilocomInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutBadQualityFilocomInput = {
@@ -3393,6 +3559,8 @@ export type EpciUpdateWithoutBadQualityFilocomInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutBadQualityFilocomInput = {
@@ -3427,6 +3595,8 @@ export type EpciUncheckedUpdateWithoutBadQualityFilocomInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutBadQualityRPInput = {
@@ -3461,6 +3631,8 @@ export type EpciCreateWithoutBadQualityRPInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutBadQualityRPInput = {
@@ -3495,6 +3667,8 @@ export type EpciUncheckedCreateWithoutBadQualityRPInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutBadQualityRPInput = {
@@ -3545,6 +3719,8 @@ export type EpciUpdateWithoutBadQualityRPInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutBadQualityRPInput = {
@@ -3579,6 +3755,8 @@ export type EpciUncheckedUpdateWithoutBadQualityRPInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutBadQualityFonciersInput = {
@@ -3613,6 +3791,8 @@ export type EpciCreateWithoutBadQualityFonciersInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutBadQualityFonciersInput = {
@@ -3647,6 +3827,8 @@ export type EpciUncheckedCreateWithoutBadQualityFonciersInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutBadQualityFonciersInput = {
@@ -3697,6 +3879,8 @@ export type EpciUpdateWithoutBadQualityFonciersInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutBadQualityFonciersInput = {
@@ -3731,6 +3915,8 @@ export type EpciUncheckedUpdateWithoutBadQualityFonciersInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutFilocomFluxInput = {
@@ -3765,6 +3951,8 @@ export type EpciCreateWithoutFilocomFluxInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutFilocomFluxInput = {
@@ -3799,6 +3987,8 @@ export type EpciUncheckedCreateWithoutFilocomFluxInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutFilocomFluxInput = {
@@ -3849,6 +4039,8 @@ export type EpciUpdateWithoutFilocomFluxInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutFilocomFluxInput = {
@@ -3883,6 +4075,8 @@ export type EpciUncheckedUpdateWithoutFilocomFluxInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutVacancyAccommodationInput = {
@@ -3917,6 +4111,8 @@ export type EpciCreateWithoutVacancyAccommodationInput = {
   sitadel?: Prisma.SitadelCreateNestedManyWithoutEpciInput
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutVacancyAccommodationInput = {
@@ -3951,6 +4147,8 @@ export type EpciUncheckedCreateWithoutVacancyAccommodationInput = {
   sitadel?: Prisma.SitadelUncheckedCreateNestedManyWithoutEpciInput
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutVacancyAccommodationInput = {
@@ -4001,6 +4199,8 @@ export type EpciUpdateWithoutVacancyAccommodationInput = {
   sitadel?: Prisma.SitadelUpdateManyWithoutEpciNestedInput
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutVacancyAccommodationInput = {
@@ -4035,6 +4235,8 @@ export type EpciUncheckedUpdateWithoutVacancyAccommodationInput = {
   sitadel?: Prisma.SitadelUncheckedUpdateManyWithoutEpciNestedInput
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutSitadelInput = {
@@ -4069,6 +4271,8 @@ export type EpciCreateWithoutSitadelInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutSitadelInput = {
@@ -4103,6 +4307,8 @@ export type EpciUncheckedCreateWithoutSitadelInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutSitadelInput = {
@@ -4153,6 +4359,8 @@ export type EpciUpdateWithoutSitadelInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutSitadelInput = {
@@ -4187,6 +4395,8 @@ export type EpciUncheckedUpdateWithoutSitadelInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutRPInput = {
@@ -4221,6 +4431,8 @@ export type EpciCreateWithoutRPInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutRPInput = {
@@ -4255,6 +4467,8 @@ export type EpciUncheckedCreateWithoutRPInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutRPInput = {
@@ -4305,6 +4519,8 @@ export type EpciUpdateWithoutRPInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutRPInput = {
@@ -4339,6 +4555,8 @@ export type EpciUncheckedUpdateWithoutRPInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutContiguousFromInput = {
@@ -4373,6 +4591,8 @@ export type EpciCreateWithoutContiguousFromInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutContiguousFromInput = {
@@ -4407,6 +4627,8 @@ export type EpciUncheckedCreateWithoutContiguousFromInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutContiguousFromInput = {
@@ -4446,6 +4668,8 @@ export type EpciCreateWithoutContiguousToInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutContiguousToInput = {
@@ -4480,6 +4704,8 @@ export type EpciUncheckedCreateWithoutContiguousToInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutContiguousToInput = {
@@ -4530,6 +4756,8 @@ export type EpciUpdateWithoutContiguousFromInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutContiguousFromInput = {
@@ -4564,6 +4792,8 @@ export type EpciUncheckedUpdateWithoutContiguousFromInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUpsertWithoutContiguousToInput = {
@@ -4609,6 +4839,8 @@ export type EpciUpdateWithoutContiguousToInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutContiguousToInput = {
@@ -4643,6 +4875,328 @@ export type EpciUncheckedUpdateWithoutContiguousToInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
+}
+
+export type EpciCreateWithoutNeighborsFromInput = {
+  code: string
+  name: string
+  region: string
+  badQualityFilocom?: Prisma.BadQuality_FilocomCreateNestedOneWithoutEpciInput
+  badQualityFonciers?: Prisma.BadQuality_FonciersCreateNestedOneWithoutEpciInput
+  badQualityRP?: Prisma.BadQuality_RPCreateNestedOneWithoutEpciInput
+  demographicEvolutionsOmphale?: Prisma.DemographicEvolutionOmphaleCreateNestedManyWithoutEpciInput
+  demographicEvolutionOmphaleCustom?: Prisma.DemographicEvolutionOmphaleCustomCreateNestedManyWithoutEpciInput
+  demographicEvolutionPopulation?: Prisma.DemographicEvolutionPopulationCreateNestedManyWithoutEpciInput
+  contiguousFrom?: Prisma.EPCIContiguityCreateNestedManyWithoutContiguousEpciInput
+  contiguousTo?: Prisma.EPCIContiguityCreateNestedManyWithoutEpciInput
+  epciGroupEpcis?: Prisma.EpciGroupEpcisCreateNestedManyWithoutEpciInput
+  epciScenario?: Prisma.EPCIScenarioCreateNestedManyWithoutEpciInput
+  Bassin?: Prisma.BassinCreateNestedOneWithoutEpcisInput
+  filocomFlux?: Prisma.FilocomFluxCreateNestedOneWithoutEpciInput
+  financialInadequations?: Prisma.FinancialInadequationCreateNestedOneWithoutEpciInput
+  homeless?: Prisma.HomelessCreateNestedOneWithoutEpciInput
+  hostedFilocom?: Prisma.HostedFilocomCreateNestedOneWithoutEpciInput
+  hostedFiness?: Prisma.HostedFinessCreateNestedOneWithoutEpciInput
+  hostedSne?: Prisma.HostedSneCreateNestedOneWithoutEpciInput
+  hotel?: Prisma.HotelCreateNestedOneWithoutEpciInput
+  householdSizes?: Prisma.HouseholdSizesCreateNestedManyWithoutEpciInput
+  makeshiftHousingRP?: Prisma.MakeShiftHousing_RPCreateNestedOneWithoutEpciInput
+  makeshiftHousingSNE?: Prisma.MakeShiftHousing_SNECreateNestedOneWithoutEpciInput
+  physicalInadequations_Filo?: Prisma.PhysicalInadequation_FiloCreateNestedOneWithoutEpciInput
+  physicalInadequations_RP?: Prisma.PhysicalInadequation_RPCreateNestedOneWithoutEpciInput
+  RP?: Prisma.RPCreateNestedManyWithoutEpciInput
+  SimulationResults?: Prisma.SimulationResultsCreateNestedManyWithoutEpciInput
+  sitadel?: Prisma.SitadelCreateNestedManyWithoutEpciInput
+  socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
+  vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
+  simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
+}
+
+export type EpciUncheckedCreateWithoutNeighborsFromInput = {
+  code: string
+  name: string
+  region: string
+  bassinName?: string | null
+  badQualityFilocom?: Prisma.BadQuality_FilocomUncheckedCreateNestedOneWithoutEpciInput
+  badQualityFonciers?: Prisma.BadQuality_FonciersUncheckedCreateNestedOneWithoutEpciInput
+  badQualityRP?: Prisma.BadQuality_RPUncheckedCreateNestedOneWithoutEpciInput
+  demographicEvolutionsOmphale?: Prisma.DemographicEvolutionOmphaleUncheckedCreateNestedManyWithoutEpciInput
+  demographicEvolutionOmphaleCustom?: Prisma.DemographicEvolutionOmphaleCustomUncheckedCreateNestedManyWithoutEpciInput
+  demographicEvolutionPopulation?: Prisma.DemographicEvolutionPopulationUncheckedCreateNestedManyWithoutEpciInput
+  contiguousFrom?: Prisma.EPCIContiguityUncheckedCreateNestedManyWithoutContiguousEpciInput
+  contiguousTo?: Prisma.EPCIContiguityUncheckedCreateNestedManyWithoutEpciInput
+  epciGroupEpcis?: Prisma.EpciGroupEpcisUncheckedCreateNestedManyWithoutEpciInput
+  epciScenario?: Prisma.EPCIScenarioUncheckedCreateNestedManyWithoutEpciInput
+  filocomFlux?: Prisma.FilocomFluxUncheckedCreateNestedOneWithoutEpciInput
+  financialInadequations?: Prisma.FinancialInadequationUncheckedCreateNestedOneWithoutEpciInput
+  homeless?: Prisma.HomelessUncheckedCreateNestedOneWithoutEpciInput
+  hostedFilocom?: Prisma.HostedFilocomUncheckedCreateNestedOneWithoutEpciInput
+  hostedFiness?: Prisma.HostedFinessUncheckedCreateNestedOneWithoutEpciInput
+  hostedSne?: Prisma.HostedSneUncheckedCreateNestedOneWithoutEpciInput
+  hotel?: Prisma.HotelUncheckedCreateNestedOneWithoutEpciInput
+  householdSizes?: Prisma.HouseholdSizesUncheckedCreateNestedManyWithoutEpciInput
+  makeshiftHousingRP?: Prisma.MakeShiftHousing_RPUncheckedCreateNestedOneWithoutEpciInput
+  makeshiftHousingSNE?: Prisma.MakeShiftHousing_SNEUncheckedCreateNestedOneWithoutEpciInput
+  physicalInadequations_Filo?: Prisma.PhysicalInadequation_FiloUncheckedCreateNestedOneWithoutEpciInput
+  physicalInadequations_RP?: Prisma.PhysicalInadequation_RPUncheckedCreateNestedOneWithoutEpciInput
+  RP?: Prisma.RPUncheckedCreateNestedManyWithoutEpciInput
+  SimulationResults?: Prisma.SimulationResultsUncheckedCreateNestedManyWithoutEpciInput
+  sitadel?: Prisma.SitadelUncheckedCreateNestedManyWithoutEpciInput
+  socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
+  vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
+  simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
+}
+
+export type EpciCreateOrConnectWithoutNeighborsFromInput = {
+  where: Prisma.EpciWhereUniqueInput
+  create: Prisma.XOR<Prisma.EpciCreateWithoutNeighborsFromInput, Prisma.EpciUncheckedCreateWithoutNeighborsFromInput>
+}
+
+export type EpciCreateWithoutNeighborsToInput = {
+  code: string
+  name: string
+  region: string
+  badQualityFilocom?: Prisma.BadQuality_FilocomCreateNestedOneWithoutEpciInput
+  badQualityFonciers?: Prisma.BadQuality_FonciersCreateNestedOneWithoutEpciInput
+  badQualityRP?: Prisma.BadQuality_RPCreateNestedOneWithoutEpciInput
+  demographicEvolutionsOmphale?: Prisma.DemographicEvolutionOmphaleCreateNestedManyWithoutEpciInput
+  demographicEvolutionOmphaleCustom?: Prisma.DemographicEvolutionOmphaleCustomCreateNestedManyWithoutEpciInput
+  demographicEvolutionPopulation?: Prisma.DemographicEvolutionPopulationCreateNestedManyWithoutEpciInput
+  contiguousFrom?: Prisma.EPCIContiguityCreateNestedManyWithoutContiguousEpciInput
+  contiguousTo?: Prisma.EPCIContiguityCreateNestedManyWithoutEpciInput
+  epciGroupEpcis?: Prisma.EpciGroupEpcisCreateNestedManyWithoutEpciInput
+  epciScenario?: Prisma.EPCIScenarioCreateNestedManyWithoutEpciInput
+  Bassin?: Prisma.BassinCreateNestedOneWithoutEpcisInput
+  filocomFlux?: Prisma.FilocomFluxCreateNestedOneWithoutEpciInput
+  financialInadequations?: Prisma.FinancialInadequationCreateNestedOneWithoutEpciInput
+  homeless?: Prisma.HomelessCreateNestedOneWithoutEpciInput
+  hostedFilocom?: Prisma.HostedFilocomCreateNestedOneWithoutEpciInput
+  hostedFiness?: Prisma.HostedFinessCreateNestedOneWithoutEpciInput
+  hostedSne?: Prisma.HostedSneCreateNestedOneWithoutEpciInput
+  hotel?: Prisma.HotelCreateNestedOneWithoutEpciInput
+  householdSizes?: Prisma.HouseholdSizesCreateNestedManyWithoutEpciInput
+  makeshiftHousingRP?: Prisma.MakeShiftHousing_RPCreateNestedOneWithoutEpciInput
+  makeshiftHousingSNE?: Prisma.MakeShiftHousing_SNECreateNestedOneWithoutEpciInput
+  physicalInadequations_Filo?: Prisma.PhysicalInadequation_FiloCreateNestedOneWithoutEpciInput
+  physicalInadequations_RP?: Prisma.PhysicalInadequation_RPCreateNestedOneWithoutEpciInput
+  RP?: Prisma.RPCreateNestedManyWithoutEpciInput
+  SimulationResults?: Prisma.SimulationResultsCreateNestedManyWithoutEpciInput
+  sitadel?: Prisma.SitadelCreateNestedManyWithoutEpciInput
+  socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
+  vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
+  simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+}
+
+export type EpciUncheckedCreateWithoutNeighborsToInput = {
+  code: string
+  name: string
+  region: string
+  bassinName?: string | null
+  badQualityFilocom?: Prisma.BadQuality_FilocomUncheckedCreateNestedOneWithoutEpciInput
+  badQualityFonciers?: Prisma.BadQuality_FonciersUncheckedCreateNestedOneWithoutEpciInput
+  badQualityRP?: Prisma.BadQuality_RPUncheckedCreateNestedOneWithoutEpciInput
+  demographicEvolutionsOmphale?: Prisma.DemographicEvolutionOmphaleUncheckedCreateNestedManyWithoutEpciInput
+  demographicEvolutionOmphaleCustom?: Prisma.DemographicEvolutionOmphaleCustomUncheckedCreateNestedManyWithoutEpciInput
+  demographicEvolutionPopulation?: Prisma.DemographicEvolutionPopulationUncheckedCreateNestedManyWithoutEpciInput
+  contiguousFrom?: Prisma.EPCIContiguityUncheckedCreateNestedManyWithoutContiguousEpciInput
+  contiguousTo?: Prisma.EPCIContiguityUncheckedCreateNestedManyWithoutEpciInput
+  epciGroupEpcis?: Prisma.EpciGroupEpcisUncheckedCreateNestedManyWithoutEpciInput
+  epciScenario?: Prisma.EPCIScenarioUncheckedCreateNestedManyWithoutEpciInput
+  filocomFlux?: Prisma.FilocomFluxUncheckedCreateNestedOneWithoutEpciInput
+  financialInadequations?: Prisma.FinancialInadequationUncheckedCreateNestedOneWithoutEpciInput
+  homeless?: Prisma.HomelessUncheckedCreateNestedOneWithoutEpciInput
+  hostedFilocom?: Prisma.HostedFilocomUncheckedCreateNestedOneWithoutEpciInput
+  hostedFiness?: Prisma.HostedFinessUncheckedCreateNestedOneWithoutEpciInput
+  hostedSne?: Prisma.HostedSneUncheckedCreateNestedOneWithoutEpciInput
+  hotel?: Prisma.HotelUncheckedCreateNestedOneWithoutEpciInput
+  householdSizes?: Prisma.HouseholdSizesUncheckedCreateNestedManyWithoutEpciInput
+  makeshiftHousingRP?: Prisma.MakeShiftHousing_RPUncheckedCreateNestedOneWithoutEpciInput
+  makeshiftHousingSNE?: Prisma.MakeShiftHousing_SNEUncheckedCreateNestedOneWithoutEpciInput
+  physicalInadequations_Filo?: Prisma.PhysicalInadequation_FiloUncheckedCreateNestedOneWithoutEpciInput
+  physicalInadequations_RP?: Prisma.PhysicalInadequation_RPUncheckedCreateNestedOneWithoutEpciInput
+  RP?: Prisma.RPUncheckedCreateNestedManyWithoutEpciInput
+  SimulationResults?: Prisma.SimulationResultsUncheckedCreateNestedManyWithoutEpciInput
+  sitadel?: Prisma.SitadelUncheckedCreateNestedManyWithoutEpciInput
+  socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
+  vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
+  simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+}
+
+export type EpciCreateOrConnectWithoutNeighborsToInput = {
+  where: Prisma.EpciWhereUniqueInput
+  create: Prisma.XOR<Prisma.EpciCreateWithoutNeighborsToInput, Prisma.EpciUncheckedCreateWithoutNeighborsToInput>
+}
+
+export type EpciUpsertWithoutNeighborsFromInput = {
+  update: Prisma.XOR<Prisma.EpciUpdateWithoutNeighborsFromInput, Prisma.EpciUncheckedUpdateWithoutNeighborsFromInput>
+  create: Prisma.XOR<Prisma.EpciCreateWithoutNeighborsFromInput, Prisma.EpciUncheckedCreateWithoutNeighborsFromInput>
+  where?: Prisma.EpciWhereInput
+}
+
+export type EpciUpdateToOneWithWhereWithoutNeighborsFromInput = {
+  where?: Prisma.EpciWhereInput
+  data: Prisma.XOR<Prisma.EpciUpdateWithoutNeighborsFromInput, Prisma.EpciUncheckedUpdateWithoutNeighborsFromInput>
+}
+
+export type EpciUpdateWithoutNeighborsFromInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  badQualityFilocom?: Prisma.BadQuality_FilocomUpdateOneWithoutEpciNestedInput
+  badQualityFonciers?: Prisma.BadQuality_FonciersUpdateOneWithoutEpciNestedInput
+  badQualityRP?: Prisma.BadQuality_RPUpdateOneWithoutEpciNestedInput
+  demographicEvolutionsOmphale?: Prisma.DemographicEvolutionOmphaleUpdateManyWithoutEpciNestedInput
+  demographicEvolutionOmphaleCustom?: Prisma.DemographicEvolutionOmphaleCustomUpdateManyWithoutEpciNestedInput
+  demographicEvolutionPopulation?: Prisma.DemographicEvolutionPopulationUpdateManyWithoutEpciNestedInput
+  contiguousFrom?: Prisma.EPCIContiguityUpdateManyWithoutContiguousEpciNestedInput
+  contiguousTo?: Prisma.EPCIContiguityUpdateManyWithoutEpciNestedInput
+  epciGroupEpcis?: Prisma.EpciGroupEpcisUpdateManyWithoutEpciNestedInput
+  epciScenario?: Prisma.EPCIScenarioUpdateManyWithoutEpciNestedInput
+  Bassin?: Prisma.BassinUpdateOneWithoutEpcisNestedInput
+  filocomFlux?: Prisma.FilocomFluxUpdateOneWithoutEpciNestedInput
+  financialInadequations?: Prisma.FinancialInadequationUpdateOneWithoutEpciNestedInput
+  homeless?: Prisma.HomelessUpdateOneWithoutEpciNestedInput
+  hostedFilocom?: Prisma.HostedFilocomUpdateOneWithoutEpciNestedInput
+  hostedFiness?: Prisma.HostedFinessUpdateOneWithoutEpciNestedInput
+  hostedSne?: Prisma.HostedSneUpdateOneWithoutEpciNestedInput
+  hotel?: Prisma.HotelUpdateOneWithoutEpciNestedInput
+  householdSizes?: Prisma.HouseholdSizesUpdateManyWithoutEpciNestedInput
+  makeshiftHousingRP?: Prisma.MakeShiftHousing_RPUpdateOneWithoutEpciNestedInput
+  makeshiftHousingSNE?: Prisma.MakeShiftHousing_SNEUpdateOneWithoutEpciNestedInput
+  physicalInadequations_Filo?: Prisma.PhysicalInadequation_FiloUpdateOneWithoutEpciNestedInput
+  physicalInadequations_RP?: Prisma.PhysicalInadequation_RPUpdateOneWithoutEpciNestedInput
+  RP?: Prisma.RPUpdateManyWithoutEpciNestedInput
+  SimulationResults?: Prisma.SimulationResultsUpdateManyWithoutEpciNestedInput
+  sitadel?: Prisma.SitadelUpdateManyWithoutEpciNestedInput
+  socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
+  vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
+  simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
+}
+
+export type EpciUncheckedUpdateWithoutNeighborsFromInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  bassinName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  badQualityFilocom?: Prisma.BadQuality_FilocomUncheckedUpdateOneWithoutEpciNestedInput
+  badQualityFonciers?: Prisma.BadQuality_FonciersUncheckedUpdateOneWithoutEpciNestedInput
+  badQualityRP?: Prisma.BadQuality_RPUncheckedUpdateOneWithoutEpciNestedInput
+  demographicEvolutionsOmphale?: Prisma.DemographicEvolutionOmphaleUncheckedUpdateManyWithoutEpciNestedInput
+  demographicEvolutionOmphaleCustom?: Prisma.DemographicEvolutionOmphaleCustomUncheckedUpdateManyWithoutEpciNestedInput
+  demographicEvolutionPopulation?: Prisma.DemographicEvolutionPopulationUncheckedUpdateManyWithoutEpciNestedInput
+  contiguousFrom?: Prisma.EPCIContiguityUncheckedUpdateManyWithoutContiguousEpciNestedInput
+  contiguousTo?: Prisma.EPCIContiguityUncheckedUpdateManyWithoutEpciNestedInput
+  epciGroupEpcis?: Prisma.EpciGroupEpcisUncheckedUpdateManyWithoutEpciNestedInput
+  epciScenario?: Prisma.EPCIScenarioUncheckedUpdateManyWithoutEpciNestedInput
+  filocomFlux?: Prisma.FilocomFluxUncheckedUpdateOneWithoutEpciNestedInput
+  financialInadequations?: Prisma.FinancialInadequationUncheckedUpdateOneWithoutEpciNestedInput
+  homeless?: Prisma.HomelessUncheckedUpdateOneWithoutEpciNestedInput
+  hostedFilocom?: Prisma.HostedFilocomUncheckedUpdateOneWithoutEpciNestedInput
+  hostedFiness?: Prisma.HostedFinessUncheckedUpdateOneWithoutEpciNestedInput
+  hostedSne?: Prisma.HostedSneUncheckedUpdateOneWithoutEpciNestedInput
+  hotel?: Prisma.HotelUncheckedUpdateOneWithoutEpciNestedInput
+  householdSizes?: Prisma.HouseholdSizesUncheckedUpdateManyWithoutEpciNestedInput
+  makeshiftHousingRP?: Prisma.MakeShiftHousing_RPUncheckedUpdateOneWithoutEpciNestedInput
+  makeshiftHousingSNE?: Prisma.MakeShiftHousing_SNEUncheckedUpdateOneWithoutEpciNestedInput
+  physicalInadequations_Filo?: Prisma.PhysicalInadequation_FiloUncheckedUpdateOneWithoutEpciNestedInput
+  physicalInadequations_RP?: Prisma.PhysicalInadequation_RPUncheckedUpdateOneWithoutEpciNestedInput
+  RP?: Prisma.RPUncheckedUpdateManyWithoutEpciNestedInput
+  SimulationResults?: Prisma.SimulationResultsUncheckedUpdateManyWithoutEpciNestedInput
+  sitadel?: Prisma.SitadelUncheckedUpdateManyWithoutEpciNestedInput
+  socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
+  vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
+  simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
+}
+
+export type EpciUpsertWithoutNeighborsToInput = {
+  update: Prisma.XOR<Prisma.EpciUpdateWithoutNeighborsToInput, Prisma.EpciUncheckedUpdateWithoutNeighborsToInput>
+  create: Prisma.XOR<Prisma.EpciCreateWithoutNeighborsToInput, Prisma.EpciUncheckedCreateWithoutNeighborsToInput>
+  where?: Prisma.EpciWhereInput
+}
+
+export type EpciUpdateToOneWithWhereWithoutNeighborsToInput = {
+  where?: Prisma.EpciWhereInput
+  data: Prisma.XOR<Prisma.EpciUpdateWithoutNeighborsToInput, Prisma.EpciUncheckedUpdateWithoutNeighborsToInput>
+}
+
+export type EpciUpdateWithoutNeighborsToInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  badQualityFilocom?: Prisma.BadQuality_FilocomUpdateOneWithoutEpciNestedInput
+  badQualityFonciers?: Prisma.BadQuality_FonciersUpdateOneWithoutEpciNestedInput
+  badQualityRP?: Prisma.BadQuality_RPUpdateOneWithoutEpciNestedInput
+  demographicEvolutionsOmphale?: Prisma.DemographicEvolutionOmphaleUpdateManyWithoutEpciNestedInput
+  demographicEvolutionOmphaleCustom?: Prisma.DemographicEvolutionOmphaleCustomUpdateManyWithoutEpciNestedInput
+  demographicEvolutionPopulation?: Prisma.DemographicEvolutionPopulationUpdateManyWithoutEpciNestedInput
+  contiguousFrom?: Prisma.EPCIContiguityUpdateManyWithoutContiguousEpciNestedInput
+  contiguousTo?: Prisma.EPCIContiguityUpdateManyWithoutEpciNestedInput
+  epciGroupEpcis?: Prisma.EpciGroupEpcisUpdateManyWithoutEpciNestedInput
+  epciScenario?: Prisma.EPCIScenarioUpdateManyWithoutEpciNestedInput
+  Bassin?: Prisma.BassinUpdateOneWithoutEpcisNestedInput
+  filocomFlux?: Prisma.FilocomFluxUpdateOneWithoutEpciNestedInput
+  financialInadequations?: Prisma.FinancialInadequationUpdateOneWithoutEpciNestedInput
+  homeless?: Prisma.HomelessUpdateOneWithoutEpciNestedInput
+  hostedFilocom?: Prisma.HostedFilocomUpdateOneWithoutEpciNestedInput
+  hostedFiness?: Prisma.HostedFinessUpdateOneWithoutEpciNestedInput
+  hostedSne?: Prisma.HostedSneUpdateOneWithoutEpciNestedInput
+  hotel?: Prisma.HotelUpdateOneWithoutEpciNestedInput
+  householdSizes?: Prisma.HouseholdSizesUpdateManyWithoutEpciNestedInput
+  makeshiftHousingRP?: Prisma.MakeShiftHousing_RPUpdateOneWithoutEpciNestedInput
+  makeshiftHousingSNE?: Prisma.MakeShiftHousing_SNEUpdateOneWithoutEpciNestedInput
+  physicalInadequations_Filo?: Prisma.PhysicalInadequation_FiloUpdateOneWithoutEpciNestedInput
+  physicalInadequations_RP?: Prisma.PhysicalInadequation_RPUpdateOneWithoutEpciNestedInput
+  RP?: Prisma.RPUpdateManyWithoutEpciNestedInput
+  SimulationResults?: Prisma.SimulationResultsUpdateManyWithoutEpciNestedInput
+  sitadel?: Prisma.SitadelUpdateManyWithoutEpciNestedInput
+  socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
+  vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
+  simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+}
+
+export type EpciUncheckedUpdateWithoutNeighborsToInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  bassinName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  badQualityFilocom?: Prisma.BadQuality_FilocomUncheckedUpdateOneWithoutEpciNestedInput
+  badQualityFonciers?: Prisma.BadQuality_FonciersUncheckedUpdateOneWithoutEpciNestedInput
+  badQualityRP?: Prisma.BadQuality_RPUncheckedUpdateOneWithoutEpciNestedInput
+  demographicEvolutionsOmphale?: Prisma.DemographicEvolutionOmphaleUncheckedUpdateManyWithoutEpciNestedInput
+  demographicEvolutionOmphaleCustom?: Prisma.DemographicEvolutionOmphaleCustomUncheckedUpdateManyWithoutEpciNestedInput
+  demographicEvolutionPopulation?: Prisma.DemographicEvolutionPopulationUncheckedUpdateManyWithoutEpciNestedInput
+  contiguousFrom?: Prisma.EPCIContiguityUncheckedUpdateManyWithoutContiguousEpciNestedInput
+  contiguousTo?: Prisma.EPCIContiguityUncheckedUpdateManyWithoutEpciNestedInput
+  epciGroupEpcis?: Prisma.EpciGroupEpcisUncheckedUpdateManyWithoutEpciNestedInput
+  epciScenario?: Prisma.EPCIScenarioUncheckedUpdateManyWithoutEpciNestedInput
+  filocomFlux?: Prisma.FilocomFluxUncheckedUpdateOneWithoutEpciNestedInput
+  financialInadequations?: Prisma.FinancialInadequationUncheckedUpdateOneWithoutEpciNestedInput
+  homeless?: Prisma.HomelessUncheckedUpdateOneWithoutEpciNestedInput
+  hostedFilocom?: Prisma.HostedFilocomUncheckedUpdateOneWithoutEpciNestedInput
+  hostedFiness?: Prisma.HostedFinessUncheckedUpdateOneWithoutEpciNestedInput
+  hostedSne?: Prisma.HostedSneUncheckedUpdateOneWithoutEpciNestedInput
+  hotel?: Prisma.HotelUncheckedUpdateOneWithoutEpciNestedInput
+  householdSizes?: Prisma.HouseholdSizesUncheckedUpdateManyWithoutEpciNestedInput
+  makeshiftHousingRP?: Prisma.MakeShiftHousing_RPUncheckedUpdateOneWithoutEpciNestedInput
+  makeshiftHousingSNE?: Prisma.MakeShiftHousing_SNEUncheckedUpdateOneWithoutEpciNestedInput
+  physicalInadequations_Filo?: Prisma.PhysicalInadequation_FiloUncheckedUpdateOneWithoutEpciNestedInput
+  physicalInadequations_RP?: Prisma.PhysicalInadequation_RPUncheckedUpdateOneWithoutEpciNestedInput
+  RP?: Prisma.RPUncheckedUpdateManyWithoutEpciNestedInput
+  SimulationResults?: Prisma.SimulationResultsUncheckedUpdateManyWithoutEpciNestedInput
+  sitadel?: Prisma.SitadelUncheckedUpdateManyWithoutEpciNestedInput
+  socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
+  vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
+  simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
 }
 
 export type EpciCreateWithoutEpciGroupEpcisInput = {
@@ -4677,6 +5231,8 @@ export type EpciCreateWithoutEpciGroupEpcisInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutEpciGroupEpcisInput = {
@@ -4711,6 +5267,8 @@ export type EpciUncheckedCreateWithoutEpciGroupEpcisInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutEpciGroupEpcisInput = {
@@ -4761,6 +5319,8 @@ export type EpciUpdateWithoutEpciGroupEpcisInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutEpciGroupEpcisInput = {
@@ -4795,6 +5355,8 @@ export type EpciUncheckedUpdateWithoutEpciGroupEpcisInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutDemographicEvolutionOmphaleCustomInput = {
@@ -4829,6 +5391,8 @@ export type EpciCreateWithoutDemographicEvolutionOmphaleCustomInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutDemographicEvolutionOmphaleCustomInput = {
@@ -4863,6 +5427,8 @@ export type EpciUncheckedCreateWithoutDemographicEvolutionOmphaleCustomInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutDemographicEvolutionOmphaleCustomInput = {
@@ -4913,6 +5479,8 @@ export type EpciUpdateWithoutDemographicEvolutionOmphaleCustomInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutDemographicEvolutionOmphaleCustomInput = {
@@ -4947,6 +5515,8 @@ export type EpciUncheckedUpdateWithoutDemographicEvolutionOmphaleCustomInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutSimulationResultsInput = {
@@ -4981,6 +5551,8 @@ export type EpciCreateWithoutSimulationResultsInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutSimulationResultsInput = {
@@ -5015,6 +5587,8 @@ export type EpciUncheckedCreateWithoutSimulationResultsInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutSimulationResultsInput = {
@@ -5065,6 +5639,8 @@ export type EpciUpdateWithoutSimulationResultsInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutSimulationResultsInput = {
@@ -5099,6 +5675,8 @@ export type EpciUncheckedUpdateWithoutSimulationResultsInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateWithoutHouseholdSizesInput = {
@@ -5133,6 +5711,8 @@ export type EpciCreateWithoutHouseholdSizesInput = {
   socialParc?: Prisma.SocialParcCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciUncheckedCreateWithoutHouseholdSizesInput = {
@@ -5167,6 +5747,8 @@ export type EpciUncheckedCreateWithoutHouseholdSizesInput = {
   socialParc?: Prisma.SocialParcUncheckedCreateNestedOneWithoutEpciInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedCreateNestedManyWithoutEpciInput
   simulations?: Prisma.SimulationUncheckedCreateNestedManyWithoutEpcisInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutEpciInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedCreateNestedManyWithoutNeighborEpciInput
 }
 
 export type EpciCreateOrConnectWithoutHouseholdSizesInput = {
@@ -5217,6 +5799,8 @@ export type EpciUpdateWithoutHouseholdSizesInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutHouseholdSizesInput = {
@@ -5251,6 +5835,8 @@ export type EpciUncheckedUpdateWithoutHouseholdSizesInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciCreateManyBassinInput = {
@@ -5291,6 +5877,8 @@ export type EpciUpdateWithoutBassinInput = {
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutBassinInput = {
@@ -5325,6 +5913,8 @@ export type EpciUncheckedUpdateWithoutBassinInput = {
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
   simulations?: Prisma.SimulationUncheckedUpdateManyWithoutEpcisNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateManyWithoutBassinInput = {
@@ -5365,6 +5955,8 @@ export type EpciUpdateWithoutSimulationsInput = {
   sitadel?: Prisma.SitadelUpdateManyWithoutEpciNestedInput
   socialParc?: Prisma.SocialParcUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUpdateManyWithoutEpciNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateWithoutSimulationsInput = {
@@ -5399,6 +5991,8 @@ export type EpciUncheckedUpdateWithoutSimulationsInput = {
   sitadel?: Prisma.SitadelUncheckedUpdateManyWithoutEpciNestedInput
   socialParc?: Prisma.SocialParcUncheckedUpdateOneWithoutEpciNestedInput
   vacancyAccommodation?: Prisma.VacancyAccommodationUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsFrom?: Prisma.EPCINeighborUncheckedUpdateManyWithoutEpciNestedInput
+  neighborsTo?: Prisma.EPCINeighborUncheckedUpdateManyWithoutNeighborEpciNestedInput
 }
 
 export type EpciUncheckedUpdateManyWithoutSimulationsInput = {
@@ -5427,6 +6021,8 @@ export type EpciCountOutputType = {
   sitadel: number
   vacancyAccommodation: number
   simulations: number
+  neighborsFrom: number
+  neighborsTo: number
 }
 
 export type EpciCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5443,6 +6039,8 @@ export type EpciCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   sitadel?: boolean | EpciCountOutputTypeCountSitadelArgs
   vacancyAccommodation?: boolean | EpciCountOutputTypeCountVacancyAccommodationArgs
   simulations?: boolean | EpciCountOutputTypeCountSimulationsArgs
+  neighborsFrom?: boolean | EpciCountOutputTypeCountNeighborsFromArgs
+  neighborsTo?: boolean | EpciCountOutputTypeCountNeighborsToArgs
 }
 
 /**
@@ -5546,6 +6144,20 @@ export type EpciCountOutputTypeCountSimulationsArgs<ExtArgs extends runtime.Type
   where?: Prisma.SimulationWhereInput
 }
 
+/**
+ * EpciCountOutputType without action
+ */
+export type EpciCountOutputTypeCountNeighborsFromArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EPCINeighborWhereInput
+}
+
+/**
+ * EpciCountOutputType without action
+ */
+export type EpciCountOutputTypeCountNeighborsToArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EPCINeighborWhereInput
+}
+
 
 export type EpciSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   code?: boolean
@@ -5581,6 +6193,8 @@ export type EpciSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   socialParc?: boolean | Prisma.Epci$socialParcArgs<ExtArgs>
   vacancyAccommodation?: boolean | Prisma.Epci$vacancyAccommodationArgs<ExtArgs>
   simulations?: boolean | Prisma.Epci$simulationsArgs<ExtArgs>
+  neighborsFrom?: boolean | Prisma.Epci$neighborsFromArgs<ExtArgs>
+  neighborsTo?: boolean | Prisma.Epci$neighborsToArgs<ExtArgs>
   _count?: boolean | Prisma.EpciCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["epci"]>
 
@@ -5638,6 +6252,8 @@ export type EpciInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   socialParc?: boolean | Prisma.Epci$socialParcArgs<ExtArgs>
   vacancyAccommodation?: boolean | Prisma.Epci$vacancyAccommodationArgs<ExtArgs>
   simulations?: boolean | Prisma.Epci$simulationsArgs<ExtArgs>
+  neighborsFrom?: boolean | Prisma.Epci$neighborsFromArgs<ExtArgs>
+  neighborsTo?: boolean | Prisma.Epci$neighborsToArgs<ExtArgs>
   _count?: boolean | Prisma.EpciCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EpciIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5679,6 +6295,8 @@ export type $EpciPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     socialParc: Prisma.$SocialParcPayload<ExtArgs> | null
     vacancyAccommodation: Prisma.$VacancyAccommodationPayload<ExtArgs>[]
     simulations: Prisma.$SimulationPayload<ExtArgs>[]
+    neighborsFrom: Prisma.$EPCINeighborPayload<ExtArgs>[]
+    neighborsTo: Prisma.$EPCINeighborPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     code: string
@@ -6108,6 +6726,8 @@ export interface Prisma__EpciClient<T, Null = never, ExtArgs extends runtime.Typ
   socialParc<T extends Prisma.Epci$socialParcArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Epci$socialParcArgs<ExtArgs>>): Prisma.Prisma__SocialParcClient<runtime.Types.Result.GetResult<Prisma.$SocialParcPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   vacancyAccommodation<T extends Prisma.Epci$vacancyAccommodationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Epci$vacancyAccommodationArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VacancyAccommodationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   simulations<T extends Prisma.Epci$simulationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Epci$simulationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SimulationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  neighborsFrom<T extends Prisma.Epci$neighborsFromArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Epci$neighborsFromArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EPCINeighborPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  neighborsTo<T extends Prisma.Epci$neighborsToArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Epci$neighborsToArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EPCINeighborPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7150,6 +7770,54 @@ export type Epci$simulationsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.SimulationScalarFieldEnum | Prisma.SimulationScalarFieldEnum[]
+}
+
+/**
+ * Epci.neighborsFrom
+ */
+export type Epci$neighborsFromArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EPCINeighbor
+   */
+  select?: Prisma.EPCINeighborSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EPCINeighbor
+   */
+  omit?: Prisma.EPCINeighborOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EPCINeighborInclude<ExtArgs> | null
+  where?: Prisma.EPCINeighborWhereInput
+  orderBy?: Prisma.EPCINeighborOrderByWithRelationInput | Prisma.EPCINeighborOrderByWithRelationInput[]
+  cursor?: Prisma.EPCINeighborWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EPCINeighborScalarFieldEnum | Prisma.EPCINeighborScalarFieldEnum[]
+}
+
+/**
+ * Epci.neighborsTo
+ */
+export type Epci$neighborsToArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EPCINeighbor
+   */
+  select?: Prisma.EPCINeighborSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EPCINeighbor
+   */
+  omit?: Prisma.EPCINeighborOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EPCINeighborInclude<ExtArgs> | null
+  where?: Prisma.EPCINeighborWhereInput
+  orderBy?: Prisma.EPCINeighborOrderByWithRelationInput | Prisma.EPCINeighborOrderByWithRelationInput[]
+  cursor?: Prisma.EPCINeighborWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EPCINeighborScalarFieldEnum | Prisma.EPCINeighborScalarFieldEnum[]
 }
 
 /**

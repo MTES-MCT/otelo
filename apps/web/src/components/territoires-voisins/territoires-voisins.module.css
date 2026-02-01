@@ -1,0 +1,255 @@
+.pageContainer {
+  min-height: calc(100vh - 200px);
+  padding: 2rem;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.headerTitle {
+  margin-bottom: 0.5rem;
+}
+
+.headerDescription {
+  max-width: 800px;
+}
+
+.controls {
+  margin-bottom: 1.5rem;
+}
+
+.mapSection {
+  position: relative;
+  background: var(--background-default-grey);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.mapContainer {
+  height: 620px;
+}
+
+.legend {
+  padding: 1rem 1.5rem;
+  background: var(--background-raised-grey);
+  border-top: 1px solid var(--border-default-grey);
+}
+
+.legendSwatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.neighborsList {
+  margin-top: 1.5rem;
+}
+
+.neighborsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.neighborsTable th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: var(--background-contrast-grey);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-default-grey);
+}
+
+.neighborsTable td {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+.scoreBar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scoreBarTrack {
+  flex: 1;
+  height: 6px;
+  background: var(--background-contrast-grey);
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 120px;
+}
+
+.scoreBarFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.scoreValue {
+  min-width: 40px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rankBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.modal {
+  background: var(--background-raised-grey, #fff);
+  border-radius: 8px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem 1.5rem 0;
+  gap: 1rem;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.modalSubtitle {
+  font-size: 0.875rem;
+  color: var(--text-mention-grey);
+  margin-top: 0.25rem;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: var(--text-mention-grey);
+  line-height: 1;
+}
+
+.modalClose:hover {
+  color: var(--text-default-grey);
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.statCard {
+  background: var(--background-contrast-grey, #f6f6f6);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--text-mention-grey);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.statUnit {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-mention-grey);
+}
+
+.sectionTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-mention-grey);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+.proximityScore {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+}
+
+.proximityScoreLabel {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.proximityScoreValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 1000;
+}
+
+.tooltip {
+  background: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-size: 0.8125rem;
+  border: 1px solid var(--border-default-grey);
+  pointer-events: none;
+}
+
+.tooltipName {
+  font-weight: 600;
+  margin-bottom: 0.125rem;
+}
+
+.tooltipCode {
+  color: var(--text-mention-grey);
+  font-size: 0.75rem;
+}

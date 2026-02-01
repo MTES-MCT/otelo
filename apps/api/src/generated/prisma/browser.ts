@@ -183,6 +183,11 @@ export type RP = Prisma.RPModel
  */
 export type EPCIContiguity = Prisma.EPCIContiguityModel
 /**
+ * Model EPCINeighbor
+ * 
+ */
+export type EPCINeighbor = Prisma.EPCINeighborModel
+/**
  * Model EpciGroup
  * 
  */

@@ -82,6 +82,7 @@ export const ModelName = {
   Sitadel: 'Sitadel',
   RP: 'RP',
   EPCIContiguity: 'EPCIContiguity',
+  EPCINeighbor: 'EPCINeighbor',
   EpciGroup: 'EpciGroup',
   EpciGroupEpcis: 'EpciGroupEpcis',
   DemographicEvolutionOmphaleCustom: 'DemographicEvolutionOmphaleCustom',
@@ -626,6 +627,17 @@ export const EPCIContiguityScalarFieldEnum = {
 } as const
 
 export type EPCIContiguityScalarFieldEnum = (typeof EPCIContiguityScalarFieldEnum)[keyof typeof EPCIContiguityScalarFieldEnum]
+
+
+export const EPCINeighborScalarFieldEnum = {
+  epciCode: 'epciCode',
+  neighborEpciCode: 'neighborEpciCode',
+  category: 'category',
+  rank: 'rank',
+  score: 'score'
+} as const
+
+export type EPCINeighborScalarFieldEnum = (typeof EPCINeighborScalarFieldEnum)[keyof typeof EPCINeighborScalarFieldEnum]
 
 
 export const EpciGroupScalarFieldEnum = {

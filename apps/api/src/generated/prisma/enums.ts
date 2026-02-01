@@ -9,6 +9,17 @@
 * 🟢 You can import this file directly.
 */
 
+export const NeighborCategory = {
+  gen: 'gen',
+  logvac: 'logvac',
+  mlgmt: 'mlgmt',
+  projdem: 'projdem',
+  ressec: 'ressec'
+} as const
+
+export type NeighborCategory = (typeof NeighborCategory)[keyof typeof NeighborCategory]
+
+
 export const Role = {
   USER: 'USER',
   ADMIN: 'ADMIN'
