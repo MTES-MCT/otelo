@@ -59,8 +59,6 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis 
 
   const showMap = (epci && epciData) || (epciDataList && epciDataList.length > 0)
 
-  // if (!hasNewHousingNeeds) return null
-
   return (
     <>
       <div className="fr-background-default--grey shadow fr-flex fr-justify-content-space-between fr-align-items-center">

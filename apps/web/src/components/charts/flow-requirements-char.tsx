@@ -154,6 +154,16 @@ export const FlowRequirementsChart: FC<FlowRequirementsChartProps> = ({ results,
       ),
     },
     {
+      name: 'Logements vacants de longue durée',
+      value: Math.max(0, longTermVacantAccomodation),
+      color: getChartColor('longVacantAccommodations'),
+      description: (val: string) => (
+        <>
+          L'augmentation du nombre de logements vacants de longue durée contribuera pour <strong>{val}</strong> au besoin en logements.
+        </>
+      ),
+    },
+    {
       name: 'Fluidité du parc',
       value: Math.max(0, shortTermVacantAccomodation),
       color: getChartColor('fluiditeDuParc'),
