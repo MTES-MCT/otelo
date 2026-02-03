@@ -190,6 +190,7 @@ export const chartKeyColors = {
   evolutionDemographiqueDonut: '#5C68E5',
   residencesSecondairesDonut: '#29598F',
   fluiditeDuParc: '#AEB5FF',
+  longVacantAccommodations: '#6C87C7',
   remobilisationVacants: '#5ABD88',
   renouvellementUrbain: '#18666B',
   logementsSupplementaires: '#E8E8E8',

@@ -65,7 +65,11 @@ export const ModifyEpcisSecondaryAccommodationRates: FC<ModifyEpcisSecondaryAcco
       <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
         <SecondaryRatesToggleSwitch />
       </div>
-      {isAllMode ? <ModifyAllEpcisSecondaryRatesView /> : <Tabs classes={{ panel: 'fr-background-default--grey' }} tabs={tabs} />}
+      {isAllMode ? (
+        <ModifyAllEpcisSecondaryRatesView epcis={epcis} />
+      ) : (
+        <Tabs classes={{ panel: 'fr-background-default--grey' }} tabs={tabs} />
+      )}
     </>
   )
 }

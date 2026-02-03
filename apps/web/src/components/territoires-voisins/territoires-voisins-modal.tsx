@@ -25,6 +25,7 @@ export const TerritoiresVoisinsModal = ({ epci, category, categoryLabel, isRefer
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
+
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])

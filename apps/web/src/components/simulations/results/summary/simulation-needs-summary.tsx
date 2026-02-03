@@ -39,7 +39,14 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis 
   const { total } = results
   const { postpeakTotalStock, peakYear } = epci ?? {}
   const hasNewHousingNeeds = total > 0
-  const title = epci ? `L'EPCI du ${epci.name}` : 'Votre territoire'
+  const hasNewHousingNeedsTitle = epci ? `L'EPCI du ${epci.name}` : 'Votre territoire'
+  const noNewHousingNeedsTitle = epci ? (
+    <>
+      l'EPCI du <span className="fr-text--bold">{epci.name}</span>
+    </>
+  ) : (
+    <span className="fr-text--bold">votre territoire</span>
+  )
 
   let epciData: EpciData | null = null
   let epciDataList: ColoredEpciData[] | undefined
@@ -59,17 +66,22 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis 
 
   const showMap = (epci && epciData) || (epciDataList && epciDataList.length > 0)
 
-  // if (!hasNewHousingNeeds) return null
-
   return (
     <>
       <div className="fr-background-default--grey shadow fr-flex fr-justify-content-space-between fr-align-items-center">
         <div className="fr-col-md-6 fr-py-8w fr-px-5w">
           {hasNewHousingNeeds && (
             <div className="fr-flex fr-direction-column">
-              <span className="fr-text-default--grey">{title} devra construire</span>
+              <span className="fr-text-default--grey">{hasNewHousingNeedsTitle} devra construire</span>
               <span className={classNames({ 'fr-mb-0': !epci }, 'fr-text--bold fr-h2 fr-mt-1v')}>
                 {formatNumber(total)} logements neufs
+              </span>
+            </div>
+          )}
+          {!hasNewHousingNeeds && (
+            <div className="fr-flex fr-direction-column">
+              <span className="fr-text-default--grey fr-text--lg">
+                Les évolutions démographiques ne génèrent pas de besoins en constructions neuves sur {noNewHousingNeedsTitle}.
               </span>
             </div>
           )}

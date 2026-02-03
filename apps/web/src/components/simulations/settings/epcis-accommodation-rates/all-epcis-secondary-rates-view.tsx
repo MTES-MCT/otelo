@@ -5,12 +5,20 @@ import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rate
 import { CreateAllSecondaryAccommodationRateInput } from '~/components/simulations/settings/create-all-secondary-accommodation-rate-input'
 import { AggregatedSecondaryParcsComparisonChart } from './aggregated-secondary-parc-comparison-chart'
 
-export const AllEpcisSecondaryRatesView: FC = () => {
+interface AllEpcisSecondaryRatesViewProps {
+  epcis: Array<{ code: string; name: string }>
+}
+
+export const AllEpcisSecondaryRatesView: FC<AllEpcisSecondaryRatesViewProps> = ({ epcis }) => {
   const { defaultRates } = useEpcisRates()
 
-  // Calculate average secondary accommodation rate across all EPCIs
+  // Calculate weighted average secondary accommodation rate across all EPCIs
   const epciIds = Object.keys(defaultRates)
-  const averageTxRS = epciIds.length > 0 ? epciIds.reduce((sum, epciId) => sum + defaultRates[epciId].txRS, 0) / epciIds.length : 0
+  const totalParc = epciIds.reduce((sum, epciId) => sum + (defaultRates[epciId].parctot || 0), 0)
+  const averageTxRS =
+    totalParc > 0
+      ? epciIds.reduce((sum, epciId) => sum + defaultRates[epciId].txRS * (defaultRates[epciId].parctot || 0), 0) / totalParc
+      : 0
 
   return (
     <div className="fr-p-4w shadow">
@@ -19,7 +27,7 @@ export const AllEpcisSecondaryRatesView: FC = () => {
           Le taux moyen observé sur l'ensemble du territoire s'élève à <strong>{(averageTxRS * 100).toFixed(2)} %</strong>.
         </span>
         <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
-          <CreateAllSecondaryAccommodationRateInput />
+          <CreateAllSecondaryAccommodationRateInput epcis={epcis} />
           <AggregatedSecondaryParcsComparisonChart />
         </div>
       </div>
