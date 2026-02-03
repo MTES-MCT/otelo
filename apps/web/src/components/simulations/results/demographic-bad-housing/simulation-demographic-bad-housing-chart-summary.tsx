@@ -1,3 +1,4 @@
+import classNames from 'classnames'
 import styles from './simulation-demographic-bad-housing-chart-summary.module.css'
 
 export const SimulationDemographicBadHousingChartSummary = ({
@@ -17,13 +18,21 @@ export const SimulationDemographicBadHousingChartSummary = ({
   const { prepeakTotalStock } = epci ?? {}
   const badHousingValue = epci && prepeakTotalStock ? prepeakTotalStock : totalStock
   const demographyValue = totalFlux - badHousingValue
-  const demographyPercent = (demographyValue / totalFlux) * 100
-  const badHousingPercent = (badHousingValue / totalFlux) * 100
+
+  // Use only positive values for chart proportions
+  const demographyForChart = Math.max(0, demographyValue)
+  const badHousingForChart = Math.max(0, badHousingValue)
+  const totalForChart = demographyForChart + badHousingForChart
+
+  const demographyPercent = totalForChart > 0 ? (demographyForChart / totalForChart) * 100 : 0
+  const badHousingPercent = totalForChart > 0 ? (badHousingForChart / totalForChart) * 100 : 0
+  const hasBothBars = demographyPercent > 0 && badHousingPercent > 0
+
   return (
     <div className={styles.barContainer}>
       <div className={styles.barWrapper}>
-        <div className={styles.barDemography} style={{ width: `${demographyPercent}%` }} />
-        <div className={styles.barBadHousing} style={{ width: `${badHousingPercent}%` }} />
+        <div className={classNames(styles.barDemography, { 'fr-mr-2v': hasBothBars })} style={{ width: `${demographyPercent}%` }} />
+        <div className={classNames(styles.barBadHousing, { 'fr-ml-2v': hasBothBars })} style={{ width: `${badHousingPercent}%` }} />
       </div>
     </div>
   )

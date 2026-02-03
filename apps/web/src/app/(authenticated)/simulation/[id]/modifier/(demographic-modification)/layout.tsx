@@ -1,4 +1,4 @@
-import { fr } from '@codegouvfr/react-dsfr'
+import { AuthenticatedBreadcrumb } from '~/components/breadcrumbs/authenticated-breadcrumb'
 import { DemographicSettingsSimulationStepper } from '~/components/simulations/settings/demographic-settings-simulation-stepper'
 import { SimulationSettingsFormContextWrapper } from '~/components/simulations/settings/modification/simulation-settings-form-context-wrapper'
 import UpdateDemographicSettingsSimulationSideMenu from '~/components/simulations/settings/modification/update-demographic-settings-simulation-side-menu'
@@ -14,21 +14,24 @@ export default async function ModifySimulationLayout({ children, params }: Simul
   const epcis = simulation.scenario.epciScenarios.map((e) => e.epciCode)
 
   return (
-    <SimulationSettingsFormContextWrapper>
-      <SimulationFormRatesProviderContextWrapper epcis={epcis}>
-        <div className="fr-container">
+    <div className="fr-container">
+      <SimulationSettingsFormContextWrapper>
+        <SimulationFormRatesProviderContextWrapper epcis={epcis}>
           <div className="fr-flex fr-flex-gap-12v">
-            <UpdateDemographicSettingsSimulationSideMenu id={id} />
+            <nav className="fr-col-md-3">
+              <AuthenticatedBreadcrumb />
+              <UpdateDemographicSettingsSimulationSideMenu id={id} />
+            </nav>
 
-            <div className={fr.cx('fr-col-md-9')} style={{ background: fr.colors.decisions.background.alt.blueFrance.default }}>
-              <div className={fr.cx('fr-container')}>
+            <div className="fr-col-md-9">
+              <main className="fr-container">
                 <DemographicSettingsSimulationStepper />
                 {children}
-              </div>
+              </main>
             </div>
           </div>
-        </div>
-      </SimulationFormRatesProviderContextWrapper>
-    </SimulationSettingsFormContextWrapper>
+        </SimulationFormRatesProviderContextWrapper>
+      </SimulationSettingsFormContextWrapper>
+    </div>
   )
 }

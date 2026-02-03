@@ -6,15 +6,21 @@ import { ModifyAllSecondaryAccommodationRateInput } from '~/components/simulatio
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 import { ModifyAggregatedSecondaryParcsComparisonChart } from './modify-aggregated-secondary-parc-comparison-chart'
 
-export const ModifyAllEpcisSecondaryRatesView: FC = () => {
+interface ModifyAllEpcisSecondaryRatesViewProps {
+  epcis: Array<{ code: string; name: string }>
+}
+
+export const ModifyAllEpcisSecondaryRatesView: FC<ModifyAllEpcisSecondaryRatesViewProps> = ({ epcis }) => {
   const { simulationSettings } = useSimulationSettings()
   const epciIds = Object.keys(simulationSettings.epciScenarios)
   const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
 
-  // Calculate average secondary accommodation rate across all EPCIs
+  // Calculate weighted average secondary accommodation rate across all EPCIs
+  const totalParc = originalRatesData ? epciIds.reduce((sum, epciId) => sum + (originalRatesData[epciId]?.urbanRenewal || 0), 0) : 0
   const averageTxRS =
-    originalRatesData && epciIds.length > 0
-      ? epciIds.reduce((sum, epciId) => sum + (originalRatesData[epciId]?.txRs || 0), 0) / epciIds.length
+    originalRatesData && totalParc > 0
+      ? epciIds.reduce((sum, epciId) => sum + (originalRatesData[epciId]?.txRs || 0) * (originalRatesData[epciId]?.urbanRenewal || 0), 0) /
+        totalParc
       : 0
 
   return (
@@ -24,7 +30,7 @@ export const ModifyAllEpcisSecondaryRatesView: FC = () => {
           Le taux moyen observé sur l'ensemble du territoire s'élève à <strong>{(averageTxRS * 100).toFixed(2)} %</strong>.
         </span>
         <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
-          <ModifyAllSecondaryAccommodationRateInput />
+          <ModifyAllSecondaryAccommodationRateInput epcis={epcis} />
           <ModifyAggregatedSecondaryParcsComparisonChart />
         </div>
       </div>
