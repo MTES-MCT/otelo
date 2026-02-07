@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
+import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth'
+import { auth } from '~/auth/better-auth'
 import { BassinModule } from '~/bassin/bassin.module'
-import { AuthenticationGuard } from '~/common/guards/authentication.guard'
 import { AuthorizationGuard } from '~/common/guards/authorization.guard'
 import envRessources from '~/config/environment'
 import { CronModule } from '~/cron/cron.module'
+import { PrismaModule } from '~/db/prisma.module'
 import { ExportExcelModule } from '~/export-excel/export-excel.module'
 import { ResultsModule } from '~/results/results.module'
 import { AccommodationRatesModule } from './accommodation-rates/accommodation-rates.module'
@@ -13,7 +15,6 @@ import { AdminModule } from './admin/admin.module'
 import { AuthModule } from './auth/auth.module'
 import { BadQualityModule } from './bad-quality/bad-quality.module'
 import { CalculationModule } from './calculation/calculation.module'
-import { EmailVerificationModule } from './common/exceptions/email-verification/email-verification.module'
 import { DataVisualisationModule } from './data-visualisation/data-visualisation.module'
 import { DemographicEvolutionModule } from './demographic-evolution/demographic-evolution.module'
 import { DemographicEvolutionCustomModule } from './demographic-evolution-custom/demographic-evolution-custom.module'
@@ -45,6 +46,9 @@ import { VacancyModule } from './vacancy/vacancy.module'
       isGlobal: true,
       load: [envRessources],
     }),
+    // Better Auth module - provides global AuthGuard with @AllowAnonymous() and @OptionalAuth() decorators
+    BetterAuthModule.forRoot({ auth }),
+    PrismaModule,
     ScenariosModule,
     SessionsModule,
     UsersModule,
@@ -72,19 +76,14 @@ import { VacancyModule } from './vacancy/vacancy.module'
     CronModule,
     AdminModule,
     StatisticsModule,
-    EmailVerificationModule,
     ExportExcelModule,
     ExportPowerpointModule,
     SitadelModule,
     HouseholdSizesModule,
   ],
   providers: [
-    AuthenticationGuard,
+    // AuthorizationGuard for role-based access control
     AuthorizationGuard,
-    {
-      provide: APP_GUARD,
-      useExisting: AuthenticationGuard,
-    },
     {
       provide: APP_GUARD,
       useExisting: AuthorizationGuard,

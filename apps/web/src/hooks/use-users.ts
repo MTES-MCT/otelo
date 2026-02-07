@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
+import { useSession } from '~/lib/auth/client'
 import { TUser } from '~/schemas/user'
-import { TSession } from '~/types/next-auth'
 
 export interface UsersResponse {
   userCount: number
@@ -25,7 +24,7 @@ export const useUsers = () => {
   }
 
   const { data, isLoading } = useQuery({
-    enabled: !!session && (session as TSession).user.role === 'ADMIN',
+    enabled: !!session && session.user.role === 'ADMIN',
     queryFn: fetchUsers,
     queryKey: ['users'],
   })

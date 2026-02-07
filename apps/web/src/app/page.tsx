@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { getSession } from '~/lib/auth/server'
+
+export const dynamic = 'force-dynamic'
 
 export default async function Home() {
-  const session = await getServerSession(authOptions)
-  if (!session || session.error) {
+  const session = await getSession()
+  if (!session) {
     redirect('/accueil')
   } else {
     redirect('/tableaux-de-bord')

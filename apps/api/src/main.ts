@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { MainModule } from '~/main.module'
 
 const bootstrap = async () => {
-  const app = await NestFactory.create(MainModule)
+  const app = await NestFactory.create(MainModule, { bodyParser: false })
   const globalPrefix = 'api'
 
   const config = new DocumentBuilder()
@@ -17,6 +17,11 @@ const bootstrap = async () => {
   const documentFactory = () => SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('swagger', app, documentFactory, {
     useGlobalPrefix: true,
+  })
+
+  app.enableCors({
+    origin: process.env.CLIENT_BASE_URL || 'http://localhost:3000',
+    credentials: true,
   })
 
   app.setGlobalPrefix(globalPrefix)

@@ -1,23 +1,23 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'
-import { TCreateUser } from '~/schemas/users/create-user'
 import { TUpdateUserType } from '~/schemas/users/update-user'
 import { TUser, TUserList } from '~/schemas/users/user'
 
 const fieldsWithoutPassword = {
-  email: true,
-  firstname: true,
   id: true,
-  lastLoginAt: true,
-  lastname: true,
+  email: true,
+  name: true,
+  image: true,
+  emailVerified: true,
   createdAt: true,
   updatedAt: true,
-  emailVerified: true,
-  provider: true,
+  firstname: true,
+  lastname: true,
   role: true,
-  sub: true,
+  lastLoginAt: true,
   hasAccess: true,
+  engaged: true,
   type: true,
 } satisfies Prisma.UserSelect
 
@@ -101,14 +101,14 @@ export class UsersService {
     }
   }
 
-  async findByEmail(email: string, select?: Prisma.UserSelect): Promise<TUser | null> {
+  async findByEmail(email: string): Promise<TUser | null> {
     return this.prisma.user.findUnique({
       where: { email },
-      select: { ...fieldsWithoutPassword, ...select },
+      select: fieldsWithoutPassword,
     })
   }
 
-  async update(id: string, data: Partial<TUser>): Promise<TUser> {
+  async update(id: string, data: Prisma.UserUpdateInput): Promise<TUser> {
     return this.prisma.user.update({
       data,
       select: fieldsWithoutPassword,
@@ -116,18 +116,18 @@ export class UsersService {
     })
   }
 
-  async create(user: TCreateUser): Promise<TUser> {
+  async create(user: Prisma.UserCreateInput): Promise<TUser> {
     return this.prisma.user.create({
       data: user,
       select: fieldsWithoutPassword,
     })
   }
 
-  async getByToken(accessToken: string): Promise<TUser> {
+  async getByToken(sessionToken: string): Promise<TUser> {
     return this.prisma.user.findFirstOrThrow({
       select: fieldsWithoutPassword,
       where: {
-        sessions: { some: { accessToken } },
+        sessions: { some: { token: sessionToken } },
       },
     })
   }

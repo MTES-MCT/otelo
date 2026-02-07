@@ -1,16 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { fromNodeHeaders } from 'better-auth/node'
 import { Request } from 'express'
 import { AuthService } from '~/auth/auth.service'
+import { auth } from '~/auth/better-auth'
 import { ACCESS_CONTROL_KEY, TModelAccess } from '~/common/decorators/control-access.decorator'
-import { IS_PUBLIC_KEY } from '~/common/decorators/public.decorator'
 import { Role } from '~/generated/prisma/enums'
 import { TUser } from '~/schemas/users/user'
-
-interface RequestWithImpersonation extends Request {
-  user: TUser
-  impersonator?: TUser
-}
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
@@ -19,37 +15,44 @@ export class AuthorizationGuard implements CanActivate {
     private readonly authService: AuthService,
   ) {}
 
-  canActivate(context: ExecutionContext): Promise<boolean> {
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()])) {
-      return Promise.resolve(true)
-    }
-    const request = context.switchToHttp().getRequest<RequestWithImpersonation>()
-    const user = request.user
-    const impersonator = request.impersonator
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<Request>()
 
-    // usurpation mode, we need to rely on the impersonator (which is ADMIN)
-    const effectiveUser = impersonator || user
-    if (effectiveUser.role === Role.ADMIN) {
-      return Promise.resolve(true)
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(request.headers),
+    })
+    const user = session?.user
+    const modelAccess = this.reflector.getAllAndOverride<TModelAccess>(ACCESS_CONTROL_KEY, [context.getHandler(), context.getClass()])
+
+    if (!user) {
+      if (!modelAccess) {
+        return true
+      }
+      return false
+    }
+
+    const isImpersonating = session?.session?.impersonatedBy
+
+    if (isImpersonating || user.role === Role.ADMIN) {
+      return true
     }
 
     if (!user.hasAccess) {
-      return Promise.resolve(false)
+      return false
     }
 
-    const modelAccess = this.reflector.getAllAndOverride<TModelAccess>(ACCESS_CONTROL_KEY, [context.getHandler(), context.getClass()])
     if (!modelAccess) {
-      return Promise.resolve(false)
+      return true
     }
 
-    if (!this.authService.hasRole(effectiveUser, modelAccess.roles)) {
-      return Promise.resolve(false)
+    if (!this.authService.hasRole(user as unknown as TUser, modelAccess.roles)) {
+      return false
     }
 
     if (modelAccess.entity) {
-      return this.authService.canAccessEntity(modelAccess.entity, modelAccess.paramName || '', user, request)
+      return this.authService.canAccessEntity(modelAccess.entity, modelAccess.paramName || '', user as unknown as TUser, request)
     }
 
-    return Promise.resolve(true)
+    return true
   }
 }

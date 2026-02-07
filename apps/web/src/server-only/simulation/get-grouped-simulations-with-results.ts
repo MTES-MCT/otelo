@@ -1,20 +1,15 @@
 import { notFound } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 import { TGroupedSimulationWithResults } from '~/schemas/simulation'
 
 export const getGroupedSimulationWithResults = async (id: string) => {
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
-  if (!session?.accessToken) {
+  if (!session) {
     throw new Error('Unauthorized')
   }
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/simulations/${id}/results`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
+  const res = await authFetch(`/simulations/${id}/results`, {
     cache: 'no-store',
   })
 

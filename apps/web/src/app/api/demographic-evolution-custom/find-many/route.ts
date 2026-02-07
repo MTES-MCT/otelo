@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession()
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,11 +18,8 @@ export async function GET(request: NextRequest) {
     ids.forEach((id) => params.append('ids', id))
     const queryString = params.toString()
 
-    const response = await fetch(`${process.env.NEXT_OTELO_API_URL}/demographic-evolution-custom/find-many?${queryString}`, {
+    const response = await authFetch(`/demographic-evolution-custom/find-many?${queryString}`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${session.accessToken}`,
-      },
     })
 
     const data = await response.json()

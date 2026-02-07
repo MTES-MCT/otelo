@@ -11,11 +11,10 @@ import { TResetPassword, ZResetPassword } from '~/schemas/password'
 
 interface ResetPasswordFormProps {
   token: string | undefined
-  tokenState: 'valid' | 'invalid_token' | 'missing_token'
 }
 
-export function ResetPasswordForm({ token, tokenState }: ResetPasswordFormProps) {
-  const { mutateAsync, isPending } = useResetPassword()
+export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+  const { resetPassword, isPending } = useResetPassword()
 
   const {
     register,
@@ -29,23 +28,15 @@ export function ResetPasswordForm({ token, tokenState }: ResetPasswordFormProps)
   })
 
   const onSubmit = async (data: TResetPassword) => {
-    try {
-      await mutateAsync(data)
-    } catch (error) {
-      console.error('Error resetting password', error)
-    }
+    await resetPassword({ newPassword: data.newPassword, token: data.token })
   }
 
-  if (tokenState !== 'valid') {
+  if (!token) {
     return (
       <div className="fr-card fr-p-6w">
         <div className="fr-alert fr-alert--error fr-mb-4w">
           <h3 className="fr-alert__title">Lien invalide</h3>
-          <p>
-            {tokenState === 'missing_token'
-              ? 'Token manquant. Veuillez utiliser le lien fourni dans votre email.'
-              : 'Le lien de réinitialisation est invalide ou a expiré.'}
-          </p>
+          <p>Token manquant. Veuillez utiliser le lien fourni dans votre email.</p>
         </div>
         <div className="fr-flex fr-justify-content-center">
           <Link href="/mot-de-passe-oublie">

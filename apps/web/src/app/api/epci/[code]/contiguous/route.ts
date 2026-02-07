@@ -1,22 +1,16 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 import type { CodeRouteParams } from '~/types/simulation-page-props'
 
 export async function GET(_: Request, { params }: CodeRouteParams) {
   const { code } = await params
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
-  if (!session?.accessToken) {
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/epcis/${code}/contiguous`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  const res = await authFetch(`/epcis/${code}/contiguous`)
 
   if (!res.ok) {
     return NextResponse.json({ error: 'Failed to fetch contiguous epcis' }, { status: res.status })

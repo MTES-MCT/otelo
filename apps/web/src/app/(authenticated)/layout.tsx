@@ -1,12 +1,18 @@
+import { redirect } from 'next/navigation'
 import LayoutWrapper from '~/app/(authenticated)/layout-wrapper'
-import { Signout } from '~/app/(authenticated)/signout'
 import { UserTypeSelectionModal } from '~/components/auth/user-type-selection-modal'
 import { ImpersonationBanner } from '~/components/impersonation-banner'
+import { getSession } from '~/lib/auth/server'
 
-export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+  const session = await getSession()
+
+  if (session && !session.user.hasAccess && session.user.role !== 'ADMIN') {
+    redirect('/unauthorized')
+  }
+
   return (
     <>
-      <Signout />
       <ImpersonationBanner />
       <LayoutWrapper>
         {children}

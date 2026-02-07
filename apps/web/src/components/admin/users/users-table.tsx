@@ -20,7 +20,7 @@ export const UsersTable: FC = () => {
   const { data: usersSearchResponse } = useSearchUsers()
   const { mutate: updateUserAccess, isPending } = useUpdateUserAccess()
   const { mutate: deleteUser } = useDeleteUser()
-  const { mutateAsync: startImpersonation } = useStartImpersonation()
+  const { startImpersonation } = useStartImpersonation()
   const [searchQuery] = useQueryState('q')
 
   const headers = [

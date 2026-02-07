@@ -1,21 +1,27 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
 import { TerritoiresVoisinsPage } from '~/components/territoires-voisins/territoires-voisins-page'
-import { authOptions } from '~/lib/auth/auth.config'
-import { TSession } from '~/types/next-auth'
+import { getSession } from '~/lib/auth/server'
 
 export const metadata: Metadata = {
   title: 'Territoires voisins - Otelo',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function TerritoiresVoisins() {
-  const session = (await getServerSession(authOptions)) as TSession
+  const session = await getSession()
+  const cookieStore = await cookies()
+
+  if (!session) {
+    redirect('/connexion')
+  }
 
   if (session.user.role !== 'ADMIN') {
-    const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/epci-neighbors/access-check`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/epci-neighbors/access-check`, {
       headers: {
-        Authorization: `Bearer ${session.accessToken}`,
+        cookie: cookieStore.toString(),
         'Content-Type': 'application/json',
       },
     })

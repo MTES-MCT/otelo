@@ -4,14 +4,13 @@ import { Button } from '@codegouvfr/react-dsfr/Button'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
 import { Select } from '@codegouvfr/react-dsfr/Select'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { usePathname } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useUpdateUserType } from '~/hooks/use-update-user-type'
+import { useSession } from '~/lib/auth/client'
 import { TUpdateUserType, UserType, ZUpdateUserType } from '~/schemas/user'
-import { TSession } from '~/types/next-auth'
 
 const USER_TYPE_OPTIONS = [
   { label: 'DDT', value: UserType.DDT },
@@ -24,13 +23,14 @@ const USER_TYPE_OPTIONS = [
 
 const UserTypeModal = createModal({
   id: 'user-type-selection-modal',
-  isOpenedByDefault: true,
+  isOpenedByDefault: false,
 })
 
 export function UserTypeSelectionModal() {
-  const { data: session, update } = useSession() as unknown as { data: TSession; update: () => Promise<unknown> }
+  const { data: session } = useSession()
   const { mutateAsync, isPending } = useUpdateUserType()
-  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const shouldSelectType = searchParams.get('selectType') !== null
 
   const form = useForm<TUpdateUserType>({
     resolver: zodResolver(ZUpdateUserType),
@@ -43,25 +43,24 @@ export function UserTypeSelectionModal() {
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
       await mutateAsync(data)
-      await update()
-      UserTypeModal.close()
+      // Hard navigate to get a fresh session and clear the selectType param
+      window.location.href = '/tableaux-de-bord'
     } catch {
       toast.error("Erreur lors de la mise à jour du type d'organisation de l'utilisateur")
     }
   })
 
   useEffect(() => {
-    // trick to wait for the modal to be bound and mounted
-    const timer = setTimeout(() => {
-      if (session.user && !session.user.type) {
+    if (shouldSelectType && session?.user) {
+      form.reset({ userId: session.user.id })
+      const timer = setTimeout(() => {
         UserTypeModal.open()
-      }
-    }, 100)
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [shouldSelectType, session])
 
-    return () => clearTimeout(timer)
-  }, [session, pathname])
-
-  if (session.user?.type) {
+  if (!shouldSelectType || !session || session.user.type) {
     return null
   }
 

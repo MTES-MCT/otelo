@@ -2,9 +2,13 @@ packages:
   - 'apps/*'
   - 'packages/*'
 
+onlyBuiltDependencies:
+  - '@thallesp/nestjs-better-auth'
+
 catalog:
   zod: ^4.3.6
   dayjs: ^1.11.19
   typescript: ^5.9.3
   '@biomejs/biome': 2.3.13
   '@types/node': ^25
+

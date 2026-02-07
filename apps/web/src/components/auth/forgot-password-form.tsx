@@ -10,7 +10,7 @@ import { useForgotPassword } from '~/hooks/use-forgot-password'
 import { TForgotPasswordForm, ZForgotPasswordSchema } from '~/schemas/password'
 
 export const ForgotPasswordForm: FC = () => {
-  const { mutateAsync, isPending } = useForgotPassword()
+  const { forgotPassword } = useForgotPassword()
 
   const {
     register,
@@ -21,11 +21,7 @@ export const ForgotPasswordForm: FC = () => {
   })
 
   const onSubmit = async (data: TForgotPasswordForm) => {
-    try {
-      await mutateAsync(data.email)
-    } catch (error) {
-      console.error('Error sending forgot password email', error)
-    }
+    await forgotPassword(data.email)
   }
 
   return (
@@ -54,9 +50,7 @@ export const ForgotPasswordForm: FC = () => {
         />
 
         <div className="fr-flex fr-justify-content-center fr-align-items-center fr-mt-4w">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'Envoi en cours...' : 'Envoyer le lien'}
-          </Button>
+          <Button type="submit">Envoyer le lien</Button>
         </div>
       </form>
     </div>

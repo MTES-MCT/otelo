@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { getCookieHeader, getSession } from '~/lib/auth/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession()
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -31,10 +30,12 @@ export async function POST(request: NextRequest) {
       backendFormData.append('scenarioId', scenarioId)
     }
 
-    const response = await fetch(`${process.env.NEXT_OTELO_API_URL}/demographic-evolution-custom/upload`, {
+    const cookieHeader = await getCookieHeader()
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/demographic-evolution-custom/upload`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${session.accessToken}`,
+        cookie: cookieHeader,
       },
       body: backendFormData,
     })
