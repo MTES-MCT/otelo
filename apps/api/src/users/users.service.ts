@@ -39,13 +39,6 @@ export class UsersService {
     return !!whitelistEntry
   }
 
-  async findById(id: string): Promise<TUser | null> {
-    return this.prisma.user.findUnique({
-      where: { id },
-      select: fieldsWithoutPassword,
-    })
-  }
-
   async list(): Promise<{ userCount: number; users: TUser[] }> {
     const users = await this.prisma.user.findMany()
     const userCount = await this.prisma.user.count()

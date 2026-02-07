@@ -36,43 +36,9 @@ describe('DemographicEvolutionService - Calculation', () => {
     }).compile()
 
     service = module.get<DemographicEvolutionService>(DemographicEvolutionService)
-
-    // biome-ignore lint/suspicious/noExplicitAny: TODO
-    jest.spyOn(service as any, 'applyCoefficient').mockImplementation((value) => value)
   })
 
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
-
-  // describe('calculate', () => {
-  //   it('should calculate demographic evolution correctly for CENTRAL scenario', () => {
-  //     const result = service.calculate();
-  //     expect(result).toBe(500);
-  //   });
-
-  //   it('should apply coefficient correctly', () => {
-  //     mockContext.coefficient = 0.5;
-
-  //     const result = service.calculate();
-  //     expect(result).toBe(500);
-  //   });
-
-  //   it('should handle different scenarios (HAUT scenario)', () => {
-  //     mockContext.simulation.scenario.b2_scenario_omphale = 'HAUT';
-
-  //     const result = service.calculate();
-  //     expect(result).toBe(1000);
-  //   });
-
-  //   it('should handle negative evolution', () => {
-  //     const result = service.calculate();
-  //     expect(result).toBe(-500);
-  //   });
-
-  //   it('should handle zero evolution', () => {
-  //     const result = service.calculate();
-  //     expect(result).toBe(0);
-  //   });
-  // });
 })

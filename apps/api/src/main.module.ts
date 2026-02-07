@@ -32,7 +32,6 @@ import { NoAccommodationModule } from './no-accommodation/no-accommodation.modul
 import { PhysicalInadequationModule } from './physical-inadequation/physical-inadequation.module'
 import { RpInseeModule } from './rp-insee/rp-insee.module'
 import { ScenariosModule } from './scenarios/scenarios.module'
-import { SessionsModule } from './sessions/sessions.module'
 import { SimulationsModule } from './simulations/simulations.module'
 import { SitadelModule } from './sitadel/sitadel.module'
 import { StatisticsModule } from './statistics/statistics.module'
@@ -50,7 +49,6 @@ import { VacancyModule } from './vacancy/vacancy.module'
     BetterAuthModule.forRoot({ auth }),
     PrismaModule,
     ScenariosModule,
-    SessionsModule,
     UsersModule,
     AuthModule,
     EpcisModule,

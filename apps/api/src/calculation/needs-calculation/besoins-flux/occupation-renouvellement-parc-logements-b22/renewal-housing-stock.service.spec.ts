@@ -1,57 +1,20 @@
 import { createMock } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
+import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { CalculationContext } from '~/calculation/needs-calculation/base-calculator'
-import { DemographicEvolutionService } from '~/calculation/needs-calculation/besoins-flux/evolution-demographique-b21/demographic-evolution.service'
 import { RenewalHousingStockService } from '~/calculation/needs-calculation/besoins-flux/occupation-renouvellement-parc-logements-b22/renewal-housing-stock.service'
 import { PrismaService } from '~/db/prisma.service'
-import { VacancyService } from '~/vacancy/vacancy.service'
 
 describe('RenewalHousingStock', () => {
   let service: RenewalHousingStockService
-  let mockCalculationContext: jest.Mocked<CalculationContext>
-  let mockEvolutionDemographiqueService: jest.Mocked<DemographicEvolutionService>
-  const mockPrismaService = createMock<PrismaService>()
-  const mockVacancyService = createMock<VacancyService>()
 
   beforeEach(async () => {
-    mockCalculationContext = createMock<CalculationContext>({
-      simulation: {
-        epci: {
-          code: '01',
-        },
-        scenario: {
-          b2_tx_disparition: 1,
-          b2_tx_restructuration: 1,
-          b2_tx_rs: 1,
-          b2_tx_vacance: 1,
-          b2_tx_vacance_longue: 1,
-        },
-      },
-    })
-
-    mockEvolutionDemographiqueService = createMock<DemographicEvolutionService>({
-      calculate: jest.fn().mockReturnValue(100),
-    })
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RenewalHousingStockService,
-        {
-          provide: PrismaService,
-          useValue: mockPrismaService,
-        },
-        {
-          provide: VacancyService,
-          useValue: mockVacancyService,
-        },
-        {
-          provide: 'CalculationContext',
-          useValue: mockCalculationContext,
-        },
-        {
-          provide: DemographicEvolutionService,
-          useValue: mockEvolutionDemographiqueService,
-        },
+        { provide: PrismaService, useValue: createMock<PrismaService>() },
+        { provide: AccommodationRatesService, useValue: createMock<AccommodationRatesService>() },
+        { provide: 'CalculationContext', useValue: createMock<CalculationContext>() },
       ],
     }).compile()
 

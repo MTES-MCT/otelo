@@ -1,4 +1,6 @@
+import { createMock } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
+import { PrismaService } from '~/db/prisma.service'
 import { BassinService } from './bassin.service'
 
 describe('BassinService', () => {
@@ -6,7 +8,7 @@ describe('BassinService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [BassinService],
+      providers: [BassinService, { provide: PrismaService, useValue: createMock<PrismaService>() }],
     }).compile()
 
     service = module.get<BassinService>(BassinService)
