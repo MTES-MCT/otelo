@@ -5,6 +5,7 @@ import { EmailService } from '~/email/email.service'
 import { EmailController } from './email.controller'
 
 jest.mock('@thallesp/nestjs-better-auth', () => ({
+  // biome-ignore lint/suspicious/noEmptyBlockStatements: allow empty block
   AllowAnonymous: () => () => {},
 }))
 

@@ -14,11 +14,7 @@ describe('HostedService', () => {
     prisma = createMock<PrismaService>()
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        HostedService,
-        { provide: 'CalculationContext', useValue: context },
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [HostedService, { provide: 'CalculationContext', useValue: context }, { provide: PrismaService, useValue: prisma }],
     }).compile()
 
     service = module.get<HostedService>(HostedService)
@@ -93,11 +89,7 @@ describe('HostedService', () => {
     it('should apply coefficient', async () => {
       const coeffContext = makeCalculationContext({ coefficient: 2 })
       const module = await Test.createTestingModule({
-        providers: [
-          HostedService,
-          { provide: 'CalculationContext', useValue: coeffContext },
-          { provide: PrismaService, useValue: prisma },
-        ],
+        providers: [HostedService, { provide: 'CalculationContext', useValue: coeffContext }, { provide: PrismaService, useValue: prisma }],
       }).compile()
       const coeffService = module.get<HostedService>(HostedService)
 

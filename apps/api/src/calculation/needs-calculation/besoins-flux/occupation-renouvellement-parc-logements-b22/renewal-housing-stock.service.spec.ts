@@ -52,7 +52,7 @@ describe('RenewalHousingStockService', () => {
     })
 
     it('should keep rate flat after peak year', async () => {
-      setupAccommodationRates(0.10)
+      setupAccommodationRates(0.1)
       const scenario = makeScenario({
         projection: 2030,
         epciScenarios: [makeEpciScenario({ b2_tx_vacance_courte: 0.03, b2_tx_vacance_longue: 0.03 })],

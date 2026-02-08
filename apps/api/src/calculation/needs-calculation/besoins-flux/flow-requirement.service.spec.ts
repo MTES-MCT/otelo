@@ -1,17 +1,11 @@
 import { createMock } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
-import { CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { DemographicEvolutionService } from '~/calculation/needs-calculation/besoins-flux/evolution-demographique-b21/demographic-evolution.service'
 import { RenewalHousingStockService } from '~/calculation/needs-calculation/besoins-flux/occupation-renouvellement-parc-logements-b22/renewal-housing-stock.service'
 import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
 import { TDemographicEvolution } from '~/schemas/demographic-evolution/demographic-evolution'
 import { StockRequirementsService } from '~/stock-requirements/stock-requirements.service'
-import {
-  makeCalculationContext,
-  makeEpciScenario,
-  makeScenario,
-  makeSimulation,
-} from '../__test-utils__/calculation-test-fixtures'
+import { makeCalculationContext, makeEpciScenario, makeScenario, makeSimulation } from '../__test-utils__/calculation-test-fixtures'
 import { FlowRequirementService } from './flow-requirement.service'
 
 describe('FlowRequirementService', () => {
@@ -358,7 +352,14 @@ describe('FlowRequirementService', () => {
         { year: 2023, value: 80 },
         { year: 2024, value: 60 },
       ]
-      const result = service.calculateParcEvolutionAndNeedsSequential(simulation, initialParc, newHousing, deficitAndHouseholds, '200000001', 2030)
+      const result = service.calculateParcEvolutionAndNeedsSequential(
+        simulation,
+        initialParc,
+        newHousing,
+        deficitAndHouseholds,
+        '200000001',
+        2030,
+      )
       expect(result.parcEvolution[2021]).toBe(10000)
       // Year 2022 loop: replacement = 10000 * (0.001 - 0) = 10, total = 10 + 100 = 110 > 0
       // housingNeeds[year-1=2021] = 110, surplusHousing[year-1=2021] = 0
@@ -381,7 +382,14 @@ describe('FlowRequirementService', () => {
         { year: 2022, value: 0 },
         { year: 2023, value: 0 },
       ]
-      const result = service.calculateParcEvolutionAndNeedsSequential(simulation, initialParc, newHousing, deficitAndHouseholds, '200000001', 2030)
+      const result = service.calculateParcEvolutionAndNeedsSequential(
+        simulation,
+        initialParc,
+        newHousing,
+        deficitAndHouseholds,
+        '200000001',
+        2030,
+      )
       // replacement = 10000 * (0.001 - 0.01) = -90, total = -90 + 0 = -90 < 0 -> surplus
       expect(result.surplusHousing[2021]).toBe(90)
       expect(result.housingNeeds[2021]).toBe(0)

@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 import { of } from 'rxjs'
 import { PrismaService } from '~/db/prisma.service'
-import { DossierNode } from './interfaces/demarches-simplifiees.interface'
 import { CronService } from './cron.service'
+import { DossierNode } from './interfaces/demarches-simplifiees.interface'
 
 describe('CronService', () => {
   let service: CronService
@@ -177,8 +177,8 @@ describe('CronService', () => {
           champs: [],
         },
       ]
-      const acceptedEmails = new Set<string>();
-      (service as any).processDossiersPage(nodes, acceptedEmails)
+      const acceptedEmails = new Set<string>()
+      ;(service as any).processDossiersPage(nodes, acceptedEmails)
       expect(acceptedEmails.has('accepted@test.com')).toBe(true)
       expect(acceptedEmails.has('refused@test.com')).toBe(false)
       expect(acceptedEmails.has('pending@test.com')).toBe(false)
@@ -195,8 +195,8 @@ describe('CronService', () => {
           champs: [],
         },
       ]
-      const acceptedEmails = new Set<string>();
-      (service as any).processDossiersPage(nodes, acceptedEmails)
+      const acceptedEmails = new Set<string>()
+      ;(service as any).processDossiersPage(nodes, acceptedEmails)
       expect(acceptedEmails.has('user@test.com')).toBe(true)
     })
   })

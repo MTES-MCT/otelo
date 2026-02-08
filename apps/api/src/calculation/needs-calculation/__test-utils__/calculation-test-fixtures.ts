@@ -27,7 +27,7 @@ export function makeEpciScenario(overrides?: Partial<TEpciScenario>): TEpciScena
 export function makeScenario(overrides?: Partial<TScenario>): TScenario {
   return {
     id: 'scenario-1',
-    b11_etablissement: ['autreCentre' as any],
+    b11_etablissement: ['autreCentre'],
     b11_fortune: true,
     b11_hotel: true,
     b11_part_etablissement: 50,
@@ -45,7 +45,7 @@ export function makeScenario(overrides?: Partial<TScenario>): TScenario {
     b14_taux_reallocation: 10,
     b15_loc_hors_hlm: true,
     b15_proprietaire: true,
-    b15_surocc: 'Mod' as any,
+    b15_surocc: 'Mod',
     b15_taux_reallocation: 10,
     b17_motif: 'Tout',
     b1_horizon_resorption: 2041,
@@ -53,7 +53,7 @@ export function makeScenario(overrides?: Partial<TScenario>): TScenario {
     epciScenarios: [makeEpciScenario()],
     isConfidential: false,
     projection: 2041,
-    source_b11: 'RP' as any,
+    source_b11: 'RP',
     source_b14: 'RP',
     source_b15: 'RP',
     createdAt: new Date('2024-01-01'),

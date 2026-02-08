@@ -14,11 +14,7 @@ describe('BadQualityService', () => {
     prisma = createMock<PrismaService>()
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        BadQualityService,
-        { provide: 'CalculationContext', useValue: context },
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [BadQualityService, { provide: 'CalculationContext', useValue: context }, { provide: PrismaService, useValue: prisma }],
     }).compile()
 
     service = module.get<BadQualityService>(BadQualityService)
