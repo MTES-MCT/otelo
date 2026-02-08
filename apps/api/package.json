@@ -39,7 +39,7 @@
     "@prisma/adapter-pg": "^6.19.0",
     "@prisma/client": "^6.19.0",
     "@shared": "workspace:*",
-    "@thallesp/nestjs-better-auth": "git+https://github.com/KGALLET/nestjs-better-auth.git",
+    "@thallesp/nestjs-better-auth": "^2.4.0",
     "@types/papaparse": "^5.5.1",
     "argon2": "^0.44.0",
     "better-auth": "^1.4.18",

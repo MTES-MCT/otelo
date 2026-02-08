@@ -69,8 +69,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/shared
       '@thallesp/nestjs-better-auth':
-        specifier: git+https://github.com/KGALLET/nestjs-better-auth.git
-        version: https://codeload.github.com/KGALLET/nestjs-better-auth/tar.gz/3c35f1a48ddf076cb7472d6c79e448d37d359a7a(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(better-auth@1.4.18(@prisma/client@6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3))(next@16.1.5(@babel/core@7.28.6)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(pg@8.17.2)(prisma@6.19.2(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(express@5.2.1)(typescript@5.9.3)
+        specifier: ^2.4.0
+        version: 2.4.0(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(better-auth@1.4.18(@prisma/client@6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3))(next@16.1.5(@babel/core@7.28.6)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(pg@8.17.2)(prisma@6.19.2(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(express@5.2.1)(typescript@5.9.3)
       '@types/papaparse':
         specifier: ^5.5.1
         version: 5.5.2
@@ -1853,9 +1853,8 @@ packages:
     peerDependencies:
       react: ^18 || ^19
 
-  '@thallesp/nestjs-better-auth@https://codeload.github.com/KGALLET/nestjs-better-auth/tar.gz/3c35f1a48ddf076cb7472d6c79e448d37d359a7a':
-    resolution: {tarball: https://codeload.github.com/KGALLET/nestjs-better-auth/tar.gz/3c35f1a48ddf076cb7472d6c79e448d37d359a7a}
-    version: 2.2.5
+  '@thallesp/nestjs-better-auth@2.4.0':
+    resolution: {integrity: sha512-JSmtXEoYFDTMWyLr6mlXiqlDwurGnlnN52Hwe80AHYuiy7dfNJMIz9X5PfvFjSXs5tcklXoyrgTcm6OYDfQIpw==}
     peerDependencies:
       '@nestjs/common': ^11.1.6
       '@nestjs/core': ^11.1.6
@@ -6782,7 +6781,7 @@ snapshots:
       '@tanstack/query-core': 5.90.20
       react: 19.2.4
 
-  '@thallesp/nestjs-better-auth@https://codeload.github.com/KGALLET/nestjs-better-auth/tar.gz/3c35f1a48ddf076cb7472d6c79e448d37d359a7a(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(better-auth@1.4.18(@prisma/client@6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3))(next@16.1.5(@babel/core@7.28.6)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(pg@8.17.2)(prisma@6.19.2(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(express@5.2.1)(typescript@5.9.3)':
+  '@thallesp/nestjs-better-auth@2.4.0(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(better-auth@1.4.18(@prisma/client@6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3))(next@16.1.5(@babel/core@7.28.6)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(pg@8.17.2)(prisma@6.19.2(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(express@5.2.1)(typescript@5.9.3)':
     dependencies:
       '@nestjs/common': 11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.12(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.12)(reflect-metadata@0.2.2)(rxjs@7.8.2)
