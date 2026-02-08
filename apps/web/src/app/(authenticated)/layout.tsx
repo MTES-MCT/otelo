@@ -7,7 +7,11 @@ import { getSession } from '~/lib/auth/server'
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession()
 
-  if (session && !session.user.hasAccess && session.user.role !== 'ADMIN') {
+  if (!session) {
+    redirect('/connexion')
+  }
+
+  if (!session.user.hasAccess && session.user.role !== 'ADMIN') {
     redirect('/unauthorized')
   }
 

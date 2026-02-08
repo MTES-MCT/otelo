@@ -45,6 +45,7 @@ export const QuickAccessItems: FC = () => {
                     fetchOptions: {
                       onSuccess: () => {
                         router.push('/accueil')
+                        router.refresh()
                       },
                     },
                   })
