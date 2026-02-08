@@ -1,108 +1,138 @@
-import { createMock } from '@golevelup/ts-jest'
+import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
-import { CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { PrismaService } from '~/db/prisma.service'
-import { TScenario } from '~/schemas/scenarios/scenario'
+import { makeCalculationContext, makeScenario, makeSimulation } from '../../__test-utils__/calculation-test-fixtures'
 import { HostedService } from './hosted.service'
 
 describe('HostedService', () => {
   let service: HostedService
-  let calculationContext: CalculationContext
+  let prisma: DeepMocked<PrismaService>
+
+  const context = makeCalculationContext()
 
   beforeEach(async () => {
-    calculationContext = {
-      coefficient: 1,
-      periodProjection: 2024,
-      simulation: {
-        epci: {
-          code: '123456',
-        },
-        scenario: {
-          b12_cohab_interg_subie: 50,
-          b12_heberg_gratuit: false,
-          b12_heberg_particulier: false,
-          b12_heberg_temporaire: false,
-        } as TScenario,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        id: '123456',
-        epcis: [],
-      },
-    } as CalculationContext
+    prisma = createMock<PrismaService>()
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HostedService,
-        {
-          provide: 'CalculationContext',
-          useValue: calculationContext,
-        },
-        {
-          provide: PrismaService,
-          useValue: createMock<PrismaService>(),
-        },
+        { provide: 'CalculationContext', useValue: context },
+        { provide: PrismaService, useValue: prisma },
       ],
     }).compile()
 
     service = module.get<HostedService>(HostedService)
-    // biome-ignore lint/suspicious/noExplicitAny: TODO
-    jest.spyOn(service as any, 'applyCoefficient').mockImplementation((value) => value)
   })
 
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
 
-  // describe('calculate', () => {
-  //   const mockData: TData = {
-  //     b12: {
-  //       cohab_interg: {
-  //         filocom: 100,
-  //       },
-  //       cohab_hors_interg: {
-  //         sne: {
-  //           particulier: 100,
-  //           gratuit: 100,
-  //           temp: 100,
-  //         },
-  //       },
-  //     },
-  //   } as TData;
+  describe('calculateByEpci', () => {
+    const setupMocks = () => {
+      prisma.hostedFilocom.findFirstOrThrow.mockResolvedValue({ value: 1000 } as any)
+      prisma.hostedSne.findFirstOrThrow.mockResolvedValue({ particular: 50, temporary: 30 } as any)
+    }
 
-  //   it('should calculate with only cohab_interg_subie enabled', () => {
-  //     calculationContext.simulation.scenario = {
-  //       b12_cohab_interg_subie: 50,
-  //       b12_heberg_particulier: false,
-  //       b12_heberg_gratuit: false,
-  //       b12_heberg_temporaire: false,
-  //     } as TScenario;
+    it('should calculate with cohab_interg_subie percentage applied to filocom', async () => {
+      setupMocks()
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          b12_cohab_interg_subie: 40,
+          b12_heberg_particulier: false,
+          b12_heberg_temporaire: false,
+        }),
+      })
+      const result = await service.calculateByEpci(simulation, '200000001')
+      // (40/100) * 1000 = 400
+      expect(result).toBe(400)
+    })
 
-  //     const result = service.calculate();
-  //     expect(result).toBe(50);
-  //   });
+    it('should add particular when b12_heberg_particulier is true', async () => {
+      setupMocks()
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          b12_cohab_interg_subie: 40,
+          b12_heberg_particulier: true,
+          b12_heberg_temporaire: false,
+        }),
+      })
+      const result = await service.calculateByEpci(simulation, '200000001')
+      // 400 + 50 = 450
+      expect(result).toBe(450)
+    })
 
-  //   it('should calculate with all options enabled', () => {
-  //     calculationContext.simulation.scenario = {
-  //       b12_cohab_interg_subie: 100,
-  //       b12_heberg_particulier: true,
-  //       b12_heberg_gratuit: true,
-  //       b12_heberg_temporaire: true,
-  //     } as TScenario;
+    it('should add temporary when b12_heberg_temporaire is true', async () => {
+      setupMocks()
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          b12_cohab_interg_subie: 40,
+          b12_heberg_particulier: false,
+          b12_heberg_temporaire: true,
+        }),
+      })
+      const result = await service.calculateByEpci(simulation, '200000001')
+      // 400 + 30 = 430
+      expect(result).toBe(430)
+    })
 
-  //     const result = service.calculate();
-  //     expect(result).toBe(400);
-  //   });
+    it('should add both when both flags enabled', async () => {
+      setupMocks()
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          b12_cohab_interg_subie: 50,
+          b12_heberg_particulier: true,
+          b12_heberg_temporaire: true,
+        }),
+      })
+      const result = await service.calculateByEpci(simulation, '200000001')
+      // (50/100)*1000 + 50 + 30 = 580
+      expect(result).toBe(580)
+    })
 
-  //   it('should calculate with partial options enabled', () => {
-  //     calculationContext.simulation.scenario = {
-  //       b12_cohab_interg_subie: 50,
-  //       b12_heberg_particulier: true,
-  //       b12_heberg_gratuit: false,
-  //       b12_heberg_temporaire: true,
-  //     } as TScenario;
+    it('should apply coefficient', async () => {
+      const coeffContext = makeCalculationContext({ coefficient: 2 })
+      const module = await Test.createTestingModule({
+        providers: [
+          HostedService,
+          { provide: 'CalculationContext', useValue: coeffContext },
+          { provide: PrismaService, useValue: prisma },
+        ],
+      }).compile()
+      const coeffService = module.get<HostedService>(HostedService)
 
-  //     const result = service.calculate();
-  //     expect(result).toBe(250);
-  //   });
-  // });
+      setupMocks()
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          b12_cohab_interg_subie: 50,
+          b12_heberg_particulier: false,
+          b12_heberg_temporaire: false,
+        }),
+      })
+      const result = await coeffService.calculateByEpci(simulation, '200000001')
+      // (50/100)*1000 = 500 * 2 = 1000
+      expect(result).toBe(1000)
+    })
+  })
+
+  describe('calculate', () => {
+    it('should aggregate results across epcis and compute totals', async () => {
+      prisma.hostedFilocom.findFirstOrThrow.mockResolvedValue({ value: 1000 } as any)
+      prisma.hostedSne.findFirstOrThrow.mockResolvedValue({ particular: 0, temporary: 0 } as any)
+
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          b12_cohab_interg_subie: 50,
+          b12_heberg_particulier: false,
+          b12_heberg_temporaire: false,
+          projection: 2041,
+          b1_horizon_resorption: 2041,
+        }),
+      })
+      const result = await service.calculate(simulation)
+      expect(result.total).toBe(500)
+      expect(result.epcis).toHaveLength(1)
+      expect(result.epcis[0].value).toBe(500)
+    })
+  })
 })

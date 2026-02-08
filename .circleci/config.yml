@@ -28,6 +28,9 @@ workflows:
       - lint:
           requires:
             - prepare_workspace_dependencies
+      - test_api:
+          requires:
+            - prepare_workspace_dependencies
       - build_api:
           requires:
             - prepare_workspace_dependencies
@@ -60,6 +63,19 @@ jobs:
       - run:
           name: 'Lint'
           command: pnpm lint
+
+  test_api:
+    executor: node
+    steps:
+      - checkout
+      - install_dependencies
+      - prisma_generate
+      - run:
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: 'Test API'
+          command: pnpm -F api test
 
   build_api:
     executor: node

@@ -1,20 +1,27 @@
-import { createMock } from '@golevelup/ts-jest'
+import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
-import { CalculationContext } from '~/calculation/needs-calculation/base-calculator'
-import { RenewalHousingStockService } from '~/calculation/needs-calculation/besoins-flux/occupation-renouvellement-parc-logements-b22/renewal-housing-stock.service'
 import { PrismaService } from '~/db/prisma.service'
+import { makeCalculationContext, makeEpciScenario, makeScenario, makeSimulation } from '../../__test-utils__/calculation-test-fixtures'
+import { RenewalHousingStockService } from './renewal-housing-stock.service'
 
-describe('RenewalHousingStock', () => {
+describe('RenewalHousingStockService', () => {
   let service: RenewalHousingStockService
+  let prisma: DeepMocked<PrismaService>
+  let accommodationRatesService: DeepMocked<AccommodationRatesService>
+
+  const context = makeCalculationContext({ baseYear: 2021 })
 
   beforeEach(async () => {
+    prisma = createMock<PrismaService>()
+    accommodationRatesService = createMock<AccommodationRatesService>()
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RenewalHousingStockService,
-        { provide: PrismaService, useValue: createMock<PrismaService>() },
-        { provide: AccommodationRatesService, useValue: createMock<AccommodationRatesService>() },
-        { provide: 'CalculationContext', useValue: createMock<CalculationContext>() },
+        { provide: PrismaService, useValue: prisma },
+        { provide: AccommodationRatesService, useValue: accommodationRatesService },
+        { provide: 'CalculationContext', useValue: context },
       ],
     }).compile()
 
@@ -25,128 +32,111 @@ describe('RenewalHousingStock', () => {
     expect(service).toBeDefined()
   })
 
-  // describe('calculate', () => {
-  //   it('should calculate the difference between potential demand and b21', () => {
-  //     const result = service.calculate();
-  //     expect(mockEvolutionDemographiqueService.calculate).toHaveBeenCalled();
-  //     expect(result).toBeDefined();
-  //     expect(typeof result).toBe('number');
-  //   });
-  // });
+  describe('getVacantAccomodationEvolutionByEpciAndYear', () => {
+    const setupAccommodationRates = (vacancyRate = 0.08, shortTermRate = 0.04, longTermRate = 0.04) => {
+      accommodationRatesService.getAccommodationRates.mockResolvedValue({
+        '200000001': { vacancyRate, shortTermVacancyRate: shortTermRate, longTermVacancyRate: longTermRate },
+      } as any)
+    }
 
-  // describe('getPotentielleDemande', () => {
-  //   it('should calculate potential demand based on input parameters', () => {
-  //     const b21 = 100;
-  //     const result = service.getPotentialNeeds(b21);
-  //     expect(result).toBeDefined();
-  //     expect(typeof result).toBe('number');
-  //   });
+    it('should linearly interpolate vacancy rate from base year to peak year', async () => {
+      setupAccommodationRates(0.08)
+      const scenario = makeScenario({
+        projection: 2025,
+        epciScenarios: [makeEpciScenario({ b2_tx_vacance_courte: 0.04, b2_tx_vacance_longue: 0.04 })],
+      })
+      const result = await service.getVacantAccomodationEvolutionByEpciAndYear(scenario, '200000001', 2025)
+      // Default rate = 0.08, target = 0.04+0.04 = 0.08 (same), so no change
+      expect(result[2021]).toBe(0.08)
+      expect(result[2025]).toBeCloseTo(0.08)
+    })
 
-  //   it('should handle zero values correctly', () => {
-  //     const zeroData = {
-  //       b22: {
-  //         evol_parc: {
-  //           filocom: {
-  //             parctot: 0,
-  //             txrp_parctot: 0,
-  //             txlv_parctot: 0,
-  //             txrs_parctot: 0,
-  //             txrest_parctot: 0,
-  //             txdisp_parctot: 0,
-  //           },
-  //         },
-  //       },
-  //     } as TData;
+    it('should keep rate flat after peak year', async () => {
+      setupAccommodationRates(0.10)
+      const scenario = makeScenario({
+        projection: 2030,
+        epciScenarios: [makeEpciScenario({ b2_tx_vacance_courte: 0.03, b2_tx_vacance_longue: 0.03 })],
+      })
+      const result = await service.getVacantAccomodationEvolutionByEpciAndYear(scenario, '200000001', 2025)
+      // After peak year (2025), rate stays flat
+      expect(result[2026]).toBe(result[2025])
+      expect(result[2030]).toBe(result[2025])
+    })
 
-  //     const result = service.getPotentialNeeds(0);
-  //     expect(result).toBeDefined();
-  //     expect(typeof result).toBe('number');
-  //   });
-  // });
+    it('should interpolate to target for short type', async () => {
+      setupAccommodationRates(0.08, 0.05, 0.03)
+      const scenario = makeScenario({
+        projection: 2025,
+        epciScenarios: [makeEpciScenario({ b2_tx_vacance_courte: 0.03, b2_tx_vacance_longue: 0.03 })],
+      })
+      const result = await service.getVacantAccomodationEvolutionByEpciAndYear(scenario, '200000001', 2025, 'short')
+      expect(result[2021]).toBe(0.05)
+      // Linear interpolation toward 0.03
+      expect(result[2025]).toBeCloseTo(0.03)
+    })
 
-  // describe('Region-specific calculations', () => {
-  //   it('should use coefficient 4.0 for regions 01-04', () => {
-  //     mockCalculationContext.simulation.epci.code = '01';
-  //     const result = service.calculate();
-  //     expect(result).toBeDefined();
-  //   });
+    it('should interpolate to target for long type', async () => {
+      setupAccommodationRates(0.08, 0.05, 0.03)
+      const scenario = makeScenario({
+        projection: 2025,
+        epciScenarios: [makeEpciScenario({ b2_tx_vacance_courte: 0.05, b2_tx_vacance_longue: 0.02 })],
+      })
+      const result = await service.getVacantAccomodationEvolutionByEpciAndYear(scenario, '200000001', 2025, 'long')
+      expect(result[2021]).toBe(0.03)
+      expect(result[2025]).toBeCloseTo(0.02)
+    })
 
-  //   it('should use coefficient 6.0 for other regions', () => {
-  //     mockCalculationContext.simulation.epci.code = '05';
-  //     const result = service.calculate();
-  //     expect(result).toBeDefined();
-  //   });
-  // });
+    it('should handle peak year equal to base year', async () => {
+      setupAccommodationRates(0.08)
+      const scenario = makeScenario({
+        projection: 2030,
+        epciScenarios: [makeEpciScenario({ b2_tx_vacance_courte: 0.04, b2_tx_vacance_longue: 0.04 })],
+      })
+      const result = await service.getVacantAccomodationEvolutionByEpciAndYear(scenario, '200000001', 2021)
+      // All years after base should be flat at base rate
+      expect(result[2022]).toBe(result[2021])
+    })
+  })
 
-  // describe('Scenario impact', () => {
-  //   it('should consider scenario parameters in calculations', () => {
-  //     const customScenario = {
-  //       b2_tx_vacance: 2,
-  //       b2_tx_rs: 2,
-  //       b2_tx_restructuration: 2,
-  //       b2_tx_disparition: 2,
-  //     } as unknown as TScenario;
+  describe('getSecondaryResidenceAccomodationEvolutionByEpciAndYear', () => {
+    it('should linearly interpolate secondary residence rate', async () => {
+      prisma.filocomFlux.findFirstOrThrow.mockResolvedValue({ txRsParctot: 0.05, parctot: 10000 } as any)
 
-  //     mockCalculationContext.simulation.scenario = customScenario;
-  //     const result = service.calculate();
-  //     expect(result).toBeDefined();
-  //   });
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          projection: 2025,
+          epciScenarios: [makeEpciScenario({ b2_tx_rs: 0.03 })],
+        }),
+      })
+      const result = await service.getSecondaryResidenceAccomodationEvolutionByEpciAndYear(simulation, '200000001', 2025)
+      expect(result[2021]).toBe(0.05)
+      // Linear interpolation from 0.05 to 0.03 over 4 years
+      expect(result[2025]).toBeCloseTo(0.03)
+    })
 
-  //   it('should handle negative scenario values', () => {
-  //     const negativeScenario = {
-  //       b2_tx_vacance: -1,
-  //       b2_tx_rs: -1,
-  //       b2_tx_restructuration: -1,
-  //       b2_tx_disparition: -1,
-  //     } as TScenario;
+    it('should keep rate flat after peak year', async () => {
+      prisma.filocomFlux.findFirstOrThrow.mockResolvedValue({ txRsParctot: 0.05, parctot: 10000 } as any)
 
-  //     mockCalculationContext.simulation.scenario = negativeScenario;
-  //     const result = service.calculate();
-  //     expect(result).toBeDefined();
-  //   });
-  // });
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          projection: 2030,
+          epciScenarios: [makeEpciScenario({ b2_tx_rs: 0.03 })],
+        }),
+      })
+      const result = await service.getSecondaryResidenceAccomodationEvolutionByEpciAndYear(simulation, '200000001', 2025)
+      expect(result[2026]).toBe(result[2025])
+      expect(result[2030]).toBe(result[2025])
+    })
+  })
 
-  // describe('Edge cases', () => {
-  //   it('should handle maximum values', () => {
-  //     // const maxData = {
-  //     //   b22: {
-  //     //     evol_parc: {
-  //     //       filocom: {
-  //     //         parctot: Number.MAX_SAFE_INTEGER,
-  //     //         txrp_parctot: 1,
-  //     //         txlv_parctot: 0,
-  //     //         txrs_parctot: 0,
-  //     //         txrest_parctot: 0.5,
-  //     //         txdisp_parctot: 0.5,
-  //     //       },
-  //     //     },
-  //     //   },
-  //     // } as TData;
+  describe('getFilocomFlux', () => {
+    it('should query prisma for filocom flux data', async () => {
+      const mockData = { epciCode: '200000001', parctot: 10000, txRsParctot: 0.05 }
+      prisma.filocomFlux.findFirstOrThrow.mockResolvedValue(mockData as any)
 
-  //     const result = service.calculate();
-  //     expect(result).toBeDefined();
-  //     expect(typeof result).toBe('number');
-  //   });
-
-  //   it('should handle decimal values correctly', () => {
-  //     // const decimalData = {
-  //     //   b22: {
-  //     //     evol_parc: {
-  //     //       filocom: {
-  //     //         parctot: 1000.5,
-  //     //         txrp_parctot: 0.923,
-  //     //         txlv_parctot: 0.0456,
-  //     //         txrs_parctot: 0.0314,
-  //     //         txrest_parctot: 0.0234,
-  //     //         txdisp_parctot: 0.0123,
-  //     //       },
-  //     //     },
-  //     //   },
-  //     // } as TData;
-
-  //     const result = service.calculate();
-  //     expect(result).toBeDefined();
-  //     expect(Number.isInteger(result)).toBeTruthy();
-  //   });
-  // });
+      const result = await service.getFilocomFlux('200000001')
+      expect(result).toEqual(mockData)
+      expect(prisma.filocomFlux.findFirstOrThrow).toHaveBeenCalledWith({ where: { epciCode: '200000001' } })
+    })
+  })
 })

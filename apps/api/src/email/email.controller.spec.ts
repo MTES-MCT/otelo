@@ -5,7 +5,7 @@ import { EmailService } from '~/email/email.service'
 import { EmailController } from './email.controller'
 
 jest.mock('@thallesp/nestjs-better-auth', () => ({
-  AllowAnonymous: () => () => Promise.resolve(true),
+  AllowAnonymous: () => () => {},
 }))
 
 describe('EmailController', () => {
