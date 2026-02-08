@@ -1,14 +1,13 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - apps/*
+  - packages/*
+
+catalog:
+  '@biomejs/biome': 2.3.13
+  '@types/node': ^25
+  dayjs: ^1.11.19
+  typescript: ^5.9.3
+  zod: ^4.3.6
 
 onlyBuiltDependencies:
   - '@thallesp/nestjs-better-auth'
-
-catalog:
-  zod: ^4.3.6
-  dayjs: ^1.11.19
-  typescript: ^5.9.3
-  '@biomejs/biome': 2.3.13
-  '@types/node': ^25
-
