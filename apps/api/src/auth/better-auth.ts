@@ -3,7 +3,6 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { admin, genericOAuth } from 'better-auth/plugins'
 import { adminAc, userAc } from 'better-auth/plugins/admin/access'
-import 'dotenv/config'
 import { PrismaClient } from '~/generated/prisma/client'
 
 const adapter = new PrismaPg({
