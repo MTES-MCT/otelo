@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: 'Accueil Otelo',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function AccueilPage() {
   return (
     <>

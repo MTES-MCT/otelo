@@ -1,15 +1,8 @@
 import { createMock } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
 import { PrismaService } from '~/db/prisma.service'
-import { TCreateScenario } from '~/schemas/scenarios/create-scenario'
-import { TScenario } from '~/schemas/scenarios/scenario'
+import { TInitScenario, TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { ScenariosService } from './scenarios.service'
-
-jest.mock('~/schemas/scenarios/scenario', () => ({
-  ZScenario: {
-    parse: jest.fn().mockImplementation((data) => data),
-  },
-}))
 
 describe('ScenariosService', () => {
   let service: ScenariosService
@@ -52,21 +45,29 @@ describe('ScenariosService', () => {
   })
 
   describe('get', () => {
-    it('should return a scenario for a user', async () => {
+    it('should return a scenario with sorted epciScenarios', async () => {
       const mockScenario = {
         id: 'scenario-1',
         name: 'Test Scenario',
-        rules: { someRule: true },
         userId: 'user-1',
+        epciScenarios: [
+          { epciCode: 'EPCI002', baseEpci: false },
+          { epciCode: 'EPCI001', baseEpci: true },
+        ],
+        demographicEvolutionOmphaleCustom: [],
       }
 
       mockPrismaService.scenario.findUniqueOrThrow = jest.fn().mockResolvedValue(mockScenario)
 
-      const result = await service.get('user-1', 'scenario-1')
+      const result = await service.get('scenario-1')
 
-      expect(result).toEqual(mockScenario)
+      expect(result.epciScenarios[0].baseEpci).toBe(true)
       expect(mockPrismaService.scenario.findUniqueOrThrow).toHaveBeenCalledWith({
-        where: { id: 'scenario-1', userId: 'user-1' },
+        include: {
+          epciScenarios: true,
+          demographicEvolutionOmphaleCustom: true,
+        },
+        where: { id: 'scenario-1' },
       })
     })
   })
@@ -92,14 +93,15 @@ describe('ScenariosService', () => {
   describe('create', () => {
     it('should create a scenario', async () => {
       const mockCreateData = {
-        b11_sa: true,
-        b1_horizon_resorption: 1,
-        name: 'New Scenario',
-      } as unknown as TCreateScenario
+        b2_scenario: 'central',
+        projection: 2030,
+        epcis: {
+          EPCI001: { b2_tx_rs: 0.1, b2_tx_vacance: 0.05, baseEpci: true },
+        },
+      } as unknown as TInitScenario
 
       const mockCreatedScenario = {
         id: 'scenario-1',
-        ...mockCreateData,
         userId: 'user-1',
       }
 
@@ -109,10 +111,16 @@ describe('ScenariosService', () => {
 
       expect(result).toEqual(mockCreatedScenario)
       expect(mockPrismaService.scenario.create).toHaveBeenCalledWith({
-        data: {
-          ...mockCreateData,
+        data: expect.objectContaining({
+          b2_scenario: 'central',
+          projection: 2030,
+          epciScenarios: {
+            createMany: {
+              data: [{ epciCode: 'EPCI001', b2_tx_rs: 0.1, b2_tx_vacance: 0.05, baseEpci: true }],
+            },
+          },
           user: { connect: { id: 'user-1' } },
-        },
+        }),
       })
     })
   })
@@ -120,41 +128,25 @@ describe('ScenariosService', () => {
   describe('update', () => {
     it('should update a scenario', async () => {
       const updateData = {
-        name: 'Updated Scenario',
-      } as Partial<TScenario>
+        id: 'scenario-1',
+        b2_scenario: 'haut',
+      } as unknown as TUpdateSimulationDto
 
       const mockUpdatedScenario = {
         id: 'scenario-1',
-        ...updateData,
-        userId: 'user-1',
+        b2_scenario: 'haut',
       }
 
       mockPrismaService.scenario.update = jest.fn().mockResolvedValue(mockUpdatedScenario)
 
-      const result = await service.update('user-1', 'scenario-1', updateData)
+      const result = await service.update('scenario-1', updateData)
 
       expect(result).toEqual(mockUpdatedScenario)
       expect(mockPrismaService.scenario.update).toHaveBeenCalledWith({
-        data: {
-          ...updateData,
-        },
-        where: { id: 'scenario-1', userId: 'user-1' },
-      })
-    })
-
-    it('should handle partial updates', async () => {
-      const partialUpdate = { name: 'Updated Name' } as Partial<TScenario>
-
-      mockPrismaService.scenario.update = jest.fn().mockResolvedValue({ id: 'scenario-1', ...partialUpdate })
-
-      const result = await service.update('user-1', 'scenario-1', partialUpdate)
-
-      expect(result).toBeDefined()
-      expect(mockPrismaService.scenario.update).toHaveBeenCalledWith({
-        data: {
-          ...partialUpdate,
-        },
-        where: { id: 'scenario-1', userId: 'user-1' },
+        data: expect.objectContaining({
+          b2_scenario: 'haut',
+        }),
+        where: { id: 'scenario-1' },
       })
     })
   })

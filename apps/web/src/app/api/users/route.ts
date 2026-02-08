@@ -1,20 +1,14 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
-  if (!session?.accessToken) {
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/users`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  const res = await authFetch('/users')
 
   if (!res.ok) {
     return NextResponse.json({ error: 'Failed to fetch users list' }, { status: res.status })
@@ -26,7 +20,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json()
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/auth/signup`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/api/auth/sign-up/email`, {
     headers: {
       'Content-Type': 'application/json',
     },

@@ -1,28 +1,18 @@
 'use client'
 
 import Button from '@codegouvfr/react-dsfr/Button'
-import { useSession } from 'next-auth/react'
-import { FC, useEffect } from 'react'
-import { handleSignOut } from '~/app/(authenticated)/signout'
+import { useRouter } from 'next/navigation'
+import { FC } from 'react'
 import { Dropdown } from '~/components/common/dropdown'
 import ProfileInitials from '~/components/common/profile-image'
-import { CustomUser } from '~/lib/auth/auth.config'
+import { signOut, useSession } from '~/lib/auth/client'
 
 export const QuickAccessItems: FC = () => {
   const { data: session } = useSession()
-
-  useEffect(() => {
-    if (session?.error) {
-      handleSignOut()
-    }
-  }, [session])
-
-  const getUserDisplayName = (user: CustomUser) => {
-    return `${user.firstname} ${user.lastname}`
-  }
+  const router = useRouter()
 
   if (session) {
-    const user = session.user as CustomUser
+    const user = session.user
     return [
       <Button
         iconId="fr-icon-arrow-right-line"
@@ -34,7 +24,7 @@ export const QuickAccessItems: FC = () => {
       </Button>,
       <div className="fr-border-right fr-height-full" key="border" />,
       <div key="dropdown" className="fr-position-relative">
-        <Dropdown id="user-menu" alignRight control={getUserDisplayName(user)} dropdownControlClassName="fr-mb-0">
+        <Dropdown id="user-menu" alignRight control={`${user.firstname} ${user.lastname}`} dropdownControlClassName="fr-mb-0">
           <ul>
             <div className="fr-flex fr-align-items-center fr-p-2w fr-text--start">
               <ProfileInitials firstName={user.firstname} lastName={user.lastname} size={24} className="fr-mr-3v" />
@@ -46,7 +36,20 @@ export const QuickAccessItems: FC = () => {
               </div>
             </div>
             <li className="fr-border-top">
-              <Button key="logout" iconId="fr-icon-logout-box-r-line" priority="tertiary no outline" onClick={handleSignOut}>
+              <Button
+                key="logout"
+                iconId="fr-icon-logout-box-r-line"
+                priority="tertiary no outline"
+                onClick={() =>
+                  signOut({
+                    fetchOptions: {
+                      onSuccess: () => {
+                        router.push('/accueil')
+                      },
+                    },
+                  })
+                }
+              >
                 Se déconnecter
               </Button>
             </li>

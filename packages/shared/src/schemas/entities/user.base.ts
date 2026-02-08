@@ -5,6 +5,9 @@ import { ZCommonDateFields } from '../common/date-fields'
 export const ZUserBase = ZCommonDateFields.extend({
   id: z.string(),
   email: z.email(),
+  name: z.string(),
+  image: z.string().nullable().optional(),
+  emailVerified: z.boolean(),
   firstname: z.string(),
   lastname: z.string(),
   role: z.enum([Role.ADMIN, Role.USER]),

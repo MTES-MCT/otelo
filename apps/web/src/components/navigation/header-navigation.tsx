@@ -2,14 +2,17 @@
 
 import { MainNavigation, MainNavigationProps } from '@codegouvfr/react-dsfr/MainNavigation'
 import { usePathname } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { FC } from 'react'
 import { useEpciNeighborsAccess } from '~/hooks/use-epci-neighbors-access'
-import { TSession } from '~/types/next-auth'
+import { Session } from '~/lib/auth/server'
 
-export const HeaderNavigation: FC = () => {
+type HeaderNavigationProps = {
+  session: Session | null
+}
+
+export const HeaderNavigation: FC<HeaderNavigationProps> = ({ session }) => {
   const pathname = usePathname()
-  const { data: session } = useSession() as { data: TSession | null }
+
   const { hasAccess: hasEpciNeighborsAccess } = useEpciNeighborsAccess()
 
   const isAdmin = session?.user?.role === 'ADMIN'

@@ -1,14 +1,14 @@
 import { notFound } from 'next/navigation'
-import { getServerSession } from 'next-auth'
 import { UsersTable } from '~/components/admin/users/users-table'
 import { UsersTableHeader } from '~/components/admin/users/users-table-header'
-import { authOptions } from '~/lib/auth/auth.config'
-import { TSession } from '~/types/next-auth'
+import { getSession } from '~/lib/auth/server'
+
+export const dynamic = 'force-dynamic'
 
 export default async function AdminPage() {
-  const session = (await getServerSession(authOptions)) as TSession
+  const session = await getSession()
 
-  if (session.user.role !== 'ADMIN') {
+  if (!session || session.user.role !== 'ADMIN') {
     return notFound()
   }
 

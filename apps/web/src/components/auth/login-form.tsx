@@ -6,13 +6,11 @@ import { ProConnectButton } from '@codegouvfr/react-dsfr/ProConnectButton'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
 import { RedAsterisk } from '~/components/ui/red-asterisk'
-import { useResendVerificationEmail } from '~/hooks/use-resend-verification-email'
-import { proConnectProviderId } from '~/lib/auth/providers/pro-connect'
+import { sendVerificationEmail, signIn } from '~/lib/auth/client'
 
 const loginSchema = z.object({
   email: z.string().email('Adresse email invalide'),
@@ -25,8 +23,6 @@ export const LoginForm: FC = () => {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
-  const { mutateAsync } = useResendVerificationEmail()
-
   const {
     register,
     handleSubmit,
@@ -40,26 +36,38 @@ export const LoginForm: FC = () => {
     setIsLoading(true)
     setAuthError(null)
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn.email({
         email: data.email,
         password: data.password,
-        redirect: false,
-        callbackUrl: '/tableaux-de-bord',
       })
-      if (result?.error) {
-        if (result.error === 'user_has_no_access') {
+
+      const user = result.data?.user as { hasAccess?: boolean; role?: string } | undefined
+      if (user && !user.hasAccess && user.role !== 'ADMIN') {
+        router.push('/unauthorized')
+        return
+      }
+
+      if (result.error) {
+        const errorCode = result.error.code || result.error.message
+        if (errorCode === 'USER_NOT_FOUND') {
           router.push('/unauthorized')
           return
         }
-        setAuthError(result.error)
+        if (errorCode === 'EMAIL_NOT_VERIFIED') {
+          setAuthError('email_not_verified')
+          return
+        }
+        if (errorCode === 'INVALID_PASSWORD' || errorCode === 'INVALID_CREDENTIALS') {
+          setAuthError('invalid_password')
+          return
+        }
+        setAuthError('unknown')
         return
       }
-      if (result?.ok && result.url) {
-        router.push(result.url)
-        return
-      }
-      // Fallback: navigate to home if URL is missing but no error
-      router.push('/tableaux-de-bord')
+
+      // Success - redirect to dashboard (with type selection if needed)
+      const userType = (result.data?.user as { type?: string } | undefined)?.type
+      router.push(userType ? '/tableaux-de-bord' : '/tableaux-de-bord?selectType')
     } catch (error) {
       console.error('Error signing in', error)
       setAuthError('unknown')
@@ -70,28 +78,30 @@ export const LoginForm: FC = () => {
 
   const onProConnectSignIn = async () => {
     try {
-      await signIn(proConnectProviderId, {
-        callbackUrl: '/accueil',
+      await signIn.oauth2({
+        providerId: 'proconnect',
+        callbackURL: '/tableaux-de-bord?selectType',
       })
     } catch (error) {
       console.error('Error signing in with ProConnect', error)
     }
   }
+
   const handleResendMail = async () => {
     const { email } = getValues()
-    await mutateAsync(email)
+    await sendVerificationEmail({ email })
   }
 
   const AUTH_ERRORS = {
     email_not_verified: (
       <>
         <span>
-          Nous vous avons envoyé un e-mail de confirmation. Veuillez cliquer sur le lien qu’il contient pour activer votre compte. Si vous
-          ne l’avez pas reçu, vous pouvez redemander un lien en utilisant le bouton ci-dessous :
+          Nous vous avons envoyé un e-mail de confirmation. Veuillez cliquer sur le lien qu'il contient pour activer votre compte. Si vous
+          ne l'avez pas reçu, vous pouvez redemander un lien en utilisant le bouton ci-dessous :
         </span>
         <br />
         <Button className="fr-mt-2w" type="button" onClick={handleResendMail}>
-          Renvoyer l’e-mail de confirmation
+          Renvoyer l'e-mail de confirmation
         </Button>
       </>
     ),

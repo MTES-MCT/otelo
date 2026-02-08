@@ -1,21 +1,15 @@
 import { TEpci } from '@shared'
 import { notFound } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 import { TSimulationWithRelations } from '~/schemas/simulation'
 
 export const getDashboardList = async () => {
-  const session = await getServerSession(authOptions)
-  if (!session?.accessToken) {
+  const session = await getSession()
+  if (!session) {
     notFound()
   }
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/simulations/dashboard-list`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  const res = await authFetch('/simulations/dashboard-list')
 
   if (!res.ok) {
     const errorText = await res.text()

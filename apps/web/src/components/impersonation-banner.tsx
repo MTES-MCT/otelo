@@ -2,26 +2,24 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import Button from '@codegouvfr/react-dsfr/Button'
-import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { tss } from 'tss-react'
 import { useStopImpersonation } from '~/hooks/use-impersonation'
-import { useImpersonationStatus } from '~/hooks/use-impersonation-status'
+import { useSession } from '~/lib/auth/client'
 
 export const ImpersonationBanner: FC = () => {
-  const router = useRouter()
-  const { data: impersonationStatus } = useImpersonationStatus()
-  const { mutateAsync: stopImpersonation, isPending } = useStopImpersonation()
+  const { data: session } = useSession()
+  const { stopImpersonation, isPending } = useStopImpersonation()
   const { classes } = useStyles()
 
-  if (!impersonationStatus?.isImpersonating || !impersonationStatus?.impersonatedUser) {
+  const isImpersonating = !!session?.session?.impersonatedBy
+  const user = session?.user
+
+  if (!isImpersonating || !user) {
     return null
   }
 
-  const handleStopImpersonation = async () => {
-    await stopImpersonation()
-    router.push('/admin/gestion-des-utilisateurs')
-  }
+  const handleStopImpersonation = () => stopImpersonation()
 
   return (
     <div className={classes.banner}>
@@ -32,9 +30,9 @@ export const ImpersonationBanner: FC = () => {
             <span>
               <strong>Mode usurpation actif</strong> - Vous naviguez en tant que{' '}
               <strong>
-                {impersonationStatus.impersonatedUser.firstname} {impersonationStatus.impersonatedUser.lastname}
+                {user.firstname} {user.lastname}
               </strong>
-              &nbsp; ({impersonationStatus.impersonatedUser.email})
+              &nbsp; ({user.email})
             </span>
           </div>
           <Button size="small" iconId="ri-user-unfollow-line" onClick={handleStopImpersonation} disabled={isPending}>

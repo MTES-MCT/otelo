@@ -1,4 +1,6 @@
+import { createMock } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
+import { PrismaService } from '~/db/prisma.service'
 import { FinancialInadequationService } from './financial-inadequation.service'
 
 describe('FinancialInadequationService', () => {
@@ -6,7 +8,7 @@ describe('FinancialInadequationService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [FinancialInadequationService],
+      providers: [FinancialInadequationService, { provide: PrismaService, useValue: createMock<PrismaService>() }],
     }).compile()
 
     service = module.get<FinancialInadequationService>(FinancialInadequationService)

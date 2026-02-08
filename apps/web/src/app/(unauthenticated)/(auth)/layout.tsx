@@ -1,14 +1,13 @@
 import { fr } from '@codegouvfr/react-dsfr'
 import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
 import { UnauthenticatedBreadcrumb } from '~/components/breadcrumbs/unauthenticated-breadcrumb'
-import { authOptions } from '~/lib/auth/auth.config'
+import { getSession } from '~/lib/auth/server'
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
   // If user is already authenticated, redirect to accueil
-  if (session && !session.error) {
+  if (session) {
     redirect('/accueil')
   }
 

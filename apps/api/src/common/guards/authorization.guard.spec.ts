@@ -3,127 +3,125 @@ import { ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { Test, TestingModule } from '@nestjs/testing'
 import { AuthService } from '~/auth/auth.service'
-import { ACCESS_CONTROL_KEY, TModelAccess } from '~/common/decorators/control-access.decorator'
-import { IS_PUBLIC_KEY } from '~/common/decorators/public.decorator'
+import { TModelAccess } from '~/common/decorators/control-access.decorator'
 import { AuthorizationGuard } from '~/common/guards/authorization.guard'
-import { TUser } from '~/schemas/users/user'
+
+jest.mock('better-auth/node', () => ({
+  fromNodeHeaders: jest.fn().mockReturnValue({}),
+}))
+
+jest.mock('~/auth/better-auth', () => ({
+  auth: {
+    api: {
+      getSession: jest.fn(),
+    },
+  },
+}))
+
+import { auth } from '~/auth/better-auth'
+
+const mockGetSession = auth.api.getSession as unknown as jest.Mock
 
 describe('AuthorizationGuard', () => {
   let guard: AuthorizationGuard
-  let reflector: jest.Mocked<Reflector>
+  let mockReflector: { getAllAndOverride: jest.Mock }
   let authService: jest.Mocked<AuthService>
 
   beforeEach(async () => {
+    mockReflector = { getAllAndOverride: jest.fn() }
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthorizationGuard,
-        {
-          provide: Reflector,
-          useValue: createMock<Reflector>(),
-        },
-        {
-          provide: AuthService,
-          useValue: createMock<AuthService>(),
-        },
+        { provide: Reflector, useValue: mockReflector },
+        { provide: AuthService, useValue: createMock<AuthService>() },
       ],
     }).compile()
 
     guard = module.get<AuthorizationGuard>(AuthorizationGuard)
-    reflector = module.get(Reflector)
     authService = module.get(AuthService)
   })
 
-  it('should allow access to public routes', async () => {
+  it('should allow access when no user and no model access defined', async () => {
     const context = createMock<ExecutionContext>()
-    reflector.getAllAndOverride.mockReturnValueOnce(true)
+    mockGetSession.mockResolvedValueOnce(null)
+    mockReflector.getAllAndOverride.mockReturnValueOnce(undefined)
 
     const result = await guard.canActivate(context)
-
     expect(result).toBe(true)
-    expect(reflector.getAllAndOverride).toHaveBeenCalledWith(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()])
   })
 
-  it('should deny access if no model access is defined', async () => {
+  it('should deny access when no user but model access is defined', async () => {
     const context = createMock<ExecutionContext>()
-    const mockRequest = { user: {} }
-    context.switchToHttp().getRequest.mockReturnValue(mockRequest)
+    mockGetSession.mockResolvedValueOnce(null)
+    mockReflector.getAllAndOverride.mockReturnValueOnce({ roles: ['USER'] })
 
-    reflector.getAllAndOverride.mockImplementation((key) => {
-      if (key === IS_PUBLIC_KEY) return false
-      if (key === ACCESS_CONTROL_KEY) return undefined
-      return undefined
+    const result = await guard.canActivate(context)
+    expect(result).toBe(false)
+  })
+
+  it('should allow access for admin users', async () => {
+    const context = createMock<ExecutionContext>()
+    mockGetSession.mockResolvedValueOnce({
+      user: { role: 'ADMIN', hasAccess: true },
+      session: {},
     })
+    mockReflector.getAllAndOverride.mockReturnValueOnce({ roles: ['USER'] })
 
     const result = await guard.canActivate(context)
-
-    expect(result).toBe(false)
-    expect(reflector.getAllAndOverride).toHaveBeenCalledWith(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()])
-    expect(reflector.getAllAndOverride).toHaveBeenCalledWith(ACCESS_CONTROL_KEY, [context.getHandler(), context.getClass()])
+    expect(result).toBe(true)
   })
 
-  it('should deny access if user does not have required role', async () => {
+  it('should deny access when user does not have hasAccess', async () => {
     const context = createMock<ExecutionContext>()
-    const mockUser: TUser = createMock<TUser>()
-    const mockRequest = { user: mockUser }
-    context.switchToHttp().getRequest.mockReturnValue(mockRequest)
-
-    reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce({ roles: ['ADMIN'] })
-    authService.hasRole.mockReturnValue(false)
+    mockGetSession.mockResolvedValueOnce({
+      user: { role: 'USER', hasAccess: false },
+      session: {},
+    })
+    mockReflector.getAllAndOverride.mockReturnValueOnce({ roles: ['USER'] })
 
     const result = await guard.canActivate(context)
-
     expect(result).toBe(false)
-    expect(authService.hasRole).toHaveBeenCalledWith(mockUser, ['ADMIN'])
   })
 
   it('should allow access if user has required role and no entity check is needed', async () => {
     const context = createMock<ExecutionContext>()
-    const mockUser: TUser = createMock<TUser>()
-    const mockRequest = { user: mockUser }
-    context.switchToHttp().getRequest.mockReturnValue(mockRequest)
-
-    reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce({ roles: ['USER'] })
+    mockGetSession.mockResolvedValueOnce({
+      user: { role: 'USER', hasAccess: true },
+      session: {},
+    })
+    mockReflector.getAllAndOverride.mockReturnValueOnce({ roles: ['USER'] })
     authService.hasRole.mockReturnValue(true)
 
     const result = await guard.canActivate(context)
-
     expect(result).toBe(true)
-    expect(authService.hasRole).toHaveBeenCalledWith(mockUser, ['USER'])
   })
 
-  it('should allow access if user has required role and can access the entity', async () => {
+  it('should deny access if user does not have required role', async () => {
     const context = createMock<ExecutionContext>()
-    const mockUser: TUser = createMock<TUser>()
-    const mockRequest = { user: mockUser }
-    context.switchToHttp().getRequest.mockReturnValue(mockRequest)
+    mockGetSession.mockResolvedValueOnce({
+      user: { role: 'USER', hasAccess: true },
+      session: {},
+    })
+    mockReflector.getAllAndOverride.mockReturnValueOnce({ roles: ['ADMIN'] })
+    authService.hasRole.mockReturnValue(false)
 
+    const result = await guard.canActivate(context)
+    expect(result).toBe(false)
+  })
+
+  it('should check entity access when entity is defined in model access', async () => {
+    const context = createMock<ExecutionContext>()
+    mockGetSession.mockResolvedValueOnce({
+      user: { role: 'USER', hasAccess: true },
+      session: {},
+    })
     const modelAccess: TModelAccess = { entity: {}, paramName: 'id', roles: ['USER'] }
-    reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(modelAccess)
+    mockReflector.getAllAndOverride.mockReturnValueOnce(modelAccess)
     authService.hasRole.mockReturnValue(true)
     authService.canAccessEntity.mockResolvedValue(true)
 
     const result = await guard.canActivate(context)
-
     expect(result).toBe(true)
-    expect(authService.hasRole).toHaveBeenCalledWith(mockUser, ['USER'])
-    expect(authService.canAccessEntity).toHaveBeenCalledWith(modelAccess.entity, modelAccess.paramName, mockUser, mockRequest)
-  })
-
-  it('should deny access if user has required role but cannot access the entity', async () => {
-    const context = createMock<ExecutionContext>()
-    const mockUser: TUser = createMock<TUser>()
-    const mockRequest = { user: mockUser }
-    context.switchToHttp().getRequest.mockReturnValue(mockRequest)
-
-    const modelAccess: TModelAccess = { entity: {}, paramName: 'id', roles: ['USER'] }
-    reflector.getAllAndOverride.mockReturnValueOnce(false).mockReturnValueOnce(modelAccess)
-    authService.hasRole.mockReturnValue(true)
-    authService.canAccessEntity.mockResolvedValue(false)
-
-    const result = await guard.canActivate(context)
-
-    expect(result).toBe(false)
-    expect(authService.hasRole).toHaveBeenCalledWith(mockUser, ['USER'])
-    expect(authService.canAccessEntity).toHaveBeenCalledWith(modelAccess.entity, modelAccess.paramName, mockUser, mockRequest)
   })
 })

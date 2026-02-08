@@ -1,12 +1,12 @@
 import { fr } from '@codegouvfr/react-dsfr'
 import Button from '@codegouvfr/react-dsfr/Button'
 import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
-import { TSession } from '~/types/next-auth'
+import { getSession } from '~/lib/auth/server'
+
+export const dynamic = 'force-dynamic'
 
 export default async function Unauthorized() {
-  const session = (await getServerSession(authOptions)) as TSession
+  const session = await getSession()
   if (session?.user.hasAccess || session?.user.role === 'ADMIN') {
     redirect('/accueil')
   }

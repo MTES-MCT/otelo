@@ -1,30 +1,24 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 import type { CodeRouteParams } from '~/types/simulation-page-props'
 
 export async function GET(request: Request, { params }: CodeRouteParams) {
   const { code } = await params
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
-  if (!session?.accessToken) {
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { searchParams } = new URL(request.url)
   const category = searchParams.get('category')
 
-  const url = new URL(`${process.env.NEXT_OTELO_API_URL}/epci-neighbors/${code}`)
+  let path = `/epci-neighbors/${code}`
   if (category) {
-    url.searchParams.set('category', category)
+    path += `?category=${category}`
   }
 
-  const res = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  const res = await authFetch(path)
 
   if (!res.ok) {
     return NextResponse.json({ error: 'Failed to fetch epci neighbors' }, { status: res.status })
