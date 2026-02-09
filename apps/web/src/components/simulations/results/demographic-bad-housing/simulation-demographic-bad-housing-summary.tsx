@@ -1,6 +1,7 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
 import Link from 'next/link'
+
 import { SimulationDemographicBadHousingChartSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-chart-summary'
 import { SimulationResultPresentationHighlight } from '~/components/simulations/results/simulation-result-presentation-highlight'
 import { formatNumber } from '~/utils/format-numbers'

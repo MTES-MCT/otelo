@@ -161,7 +161,7 @@ export const RPAccommodationEvolutionChart: FC<RPAccommodationEvolutionChart> = 
       <div className={classes.chartsContainer}>
         <div className={classes.chartContainer}>
           <ResponsiveContainer width="100%" height="90%">
-            <LineChart width={500} height={500} margin={{ left: 20, right: 20, bottom: 30 }}>
+            <LineChart width={500} height={500} margin={{ left: 20, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" type="number" scale="linear" domain={['dataMin', 'dataMax']} allowDuplicatedCategory={false}>
                 <Label value={lineChartTitle} offset={10} position="bottom" />
@@ -201,7 +201,7 @@ export const RPAccommodationEvolutionChart: FC<RPAccommodationEvolutionChart> = 
         </div>
         <div className={classes.chartContainer}>
           <ResponsiveContainer width="100%" height="90%">
-            <BarChart width={730} height={600} data={barChartData} margin={{ bottom: 30, left: 20 }}>
+            <BarChart width={730} height={600} data={barChartData} margin={{ bottom: 30, right: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" textAnchor="end" interval={0} tick={{ fontSize: 12 }}>
                 <Label value={barChartTitle} position="bottom" />

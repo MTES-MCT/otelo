@@ -84,7 +84,7 @@ export const UploadDemographicEvolutionCustom = ({ epciCode, scenarioId }: Uploa
   }
 
   return (
-    <div className={fr.cx('fr-mb-3w')}>
+    <div className={fr.cx('fr-mb-3w')} data-chart-download-exclude>
       <input
         ref={fileInputRef}
         type="file"

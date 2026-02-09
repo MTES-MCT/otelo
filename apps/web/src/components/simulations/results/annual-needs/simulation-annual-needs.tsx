@@ -1,4 +1,5 @@
 import { AccommodationContructionEvolutionChart } from '~/components/charts/accommodation-construction-evolution-chart'
+import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import { SimulationAnnualsNeedsDropdownSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs-dropdown-summary'
 import { TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
 
@@ -18,11 +19,13 @@ export const SimulationAnnualsNeedsSummary = ({
   return (
     <div className="fr-background-default--grey shadow">
       <div className="fr-py-8w fr-px-5w">
-        <AccommodationContructionEvolutionChart
-          sitadelResults={sitadelResults}
-          newConstructionsResults={newConstructionsResults}
-          horizon={horizon}
-        />
+        <ChartDownloadWrapper fileName="besoins-annualises">
+          <AccommodationContructionEvolutionChart
+            sitadelResults={sitadelResults}
+            newConstructionsResults={newConstructionsResults}
+            horizon={horizon}
+          />
+        </ChartDownloadWrapper>
       </div>
       <SimulationAnnualsNeedsDropdownSummary horizon={horizon} hasSurplusHousing={hasSurplusHousing} />
     </div>

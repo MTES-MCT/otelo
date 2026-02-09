@@ -2,6 +2,7 @@
 
 import Table from '@codegouvfr/react-dsfr/Table'
 import { parseAsString, useQueryState } from 'nuqs'
+import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import { StockEvolutionChart } from '~/components/charts/stock-evolution-chart'
 import { formatNumber } from '~/utils/format-numbers'
 
@@ -24,7 +25,11 @@ export const SimulationBadHousingDataWrapper = ({
   const [queryState] = useQueryState('mal-logement', parseAsString.withDefault('graphique'))
 
   if (queryState === 'graphique') {
-    return <StockEvolutionChart chartData={chartData} horizon={horizon} />
+    return (
+      <ChartDownloadWrapper fileName="mal-logement">
+        <StockEvolutionChart chartData={chartData} horizon={horizon} />
+      </ChartDownloadWrapper>
+    )
   }
 
   if (queryState === 'tableau') {
