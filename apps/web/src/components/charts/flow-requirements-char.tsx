@@ -177,6 +177,16 @@ export const FlowRequirementsChart: FC<FlowRequirementsChartProps> = ({ results,
 
   const supplyData: DonutDataItem[] = [
     {
+      name: 'Remobilisation de résidences secondaires',
+      value: Math.abs(Math.min(0, secondaryResidenceAccomodationEvolution)),
+      color: getChartColor('remobilisationResidencesSecondaires'),
+      description: (val: string) => (
+        <>
+          La diminution du nombre de résidences secondaires contribuera à la remise sur le marché de <strong>{val} logements</strong>.
+        </>
+      ),
+    },
+    {
       name: 'Remobilisation de logements vacants',
       value: Math.abs(Math.min(0, longTermVacantAccomodation)),
       color: getChartColor('remobilisationVacants'),

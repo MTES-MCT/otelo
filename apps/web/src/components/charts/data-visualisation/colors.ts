@@ -191,6 +191,7 @@ export const chartKeyColors = {
   residencesSecondairesDonut: '#29598F',
   fluiditeDuParc: '#AEB5FF',
   longVacantAccommodations: '#6C87C7',
+  remobilisationResidencesSecondaires: '#2E8B6A',
   remobilisationVacants: '#5ABD88',
   renouvellementUrbain: '#18666B',
   logementsSupplementaires: '#E8E8E8',
