@@ -89,9 +89,17 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
     return result
   }
 
-  calculateAdditionalHousingForReplacements(scenario: TScenario, totalParc: number, epciCode: string) {
+  calculateAdditionalHousingForReplacements(scenario: TScenario, totalParc: number, epciCode: string, otherHousingNeeds: number) {
     const epciScenario = scenario.epciScenarios.find((epci) => epci.epciCode === epciCode)
-    return Math.round(totalParc * (epciScenario!.b2_tx_disparition - epciScenario!.b2_tx_restructuration))
+    const rawReplacement = totalParc * (epciScenario!.b2_tx_disparition - epciScenario!.b2_tx_restructuration)
+
+    if (rawReplacement < 0) {
+      if (otherHousingNeeds > 0) {
+        return Math.round(Math.max(rawReplacement, -otherHousingNeeds))
+      }
+      return 0
+    }
+    return Math.round(rawReplacement)
   }
 
   calculateAccommodationVariationByYear(
@@ -102,11 +110,6 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
   ): Record<number, number> {
     const result: Record<number, number> = {}
     menagesEvolution.forEach(({ year, [omphale]: value }) => {
-      // let cumulativeDeficitReduction = 0
-      // for (let currentYear = 2022; currentYear <= year; currentYear++) {
-      //   cumulativeDeficitReduction += additionalHousingUnitsForDeficitReduction[currentYear] || 0
-      // }
-
       const denominator = 1 - vacantAccomodationEvolution[year] - secondaryResidenceAccomodationEvolution[year]
       result[year] = Math.round(Number(value) / denominator)
     })
@@ -260,15 +263,22 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
 
     for (let year = baseYear + 1; year <= periodProjection; year++) {
       const previousParc = parcEvolution[year - 1]
-      additionalHousingForReplacements[year] = this.calculateAdditionalHousingForReplacements(simulation.scenario, previousParc, epciCode)
-      let totalValue
+
+      let otherHousingNeeds: number
       if (year <= peakYear) {
-        totalValue = additionalHousingForReplacements[year] + (newHousingUnitsToConstruct[year] || 0)
+        otherHousingNeeds = newHousingUnitsToConstruct[year] || 0
       } else {
-        totalValue =
-          additionalHousingForReplacements[year] +
-          (additionalHousingUnitsForDeficitAndNewHouseholds.find(({ year: y }) => y === year)?.value || 0)
+        otherHousingNeeds = additionalHousingUnitsForDeficitAndNewHouseholds.find(({ year: y }) => y === year)?.value || 0
       }
+
+      additionalHousingForReplacements[year] = this.calculateAdditionalHousingForReplacements(
+        simulation.scenario,
+        previousParc,
+        epciCode,
+        otherHousingNeeds,
+      )
+
+      const totalValue = additionalHousingForReplacements[year] + otherHousingNeeds
       if (totalValue > 0) {
         housingNeeds[year - 1] = Math.round(totalValue)
         surplusHousing[year - 1] = 0

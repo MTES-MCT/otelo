@@ -125,7 +125,7 @@ describe('FlowRequirementService', () => {
       const scenario = makeScenario({
         epciScenarios: [makeEpciScenario({ epciCode: '200000001', b2_tx_disparition: 0.01, b2_tx_restructuration: 0.003 })],
       })
-      const result = service.calculateAdditionalHousingForReplacements(scenario, 100000, '200000001')
+      const result = service.calculateAdditionalHousingForReplacements(scenario, 100000, '200000001', 500)
       // 100000 * (0.01 - 0.003) = 700
       expect(result).toBe(700)
     })
@@ -134,7 +134,7 @@ describe('FlowRequirementService', () => {
       const scenario = makeScenario({
         epciScenarios: [makeEpciScenario({ b2_tx_disparition: 0.005, b2_tx_restructuration: 0.005 })],
       })
-      const result = service.calculateAdditionalHousingForReplacements(scenario, 100000, '200000001')
+      const result = service.calculateAdditionalHousingForReplacements(scenario, 100000, '200000001', 500)
       expect(result).toBe(0)
     })
 
@@ -142,9 +142,52 @@ describe('FlowRequirementService', () => {
       const scenario = makeScenario({
         epciScenarios: [makeEpciScenario({ b2_tx_disparition: 0.0033, b2_tx_restructuration: 0.001 })],
       })
-      const result = service.calculateAdditionalHousingForReplacements(scenario, 10000, '200000001')
+      const result = service.calculateAdditionalHousingForReplacements(scenario, 10000, '200000001', 500)
       // 10000 * 0.0023 = 23
       expect(result).toBe(23)
+    })
+
+    it('should ignore otherHousingNeeds when rawReplacement >= 0', () => {
+      const scenario = makeScenario({
+        epciScenarios: [makeEpciScenario({ b2_tx_disparition: 0.01, b2_tx_restructuration: 0.003 })],
+      })
+      const result = service.calculateAdditionalHousingForReplacements(scenario, 100000, '200000001', 0)
+      expect(result).toBe(700)
+    })
+
+    it('should not cap when rawReplacement < 0 and otherNeeds > |rawReplacement|', () => {
+      const scenario = makeScenario({
+        epciScenarios: [makeEpciScenario({ b2_tx_disparition: 0.001, b2_tx_restructuration: 0.01 })],
+      })
+      // rawReplacement = 10000 * (0.001 - 0.01) = -90, otherNeeds = 200 > 90 → no cap → -90
+      const result = service.calculateAdditionalHousingForReplacements(scenario, 10000, '200000001', 200)
+      expect(result).toBe(-90)
+    })
+
+    it('should cap at -otherNeeds when rawReplacement < 0 and otherNeeds < |rawReplacement|', () => {
+      const scenario = makeScenario({
+        epciScenarios: [makeEpciScenario({ b2_tx_disparition: 0.001, b2_tx_restructuration: 0.01 })],
+      })
+      // rawReplacement = 10000 * (0.001 - 0.01) = -90, otherNeeds = 50 < 90 → cap at -50
+      const result = service.calculateAdditionalHousingForReplacements(scenario, 10000, '200000001', 50)
+      expect(result).toBe(-50)
+    })
+
+    it('should return 0 when rawReplacement < 0 and otherNeeds <= 0', () => {
+      const scenario = makeScenario({
+        epciScenarios: [makeEpciScenario({ b2_tx_disparition: 0.001, b2_tx_restructuration: 0.01 })],
+      })
+      // rawReplacement = -90, otherNeeds = 0 → return 0
+      const result = service.calculateAdditionalHousingForReplacements(scenario, 10000, '200000001', 0)
+      expect(result).toBe(0)
+    })
+
+    it('should return 0 when rawReplacement < 0 and otherNeeds is negative', () => {
+      const scenario = makeScenario({
+        epciScenarios: [makeEpciScenario({ b2_tx_disparition: 0.001, b2_tx_restructuration: 0.01 })],
+      })
+      const result = service.calculateAdditionalHousingForReplacements(scenario, 10000, '200000001', -10)
+      expect(result).toBe(0)
     })
   })
 
@@ -369,7 +412,7 @@ describe('FlowRequirementService', () => {
       expect(result.parcEvolution[2022]).toBe(10110)
     })
 
-    it('should track surplus when total value is negative', () => {
+    it('should return 0 replacement when rawReplacement < 0 and otherNeeds = 0', () => {
       const simulation = makeSimulation({
         scenario: makeScenario({
           projection: 2023,
@@ -390,9 +433,41 @@ describe('FlowRequirementService', () => {
         '200000001',
         2030,
       )
-      // replacement = 10000 * (0.001 - 0.01) = -90, total = -90 + 0 = -90 < 0 -> surplus
-      expect(result.surplusHousing[2021]).toBe(90)
+      // rawReplacement = 10000 * (0.001 - 0.01) = -90, otherNeeds = 0 → replacement = 0
+      // total = 0 + 0 = 0, no surplus, no needs
+      expect(result.additionalHousingForReplacements[2022]).toBe(0)
+      expect(result.surplusHousing[2021]).toBe(0)
       expect(result.housingNeeds[2021]).toBe(0)
+      expect(result.parcEvolution[2022]).toBe(10000)
+    })
+
+    it('should cap negative replacement at -otherNeeds when otherNeeds < |rawReplacement|', () => {
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          projection: 2023,
+          epciScenarios: [makeEpciScenario({ b2_tx_disparition: 0.001, b2_tx_restructuration: 0.01 })],
+        }),
+      })
+      const initialParc = 10000
+      const newHousing = { 2022: 50, 2023: 50 }
+      const deficitAndHouseholds = [
+        { year: 2022, value: 50 },
+        { year: 2023, value: 50 },
+      ]
+      const result = service.calculateParcEvolutionAndNeedsSequential(
+        simulation,
+        initialParc,
+        newHousing,
+        deficitAndHouseholds,
+        '200000001',
+        2030,
+      )
+      // rawReplacement = 10000 * (0.001 - 0.01) = -90, otherNeeds = 50 < 90 → capped at -50
+      // total = -50 + 50 = 0
+      expect(result.additionalHousingForReplacements[2022]).toBe(-50)
+      expect(result.housingNeeds[2021]).toBe(0)
+      expect(result.surplusHousing[2021]).toBe(0)
+      expect(result.parcEvolution[2022]).toBe(10000)
     })
   })
 })
