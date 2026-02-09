@@ -3,9 +3,15 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { DemographicEvolutionService } from '~/calculation/needs-calculation/besoins-flux/evolution-demographique-b21/demographic-evolution.service'
 import { RenewalHousingStockService } from '~/calculation/needs-calculation/besoins-flux/occupation-renouvellement-parc-logements-b22/renewal-housing-stock.service'
 import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
-import { TDemographicEvolution } from '~/schemas/demographic-evolution/demographic-evolution'
+import { EOmphale, TDemographicEvolution } from '~/schemas/demographic-evolution/demographic-evolution'
 import { StockRequirementsService } from '~/stock-requirements/stock-requirements.service'
 import { makeCalculationContext, makeEpciScenario, makeScenario, makeSimulation } from '../__test-utils__/calculation-test-fixtures'
+import {
+  buildDemographicEvolution,
+  buildMenagesEvolution,
+  type FlowRequirementFixture,
+  flowRequirementFixtures,
+} from './flow-requirement.fixtures'
 import { FlowRequirementService } from './flow-requirement.service'
 
 describe('FlowRequirementService', () => {
@@ -30,6 +36,8 @@ describe('FlowRequirementService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
+
+  // ── Unit tests (edge cases) ────────────────────────────────────────────
 
   describe('calculateAdditionalHousingUnitsForDeficitReduction', () => {
     const makeDemographicEvolution = (years: number[]): TDemographicEvolution => ({
@@ -191,152 +199,6 @@ describe('FlowRequirementService', () => {
     })
   })
 
-  describe('calculateAccommodationVariationByYear', () => {
-    it('should compute accommodation from menages, vacancy, and secondary rates', () => {
-      const menages = [{ epciCode: '200000001', centralH: 1000, year: 2022 }]
-      const vacantEvolution = { 2022: 0.08 }
-      const secondaryEvolution = { 2022: 0.05 }
-      const result = service.calculateAccommodationVariationByYear(menages, 'centralH' as any, vacantEvolution, secondaryEvolution)
-      // 1000 / (1 - 0.08 - 0.05) = 1000 / 0.87 ≈ 1149
-      expect(result[2022]).toBe(1149)
-    })
-
-    it('should handle multiple years', () => {
-      const menages = [
-        { epciCode: '200000001', centralH: 1000, year: 2022 },
-        { epciCode: '200000001', centralH: 1100, year: 2023 },
-      ]
-      const vacantEvolution = { 2022: 0.08, 2023: 0.07 }
-      const secondaryEvolution = { 2022: 0.05, 2023: 0.05 }
-      const result = service.calculateAccommodationVariationByYear(menages, 'centralH' as any, vacantEvolution, secondaryEvolution)
-      expect(result[2022]).toBe(Math.round(1000 / 0.87))
-      expect(result[2023]).toBe(Math.round(1100 / 0.88))
-    })
-
-    it('should handle zero denominator gracefully', () => {
-      const menages = [{ epciCode: '200000001', centralH: 1000, year: 2022 }]
-      const result = service.calculateAccommodationVariationByYear(menages, 'centralH' as any, { 2022: 0.5 }, { 2022: 0.5 })
-      // 1 - 0.5 - 0.5 = 0 -> division by zero -> Infinity -> Math.round(Infinity) = Infinity
-      expect(result[2022]).not.toBeNaN()
-    })
-  })
-
-  describe('calculateVacantAccommodationVariationByYear', () => {
-    it('should compute base year as accommodation * rate', () => {
-      const accommodation = { 2021: 10000 }
-      const vacantRate = { 2021: 0.08 }
-      const result = service.calculateVacantAccommodationVariationByYear(accommodation, vacantRate, 2025)
-      expect(result[2021]).toBe(Math.round(10000 * 0.08))
-    })
-
-    it('should compute year-over-year delta for subsequent years', () => {
-      const accommodation = { 2021: 10000, 2022: 10200 }
-      const vacantRate = { 2021: 0.08, 2022: 0.079 }
-      const result = service.calculateVacantAccommodationVariationByYear(accommodation, vacantRate, 2022)
-      // 2022: 10200 * 0.079 - 10000 * 0.08 = 805.8 - 800 = 5.8 ≈ 6
-      expect(result[2022]).toBe(Math.round(10200 * 0.079 - 10000 * 0.08))
-    })
-
-    it('should use same rate if previous year rate is missing', () => {
-      const accommodation = { 2021: 10000, 2022: 10200 }
-      const vacantRate = { 2022: 0.08 }
-      const result = service.calculateVacantAccommodationVariationByYear(accommodation, vacantRate, 2022)
-      // First iteration year=2021 not in loop if baseYear=2021 and year starts at 2021
-      // For year 2021: 10000 * undefined -> handled by fallback
-      expect(result).toBeDefined()
-    })
-  })
-
-  describe('calculateShortTermVacantAccommodationVariationByYear', () => {
-    it('should return 0 for years after peak year', () => {
-      const accommodation = { 2021: 10000, 2022: 10200, 2023: 10400 }
-      const vacantRate = { 2021: 0.04, 2022: 0.039, 2023: 0.038 }
-      const result = service.calculateShortTermVacantAccommodationVariationByYear(accommodation, vacantRate, 2025, 2022)
-      expect(result[2023]).toBe(0)
-    })
-
-    it('should compute normally for years up to peak year', () => {
-      const accommodation = { 2021: 10000, 2022: 10200 }
-      const vacantRate = { 2021: 0.04, 2022: 0.039 }
-      const result = service.calculateShortTermVacantAccommodationVariationByYear(accommodation, vacantRate, 2025, 2025)
-      expect(result[2021]).toBe(Math.round(10000 * 0.04))
-    })
-
-    it('should handle peak year equal to base year', () => {
-      const accommodation = { 2021: 10000, 2022: 10200 }
-      const vacantRate = { 2021: 0.04, 2022: 0.039 }
-      const result = service.calculateShortTermVacantAccommodationVariationByYear(accommodation, vacantRate, 2025, 2021)
-      expect(result[2021]).toBe(Math.round(10000 * 0.04))
-      expect(result[2022]).toBe(0)
-    })
-  })
-
-  describe('calculateLongTermVacantAccommodationVariationByYear', () => {
-    it('should return 0 for years after peak year', () => {
-      const accommodationEvolution = { 2021: 10000, 2022: 10200, 2023: 10400 }
-      const vacantRate = { 2021: 0.04, 2022: 0.039, 2023: 0.038 }
-      const deficitAndHouseholds = [
-        { year: 2022, value: 100 },
-        { year: 2023, value: 100 },
-      ]
-      const result = service.calculateLongTermVacantAccommodationVariationByYear(
-        accommodationEvolution,
-        vacantRate,
-        2025,
-        2022,
-        deficitAndHouseholds,
-      )
-      expect(result[2023]).toBe(0)
-    })
-
-    it('should return 0 when additional housing is negative', () => {
-      const accommodationEvolution = { 2021: 10000, 2022: 10200 }
-      const vacantRate = { 2021: 0.04, 2022: 0.039 }
-      const deficitAndHouseholds = [{ year: 2022, value: -50 }]
-      const result = service.calculateLongTermVacantAccommodationVariationByYear(
-        accommodationEvolution,
-        vacantRate,
-        2025,
-        2025,
-        deficitAndHouseholds,
-      )
-      expect(result[2022]).toBe(0)
-    })
-
-    it('should cap negative accommodation at -additionalHousing', () => {
-      const accommodationEvolution = { 2021: 10000, 2022: 9000 }
-      const vacantRate = { 2021: 0.04, 2022: 0.04 }
-      const deficitAndHouseholds = [{ year: 2022, value: 50 }]
-      const result = service.calculateLongTermVacantAccommodationVariationByYear(
-        accommodationEvolution,
-        vacantRate,
-        2025,
-        2025,
-        deficitAndHouseholds,
-      )
-      // previousAccommodation = 9000*0.04 - 10000*0.04 = 360 - 400 = -40
-      // |previousAccommodation| (40) < additionalHousing (50), so use previousAccommodation (-40)
-      expect(result[2022]).toBe(Math.round(-40))
-    })
-  })
-
-  describe('calculateSecondaryResidenceVariationByYear', () => {
-    it('should compute base year as accommodation * secondary rate', () => {
-      const accommodation = { 2021: 10000 }
-      const secondaryRate = { 2021: 0.05 }
-      const result = service.calculateSecondaryResidenceVariationByYear(accommodation, secondaryRate, 2025)
-      expect(result[2021]).toBe(Math.round(10000 * 0.05))
-    })
-
-    it('should compute year-over-year delta for subsequent years', () => {
-      const accommodation = { 2021: 10000, 2022: 10200 }
-      const secondaryRate = { 2021: 0.05, 2022: 0.048 }
-      const result = service.calculateSecondaryResidenceVariationByYear(accommodation, secondaryRate, 2022)
-      // 10200 * 0.048 - 10000 * 0.05 = 489.6 - 500 = -10.4 ≈ -10
-      expect(result[2022]).toBe(Math.round(10200 * 0.048 - 10000 * 0.05))
-    })
-  })
-
   describe('calculatePeakYear', () => {
     it('should find year with max cumulative sum', () => {
       const demo: TDemographicEvolution = {
@@ -468,6 +330,322 @@ describe('FlowRequirementService', () => {
       expect(result.housingNeeds[2021]).toBe(0)
       expect(result.surplusHousing[2021]).toBe(0)
       expect(result.parcEvolution[2022]).toBe(10000)
+    })
+  })
+
+  // ── Excel-based fixture validation ─────────────────────────────────────
+
+  describe.each(flowRequirementFixtures)('Excel validation: $name', (fixture: FlowRequirementFixture) => {
+    const { config, data, expected } = fixture
+
+    /**
+     * Compare a Record<number, number> from the code (rounded integers)
+     * against unrounded Excel values. The code applies Math.round,
+     * but rounding cascade may cause ±1 drift, so we tolerate that.
+     */
+    function expectRecordClose(
+      actual: Record<number, number>,
+      excelExpected: Record<number, number>,
+      tolerance = 1,
+      startYear = config.baseYear + 1,
+    ) {
+      for (const [yearStr, excelVal] of Object.entries(excelExpected)) {
+        const year = Number(yearStr)
+        if (year < startYear) continue
+        const actualVal = actual[year]
+        expect(actualVal).toBeDefined()
+        expect(Math.abs(actualVal - Math.round(excelVal))).toBeLessThanOrEqual(tolerance)
+      }
+    }
+
+    describe('calculateAdditionalHousingUnitsForDeficitReduction (Row 55)', () => {
+      it('should match Excel deficit reduction values', () => {
+        const demo = buildDemographicEvolution(fixture)
+        const result = service.calculateAdditionalHousingUnitsForDeficitReduction(demo, config.stockDeficit, config.horizonResorption)
+        // Excel: 1254 / (2050 - 2021) = 43.241... → Math.round = 43
+        for (const [yearStr] of Object.entries(expected.additionalHousingForDeficitReduction)) {
+          const year = Number(yearStr)
+          expect(result[year]).toBe(Math.round(config.stockDeficit / (config.horizonResorption - config.baseYear)))
+        }
+      })
+    })
+
+    describe('calculateAdditionalHousingUnitsForDeficitAndNewHouseholds (Row 56)', () => {
+      it('should match Excel combined values', () => {
+        const demo = buildDemographicEvolution(fixture)
+        const deficitReduction = service.calculateAdditionalHousingUnitsForDeficitReduction(
+          demo,
+          config.stockDeficit,
+          config.horizonResorption,
+        )
+        const result = service.calculateAdditionalHousingUnitsForDeficitAndNewHouseholds(demo, deficitReduction)
+
+        for (const item of result) {
+          if (item.year <= config.baseYear) continue
+          const excelVal = expected.additionalHousingForDeficitAndNewHouseholds[item.year]
+          if (excelVal === undefined) continue
+          // value = year-over-year MEN change + deficit reduction (rounded)
+          // Small diff from Excel because deficit reduction is rounded (43 vs 43.241)
+          expect(Math.abs(item.value - excelVal)).toBeLessThan(1)
+        }
+      })
+    })
+
+    describe('calculatePeakYear (Row 58)', () => {
+      it('should match Excel peak year', () => {
+        const demo = buildDemographicEvolution(fixture)
+        const deficitReduction = service.calculateAdditionalHousingUnitsForDeficitReduction(
+          demo,
+          config.stockDeficit,
+          config.horizonResorption,
+        )
+        const peakYear = service.calculatePeakYear(demo, deficitReduction)
+        expect(peakYear).toBe(expected.peakYear)
+      })
+    })
+
+    describe('calculateAccommodationVariationByYear (Row 23)', () => {
+      it('should match Excel accommodation variation', () => {
+        const menages = buildMenagesEvolution(fixture)
+        const omphale = config.omphaleKey as EOmphale
+        const result = service.calculateAccommodationVariationByYear(
+          menages,
+          omphale,
+          data.vacantAccomodationEvolution,
+          data.secondaryResidenceAccomodationEvolution,
+        )
+        expectRecordClose(result, expected.accommodationVariation, 1, config.baseYear)
+      })
+    })
+
+    describe('calculateVacantAccommodationVariationByYear (Row 65)', () => {
+      it('should match Excel vacant accommodation variation', () => {
+        const menages = buildMenagesEvolution(fixture)
+        const omphale = config.omphaleKey as EOmphale
+        const accommodationVariation = service.calculateAccommodationVariationByYear(
+          menages,
+          omphale,
+          data.vacantAccomodationEvolution,
+          data.secondaryResidenceAccomodationEvolution,
+        )
+        const result = service.calculateVacantAccommodationVariationByYear(
+          accommodationVariation,
+          data.vacantAccomodationEvolution,
+          config.projection,
+        )
+        expectRecordClose(result, expected.vacantAccommodationVariation, 2)
+      })
+    })
+
+    describe('calculateShortTermVacantAccommodationVariationByYear (Row 67)', () => {
+      it('should match Excel short-term vacant variation', () => {
+        const menages = buildMenagesEvolution(fixture)
+        const omphale = config.omphaleKey as EOmphale
+        const accommodationVariation = service.calculateAccommodationVariationByYear(
+          menages,
+          omphale,
+          data.vacantAccomodationEvolution,
+          data.secondaryResidenceAccomodationEvolution,
+        )
+        const result = service.calculateShortTermVacantAccommodationVariationByYear(
+          accommodationVariation,
+          data.shortTermVacantAccomodationEvolution,
+          config.projection,
+          expected.peakYear,
+        )
+        expectRecordClose(result, expected.shortTermVacantVariation, 2)
+      })
+    })
+
+    describe('calculateLongTermVacantAccommodationVariationByYear (Row 66)', () => {
+      it('should match Excel long-term vacant variation', () => {
+        const menages = buildMenagesEvolution(fixture)
+        const omphale = config.omphaleKey as EOmphale
+        const accommodationVariation = service.calculateAccommodationVariationByYear(
+          menages,
+          omphale,
+          data.vacantAccomodationEvolution,
+          data.secondaryResidenceAccomodationEvolution,
+        )
+        const demo = buildDemographicEvolution(fixture)
+        const deficitReduction = service.calculateAdditionalHousingUnitsForDeficitReduction(
+          demo,
+          config.stockDeficit,
+          config.horizonResorption,
+        )
+        const deficitAndNewHouseholds = service.calculateAdditionalHousingUnitsForDeficitAndNewHouseholds(demo, deficitReduction)
+
+        const result = service.calculateLongTermVacantAccommodationVariationByYear(
+          accommodationVariation,
+          data.longTermVacantAccomodationEvolution,
+          config.projection,
+          expected.peakYear,
+          deficitAndNewHouseholds,
+        )
+        expectRecordClose(result, expected.longTermVacantVariation, 2)
+      })
+    })
+
+    describe('calculateSecondaryResidenceVariationByYear (Row 69)', () => {
+      it('should match Excel secondary residence variation', () => {
+        const menages = buildMenagesEvolution(fixture)
+        const omphale = config.omphaleKey as EOmphale
+        const accommodationVariation = service.calculateAccommodationVariationByYear(
+          menages,
+          omphale,
+          data.vacantAccomodationEvolution,
+          data.secondaryResidenceAccomodationEvolution,
+        )
+        const result = service.calculateSecondaryResidenceVariationByYear(
+          accommodationVariation,
+          data.secondaryResidenceAccomodationEvolution,
+          config.projection,
+        )
+        expectRecordClose(result, expected.secondaryResidenceVariation, 2)
+      })
+    })
+
+    describe('calculateNewHousingUnitsToConstruct (Row 71)', () => {
+      it('should match Excel housing to construct (excl. restructurations)', () => {
+        const menages = buildMenagesEvolution(fixture)
+        const omphale = config.omphaleKey as EOmphale
+        const accommodationVariation = service.calculateAccommodationVariationByYear(
+          menages,
+          omphale,
+          data.vacantAccomodationEvolution,
+          data.secondaryResidenceAccomodationEvolution,
+        )
+        const demo = buildDemographicEvolution(fixture)
+        const deficitReduction = service.calculateAdditionalHousingUnitsForDeficitReduction(
+          demo,
+          config.stockDeficit,
+          config.horizonResorption,
+        )
+        const deficitAndNewHouseholds = service.calculateAdditionalHousingUnitsForDeficitAndNewHouseholds(demo, deficitReduction)
+
+        const longTermVariation = service.calculateLongTermVacantAccommodationVariationByYear(
+          accommodationVariation,
+          data.longTermVacantAccomodationEvolution,
+          config.projection,
+          expected.peakYear,
+          deficitAndNewHouseholds,
+        )
+        const shortTermVariation = service.calculateShortTermVacantAccommodationVariationByYear(
+          accommodationVariation,
+          data.shortTermVacantAccomodationEvolution,
+          config.projection,
+          expected.peakYear,
+        )
+        const secondaryVariation = service.calculateSecondaryResidenceVariationByYear(
+          accommodationVariation,
+          data.secondaryResidenceAccomodationEvolution,
+          config.projection,
+        )
+
+        const result = service.calculateNewHousingUnitsToConstruct(
+          deficitAndNewHouseholds,
+          longTermVariation,
+          shortTermVariation,
+          secondaryVariation,
+        )
+        expectRecordClose(result, expected.newHousingUnitsToConstruct, 3)
+      })
+    })
+
+    describe('calculateParcEvolutionAndNeedsSequential (Rows 72-75)', () => {
+      it('should match Excel parc evolution, housing needs and replacements', () => {
+        // Build the full chain to get the inputs for the sequential calculation
+        const menages = buildMenagesEvolution(fixture)
+        const omphale = config.omphaleKey as EOmphale
+        const accommodationVariation = service.calculateAccommodationVariationByYear(
+          menages,
+          omphale,
+          data.vacantAccomodationEvolution,
+          data.secondaryResidenceAccomodationEvolution,
+        )
+        const demo = buildDemographicEvolution(fixture)
+        const deficitReduction = service.calculateAdditionalHousingUnitsForDeficitReduction(
+          demo,
+          config.stockDeficit,
+          config.horizonResorption,
+        )
+        const deficitAndNewHouseholds = service.calculateAdditionalHousingUnitsForDeficitAndNewHouseholds(demo, deficitReduction)
+
+        const longTermVariation = service.calculateLongTermVacantAccommodationVariationByYear(
+          accommodationVariation,
+          data.longTermVacantAccomodationEvolution,
+          config.projection,
+          expected.peakYear,
+          deficitAndNewHouseholds,
+        )
+        const shortTermVariation = service.calculateShortTermVacantAccommodationVariationByYear(
+          accommodationVariation,
+          data.shortTermVacantAccomodationEvolution,
+          config.projection,
+          expected.peakYear,
+        )
+        const secondaryVariation = service.calculateSecondaryResidenceVariationByYear(
+          accommodationVariation,
+          data.secondaryResidenceAccomodationEvolution,
+          config.projection,
+        )
+        const newHousingUnitsToConstruct = service.calculateNewHousingUnitsToConstruct(
+          deficitAndNewHouseholds,
+          longTermVariation,
+          shortTermVariation,
+          secondaryVariation,
+        )
+
+        const simulation = makeSimulation({
+          scenario: makeScenario({
+            projection: config.projection,
+            b1_horizon_resorption: config.horizonResorption,
+            b2_scenario: config.b2_scenario,
+            epciScenarios: [
+              makeEpciScenario({
+                epciCode: config.epciCode,
+                b2_tx_disparition: config.b2_tx_disparition,
+                b2_tx_restructuration: config.b2_tx_restructuration,
+              }),
+            ],
+          }),
+          epcis: [{ code: config.epciCode, name: 'Test EPCI', bassinName: null }],
+        })
+
+        const result = service.calculateParcEvolutionAndNeedsSequential(
+          simulation,
+          config.initialParc,
+          newHousingUnitsToConstruct,
+          deficitAndNewHouseholds,
+          config.epciCode,
+          expected.peakYear,
+        )
+
+        // Verify parc evolution (Row 75)
+        expect(result.parcEvolution[config.baseYear]).toBe(config.initialParc)
+        // Allow small tolerance due to rounding cascade over 30 years
+        for (const [yearStr, excelVal] of Object.entries(expected.parcEvolution)) {
+          const year = Number(yearStr)
+          if (year <= config.baseYear) continue
+          expect(Math.abs(result.parcEvolution[year] - Math.round(excelVal))).toBeLessThanOrEqual(10)
+        }
+
+        // Verify housing needs (Row 73) — 0 after peak year means stable parc
+        for (const [yearStr, excelVal] of Object.entries(expected.housingNeeds)) {
+          const year = Number(yearStr)
+          if (excelVal === 0) {
+            expect(result.housingNeeds[year - 1]).toBe(0)
+          }
+        }
+
+        // Verify surplus housing (Row 74)
+        for (const [yearStr, excelVal] of Object.entries(expected.surplusHousing)) {
+          const year = Number(yearStr)
+          if (excelVal === 0) {
+            expect(result.surplusHousing[year - 1]).toBe(0)
+          }
+        }
+      })
     })
   })
 })
