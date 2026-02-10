@@ -98,11 +98,15 @@ describe('StockRequirementsService', () => {
         }),
       })
       const result = service.calculateProrataStockByEpci(simulation, '200000001', data, 2031)
-      // yearsBeforePeak = 2031 - 2021 = 10, horizon delta = 20
+      // horizonDelta = 2041 - 2021 = 20
+      // yearsBeforePeak = 10, prePeakYears = min(10, 20) = 10
+      // yearsAfterPeak = 10, postPeakYears = min(10, 10) = 10
       // Each value scaled: Math.round(10 * value / 20) = value/2
-      expect(result.prePeakTotal).toBeDefined()
-      expect(result.postPeakTotal).toBeDefined()
-      expect(result.total).toBeDefined()
+      // prePeakTotal = 50 + 100 + 75 + 40 + 60 = 325
+      expect(result.prePeakTotal).toBe(325)
+      // postPeakTotal = 50 + 100 + 75 + 40 + 60 = 325
+      expect(result.postPeakTotal).toBe(325)
+      expect(result.total).toBe(650)
     })
 
     it('should use full value when peakYear >= horizon', () => {
@@ -110,16 +114,19 @@ describe('StockRequirementsService', () => {
       const simulation = makeSimulation({
         scenario: makeScenario({
           projection: 2041,
-          b1_horizon_resorption: 2041,
+          b1_horizon_resorption: 2031,
         }),
       })
-      const result = service.calculateProrataStockByEpci(simulation, '200000001', data, 2041)
-      // requiresFullValue = peakYear(2041) >= horizon(2041) -> true
-      // Each value should be the full value
-      expect(result.prePeakTotal).toBe(650) // 100+200+150+80+120
+      const result = service.calculateProrataStockByEpci(simulation, '200000001', data, 2031)
+      // horizonDelta = 2031 - 2021 = 10
+      // yearsBeforePeak = 10, prePeakYears = min(10, 10) = 10
+      // postPeakYears = min(10, max(0, 10-10)) = 0
+      // prePeak = round(10 * value / 10) = value → full stock
+      expect(result.prePeakTotal).toBe(650)
+      expect(result.postPeakTotal).toBe(0)
     })
 
-    it('should handle peakYear of 2021 (base year)', () => {
+    it('should handle peakYear of 2021 (no peak)', () => {
       const data = makeStockRequirementsResults('200000001')
       const simulation = makeSimulation({
         scenario: makeScenario({
@@ -128,7 +135,11 @@ describe('StockRequirementsService', () => {
         }),
       })
       const result = service.calculateProrataStockByEpci(simulation, '200000001', data, 2021)
-      expect(result.prePeakTotal).toBe(0) // yearsBeforePeak = 0
+      // yearsBeforePeak = 0, prePeakYears = 0
+      // yearsAfterPeak = 20, postPeakYears = min(20, 20) = 20
+      expect(result.prePeakTotal).toBe(0)
+      expect(result.postPeakTotal).toBe(650)
+      expect(result.total).toBe(650)
     })
 
     it('should return zeros for unknown EPCI', () => {
@@ -139,17 +150,40 @@ describe('StockRequirementsService', () => {
       expect(result.postPeakTotal).toBe(0)
     })
 
-    it('should handle horizon <= 0 by using full values', () => {
+    it('should ensure prePeak + postPeak never exceed total stock', () => {
+      const data = makeStockRequirementsResults('200000001')
+      // horizon = peakYear → all stock resolved pre-peak, none post-peak
+      const simulation = makeSimulation({
+        scenario: makeScenario({
+          projection: 2041,
+          b1_horizon_resorption: 2031,
+        }),
+      })
+      const result = service.calculateProrataStockByEpci(simulation, '200000001', data, 2031)
+      const totalStock = 650
+      expect(result.prePeakTotal + result.postPeakTotal).toBeLessThanOrEqual(totalStock)
+      expect(result.prePeakTotal + result.postPeakTotal).toBe(totalStock)
+    })
+
+    it('should handle horizon > projection (partial resolution)', () => {
       const data = makeStockRequirementsResults('200000001')
       const simulation = makeSimulation({
         scenario: makeScenario({
           projection: 2041,
-          b1_horizon_resorption: 2021, // same as baseYear -> delta 0
+          b1_horizon_resorption: 2061,
         }),
       })
       const result = service.calculateProrataStockByEpci(simulation, '200000001', data, 2031)
-      // baseToHorizonDelta = 0 -> forceFullValue in computeScaledValue
-      expect(result.prePeakTotal).toBe(650)
+      // horizonDelta = 2061 - 2021 = 40
+      // yearsBeforePeak = 10, prePeakYears = min(10, 40) = 10
+      // yearsAfterPeak = 10, postPeakYears = min(10, 30) = 10
+      // Each value: round(10 * value / 40) = round(value/4)
+      // 25 + 50 + 38 + 20 + 30 = 163
+      expect(result.prePeakTotal).toBe(163)
+      expect(result.postPeakTotal).toBe(163)
+      // Only partial stock resolved since horizon extends beyond projection
+      expect(result.total).toBe(326)
+      expect(result.total).toBeLessThan(650)
     })
   })
 })

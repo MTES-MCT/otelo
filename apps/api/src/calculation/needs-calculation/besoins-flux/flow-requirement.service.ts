@@ -477,7 +477,7 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
       .filter(([year]) => Number(year) <= peakYear && Number(year) > baseYear)
       .reduce((sum, [, value]) => sum + value, 0)
     const housingNeedsTotal = Object.entries(housingNeeds)
-      .filter(([year]) => Number(year) <= peakYear && Number(year) > baseYear)
+      .filter(([year]) => Number(year) <= peakYear && Number(year) >= baseYear)
       .reduce((sum, [, value]) => sum + value, 0)
     const surplusHousingTotal = Object.entries(surplusHousing).reduce((sum, [, value]) => sum + value, 0)
     const vacantAccomodationTotal = Object.entries(vacantAccommodationVariation)

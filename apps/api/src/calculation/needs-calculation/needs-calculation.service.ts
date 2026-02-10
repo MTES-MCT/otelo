@@ -42,6 +42,7 @@ export class NeedsCalculationService {
         stockRequirementsNeeds,
         peakYear,
       )
+
       total += epciTotalFlux + (peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total)
       totalFlux += epciTotalFlux
       totalStock += peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total
