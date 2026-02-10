@@ -9,6 +9,8 @@ export interface RateSettings {
   restructuringRate: number
   disappearanceRate: number
   parctot: number
+  totalVacantCount: number
+  longTermVacantCount: number
 }
 
 interface RatesState {
@@ -38,6 +40,8 @@ export const RatesProvider = ({ children, initialRates }: RatesProviderProps) =>
         restructuringRate: rates.restructuringRate,
         disappearanceRate: rates.disappearanceRate,
         parctot: rates.urbanRenewal,
+        totalVacantCount: rates.totalVacantCount,
+        longTermVacantCount: rates.longTermVacantCount,
       },
     }
   }, {})
@@ -58,6 +62,8 @@ export const RatesProvider = ({ children, initialRates }: RatesProviderProps) =>
           restructuringRate: rateData.restructuringRate,
           disappearanceRate: rateData.disappearanceRate,
           parctot: rateData.urbanRenewal,
+          totalVacantCount: rateData.totalVacantCount,
+          longTermVacantCount: rateData.longTermVacantCount,
         },
       }
     }, {})

@@ -42,6 +42,8 @@ export class AccommodationRatesService {
         },
         restructuringRate: (epciFilocom?.txRestParctot ?? 0) / 6,
         disappearanceRate: (epciFilocom?.txDispParctot ?? 0) / 6,
+        totalVacantCount: epciVacancy!.nbLogVac2Less,
+        longTermVacantCount: epciVacancy!.nbLogVac2More,
       }
       return acc
     }, {})
