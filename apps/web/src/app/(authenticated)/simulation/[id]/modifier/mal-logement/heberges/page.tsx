@@ -1,5 +1,6 @@
 import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { SelectHebergesAccommodationTypes } from '~/components/simulations/settings/modification/mal-logement/heberges/select-heberges-accommodation-types'
 import { SelectHebergesPart } from '~/components/simulations/settings/modification/mal-logement/heberges/select-heberges-part'
 import { UpdateBadHousingSimulationForm } from '~/components/simulations/settings/modification/mal-logement/update-bad-housing-simulation-form'
@@ -66,6 +67,7 @@ export default async function HebergesPage({ params }: SimulationPageProps) {
         <div className="fr-my-2w">
           <SelectHebergesAccommodationTypes />
         </div>
+        <DataSourceLink anchor="#menages-heberges" />
         <div className="fr-flex fr-flex-gap-2v fr-my-1w">
           <div className={fr.cx('fr-ml-auto')}>
             <NextStepLinkWithoutValidation href={href} />

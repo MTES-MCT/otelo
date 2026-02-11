@@ -1,3 +1,4 @@
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { ModifyEpcisAccommodationRates } from '~/components/simulations/settings/epcis-accommodation-rates/modify-epcis-accomodation-rates'
 import { NextStepLinkWithoutValidation } from '~/components/simulations/settings/next-step-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
@@ -12,8 +13,11 @@ export default async function TauxCiblesLogementsPage({ params }: SimulationPage
 
   return (
     <>
-      <div className="fr-flex fr-direction-column fr-background-default--grey">
+      <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <ModifyEpcisAccommodationRates epcis={simulation.epcis} />
+      </div>
+      <div className="fr-px-2w fr-pt-2w">
+        <DataSourceLink anchor="#taux-vacance-residence-secondaire" />
       </div>
       <div className="fr-flex fr-flex-gap-6v fr-justify-content-end fr-py-4w fr-px-2w">
         <PreviousStepLink />

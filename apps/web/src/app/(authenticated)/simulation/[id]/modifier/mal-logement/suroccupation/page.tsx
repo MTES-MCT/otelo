@@ -1,5 +1,6 @@
 import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { SelectSuroccupationCategories } from '~/components/simulations/settings/modification/mal-logement/suroccupation /select-suroccupation-categories'
 import { SelectSuroccupationLevel } from '~/components/simulations/settings/modification/mal-logement/suroccupation /select-suroccupation-level'
 import { SelectSuroccupationPart } from '~/components/simulations/settings/modification/mal-logement/suroccupation /select-suroccupation-part'
@@ -56,6 +57,7 @@ export default async function SuroccupationPage({ params }: SimulationPageProps)
         small
       />
       <SelectSuroccupationPart />
+      <DataSourceLink anchor="#suroccupation" />
       <div className="fr-flex fr-flex-gap-2v fr-my-1w">
         <div className={fr.cx('fr-ml-auto')}>
           <NextStepLinkWithoutValidation href={href} />

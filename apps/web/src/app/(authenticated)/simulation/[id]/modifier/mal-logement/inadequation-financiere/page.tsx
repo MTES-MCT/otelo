@@ -1,5 +1,6 @@
 import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { SelectInadequationFinanciereCategories } from '~/components/simulations/settings/modification/mal-logement/inadequation-financiere/select-inadequation-financiere-categories'
 import { SelectInadequationFinancierePart } from '~/components/simulations/settings/modification/mal-logement/inadequation-financiere/select-inadequation-financiere-part'
 import { SelectMaxEffortPart } from '~/components/simulations/settings/modification/mal-logement/inadequation-financiere/select-max-effort-part'
@@ -51,6 +52,7 @@ export default async function FinancialInadequationPage({ params }: SimulationPa
         small
       />
       <SelectInadequationFinancierePart />
+      <DataSourceLink anchor="#depense-excessive" />
       <div className="fr-flex fr-flex-gap-2v fr-my-1w">
         <div className={fr.cx('fr-ml-auto')}>
           <NextStepLinkWithoutValidation href={href} />
