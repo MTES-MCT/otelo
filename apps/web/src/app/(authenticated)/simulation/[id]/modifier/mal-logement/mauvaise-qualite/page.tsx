@@ -1,5 +1,6 @@
 import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { SelectBadQualityPart } from '~/components/simulations/settings/modification/mal-logement/bad-quality/select-bad-quality-part'
 import { SelectBadQualitySource } from '~/components/simulations/settings/modification/mal-logement/bad-quality/select-bad-quality-source'
 import { SelectConfortSource } from '~/components/simulations/settings/modification/mal-logement/bad-quality/select-confort-source'
@@ -33,6 +34,7 @@ export default async function BadQualityPage({ params }: SimulationPageProps) {
         small
       />
       <SelectBadQualityPart />
+      <DataSourceLink anchor="#mauvaise-qualite" />
       <div className="fr-flex fr-flex-gap-2v fr-my-1w">
         <div className={fr.cx('fr-ml-auto')}>
           <NextStepLinkWithoutValidation href={href} />

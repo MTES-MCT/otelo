@@ -1,3 +1,4 @@
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { ModifyRestructurationDisparitionRates } from '~/components/simulations/settings/restructuration-disparition-rates/modify-restructuration-disparition-rates'
 import { UpdateSimulationForm } from '~/components/simulations/settings/update-simulation-form'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
@@ -9,8 +10,11 @@ export default async function RestructurationDisparitionRatesPage({ params }: Si
   const simulation = groupedSimulations[id]
   return (
     <>
-      <div className="fr-flex fr-direction-column fr-background-default--grey">
+      <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <ModifyRestructurationDisparitionRates epcis={simulation.epcis} />
+      </div>
+      <div className="fr-px-2w fr-pt-2w">
+        <DataSourceLink anchor="#taux-restructuration-disparition" />
       </div>
       <UpdateSimulationForm id={id} />
     </>

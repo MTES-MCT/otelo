@@ -1,0 +1,33 @@
+.filtersRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-end;
+}
+
+.searchBar {
+  flex: 1 1 300px;
+  min-width: 280px;
+}
+
+.filterSelect {
+  flex: 0 1 220px;
+  min-width: 180px;
+}
+
+.accordionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  flex-shrink: 0;
+}
+
+.stepTable th:nth-child(2),
+.stepTable td:nth-child(2) {
+  width: 100px;
+  white-space: nowrap;
+}

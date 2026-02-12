@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { DemographicSettingsFormWrapper } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/parametrages-demographique/demographic-settings-form-wrapper'
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { NextStepLinkWithoutValidation } from '~/components/simulations/settings/next-step-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
 import { getOmphaleDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-omphale-evolution-by-epci'
@@ -56,13 +57,16 @@ export default async function ParametragesDemographiquePage({ params, searchPara
 
   return (
     <>
-      <div className="fr-flex fr-direction-column fr-background-default--grey">
+      <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <DemographicSettingsFormWrapper
           epcis={epcisCodes}
           omphaleEvolution={omphaleEvolution}
           populationEvolution={populationEvolution}
           scenarioId={simulation.scenario.id}
         />
+      </div>
+      <div className="fr-px-2w fr-pt-2w">
+        <DataSourceLink anchor="#projections-demographiques" />
       </div>
       <div className="fr-flex fr-flex-gap-6v fr-justify-content-end fr-py-4w fr-px-2w">
         <PreviousStepLink />

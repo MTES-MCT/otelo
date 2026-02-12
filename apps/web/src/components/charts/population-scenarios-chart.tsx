@@ -155,7 +155,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
       )}
 
       <div className={classes.buttonContainer} data-chart-download-exclude>
-        <Button disabled={!queryStates.population} onClick={() => setQueryStates({ scenario: 'menages' })}>
+        <Button disabled={!queryStates.population} onClick={() => setQueryStates({ scenario: 'menages' })} className="fr-mt-4w">
           Choisir une projection de ménages
         </Button>
       </div>
