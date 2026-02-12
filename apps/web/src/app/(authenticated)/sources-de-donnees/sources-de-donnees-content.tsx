@@ -61,7 +61,7 @@ export function SourcesDeDonneesContent() {
   const hasResults = filteredEntries.length > 0
 
   return (
-    <section className={fr.cx('fr-container')}>
+    <section>
       <h1 className={fr.cx('fr-mb-4w')}>Sources de données</h1>
 
       <CallOut title="Comprendre d'où viennent les chiffres" className={fr.cx('fr-mb-4w')}>

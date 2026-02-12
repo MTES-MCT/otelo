@@ -1,3 +1,4 @@
+import Breadcrumb from '@codegouvfr/react-dsfr/Breadcrumb'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { SourcesDeDonneesContent } from './sources-de-donnees-content'
@@ -9,8 +10,11 @@ export const metadata: Metadata = {
 
 export default function SourcesDeDonneesPage() {
   return (
-    <Suspense>
-      <SourcesDeDonneesContent />
-    </Suspense>
+    <div className="fr-container">
+      <Breadcrumb currentPageLabel="Sources de données" homeLinkProps={{ href: '/' }} segments={[]} />
+      <Suspense>
+        <SourcesDeDonneesContent />
+      </Suspense>
+    </div>
   )
 }

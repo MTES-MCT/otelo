@@ -38,11 +38,6 @@ const getMenuDisconnected = (pathname: string): MainNavigationProps.Item[] => [
     text: 'Ressources',
   },
   {
-    isActive: pathname === '/sources-de-donnees',
-    linkProps: { href: '/sources-de-donnees', target: '_self' },
-    text: 'Sources de données',
-  },
-  {
     isActive: pathname === '/statistiques',
     linkProps: { href: '/statistiques', target: '_self' },
     text: 'Statistiques',
