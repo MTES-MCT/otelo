@@ -21,7 +21,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "postinstall": "[ \"$BUILD_TARGET\" = \"@otelo/api\" ] && prisma generate || true",
+    "postinstall": "[ \"$BUILD_TARGET\" = \"@otelo/api\" ] && prisma generate && npx puppeteer browsers install chrome || true",
     "prisma": "prisma",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
