@@ -16,7 +16,7 @@ import {
   type SourceEntry,
   type SourceGroup,
   type StepGroup,
-  UNIQUE_MILLESIMES,
+  UNIQUE_ETAPES,
   UNIQUE_SOURCES,
 } from './data'
 import styles from './sources-de-donnees.module.css'
@@ -26,11 +26,11 @@ const queryParams = {
   open: parseAsString,
   q: parseAsString.withDefault(''),
   source: parseAsString.withDefault(''),
-  millesime: parseAsString.withDefault(''),
+  etape: parseAsString.withDefault(''),
 }
 
 export function SourcesDeDonneesContent() {
-  const [{ tab, open, q, source, millesime }, setQueryStates] = useQueryStates(queryParams)
+  const [{ tab, open, q, source, etape }, setQueryStates] = useQueryStates(queryParams)
   const scrolledRef = useRef(false)
 
   useEffect(() => {
@@ -46,14 +46,14 @@ export function SourcesDeDonneesContent() {
     const query = q.toLowerCase()
     return DATA_SOURCES.filter((e: SourceEntry) => {
       if (source && e.source !== source) return false
-      if (millesime && e.millesime !== millesime) return false
+      if (etape && e.etape !== etape) return false
       if (query) {
         const haystack = `${e.source} ${e.etape} ${e.description} ${e.millesime}`.toLowerCase()
         return haystack.includes(query)
       }
       return true
     })
-  }, [q, source, millesime])
+  }, [q, source, etape])
 
   const sourceGroups = useMemo(() => groupBySource(filteredEntries), [filteredEntries])
   const stepGroups = useMemo(() => groupByStep(filteredEntries), [filteredEntries])
@@ -66,7 +66,7 @@ export function SourcesDeDonneesContent() {
 
       <CallOut title="Comprendre d'où viennent les chiffres" className={fr.cx('fr-mb-4w')}>
         Cette page liste les sources mobilisées, leur millésime, et leur utilisation dans les étapes du parcours. Vous pouvez rechercher et
-        filtrer par producteur/source, millésime et mots-clés.
+        filtrer par producteur/source, étape du parcours et mots-clés.
       </CallOut>
 
       <div className={styles.filtersRow}>
@@ -109,19 +109,14 @@ export function SourcesDeDonneesContent() {
         </div>
 
         <div className={styles.filterSelect}>
-          <label className="fr-label" htmlFor="filter-millesime">
-            Filtrer par millésime
+          <label className="fr-label" htmlFor="filter-etape">
+            Filtrer par étape
           </label>
-          <select
-            className="fr-select"
-            id="filter-millesime"
-            value={millesime}
-            onChange={(e) => setQueryStates({ millesime: e.target.value || null })}
-          >
-            <option value="">Tous les millésimes</option>
-            {UNIQUE_MILLESIMES.map((m) => (
-              <option key={m} value={m}>
-                {m}
+          <select className="fr-select" id="filter-etape" value={etape} onChange={(e) => setQueryStates({ etape: e.target.value || null })}>
+            <option value="">Toutes les étapes</option>
+            {UNIQUE_ETAPES.map((et) => (
+              <option key={et} value={et}>
+                {et}
               </option>
             ))}
           </select>
@@ -148,6 +143,20 @@ export function SourcesDeDonneesContent() {
         )}
       </Tabs>
     </section>
+  )
+}
+
+function renderDescription(description: string, guideLink?: string) {
+  if (!guideLink || !description.includes("cf. guide d'utilisation")) return description
+  const parts = description.split("cf. guide d'utilisation")
+  return (
+    <>
+      {parts[0]}
+      <a href={guideLink} target="_blank" rel="noopener noreferrer">
+        cf. guide d&apos;utilisation
+      </a>
+      {parts[1]}
+    </>
   )
 }
 
@@ -186,7 +195,10 @@ function SourceView({ groups, openAccordion, setOpenAccordion }: { groups: Sourc
                   noCaption
                   fixed
                   headers={['Étape du parcours', 'Usage détaillé']}
-                  data={group.entries.map((entry) => [<strong key={entry.etapeId}>{entry.etape}</strong>, entry.description])}
+                  data={group.entries.map((entry) => [
+                    <strong key={entry.etapeId}>{entry.etape}</strong>,
+                    renderDescription(entry.description, entry.guideLink),
+                  ])}
                 />
               </Accordion>
             </div>
@@ -223,7 +235,7 @@ function StepView({ groups, openAccordion, setOpenAccordion }: { groups: StepGro
                     {entry.source}
                   </Badge>,
                   entry.millesime,
-                  entry.description,
+                  renderDescription(entry.description, entry.guideLink),
                 ])}
               />
             </Accordion>

@@ -4,6 +4,7 @@ export type SourceEntry = {
   etape: string
   etapeId: string
   description: string
+  guideLink?: string
 }
 
 export const DATA_SOURCES: SourceEntry[] = [
@@ -15,6 +16,7 @@ export const DATA_SOURCES: SourceEntry[] = [
     etapeId: 'projections-demographiques',
     description:
       "La définition des hypothèses démographiques dans Otelo repose sur des scénarios de projection démographique en population établis par l'INSEE et sur la traduction de ces scénarios en projections en nombre de ménages, réalisée par le CGDD/SDES. Attention, ces projections peuvent être recalées à la marge, de manière à tenir compte des valeurs les plus récentes observées selon le recensement pour la population et le nombre de ménages du territoire étudié. De plus, pour certains territoires, ces projections INSEE/CGDD ne sont pas disponibles et dans ce cas l'équipe Otelo propose des projections construites à partir de projections INSEE/CGDD disponibles à une échelle supra (cf. guide d'utilisation). La précision est alors fournie à l'utilisateur.",
+    guideLink: '/guide#elaboration-projections',
   },
 
   // --- Recalage des projections ---
@@ -81,6 +83,7 @@ export const DATA_SOURCES: SourceEntry[] = [
     etapeId: 'structures-hebergement',
     description:
       "Identification des personnes accueillies dans une structure d'hébergement (détails sur les structures prises en compte, cf. guide d'utilisation).",
+    guideLink: '/guide#hebergement-social',
   },
 
   // --- Hors logement : ménages hébergés ---
@@ -101,6 +104,7 @@ export const DATA_SOURCES: SourceEntry[] = [
     etapeId: 'cohabitation-intergenerationnelle',
     description:
       "Estimer les cas de cohabitation subie des jeunes chez leurs parents. La cohabitation est identifiée à partir d'une différence d'âge de plus de 18 ans entre deux foyers fiscaux d'un même ménage, tandis que le caractère subi de cette cohabitation est estimé normativement à partir de l'âge (+ de 25 ans) et du niveau des ressources de chaque foyer fiscal (cf. guide d'utilisation).",
+    guideLink: '/guide#cohabitation-intergenerationnelle',
   },
 
   // --- Mal-logement : dépense excessive ---
@@ -169,13 +173,13 @@ export const DATA_SOURCES: SourceEntry[] = [
 export type SourceGroup = {
   source: string
   millesime: string
-  entries: { etape: string; etapeId: string; description: string }[]
+  entries: { etape: string; etapeId: string; description: string; guideLink?: string }[]
 }
 
 export type StepGroup = {
   etape: string
   etapeId: string
-  entries: { source: string; millesime: string; description: string }[]
+  entries: { source: string; millesime: string; description: string; guideLink?: string }[]
 }
 
 export function groupBySource(entries: SourceEntry[]): SourceGroup[] {
@@ -183,12 +187,12 @@ export function groupBySource(entries: SourceEntry[]): SourceGroup[] {
   for (const e of entries) {
     const existing = map.get(e.source)
     if (existing) {
-      existing.entries.push({ etape: e.etape, etapeId: e.etapeId, description: e.description })
+      existing.entries.push({ etape: e.etape, etapeId: e.etapeId, description: e.description, guideLink: e.guideLink })
     } else {
       map.set(e.source, {
         source: e.source,
         millesime: e.millesime,
-        entries: [{ etape: e.etape, etapeId: e.etapeId, description: e.description }],
+        entries: [{ etape: e.etape, etapeId: e.etapeId, description: e.description, guideLink: e.guideLink }],
       })
     }
   }
@@ -201,12 +205,12 @@ export function groupByStep(entries: SourceEntry[]): StepGroup[] {
     const key = e.etapeId
     const existing = map.get(key)
     if (existing) {
-      existing.entries.push({ source: e.source, millesime: e.millesime, description: e.description })
+      existing.entries.push({ source: e.source, millesime: e.millesime, description: e.description, guideLink: e.guideLink })
     } else {
       map.set(key, {
         etape: e.etape,
         etapeId: e.etapeId,
-        entries: [{ source: e.source, millesime: e.millesime, description: e.description }],
+        entries: [{ source: e.source, millesime: e.millesime, description: e.description, guideLink: e.guideLink }],
       })
     }
   }
@@ -214,4 +218,4 @@ export function groupByStep(entries: SourceEntry[]): StepGroup[] {
 }
 
 export const UNIQUE_SOURCES = [...new Set(DATA_SOURCES.map((e) => e.source))]
-export const UNIQUE_MILLESIMES = [...new Set(DATA_SOURCES.map((e) => e.millesime))].sort()
+export const UNIQUE_ETAPES = [...new Set(DATA_SOURCES.map((e) => e.etape))]
