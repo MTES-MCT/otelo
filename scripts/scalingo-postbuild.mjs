@@ -46,6 +46,20 @@ if (BUILD_TARGET === '@otelo/web') {
     cwd: ROOT,
   })
   rm('apps/web')
+
+  // Clean up unnecessary files to reduce slug size
+  rm('.cache')
+  rm('.git')
+  rm('packages/shared/src')
+  rm('apps/api/src')
+  rm('apps/api/test')
+  rm('apps/api/prisma/migrations')
+
+  // Remove devDependencies from node_modules
+  execSync('pnpm prune --prod', {
+    stdio: 'inherit',
+    cwd: ROOT,
+  })
 }
 
 console.log('\n[scalingo-postbuild] done.\n')
