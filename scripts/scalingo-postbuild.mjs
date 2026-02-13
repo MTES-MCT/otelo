@@ -55,11 +55,6 @@ if (BUILD_TARGET === '@otelo/web') {
   rm('apps/api/test')
   rm('apps/api/prisma/migrations')
 
-  // Remove devDependencies from node_modules
-  execSync('pnpm prune --prod', {
-    stdio: 'inherit',
-    cwd: ROOT,
-  })
 }
 
 console.log('\n[scalingo-postbuild] done.\n')
