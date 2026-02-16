@@ -287,7 +287,7 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
               <Bar dataKey="basse" name="Décohabitation basse" fill={getChartColor('basse')} />
             </BarChart>
           </ResponsiveContainer>
-          <span className={classes.title}>Évolution décennal du nombre de ménages, par scénario de décohabitation</span>
+          <span className={classes.title}>Évolution décennale du nombre de ménages, par scénario de décohabitation</span>
           <div className={classes.legend}>
             <div className={classes.legendItem}>
               <span className={classes.legendColorBox} style={{ backgroundColor: getChartColor('haute') }} />

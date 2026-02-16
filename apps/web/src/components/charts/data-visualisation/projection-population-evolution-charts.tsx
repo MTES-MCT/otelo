@@ -215,7 +215,7 @@ export const ProjectionPopulationEvolutionChart: FC<ProjectionPopulationEvolutio
               <Bar dataKey="basse" name="Population basse" fill={getChartColor('basse')} />
             </BarChart>
           </ResponsiveContainer>
-          <span className={classes.title}>Évolution décennal du nombre d'habitants, par scenario démographique</span>
+          <span className={classes.title}>Évolution décennale du nombre d'habitants, par scenario démographique</span>
           <div className={classes.legend}>
             <div className={classes.legendItem}>
               <span className={classes.legendColorBox} style={{ backgroundColor: getChartColor('haute') }} />

@@ -8,6 +8,7 @@ type SimulationAnnualsNeedsSummaryProps = {
   newConstructionsResults: TFlowRequirementChartData
   horizon: number
   hasSurplusHousing: boolean
+  epciName: string
 }
 
 export const SimulationAnnualsNeedsSummary = ({
@@ -15,6 +16,7 @@ export const SimulationAnnualsNeedsSummary = ({
   newConstructionsResults,
   horizon,
   hasSurplusHousing,
+  epciName,
 }: SimulationAnnualsNeedsSummaryProps) => {
   return (
     <div className="fr-background-default--grey shadow">
@@ -24,6 +26,7 @@ export const SimulationAnnualsNeedsSummary = ({
             sitadelResults={sitadelResults}
             newConstructionsResults={newConstructionsResults}
             horizon={horizon}
+            epciName={epciName}
           />
         </ChartDownloadWrapper>
       </div>
