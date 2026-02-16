@@ -67,12 +67,14 @@ interface AccommodationContructionEvolutionChartProps {
   newConstructionsResults: TFlowRequirementChartData
   sitadelResults: TSitadelData
   horizon: number
+  epciName: string
 }
 
 export const AccommodationContructionEvolutionChart: FC<AccommodationContructionEvolutionChartProps> = ({
   newConstructionsResults,
   sitadelResults,
   horizon,
+  epciName,
 }) => {
   const { data: sitadelData } = sitadelResults
   const { data: newConstructionsData } = newConstructionsResults
@@ -111,8 +113,8 @@ export const AccommodationContructionEvolutionChart: FC<AccommodationContruction
       <h3 className="fr-h4">Besoins en construction neuves annualisés</h3>
       <div className="fr-col-10">
         <p className="fr-mb-0">
-          Ce graphique présente l’évolution des besoins annuels en construction neuve sur le territoire de CA du Pays Basque, en les
-          comparant avec les permis de construire autorisés sur les années récentes.
+          Ce graphique présente l'évolution des besoins annuels en construction neuve sur le territoire de {epciName}, en les comparant avec
+          les permis de construire autorisés sur les années récentes.
         </p>
         <p className="fr-mt-2w fr-text--xs fr-text-mention--grey">Source des données : Sit@del2</p>
       </div>

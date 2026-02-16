@@ -96,6 +96,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
             newConstructionsResults={epciFlowRequirementData}
             horizon={simulation.scenario.projection}
             hasSurplusHousing={hasSurplusHousing}
+            epciName={epci.name}
           />
           {hasNewHousingNeeds && <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} />}
           <SimulationBadHousing horizon={simulation.scenario.projection} results={stockResults} />
