@@ -4,14 +4,11 @@ import { MainNavigation, MainNavigationProps } from '@codegouvfr/react-dsfr/Main
 import { usePathname } from 'next/navigation'
 import { FC } from 'react'
 import { useEpciNeighborsAccess } from '~/hooks/use-epci-neighbors-access'
-import { Session } from '~/lib/auth/server'
+import { useSession } from '~/lib/auth/client'
 
-type HeaderNavigationProps = {
-  session: Session | null
-}
-
-export const HeaderNavigation: FC<HeaderNavigationProps> = ({ session }) => {
+export const HeaderNavigation: FC = () => {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
   const { hasAccess: hasEpciNeighborsAccess } = useEpciNeighborsAccess()
 
