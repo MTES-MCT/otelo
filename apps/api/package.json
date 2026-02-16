@@ -5,10 +5,13 @@
   "author": "KGALLET",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": "24"
+  },
   "scripts": {
     "build": "nest build",
     "dev": "nest start --watch --exec \"node -r tsconfig-paths/register\"",
-    "start": "nest start",
+    "start": "node dist/main",
     "start:dev": "nest start --watch --exec \"node -r tsconfig-paths/register\"",
     "start:debug": "nest start --debug --watch --exec \"node -r tsconfig-paths/register\"",
     "start:prod": "node dist/main",
@@ -18,7 +21,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "postinstall": "prisma generate && npx puppeteer browsers install chrome",
+    "postinstall": "[ \"$BUILD_TARGET\" = \"@otelo/api\" ] && prisma generate && npx puppeteer browsers install chrome || true",
+    "prisma": "prisma",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
@@ -35,8 +39,10 @@
     "@prisma/adapter-pg": "^6.19.0",
     "@prisma/client": "^6.19.0",
     "@shared": "workspace:*",
+    "@thallesp/nestjs-better-auth": "^2.4.0",
     "@types/papaparse": "^5.5.1",
     "argon2": "^0.44.0",
+    "better-auth": "^1.4.18",
     "commander": "^14.0.2",
     "dayjs": "catalog:",
     "exceljs": "^4.4.0",

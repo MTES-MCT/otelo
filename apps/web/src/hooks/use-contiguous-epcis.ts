@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
 import { TEpci } from '@shared'
+import { useQuery } from '@tanstack/react-query'
 
 export const useContiguousEpcis = (epciCodes?: string | string[]) => {
   const getContiguousEpcis = async (): Promise<TEpci[]> => {

@@ -5,16 +5,17 @@ import { Input } from '@codegouvfr/react-dsfr/Input'
 import { ProConnectButton } from '@codegouvfr/react-dsfr/ProConnectButton'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
-import { signIn } from 'next-auth/react'
-import { FC } from 'react'
+import { useRouter } from 'next/navigation'
+import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { RedAsterisk } from '~/components/ui/red-asterisk'
-import { useCreateUser } from '~/hooks/use-create-user'
-import { proConnectProviderId } from '~/lib/auth/providers/pro-connect'
+import { signIn, signUp } from '~/lib/auth/client'
 import { TSignUp, ZSignUp } from '~/schemas/user'
 
 export const SignUpForm: FC = () => {
-  const { isPending, mutateAsync } = useCreateUser()
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
 
   const {
     register,
@@ -25,17 +26,35 @@ export const SignUpForm: FC = () => {
   })
 
   const onSubmit = async (data: TSignUp) => {
+    setIsLoading(true)
+    setAuthError(null)
     try {
-      await mutateAsync(data)
+      const result = await signUp.email({
+        email: data.email,
+        password: data.password,
+        name: `${data.firstname} ${data.lastname}`,
+        firstname: data.firstname,
+        lastname: data.lastname,
+        hasAccess: false,
+      })
+      if (result.error) {
+        setAuthError('unknown')
+        return
+      }
+
+      router.push('/connexion')
     } catch (error) {
       console.error('Error signing up', error)
+      setAuthError('unknown')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const onProConnectSignIn = async () => {
     try {
-      await signIn(proConnectProviderId, {
-        callbackUrl: '/tableaux-de-bord',
+      await signIn.oauth2({
+        providerId: 'proconnect',
       })
     } catch (error) {
       console.error('Error signing in with ProConnect', error)
@@ -131,6 +150,13 @@ export const SignUpForm: FC = () => {
               }}
             />
 
+            {!!authError && (
+              <div className="fr-alert fr-alert--error fr-mb-3w" role="alert">
+                <p className="fr-alert__title">Échec de la création du compte</p>
+                <p>Une erreur est survenue.</p>
+              </div>
+            )}
+
             <div className="fr-flex fr-justify-content-space-between fr-align-items-center">
               <div className="fr-flex fr-direction-column fr-direction-sm-row fr-align-items-center fr-flex-gap-2v">
                 <p className="fr-mb-0">Déjà un compte ?</p>
@@ -138,8 +164,8 @@ export const SignUpForm: FC = () => {
                   Se connecter
                 </Link>
               </div>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? 'Création en cours...' : 'Créer un compte'}
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Création en cours...' : 'Créer un compte'}
               </Button>
             </div>
           </form>

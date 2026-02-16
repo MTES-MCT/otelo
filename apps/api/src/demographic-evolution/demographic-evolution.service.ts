@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { TEpci } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'
 import { TDemographicProjectionDataTable } from '~/schemas/data-visualisation/data-visualisation'
@@ -12,7 +13,6 @@ import {
   TDemographicMenagesMaxYearsByEpci,
   TDemographicPopulationMaxYearsByEpci,
 } from '~/schemas/demographic-evolution/demographic-evolution'
-import { TEpci } from '@shared'
 
 const createProjectionPopulationTableData = (
   results: Array<{ data: TDemographicEvolutionByEpci[]; epci: { code: string; name: string } }>,

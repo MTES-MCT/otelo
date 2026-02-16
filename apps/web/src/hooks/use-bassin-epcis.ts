@@ -1,6 +1,6 @@
+import { TEpci } from '@shared'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
-import { TEpci } from '@shared'
 
 export const useBassinEpcis = (epci?: string) => {
   const searchParams = useSearchParams()

@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
 import { TableauDeBord } from '~/components/tableau-de-bord/tableau-de-bord'
-import { authOptions } from '~/lib/auth/auth.config'
+import { getSession } from '~/lib/auth/server'
 import { getDashboardList } from '~/server-only/simulation/get-dashboard-list'
 import type { GroupIdRouteParams } from '~/types/simulation-page-props'
+
+export const dynamic = 'force-dynamic'
 
 export default async function TableauDeBordPage({ params }: GroupIdRouteParams) {
   const { groupId } = await params
@@ -13,7 +14,7 @@ export default async function TableauDeBordPage({ params }: GroupIdRouteParams) 
     redirect('/tableaux-de-bord')
   }
 
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
   // Fetch simulations for the given group
   const dashboardGroups = await getDashboardList()

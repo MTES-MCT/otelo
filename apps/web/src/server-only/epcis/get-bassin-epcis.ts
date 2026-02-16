@@ -1,20 +1,14 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
 import { TEpci } from '@shared'
+import { authFetch, getSession } from '~/lib/auth/server'
 
 export const getBassinEpcis = async (epci: string) => {
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
-  if (!session?.accessToken) {
+  if (!session) {
     throw new Error('Unauthorized')
   }
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/epcis/${epci}/bassin`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  const res = await authFetch(`/epcis/${epci}/bassin`)
 
   if (!res.ok) {
     return []

@@ -1,8 +1,8 @@
 'use client'
 
 import { fr } from '@codegouvfr/react-dsfr'
-import { useContiguousEpcis } from '~/hooks/use-contiguous-epcis'
 import { TEpci } from '@shared'
+import { useContiguousEpcis } from '~/hooks/use-contiguous-epcis'
 import { CheckboxEpcis } from './checkbox-epcis'
 
 type ContiguousEpcisCheckboxesProps = {

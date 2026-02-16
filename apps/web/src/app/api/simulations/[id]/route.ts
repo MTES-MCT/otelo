@@ -1,21 +1,15 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 import type { IdRouteParams } from '~/types/simulation-page-props'
 
 export async function GET(_: Request, { params }: IdRouteParams) {
   const { id } = await params
-  const session = await getServerSession(authOptions)
-  if (!session?.accessToken) {
+  const session = await getSession()
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/simulations/${id}/results`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  const res = await authFetch(`/simulations/${id}/results`)
 
   if (!res.ok) {
     return NextResponse.json({ error: 'Failed to fetch simulation results' }, { status: res.status })
@@ -27,19 +21,15 @@ export async function GET(_: Request, { params }: IdRouteParams) {
 
 export async function PATCH(request: Request, { params }: IdRouteParams) {
   const { id } = await params
-  const session = await getServerSession(authOptions)
-  if (!session?.accessToken) {
+  const session = await getSession()
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const body = await request.json()
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/simulations/${id}`, {
+  const res = await authFetch(`/simulations/${id}`, {
     body: JSON.stringify(body),
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
     method: 'PATCH',
   })
 
@@ -53,16 +43,12 @@ export async function PATCH(request: Request, { params }: IdRouteParams) {
 
 export async function DELETE(_: Request, { params }: IdRouteParams) {
   const { id } = await params
-  const session = await getServerSession(authOptions)
-  if (!session?.accessToken) {
+  const session = await getSession()
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/simulations/${id}`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
+  const res = await authFetch(`/simulations/${id}`, {
     method: 'DELETE',
   })
 

@@ -143,9 +143,9 @@ export const SitadelChart: FC<SitadelChartProps> = ({ data }) => {
             <YAxis domain={[0, maxValue]} allowDecimals={false} includeHidden={true} />
           </ComposedChart>
         </ResponsiveContainer>
-        <div className={classes.titleContainer}>
-          <span className={classes.title}>{chartTitle}</span>
-        </div>
+      </div>
+      <div className={classes.titleContainer}>
+        <span className={classes.title}>{chartTitle}</span>
       </div>
       <div>{chartDescription}</div>
     </>
@@ -166,7 +166,7 @@ const useStyles = tss.create({
   titleContainer: {
     display: 'flex',
     justifyContent: 'center',
-    marginTop: '1rem',
+    marginBottom: '1rem',
   },
   legend: {
     display: 'flex',

@@ -1,6 +1,6 @@
 import { Body, Controller, Logger, Post } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Public } from '~/common/decorators/public.decorator'
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 import { EmailService } from '~/email/email.service'
 import { TContactDto } from '~/schemas/email/email'
 
@@ -17,7 +17,7 @@ export class EmailController {
   }
 
   @Post('contact')
-  @Public()
+  @AllowAnonymous()
   async contact(@Body() body: TContactDto) {
     const htmlContent = `
             <h1>Formulaire de Contact</h1>

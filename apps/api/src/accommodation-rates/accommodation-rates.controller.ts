@@ -1,8 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common'
+import { TEpcisAccommodationRates } from '@shared'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Role } from '~/generated/prisma/enums'
-import { TEpcisAccommodationRates } from '@shared'
 
 @Controller('accommodation-rates')
 export class AccommodationRatesController {

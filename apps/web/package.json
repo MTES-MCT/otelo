@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "Frontend for the Otelo Startup",
   "author": "KGALLET",
-  "private": true,
+  "engines": {
+    "node": "24"
+  },
   "scripts": {
     "predev": "react-dsfr update-icons",
     "prebuild": "react-dsfr update-icons",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node .next/standalone/apps/web/server.js",
     "lint": "biome check src",
     "lint:format": "biome check src --fix"
   },
@@ -20,13 +22,14 @@
     "@shared": "workspace:*",
     "@socialgouv/matomo-next": "^1.11.0",
     "@tanstack/react-query": "^5.90.20",
+    "better-auth": "^1.4.18",
     "classnames": "^2.5.1",
     "dayjs": "catalog:",
+    "html-to-image": "^1.11.13",
     "jsonwebtoken": "^9.0.3",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",
     "next": "16.1.5",
-    "next-auth": "4.24.13",
     "nuqs": "^2.8.6",
     "react": "^19",
     "react-dom": "^19",
@@ -51,4 +54,5 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "typescript": "catalog:"
-  }}
+  }
+}

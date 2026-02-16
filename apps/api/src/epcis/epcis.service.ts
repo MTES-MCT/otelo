@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { TEpci } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
 import { Epci } from '~/generated/prisma/client'
-import { TEpci } from '@shared'
 
 @Injectable()
 export class EpcisService {

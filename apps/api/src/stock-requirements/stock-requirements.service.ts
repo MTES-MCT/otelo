@@ -52,19 +52,15 @@ export class StockRequirementsService {
     const { baseYear } = this.context
     const { projection, b1_horizon_resorption: horizon } = simulation.scenario
 
-    const baseToHorizonDelta = horizon - baseYear
-    const safeDenominator = baseToHorizonDelta > 0 ? baseToHorizonDelta : 1
+    const horizonDelta = horizon - baseYear
+    const safeDenominator = horizonDelta > 0 ? horizonDelta : 1
 
-    const computeScaledValue = (value: number, years: number, forceFullValue = false) => {
-      if (forceFullValue || baseToHorizonDelta <= 0) {
-        return Math.round(value)
-      }
-
-      const effectiveYears = Math.max(Math.min(years, baseToHorizonDelta), 0)
-      return Math.round((effectiveYears * value) / safeDenominator)
+    const computeScaledValue = (value: number, years: number) => {
+      if (horizonDelta <= 0) return Math.round(value)
+      return Math.round((Math.max(years, 0) * value) / safeDenominator)
     }
 
-    const { total, prePeakTotal, postPeakTotal } = categories.reduce(
+    const { prePeakTotal, postPeakTotal } = categories.reduce(
       (acc, category) => {
         const epciResult = category.epcis.find((e) => e.epciCode === epciCode)
         if (!epciResult) {
@@ -72,33 +68,25 @@ export class StockRequirementsService {
         }
 
         const yearsBeforePeak = peakYear - baseYear
-        const requiresFullValue = peakYear >= horizon
         const yearsAfterPeak = projection - peakYear
 
+        const prePeakYears = Math.min(yearsBeforePeak, horizonDelta)
+        const postPeakYears = Math.min(yearsAfterPeak, Math.max(0, horizonDelta - prePeakYears))
+
         const baseValue = projection > peakYear ? epciResult.value : epciResult.prorataValue
-        const prePeakValue = computeScaledValue(baseValue, yearsBeforePeak, requiresFullValue)
-        const postPeakValue = computeScaledValue(baseValue, yearsAfterPeak)
-
-        const newPostPeakTotal = acc.postPeakTotal + postPeakValue
-
-        const totalValue =
-          peakYear === 2021 && acc.prePeakTotal === 0
-            ? newPostPeakTotal
-            : newPostPeakTotal > 0
-              ? acc.prePeakTotal + prePeakValue
-              : acc.total + epciResult.prorataValue
+        const prePeakValue = computeScaledValue(baseValue, prePeakYears)
+        const postPeakValue = computeScaledValue(baseValue, postPeakYears)
 
         return {
-          total: totalValue,
           prePeakTotal: acc.prePeakTotal + prePeakValue,
-          postPeakTotal: newPostPeakTotal,
+          postPeakTotal: acc.postPeakTotal + postPeakValue,
         }
       },
-      { total: 0, prePeakTotal: 0, postPeakTotal: 0 },
+      { prePeakTotal: 0, postPeakTotal: 0 },
     )
 
     return {
-      total,
+      total: prePeakTotal + postPeakTotal,
       prePeakTotal,
       postPeakTotal,
     }

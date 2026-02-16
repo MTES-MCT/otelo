@@ -1,0 +1,135 @@
+version: 2.1
+
+orbs:
+  skip: theodo/skip@0.1.2
+  queue: eddiewebb/queue@3.2.1
+
+executors:
+  node:
+    docker:
+      - image: cimg/node:24.11.1
+
+parameters:
+  lockfile:
+    type: string
+    default: './pnpm-lock.yaml'
+  virtual_store_dir:
+    type: string
+    default: '.pnpm-store'
+  cache_version:
+    type: string
+    default: 'v1'
+
+workflows:
+  version: 2
+  otelo:
+    jobs:
+      - prepare_workspace_dependencies
+      - lint:
+          requires:
+            - prepare_workspace_dependencies
+      - test_api:
+          requires:
+            - prepare_workspace_dependencies
+      - build_api:
+          requires:
+            - prepare_workspace_dependencies
+      - build_web:
+          requires:
+            - prepare_workspace_dependencies
+
+jobs:
+  prepare_workspace_dependencies:
+    executor: node
+    steps:
+      - checkout
+      - skip/skip_unchanged:
+          paths: pnpm-lock.yaml
+      - install_dependencies
+      - run:
+          name: 'Fetch dependencies'
+          command: pnpm install --virtual-store-dir << pipeline.parameters.virtual_store_dir >> --frozen-lockfile
+      - save_cache:
+          key: << pipeline.parameters.cache_version >>-pnpm-{{ checksum "<< pipeline.parameters.lockfile >>" }}
+          paths:
+            - << pipeline.parameters.virtual_store_dir >>
+            - ./node_modules
+
+  lint:
+    executor: node
+    steps:
+      - checkout
+      - install_dependencies
+      - run:
+          name: 'Lint'
+          command: pnpm lint
+
+  test_api:
+    executor: node
+    steps:
+      - checkout
+      - install_dependencies
+      - prisma_generate
+      - run:
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: 'Test API'
+          command: pnpm -F api test
+
+  build_api:
+    executor: node
+    steps:
+      - checkout
+      - install_dependencies
+      - prisma_generate
+      - run:
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: 'Build API'
+          command: pnpm build:api
+
+  build_web:
+    executor: node
+    steps:
+      - checkout
+      - install_dependencies
+      - create_dotenv_file
+      - run:
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: 'Build Web'
+          command: pnpm build:web
+
+commands:
+  install_pnpm:
+    steps:
+      - run:
+          name: 'Install pnpm via corepack'
+          command: |
+            corepack enable
+            corepack prepare --activate
+
+  install_dependencies:
+    steps:
+      - install_pnpm
+      - restore_cache:
+          keys:
+            - << pipeline.parameters.cache_version >>-pnpm-{{ checksum "<< pipeline.parameters.lockfile >>" }}
+      - run:
+          name: 'Install dependencies'
+          command: pnpm install --virtual-store-dir << pipeline.parameters.virtual_store_dir >> --frozen-lockfile
+
+  prisma_generate:
+    steps:
+      - run:
+          name: 'Prisma generate'
+          command: pnpm --filter @otelo/api exec prisma generate
+
+  create_dotenv_file:
+    steps:
+      - run:
+          name: 'Create .env file from .env.dist'
+          command: cp apps/web/.env.dist apps/web/.env

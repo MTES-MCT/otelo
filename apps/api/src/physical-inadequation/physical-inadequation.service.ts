@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from '~/db/prisma.service'
 import { TEpci } from '@shared'
+import { PrismaService } from '~/db/prisma.service'
 
 @Injectable()
 export class PhysicalInadequationService {

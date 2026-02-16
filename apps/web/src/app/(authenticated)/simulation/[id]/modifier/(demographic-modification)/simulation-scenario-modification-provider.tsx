@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from 'react'
 import { TEpcisAccommodationRates } from '@shared'
+import { createContext, useContext, useState } from 'react'
 import { TScenario } from '~/schemas/scenario'
 
 export interface SimulationInitialSettings {
@@ -41,6 +41,8 @@ function transformInitialSettings(initialSettings: SimulationInitialSettings): S
       },
       restructuringRate: scenario.b2_tx_restructuration,
       disappearanceRate: scenario.b2_tx_disparition,
+      totalVacantCount: 0,
+      longTermVacantCount: 0,
     }
     return acc
   }, {} as TEpcisAccommodationRates)

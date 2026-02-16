@@ -16,30 +16,28 @@ datasource db {
 model User {
   id                                String                              @id @default(uuid())
   email                             String                              @unique
-  firstname                         String
-  lastname                          String
-  emailVerified                     DateTime?
-  sub                               String?
-  provider                          String?
-  role                              Role                                @default(USER)
+  name                              String
+  image                             String?
+  emailVerified                     Boolean                             @default(false)
   createdAt                         DateTime                            @default(now()) @map("created_at")
   updatedAt                         DateTime                            @updatedAt @map("updated_at")
+  // Custom fields
+  firstname                         String
+  lastname                          String
+  role                              Role                                @default(USER)
+  banned                            Boolean                             @default(false)
+  banReason                         String?                             @map("ban_reason")
   lastLoginAt                       DateTime                            @default(now()) @map("last_login_at")
   hasAccess                         Boolean                             @default(false)
   engaged                           Boolean                             @default(false)
-  password                          String?
   type                              UserType?
+  // Relations
   accounts                          Account[]
+  sessions                          Session[]
   demographicEvolutionOmphaleCustom DemographicEvolutionOmphaleCustom[]
-  emailVerifications                EmailVerification[]
   epciGroups                        EpciGroup[]
   scenarios                         Scenario[]
-  sessions                          Session[]
-  impersonatedSessions              Session[]                           @relation("ImpersonatedSessions")
-  adminImpersonations               ImpersonationSession[]              @relation("AdminImpersonations")
-  targetImpersonations              ImpersonationSession[]              @relation("TargetImpersonations")
   simulations                       Simulation[]
-  userAccountResetTokens            UserAccountResetToken[]
 
   @@map("users")
 }
@@ -51,30 +49,49 @@ model UserWhitelist {
 }
 
 model Account {
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String    @id @default(uuid())
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([provider, providerAccountId])
+  @@unique([providerId, accountId])
   @@map("accounts")
 }
 
 model Session {
-  id                 String   @id @default(uuid())
-  accessToken        String
-  refreshToken       String
-  expiresAt          DateTime @map("expires_at")
-  createdAt          DateTime @default(now()) @map("created_at")
-  userId             String   @map("user_id")
-  impersonatedUserId String?  @map("impersonated_user_id")
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  impersonatedUser   User?    @relation("ImpersonatedSessions", fields: [impersonatedUserId], references: [id], onDelete: Cascade)
+  id             String    @id @default(uuid())
+  expiresAt      DateTime  @map("expires_at")
+  token          String    @unique
+  ipAddress      String?   @map("ip_address")
+  userAgent      String?   @map("user_agent")
+  userId         String    @map("user_id")
+  impersonatedBy String?   @map("impersonated_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at") 
+
+  @@map("verifications")
 }
 
 model Export {
@@ -88,27 +105,6 @@ model Export {
   @@map("exports")
 }
 
-model EmailVerification {
-  id        String   @id @default(uuid())
-  code      String   @unique
-  expiresAt DateTime @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("email_verifications")
-}
-
-model UserAccountResetToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  expiresAt DateTime @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_account_reset_tokens")
-}
 
 model Scenario {
   id                                String                              @id @default(uuid())
@@ -209,6 +205,8 @@ model Epci {
   socialParc                        SocialParc?
   vacancyAccommodation              VacancyAccommodation[]
   simulations                       Simulation[]                        @relation("EpciToSimulation")
+  neighborsFrom                     EPCINeighbor[]                      @relation("EPCINeighborFrom")
+  neighborsTo                       EPCINeighbor[]                      @relation("EPCINeighborTo")
 
   @@map("epcis")
 }
@@ -592,6 +590,28 @@ model EPCIContiguity {
   @@map("epci_contiguity")
 }
 
+model EPCINeighbor {
+  epciCode         String          @map("epci_code")
+  neighborEpciCode String          @map("neighbor_epci_code")
+  category         NeighborCategory
+  rank             Int
+  score            Float
+  epci             Epci             @relation("EPCINeighborFrom", fields: [epciCode], references: [code])
+  neighborEpci     Epci             @relation("EPCINeighborTo", fields: [neighborEpciCode], references: [code])
+
+  @@id([epciCode, neighborEpciCode, category])
+  @@index([epciCode, category])
+  @@map("epci_neighbors")
+}
+
+enum NeighborCategory {
+  gen
+  logvac
+  mlgmt
+  projdem
+  ressec
+}
+
 model EpciGroup {
   id             String           @id @default(uuid())
   name           String
@@ -632,18 +652,6 @@ model DemographicEvolutionOmphaleCustom {
   @@map("demographic_evolution_omphale_custom")
 }
 
-model ImpersonationSession {
-  id            String   @id @default(uuid())
-  adminUserId   String   @map("admin_user_id")
-  targetUserId  String   @map("target_user_id")
-  createdAt     DateTime @default(now()) @map("created_at")
-  endedAt       DateTime? @map("ended_at")
-  isActive      Boolean  @default(true) @map("is_active")
-  adminUser     User     @relation("AdminImpersonations", fields: [adminUserId], references: [id], onDelete: Cascade)
-  targetUser    User     @relation("TargetImpersonations", fields: [targetUserId], references: [id], onDelete: Cascade)
-
-  @@map("impersonation_sessions")
-}
 
 model SimulationResults {
   id                 String     @id @default(uuid())

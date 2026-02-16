@@ -106,21 +106,23 @@ export const OmphaleScenariosSelection: FC = () => {
         }}
         name="omphale-scenario"
       />
-      <Button
-        priority="tertiary no outline"
-        iconPosition="right"
-        iconId={knowMore ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}
-        onClick={() => setKnowMore(!knowMore)}
-        size="small"
-      >
-        En savoir plus sur les hypothèses d'influence
-      </Button>
-      {knowMore && (
-        <p className="fr-text--sm fr-text-mention--grey fr-mt-1v">
-          Les scénarios d'évolution proposés sont basés sur votre choix de projection par population à l'étape précédente. Vous avez la
-          possibilité de revenir à l'étape précèdente pour modifier votre choix de projection par population.
-        </p>
-      )}
+      <div data-chart-download-exclude>
+        <Button
+          priority="tertiary no outline"
+          iconPosition="right"
+          iconId={knowMore ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}
+          onClick={() => setKnowMore(!knowMore)}
+          size="small"
+        >
+          En savoir plus sur les hypothèses d'influence
+        </Button>
+        {knowMore && (
+          <p className="fr-text--sm fr-text-mention--grey fr-mt-1v">
+            Les scénarios d'évolution proposés sont basés sur votre choix de projection par population à l'étape précédente. Vous avez la
+            possibilité de revenir à l'étape précèdente pour modifier votre choix de projection par population.
+          </p>
+        )}
+      </div>
     </div>
   )
 }

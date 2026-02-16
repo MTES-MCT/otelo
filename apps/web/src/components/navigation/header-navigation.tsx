@@ -2,16 +2,21 @@
 
 import { MainNavigation, MainNavigationProps } from '@codegouvfr/react-dsfr/MainNavigation'
 import { usePathname } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { FC } from 'react'
-import { TSession } from '~/types/next-auth'
+import { useEpciNeighborsAccess } from '~/hooks/use-epci-neighbors-access'
+import { Session } from '~/lib/auth/server'
 
-export const HeaderNavigation: FC = () => {
+type HeaderNavigationProps = {
+  session: Session | null
+}
+
+export const HeaderNavigation: FC<HeaderNavigationProps> = ({ session }) => {
   const pathname = usePathname()
-  const { data: session } = useSession() as { data: TSession | null }
+
+  const { hasAccess: hasEpciNeighborsAccess } = useEpciNeighborsAccess()
 
   const isAdmin = session?.user?.role === 'ADMIN'
-  const items = session ? getMenuConnected(pathname, isAdmin) : getMenuDisconnected(pathname)
+  const items = session ? getMenuConnected(pathname, isAdmin, hasEpciNeighborsAccess) : getMenuDisconnected(pathname)
 
   return <MainNavigation id="header-navigation" items={items} />
 }
@@ -49,7 +54,7 @@ const getMenuDisconnected = (pathname: string): MainNavigationProps.Item[] => [
   },
 ]
 
-const getMenuConnected = (pathname: string, isAdmin = false): MainNavigationProps.Item[] => [
+const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAccess = false): MainNavigationProps.Item[] => [
   {
     isActive: pathname === '/accueil',
     linkProps: { href: '/accueil', target: '_self' },
@@ -65,8 +70,17 @@ const getMenuConnected = (pathname: string, isAdmin = false): MainNavigationProp
     linkProps: { href: '/infographies', target: '_self' },
     text: 'Infographies',
   },
+  ...(hasEpciNeighborsAccess
+    ? [
+        {
+          isActive: pathname === '/territoires-voisins',
+          linkProps: { href: '/territoires-voisins', target: '_self' },
+          text: 'Territoires voisins',
+        },
+      ]
+    : []),
   {
-    isActive: ['/guide', '/ressources', '/retours-d-experience', '/faq'].includes(pathname),
+    isActive: ['/guide', '/ressources', '/retours-d-experience', '/faq', '/sources-de-donnees'].includes(pathname),
     menuLinks: [
       {
         isActive: pathname === '/guide',
@@ -81,6 +95,13 @@ const getMenuConnected = (pathname: string, isAdmin = false): MainNavigationProp
           href: '/ressources',
         },
         text: 'Ressources de nos partenaires',
+      },
+      {
+        isActive: pathname === '/sources-de-donnees',
+        linkProps: {
+          href: '/sources-de-donnees',
+        },
+        text: 'Sources de données',
       },
       {
         isActive: pathname === '/faq',

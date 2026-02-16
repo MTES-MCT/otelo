@@ -3,6 +3,7 @@ import { DatavisualisationAutocomplete } from '~/components/data-visualisation/d
 import { DataVisualisationFilters } from '~/components/data-visualisation/data-visualisation-filters'
 import { DataVisualisationPage } from '~/components/data-visualisation/data-visualisation-page'
 import { SelectDataType } from '~/components/data-visualisation/select-data-type'
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 
 export const metadata: Metadata = {
   title: 'Infographies Otelo',
@@ -21,6 +22,9 @@ export default function InfographiesPage() {
         </div>
       </div>
       <DataVisualisationPage />
+      <div className="fr-pt-2w">
+        <DataSourceLink anchor="" />
+      </div>
     </div>
   )
 }

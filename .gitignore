@@ -35,3 +35,4 @@ coverage
 .tmp
 
 apps/api/.cache/*
+apps/api/src/generated/*

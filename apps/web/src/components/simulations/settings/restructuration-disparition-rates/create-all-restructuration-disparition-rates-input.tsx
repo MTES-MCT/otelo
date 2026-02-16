@@ -4,12 +4,12 @@ import Badge from '@codegouvfr/react-dsfr/Badge'
 import Button from '@codegouvfr/react-dsfr/Button'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import Input from '@codegouvfr/react-dsfr/Input'
+import { TAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { FC, useState } from 'react'
 import { tss } from 'tss-react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
-import { TAccommodationRates } from '@shared'
 
 export const CreateAllRestructurationDisparitionRatesInput: FC = () => {
   const { classes } = useStyles()

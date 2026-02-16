@@ -12,11 +12,21 @@ export const ModifyAllEpcisRatesView: FC = () => {
   const epciIds = Object.keys(simulationSettings.epciScenarios)
   const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
 
-  // Calculate average long-term vacancy rate across all EPCIs
-  const averageLongTermRate =
-    originalRatesData && epciIds.length > 0
-      ? epciIds.reduce((sum, epciId) => sum + (originalRatesData[epciId]?.longTermVacancyRate || 0), 0) / epciIds.length
+  // Calculate aggregated long-term vacancy rate: Part_VLD × Taux_FILOCOM_BH
+  const totalLongTermVacant = originalRatesData
+    ? epciIds.reduce((sum, id) => sum + (originalRatesData[id]?.longTermVacantCount ?? 0), 0)
+    : 0
+  const totalVacant = originalRatesData ? epciIds.reduce((sum, id) => sum + (originalRatesData[id]?.totalVacantCount ?? 0), 0) : 0
+  const partVacanceLongueDuree = totalVacant > 0 ? totalLongTermVacant / totalVacant : 0
+
+  const totalParctot = originalRatesData ? epciIds.reduce((sum, id) => sum + (originalRatesData[id]?.urbanRenewal ?? 0), 0) : 0
+  const tauxVacanceBH =
+    totalParctot > 0 && originalRatesData
+      ? epciIds.reduce((sum, id) => sum + (originalRatesData[id]?.vacancyRate ?? 0) * (originalRatesData[id]?.urbanRenewal ?? 0), 0) /
+        totalParctot
       : 0
+
+  const averageLongTermRate = partVacanceLongueDuree * tauxVacanceBH
 
   return (
     <div className="fr-p-4w shadow">

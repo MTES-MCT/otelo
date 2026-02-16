@@ -3,6 +3,7 @@
 import { RiIconClassName } from '@codegouvfr/react-dsfr'
 import Badge from '@codegouvfr/react-dsfr/Badge'
 import Tabs from '@codegouvfr/react-dsfr/Tabs'
+import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
@@ -11,7 +12,6 @@ import ModifyParcsComparisonCharts from '~/components/simulations/settings/epcis
 import { RatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/rates-toggle-switch'
 import { ModifyVacancyAccommodationRatesInput } from '~/components/simulations/settings/modify-vacancy-accommodation-rates-input'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
-import { TEpcisAccommodationRates } from '@shared'
 import styles from './epcis-accommodation-rates.module.css'
 
 interface ModifyEpcisAccomodationRatesProps {

@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import { SearchParams } from 'nuqs'
 import { searchParamsCache } from '~/app/(authenticated)/simulation/(creation)/searchParams'
+import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import { OmphaleScenariosChart } from '~/components/charts/omphale-scenarios-chart'
 import { PopulationScenariosChart } from '~/components/charts/population-scenarios-chart'
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { DemographicSettingsHeader } from '~/components/simulations/settings/demographic-settings-header'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
@@ -27,9 +29,16 @@ export default async function DemographicSettingsPage({ searchParams }: PageProp
     <>
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <DemographicSettingsHeader>
-          <PopulationScenariosChart demographicEvolution={populationEvolution} />
-          <OmphaleScenariosChart demographicEvolution={omphaleEvolution} />
+          <ChartDownloadWrapper fileName="scenarios-population">
+            <PopulationScenariosChart demographicEvolution={populationEvolution} />
+          </ChartDownloadWrapper>
+          <ChartDownloadWrapper fileName="scenarios-omphale">
+            <OmphaleScenariosChart demographicEvolution={omphaleEvolution} />
+          </ChartDownloadWrapper>
         </DemographicSettingsHeader>
+      </div>
+      <div className="fr-px-2w fr-pt-2w">
+        <DataSourceLink anchor="#projections-demographiques" />
       </div>
       <div className="fr-flex fr-flex-gap-6v fr-justify-content-end fr-py-4w fr-px-2w">
         <PreviousStepLink />

@@ -1,4 +1,7 @@
-import { FC } from 'react'
+import classNames from 'classnames'
+import { FC, ReactNode } from 'react'
+import { tss } from 'tss-react'
+import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import { BadHousingChart } from '~/components/charts/data-visualisation/bad-housing-charts'
 import { HouseholdSizesChart } from '~/components/charts/data-visualisation/household-sizes-chart'
 import { LovacAccommodationEvolutionChart } from '~/components/charts/data-visualisation/lovac-evolution-charts'
@@ -24,6 +27,17 @@ export const DataVisualisationChart: FC<{
   type: string | null
   source: string | null
 }> = ({ data, type, source }) => {
+  const { classes } = useStyles()
+
+  const chartTypeClassNames: Record<string, string> = {
+    'projection-menages-evolution': classes.buttonOffset,
+    'taille-menages': classes.buttonOffset,
+    'residences-secondaires': classes.buttonOffset,
+    'logements-vacants': classes.buttonOffset,
+    'mal-logement': classNames(classes.buttonOffset, classes.buttonLeft),
+    sitadel: classes.buttonOffset,
+  }
+
   const isPopulationEvolution = ['population-evolution', 'menage-evolution'].includes(type ?? '')
   const isProjectionPopulationEvolution = ['projection-population-evolution'].includes(type ?? '')
   const isProjectionMenagesEvolution = ['projection-menages-evolution'].includes(type ?? '')
@@ -32,34 +46,48 @@ export const DataVisualisationChart: FC<{
   const isSitadel = ['sitadel'].includes(type ?? '')
   const isTailleMenages = ['taille-menages'].includes(type ?? '')
 
+  let chartContent: ReactNode = null
+
   if (isPopulationEvolution) {
-    return <PopulationEvolutionChart data={data as TRPPopulationEvolution} type={type} />
-  }
-  if (isProjectionPopulationEvolution) {
-    return <ProjectionPopulationEvolutionChart data={data as TDemographicProjectionEvolution} type={type} />
-  }
-  if (isProjectionMenagesEvolution) {
-    return <ProjectionMenagesEvolutionChart data={data as TDemographicProjectionEvolution} type={type} />
-  }
-  if (isAccommodationEvolution) {
+    chartContent = <PopulationEvolutionChart data={data as TRPPopulationEvolution} type={type} />
+  } else if (isProjectionPopulationEvolution) {
+    chartContent = <ProjectionPopulationEvolutionChart data={data as TDemographicProjectionEvolution} type={type} />
+  } else if (isProjectionMenagesEvolution) {
+    chartContent = <ProjectionMenagesEvolutionChart data={data as TDemographicProjectionEvolution} type={type} />
+  } else if (isAccommodationEvolution) {
     if (source === 'rp') {
-      return <RPAccommodationEvolutionChart data={data as TAccommodationEvolution} type={type} />
+      chartContent = <RPAccommodationEvolutionChart data={data as TAccommodationEvolution} type={type} />
     }
     //todo : reenable as soon as filocom data is available
     // if (source === 'filocom') {
-    // return <FilocomAccommodationEvolutionChart data={data as TAccommodationEvolution} type={type} />
+    // chartContent = <FilocomAccommodationEvolutionChart data={data as TAccommodationEvolution} type={type} />
     // }
     if (source === 'lovac') {
-      return <LovacAccommodationEvolutionChart data={data as TAccommodationLovacEvolution} />
+      chartContent = <LovacAccommodationEvolutionChart data={data as TAccommodationLovacEvolution} />
     }
+  } else if (isMalLogement) {
+    chartContent = <BadHousingChart data={data as TInadequateHousing} />
+  } else if (isSitadel) {
+    chartContent = <SitadelChart data={data as TSitadel} />
+  } else if (isTailleMenages) {
+    chartContent = <HouseholdSizesChart data={data as THouseholdSizesChart} />
   }
-  if (isMalLogement) {
-    return <BadHousingChart data={data as TInadequateHousing} />
-  }
-  if (isSitadel) {
-    return <SitadelChart data={data as TSitadel} />
-  }
-  if (isTailleMenages) {
-    return <HouseholdSizesChart data={data as THouseholdSizesChart} />
-  }
+
+  if (!chartContent) return null
+
+  return (
+    <ChartDownloadWrapper fileName={type ?? 'graphique'} className={chartTypeClassNames[type ?? '']}>
+      {chartContent}
+    </ChartDownloadWrapper>
+  )
 }
+
+const useStyles = tss.create({
+  buttonOffset: {
+    top: '3.5rem !important',
+  },
+  buttonLeft: {
+    left: '9px !important',
+    right: 'unset !important',
+  },
+})

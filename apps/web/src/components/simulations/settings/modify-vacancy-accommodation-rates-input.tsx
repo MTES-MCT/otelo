@@ -1,8 +1,8 @@
 'use client'
 
+import { TAccommodationRates } from '@shared'
 import { FC } from 'react'
 import { ModifyLongTermAccomodationRange } from '~/components/simulations/settings/modify-long-term-accomodation-range'
-import { TAccommodationRates } from '@shared'
 
 type ModifyVacancyAccommodationRatesInputProps = {
   epci: string

@@ -9,3 +9,8 @@
 @import url("./helpers/position.css");
 @import url("./helpers/dropdown.css");
 @import url("./helpers/link.css");
+
+/* Override DSFR [href] underline styles inside Leaflet containers */
+.leaflet-container a[href] {
+  background-image: none;
+}

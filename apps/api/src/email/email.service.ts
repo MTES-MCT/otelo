@@ -3,7 +3,6 @@ import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 import { TEmailDto } from '~/schemas/email/email'
-import { TUser } from '~/schemas/users/user'
 import { IEmailService } from './interfaces/email-service.interface'
 
 @Injectable()
@@ -96,19 +95,5 @@ export class EmailService implements IEmailService {
       this.logger.error(`Failed to send email:`, { error })
       throw new InternalServerErrorException('Failed to send templated email')
     }
-  }
-
-  async sendEmailVerificationEmail(user: TUser, confirmationUri: string): Promise<void> {
-    const templateId = this.configService.getOrThrow<string>('BREVO_EMAIL_VERIFICATION_TEMPLATE_ID')
-
-    await this.sendTemplatedEmail(
-      templateId,
-      {
-        firstname: user.firstname,
-        confirmationUrl: confirmationUri,
-      },
-      user.email,
-      'Vérification de votre inscription sur Otelo',
-    )
   }
 }

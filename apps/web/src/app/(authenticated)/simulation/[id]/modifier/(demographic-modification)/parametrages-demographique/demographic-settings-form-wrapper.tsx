@@ -3,6 +3,7 @@
 import { parseAsString, useQueryState } from 'nuqs'
 import { useEffect } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
+import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import { OmphaleScenariosChart } from '~/components/charts/omphale-scenarios-chart'
 import { PopulationScenariosChart } from '~/components/charts/population-scenarios-chart'
 import { DemographicSettingsHeader } from '~/components/simulations/settings/demographic-settings-header'
@@ -71,8 +72,12 @@ export const DemographicSettingsFormWrapper = ({
 
   return (
     <DemographicSettingsHeader>
-      <PopulationScenariosChart demographicEvolution={populationEvolution} epcis={epcis} />
-      <OmphaleScenariosChart demographicEvolution={omphaleEvolution} scenarioId={scenarioId} onChange={handleChange} epcis={epcis} />
+      <ChartDownloadWrapper fileName="scenarios-population">
+        <PopulationScenariosChart demographicEvolution={populationEvolution} epcis={epcis} />
+      </ChartDownloadWrapper>
+      <ChartDownloadWrapper fileName="scenarios-omphale">
+        <OmphaleScenariosChart demographicEvolution={omphaleEvolution} scenarioId={scenarioId} onChange={handleChange} epcis={epcis} />
+      </ChartDownloadWrapper>
     </DemographicSettingsHeader>
   )
 }

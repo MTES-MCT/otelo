@@ -1,23 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 import type { IdRouteParams } from '~/types/simulation-page-props'
 
 export async function PATCH(request: NextRequest, { params }: IdRouteParams) {
   const { id } = await params
-  const session = await getServerSession(authOptions)
-  if (!session?.accessToken) {
+  const session = await getSession()
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { type } = await request.json()
 
-  const response = await fetch(`${process.env.NEXT_OTELO_API_URL}/users/${id}`, {
+  const response = await authFetch(`/users/${id}`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.accessToken}`,
-    },
     body: JSON.stringify({
       type,
     }),

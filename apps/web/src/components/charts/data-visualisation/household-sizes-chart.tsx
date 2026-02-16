@@ -164,7 +164,7 @@ export const HouseholdSizesChart: FC<HouseholdSizesChartProps> = ({ data: chartD
         <ResponsiveContainer width="100%" height="100%">
           <LineChart width={500} height={500} margin={{ left: 20, right: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="year" allowDuplicatedCategory={false} />
+            <XAxis dataKey="year" allowDuplicatedCategory={false} interval={4} />
 
             {epcisLinearChart.length > 0 && (
               <YAxis
@@ -176,8 +176,9 @@ export const HouseholdSizesChart: FC<HouseholdSizesChartProps> = ({ data: chartD
                   const globalMax = Math.max(...maxValues)
 
                   const padding = (globalMax - globalMin) * 0.05
-                  return [Math.max(0, Math.round(globalMin - padding)), Math.round(globalMax + padding)]
+                  return [Math.max(0, Math.floor((globalMin - padding) * 10) / 10), Math.ceil((globalMax + padding) * 10) / 10]
                 })()}
+                tickCount={6}
               />
             )}
             <Tooltip content={<CustomTooltip />} />

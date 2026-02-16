@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { TCalculationResult } from '@shared'
 import { BaseCalculator, CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { PrismaService } from '~/db/prisma.service'
-import { TCalculationResult } from '@shared'
 import { TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'
 
 @Injectable()

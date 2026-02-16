@@ -62,23 +62,26 @@ export const PopulationScenariosSelection: FC = () => {
           content: classNames('fr-justify-content-space-between fr-flex', styles.noWrap),
         }}
       />
-      <Button
-        priority="tertiary no outline"
-        iconPosition="right"
-        iconId={knowMore ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}
-        onClick={() => setKnowMore(!knowMore)}
-        size="small"
-      >
-        En savoir plus sur les hypothèses d'influence
-      </Button>
-      {knowMore && (
-        <p className="fr-text--sm fr-text-mention--grey fr-mt-1v">
-          Les projections de nombre de ménages proposées par Otelo sont établies à partir du modèle Omphale, produit par l'Insee. Il permet
-          d'obtenir des projections de population sur la période 2018-2050 à partir de scénarios qui reposent sur différentes hypothèses de
-          natalité, de mortalité et de migration. Ces projections de population sont ensuite transformées en projections de nombre de
-          ménages à l'aide d'une méthode conçue en partenariat par la DHUP, l'Insee et le SDES selon plusieurs scénarios de décohabitation.
-        </p>
-      )}
+      <div data-chart-download-exclude>
+        <Button
+          priority="tertiary no outline"
+          iconPosition="right"
+          iconId={knowMore ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}
+          onClick={() => setKnowMore(!knowMore)}
+          size="small"
+        >
+          En savoir plus sur les hypothèses d'influence
+        </Button>
+        {knowMore && (
+          <p className="fr-text--sm fr-text-mention--grey fr-mt-1v">
+            Les projections de nombre de ménages proposées par Otelo sont établies à partir du modèle Omphale, produit par l'Insee. Il
+            permet d'obtenir des projections de population sur la période 2018-2050 à partir de scénarios qui reposent sur différentes
+            hypothèses de natalité, de mortalité et de migration. Ces projections de population sont ensuite transformées en projections de
+            nombre de ménages à l'aide d'une méthode conçue en partenariat par la DHUP, l'Insee et le SDES selon plusieurs scénarios de
+            décohabitation.
+          </p>
+        )}
+      </div>
     </div>
   )
 }

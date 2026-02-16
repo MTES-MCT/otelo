@@ -154,6 +154,16 @@ export const FlowRequirementsChart: FC<FlowRequirementsChartProps> = ({ results,
       ),
     },
     {
+      name: 'Logements vacants de longue durée',
+      value: Math.max(0, longTermVacantAccomodation),
+      color: getChartColor('longVacantAccommodations'),
+      description: (val: string) => (
+        <>
+          L'augmentation du nombre de logements vacants de longue durée contribuera pour <strong>{val}</strong> au besoin en logements.
+        </>
+      ),
+    },
+    {
       name: 'Fluidité du parc',
       value: Math.max(0, shortTermVacantAccomodation),
       color: getChartColor('fluiditeDuParc'),
@@ -166,6 +176,16 @@ export const FlowRequirementsChart: FC<FlowRequirementsChartProps> = ({ results,
   ].filter((item) => item.value > 0)
 
   const supplyData: DonutDataItem[] = [
+    {
+      name: 'Remobilisation de résidences secondaires',
+      value: Math.abs(Math.min(0, secondaryResidenceAccomodationEvolution)),
+      color: getChartColor('remobilisationResidencesSecondaires'),
+      description: (val: string) => (
+        <>
+          La diminution du nombre de résidences secondaires contribuera à la remise sur le marché de <strong>{val} logements</strong>.
+        </>
+      ),
+    },
     {
       name: 'Remobilisation de logements vacants',
       value: Math.abs(Math.min(0, longTermVacantAccomodation)),

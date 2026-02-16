@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { TFlowRequirementChartData } from '@shared'
 import { FlowRequirementService } from '~/calculation/needs-calculation/besoins-flux/flow-requirement.service'
 import { SitadelService } from '~/calculation/needs-calculation/sitadel/sitadel.service'
-import { TFlowRequirementChartData } from '@shared'
 import { TResults } from '~/schemas/results/results'
 import { TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'
 import { StockRequirementsService } from '~/stock-requirements/stock-requirements.service'
@@ -42,6 +42,7 @@ export class NeedsCalculationService {
         stockRequirementsNeeds,
         peakYear,
       )
+
       total += epciTotalFlux + (peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total)
       totalFlux += epciTotalFlux
       totalStock += peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total

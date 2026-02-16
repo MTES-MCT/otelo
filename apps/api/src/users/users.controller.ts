@@ -20,15 +20,6 @@ export class UsersController {
   }
 
   @AccessControl({
-    roles: [Role.ADMIN, Role.USER],
-  })
-  @HttpCode(HttpStatus.OK)
-  @Get('/me')
-  async getConnectedUser(@User() user: TUser) {
-    return this.usersService.findById(user.id)
-  }
-
-  @AccessControl({
     roles: [Role.ADMIN],
   })
   @HttpCode(HttpStatus.OK)

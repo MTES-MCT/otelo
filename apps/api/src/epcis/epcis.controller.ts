@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Query } from '@nestjs/common'
+import { TEpci } from '@shared'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { EpcisService } from '~/epcis/epcis.service'
 import { Epci } from '~/generated/prisma/client'
 import { Role } from '~/generated/prisma/enums'
-import { TEpci } from '@shared'
 
 @Controller('epcis')
 export class EpcisController {

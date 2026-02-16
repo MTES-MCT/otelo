@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
 import { TAccommodationRates } from '@shared'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 
 export interface RateSettings {
   vacancyRate: number
@@ -8,6 +8,9 @@ export interface RateSettings {
   txRS: number
   restructuringRate: number
   disappearanceRate: number
+  parctot: number
+  totalVacantCount: number
+  longTermVacantCount: number
 }
 
 interface RatesState {
@@ -36,6 +39,9 @@ export const RatesProvider = ({ children, initialRates }: RatesProviderProps) =>
         initialRates: rates,
         restructuringRate: rates.restructuringRate,
         disappearanceRate: rates.disappearanceRate,
+        parctot: rates.urbanRenewal,
+        totalVacantCount: rates.totalVacantCount,
+        longTermVacantCount: rates.longTermVacantCount,
       },
     }
   }, {})
@@ -55,6 +61,9 @@ export const RatesProvider = ({ children, initialRates }: RatesProviderProps) =>
           initialRates: rateData,
           restructuringRate: rateData.restructuringRate,
           disappearanceRate: rateData.disappearanceRate,
+          parctot: rateData.urbanRenewal,
+          totalVacantCount: rateData.totalVacantCount,
+          longTermVacantCount: rateData.longTermVacantCount,
         },
       }
     }, {})

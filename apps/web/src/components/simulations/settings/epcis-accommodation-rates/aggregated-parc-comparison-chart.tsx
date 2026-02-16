@@ -4,6 +4,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
 import { parseAsBoolean, useQueryState } from 'nuqs'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
+import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import styles from './parc-comparison-charts.module.css'
 
 interface SegmentData {
@@ -154,31 +155,33 @@ export const AggregatedParcsComparisonChart = () => {
         />
       </Button>
       {isShown && (
-        <div className={classNames(styles.chartContainer, 'fr-p-3w', 'fr-mt-3v')}>
-          <div className="fr-flex fr-direction-column">
-            <div className="fr-flex fr-flex-gap-2v fr-justify-content-end">
-              <div className="fr-flex fr-align-items-center fr-flex-gap-2v">
-                <div style={{ width: '12px', height: '12px', backgroundColor: COLORS.shortTermVacantAccomodation }} />
-                <span className="fr-text--sm fr-mb-0">Vacance courte durée</span>
+        <ChartDownloadWrapper fileName="comparaison-parc-agregee">
+          <div className={classNames(styles.chartContainer, 'fr-p-3w', 'fr-mt-3v')}>
+            <div className="fr-flex fr-direction-column">
+              <div className="fr-flex fr-flex-gap-2v fr-justify-content-end">
+                <div className="fr-flex fr-align-items-center fr-flex-gap-2v">
+                  <div style={{ width: '12px', height: '12px', backgroundColor: COLORS.shortTermVacantAccomodation }} />
+                  <span className="fr-text--sm fr-mb-0">Vacance courte durée</span>
+                </div>
+                <div className="fr-flex fr-align-items-center fr-flex-gap-2v">
+                  <div style={{ width: '12px', height: '12px', backgroundColor: COLORS.longTermVacantAccomodation }} />
+                  <span className="fr-text--sm fr-mb-0">Vacance longue durée</span>
+                </div>
               </div>
-              <div className="fr-flex fr-align-items-center fr-flex-gap-2v">
-                <div style={{ width: '12px', height: '12px', backgroundColor: COLORS.longTermVacantAccomodation }} />
-                <span className="fr-text--sm fr-mb-0">Vacance longue durée</span>
+              {/* 2021 Section */}
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
+                <span className="fr-text--medium">Le parc en 2021 (moyenne du territoire)</span>
+                <CustomBar data={data2021} scale={unifiedScale} />
               </div>
-            </div>
-            {/* 2021 Section */}
-            <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
-              <span className="fr-text--medium">Le parc en 2021 (moyenne du territoire)</span>
-              <CustomBar data={data2021} scale={unifiedScale} />
-            </div>
 
-            {/* projection section */}
-            <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-              <span className="fr-text--medium">Le parc en 2050 (moyenne du territoire)</span>
-              <CustomBar data={computedData} scale={unifiedScale} />
+              {/* projection section */}
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                <span className="fr-text--medium">Le parc en 2050 (moyenne du territoire)</span>
+                <CustomBar data={computedData} scale={unifiedScale} />
+              </div>
             </div>
           </div>
-        </div>
+        </ChartDownloadWrapper>
       )}
     </div>
   )

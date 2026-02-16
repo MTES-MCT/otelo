@@ -1,20 +1,14 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 import { TOmphaleDemographicEvolution } from '~/schemas/demographic-evolution'
 
 export const getOmphaleDemographicEvolutionByEpci = async (epcis: string[]) => {
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
-  if (!session?.accessToken) {
+  if (!session) {
     throw new Error('Unauthorized')
   }
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/demographic-evolution/omphale?epciCodes=${epcis.join(',')}`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  const res = await authFetch(`/demographic-evolution/omphale?epciCodes=${epcis.join(',')}`)
   if (!res.ok) {
     throw new Error('Failed to get omphale demographic evolution by epci')
   }

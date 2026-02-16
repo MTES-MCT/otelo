@@ -26,22 +26,22 @@ export const SimulationAnnualsNeedsDropdownSummary = ({ horizon, hasSurplusHousi
           <div>
             <ul>
               <li>
-                <span className="fr-text--bold">Besoins en logements (barres rouges)</span> : volume estimé de logements à construire chaque
-                année pour répondre aux dynamiques démographiques, aux situations de mal-logement (partiellement traduites en besoins
-                neufs). Ces besoins sont projetés jusqu’en {horizon}.
+                <span className="fr-text--bold">Besoins en logements</span> : volume estimé de logements à construire chaque année pour
+                répondre aux dynamiques démographiques, aux situations de mal-logement (partiellement traduites en besoins neufs). Ces
+                besoins sont projetés jusqu’en {horizon}.
               </li>
               {hasSurplusHousing && (
                 <li>
-                  <span className="fr-text--bold">Logements excédentaires (barres jaunes)</span> : représentent les résidences principales
-                  devenant vacants ou résidences secondaires, à partir des années où le besoin en construction est nul.
+                  <span className="fr-text--bold">Logements excédentaires</span> : représentent les résidences principales devenant vacants
+                  ou résidences secondaires, à partir des années où le besoin en construction est nul.
                 </li>
               )}
               <li>
-                <span className="fr-text--bold">Permis de construire autorisés (barres bleues)</span> : nombre d’autorisations de
-                constructions d’après Sit@del2.
+                <span className="fr-text--bold">Permis de construire autorisés</span> : nombre d’autorisations de constructions d’après
+                Sit@del2.
               </li>
               <li>
-                <span className="fr-text--bold">Logements commencés (barres vertes)</span> : Nombre de logements commencés d'après Sit@del2
+                <span className="fr-text--bold">Logements commencés</span> : Nombre de logements commencés d'après Sit@del2
               </li>
             </ul>
           </div>

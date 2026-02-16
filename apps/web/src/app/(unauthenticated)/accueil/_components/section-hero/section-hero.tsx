@@ -4,12 +4,11 @@ import { fr } from '@codegouvfr/react-dsfr'
 import { Button } from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
 import Image from 'next/image'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { getSession } from '~/lib/auth/server'
 import styles from './section-hero.module.css'
 
 export const SectionHero = async () => {
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
   const ctaComponent = session ? (
     <Button

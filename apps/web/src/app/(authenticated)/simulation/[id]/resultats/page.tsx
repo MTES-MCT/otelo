@@ -81,7 +81,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
     }
     return {
       content: (
-        <div className="fr-container fr-flex fr-direction-column fr-flex-gap-8v">
+        <div key={epci.code} className="fr-container fr-flex fr-direction-column fr-flex-gap-8v">
           <SimulationSettingsDropdown simulation={simulation} epci={epci} />
           <SimulationNeedsSummary projection={simulation.scenario.projection} results={epciResults} epci={epciData} />
           <SimulationDemographicBadHousingSummary
@@ -96,6 +96,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
             newConstructionsResults={epciFlowRequirementData}
             horizon={simulation.scenario.projection}
             hasSurplusHousing={hasSurplusHousing}
+            epciName={epci.name}
           />
           {hasNewHousingNeeds && <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} />}
           <SimulationBadHousing horizon={simulation.scenario.projection} results={stockResults} />
@@ -108,7 +109,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
   })
   const bassinTab = {
     content: (
-      <div className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
+      <div key="territory" className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
         <SimulationSettingsDropdown simulation={simulation} />
         <SimulationNeedsSummary projection={simulation.scenario.projection} results={results} epcis={simulation.epcis} />
 

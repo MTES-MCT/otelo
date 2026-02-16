@@ -2,11 +2,11 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import Button from '@codegouvfr/react-dsfr/Button'
+import { TEpci } from '@shared'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { useState } from 'react'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
 import { useEpciGroups } from '~/hooks/use-epci-groups'
-import { TEpci } from '@shared'
 import { BassinHabitatSelection } from './bassin-habitat-selection'
 import { CustomSelection } from './custom-selection'
 import { ExistingGroupSelection } from './existing-group-selection'

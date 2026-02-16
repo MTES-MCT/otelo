@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { HealthController } from './health.controller'
 
+jest.mock('@thallesp/nestjs-better-auth', () => ({
+  AllowAnonymous: () => () => Promise.resolve(true),
+}))
+
 describe('HealthController', () => {
   let controller: HealthController
 

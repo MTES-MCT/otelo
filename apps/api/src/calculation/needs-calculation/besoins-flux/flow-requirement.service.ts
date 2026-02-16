@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { TFlowRequirementChartData, TFlowRequirementChartDataResult } from '@shared'
 import { BaseCalculator, CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import {
   DemographicEvolutionService,
@@ -6,7 +7,6 @@ import {
 } from '~/calculation/needs-calculation/besoins-flux/evolution-demographique-b21/demographic-evolution.service'
 import { RenewalHousingStockService } from '~/calculation/needs-calculation/besoins-flux/occupation-renouvellement-parc-logements-b22/renewal-housing-stock.service'
 import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
-import { TFlowRequirementChartData, TFlowRequirementChartDataResult } from '@shared'
 import { EOmphale, TDemographicEvolution, TGetDemographicEvolution } from '~/schemas/demographic-evolution/demographic-evolution'
 import { TStockRequirementsResults } from '~/schemas/results/results'
 import { TScenario } from '~/schemas/scenarios/scenario'
@@ -89,9 +89,17 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
     return result
   }
 
-  calculateAdditionalHousingForReplacements(scenario: TScenario, totalParc: number, epciCode: string) {
+  calculateAdditionalHousingForReplacements(scenario: TScenario, totalParc: number, epciCode: string, otherHousingNeeds: number) {
     const epciScenario = scenario.epciScenarios.find((epci) => epci.epciCode === epciCode)
-    return Math.round(totalParc * (epciScenario!.b2_tx_disparition - epciScenario!.b2_tx_restructuration))
+    const rawReplacement = totalParc * (epciScenario!.b2_tx_disparition - epciScenario!.b2_tx_restructuration)
+
+    if (rawReplacement < 0) {
+      if (otherHousingNeeds > 0) {
+        return Math.round(Math.max(rawReplacement, -otherHousingNeeds))
+      }
+      return 0
+    }
+    return Math.round(rawReplacement)
   }
 
   calculateAccommodationVariationByYear(
@@ -102,11 +110,6 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
   ): Record<number, number> {
     const result: Record<number, number> = {}
     menagesEvolution.forEach(({ year, [omphale]: value }) => {
-      // let cumulativeDeficitReduction = 0
-      // for (let currentYear = 2022; currentYear <= year; currentYear++) {
-      //   cumulativeDeficitReduction += additionalHousingUnitsForDeficitReduction[currentYear] || 0
-      // }
-
       const denominator = 1 - vacantAccomodationEvolution[year] - secondaryResidenceAccomodationEvolution[year]
       result[year] = Math.round(Number(value) / denominator)
     })
@@ -260,15 +263,22 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
 
     for (let year = baseYear + 1; year <= periodProjection; year++) {
       const previousParc = parcEvolution[year - 1]
-      additionalHousingForReplacements[year] = this.calculateAdditionalHousingForReplacements(simulation.scenario, previousParc, epciCode)
-      let totalValue
+
+      let otherHousingNeeds: number
       if (year <= peakYear) {
-        totalValue = additionalHousingForReplacements[year] + (newHousingUnitsToConstruct[year] || 0)
+        otherHousingNeeds = newHousingUnitsToConstruct[year] || 0
       } else {
-        totalValue =
-          additionalHousingForReplacements[year] +
-          (additionalHousingUnitsForDeficitAndNewHouseholds.find(({ year: y }) => y === year)?.value || 0)
+        otherHousingNeeds = additionalHousingUnitsForDeficitAndNewHouseholds.find(({ year: y }) => y === year)?.value || 0
       }
+
+      additionalHousingForReplacements[year] = this.calculateAdditionalHousingForReplacements(
+        simulation.scenario,
+        previousParc,
+        epciCode,
+        otherHousingNeeds,
+      )
+
+      const totalValue = additionalHousingForReplacements[year] + otherHousingNeeds
       if (totalValue > 0) {
         housingNeeds[year - 1] = Math.round(totalValue)
         surplusHousing[year - 1] = 0
@@ -467,7 +477,7 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
       .filter(([year]) => Number(year) <= peakYear && Number(year) > baseYear)
       .reduce((sum, [, value]) => sum + value, 0)
     const housingNeedsTotal = Object.entries(housingNeeds)
-      .filter(([year]) => Number(year) <= peakYear && Number(year) > baseYear)
+      .filter(([year]) => Number(year) <= peakYear && Number(year) >= baseYear)
       .reduce((sum, [, value]) => sum + value, 0)
     const surplusHousingTotal = Object.entries(surplusHousing).reduce((sum, [, value]) => sum + value, 0)
     const vacantAccomodationTotal = Object.entries(vacantAccommodationVariation)

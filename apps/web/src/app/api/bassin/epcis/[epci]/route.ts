@@ -1,22 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '~/lib/auth/auth.config'
+import { authFetch, getSession } from '~/lib/auth/server'
 import type { EpciRouteParams } from '~/types/simulation-page-props'
 
 export async function GET(_: NextRequest, { params }: EpciRouteParams) {
   const { epci } = await params
-  const session = await getServerSession(authOptions)
+  const session = await getSession()
 
-  if (!session?.accessToken) {
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const res = await fetch(`${process.env.NEXT_OTELO_API_URL}/epcis/${epci}/bassin`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  const res = await authFetch(`/epcis/${epci}/bassin`)
   if (!res.ok) {
     return NextResponse.json({ error: 'Failed to fetch bassin epcis list' }, { status: res.status })
   }

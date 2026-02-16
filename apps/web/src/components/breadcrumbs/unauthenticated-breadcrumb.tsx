@@ -18,7 +18,8 @@ export const UnauthenticatedBreadcrumb = () => {
     'mentions-legales': 'Mentions légales',
     'donnees-personnelles': 'Données personnelles',
     'retours-d-experience': "Retours d'expériences",
-    cgv: 'Conditions générales d’utilisation et Gestion des cookies',
+    'sources-de-donnees': 'Sources de données',
+    cgv: "Conditions générales d'utilisation et Gestion des cookies",
   }
 
   // Check if the pathname matches any of our breadcrumb paths

@@ -9,10 +9,17 @@ import { AggregatedParcsComparisonChart } from './aggregated-parc-comparison-cha
 export const AllEpcisRatesView: FC = () => {
   const { defaultRates } = useEpcisRates()
 
-  // Calculate average long-term vacancy rate across all EPCIs
+  // Calculate aggregated long-term vacancy rate: Part_VLD × Taux_FILOCOM_BH
   const epciIds = Object.keys(defaultRates)
-  const averageLongTermRate =
-    epciIds.length > 0 ? epciIds.reduce((sum, epciId) => sum + defaultRates[epciId].longTermVacancyRate, 0) / epciIds.length : 0
+  const totalLongTermVacant = epciIds.reduce((sum, id) => sum + defaultRates[id].longTermVacantCount, 0)
+  const totalVacant = epciIds.reduce((sum, id) => sum + defaultRates[id].totalVacantCount, 0)
+  const partVacanceLongueDuree = totalVacant > 0 ? totalLongTermVacant / totalVacant : 0
+
+  const totalParctot = epciIds.reduce((sum, id) => sum + defaultRates[id].parctot, 0)
+  const tauxVacanceBH =
+    totalParctot > 0 ? epciIds.reduce((sum, id) => sum + defaultRates[id].vacancyRate * defaultRates[id].parctot, 0) / totalParctot : 0
+
+  const averageLongTermRate = partVacanceLongueDuree * tauxVacanceBH
 
   return (
     <div className="fr-p-4w shadow">

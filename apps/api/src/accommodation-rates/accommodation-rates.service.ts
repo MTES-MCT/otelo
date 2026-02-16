@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from '~/db/prisma.service'
 import { TEpcisAccommodationRates } from '@shared'
+import { PrismaService } from '~/db/prisma.service'
 import { VacancyService } from '~/vacancy/vacancy.service'
 
 @Injectable()
@@ -42,6 +42,8 @@ export class AccommodationRatesService {
         },
         restructuringRate: (epciFilocom?.txRestParctot ?? 0) / 6,
         disappearanceRate: (epciFilocom?.txDispParctot ?? 0) / 6,
+        totalVacantCount: epciVacancy!.nbLogVac2Less,
+        longTermVacantCount: epciVacancy!.nbLogVac2More,
       }
       return acc
     }, {})

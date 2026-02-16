@@ -1,11 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -26,29 +22,13 @@
       }
     ],
     "paths": {
-      "~/*": [
-        "./src/*"
-      ],
-      "@assets/*": [
-        "./public/assets/*"
-      ],
-      "@shared": [
-        "../../packages/shared/src"
-      ],
-      "@shared/*": [
-        "../../packages/shared/src/*"
-      ]
+      "~/*": ["./src/*"],
+      "@assets/*": ["./public/assets/*"],
+      "@shared": ["../../packages/shared/src"],
+      "@shared/*": ["../../packages/shared/src/*"]
     },
     "target": "ES2017"
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

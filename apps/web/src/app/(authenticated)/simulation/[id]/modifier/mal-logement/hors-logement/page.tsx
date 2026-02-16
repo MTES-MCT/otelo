@@ -1,5 +1,6 @@
 import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
+import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { SelectAccommodationTypes } from '~/components/simulations/settings/modification/mal-logement/hors-logement/select-accommodation-types'
 import { SelectNoAccomodationPart } from '~/components/simulations/settings/modification/mal-logement/hors-logement/select-no-accommodation-part'
 import { SelectNoAccommodationSource } from '~/components/simulations/settings/modification/mal-logement/hors-logement/select-no-accommodation-source'
@@ -38,6 +39,7 @@ export default async function HorsLogementPage({ params }: SimulationPageProps) 
         <h5>Hébergement social</h5>
         <SelectAccommodationTypes />
         <SelectNoAccomodationPart />
+        <DataSourceLink anchor="#hors-logement" />
         <div className="fr-flex fr-flex-gap-2v fr-my-1w">
           <div className={fr.cx('fr-ml-auto')}>
             <NextStepLinkWithoutValidation href={href} />

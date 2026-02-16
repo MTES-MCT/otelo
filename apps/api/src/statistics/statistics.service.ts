@@ -170,6 +170,8 @@ export class StatisticsService {
       liste_epcis: string | null
       a_export_excel: boolean
       a_export_powerpoint: boolean
+      epcis_export_resultat: string | null
+      epcis_export_powerpoint: string | null
       type_utilisateur: string
     }>
   > {
@@ -217,6 +219,32 @@ export class StatisticsService {
         LEFT JOIN simulations s ON u.id = s.user_id
         LEFT JOIN exports ex ON s.id = ex.simulation_id
         GROUP BY u.id
+      ),
+      user_export_resultat_epcis AS (
+        SELECT
+          u.id AS user_id,
+          STRING_AGG(DISTINCT e.code, ', ' ORDER BY e.code) AS epcis_export_resultat
+        FROM users u
+        LEFT JOIN simulations s ON u.id = s.user_id
+        LEFT JOIN exports ex ON s.id = ex.simulation_id AND ex.type = 'EXCEL'
+        LEFT JOIN scenarios sc ON s.scenario_id = sc.id
+        LEFT JOIN epci_scenarios es ON sc.id = es.scenario_id
+        LEFT JOIN epcis e ON es.epci_code = e.code
+        WHERE ex.id IS NOT NULL
+        GROUP BY u.id
+      ),
+      user_export_powerpoint_epcis AS (
+        SELECT
+          u.id AS user_id,
+          STRING_AGG(DISTINCT e.code, ', ' ORDER BY e.code) AS epcis_export_powerpoint
+        FROM users u
+        LEFT JOIN simulations s ON u.id = s.user_id
+        LEFT JOIN exports ex ON s.id = ex.simulation_id AND ex.type = 'POWERPOINT'
+        LEFT JOIN scenarios sc ON s.scenario_id = sc.id
+        LEFT JOIN epci_scenarios es ON sc.id = es.scenario_id
+        LEFT JOIN epcis e ON es.epci_code = e.code
+        WHERE ex.id IS NOT NULL
+        GROUP BY u.id
       )
       SELECT
         ua.firstname AS nom,
@@ -227,10 +255,14 @@ export class StatisticsService {
         COALESCE(ue.liste_epcis, '') AS liste_epcis,
         uex.a_export_excel,
         uex.a_export_powerpoint,
+        COALESCE(uer.epcis_export_resultat, '') AS epcis_export_resultat,
+        COALESCE(uep.epcis_export_powerpoint, '') AS epcis_export_powerpoint,
         ua.type AS type_utilisateur
       FROM user_activity ua
       LEFT JOIN user_epcis ue ON ua.id = ue.user_id
       LEFT JOIN user_exports uex ON ua.id = uex.user_id
+      LEFT JOIN user_export_resultat_epcis uer ON ua.id = uer.user_id
+      LEFT JOIN user_export_powerpoint_epcis uep ON ua.id = uep.user_id
       ORDER BY ua.derniere_activite DESC;
     `
   }

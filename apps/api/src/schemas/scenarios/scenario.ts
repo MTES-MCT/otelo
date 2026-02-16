@@ -1,6 +1,6 @@
+import { ZCommonDateFields } from '@shared'
 import { z } from 'zod'
 import { B11Etablissement, B15Surocc } from '~/generated/prisma/client'
-import { ZCommonDateFields } from '@shared'
 import { ZDemographicEvolutionOmphaleCustom } from '~/schemas/demographic-evolution-custom/demographic-evolution-custom'
 
 export enum ESourceB11 {

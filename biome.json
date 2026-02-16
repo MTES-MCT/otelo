@@ -7,8 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**"],
-    "ignore": ["**/node_modules/**", "**/dist/**", "**/.next/**", "**/generated/**"]
+    "includes": ["**", "!**/node_modules/**", "!**/dist/**", "!**/.next/**", "!**/generated/**"]
   },
   "css": {
     "parser": {
@@ -123,6 +122,16 @@
     }
   },
   "overrides": [
+    {
+      "includes": ["**/*.spec.ts", "**/*.test.ts", "**/*.e2e-spec.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    },
     {
       "includes": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
       "linter": {

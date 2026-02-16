@@ -1,37 +1,28 @@
-import { useMutation } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+'use client'
 
-interface ResetPasswordParams {
-  newPassword: string
-  confirmPassword: string
-  token: string
-}
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { authClient } from '~/lib/auth/client'
 
 export const useResetPassword = () => {
-  const router = useRouter()
-  const postResetPassword = async (params: ResetPasswordParams) => {
-    const response = await fetch('/api/auth/reset-password', {
-      body: JSON.stringify(params),
-      method: 'POST',
-    })
+  const [isPending, setIsPending] = useState(false)
 
-    if (!response.ok) {
-      throw new Error('Failed to reset password')
+  const resetPassword = async ({ newPassword, token }: { newPassword: string; token: string }) => {
+    setIsPending(true)
+    const { error } = await authClient.resetPassword({
+      newPassword,
+      token,
+    })
+    setIsPending(false)
+
+    if (error) {
+      toast.error(error.message || 'Erreur lors de la réinitialisation du mot de passe')
+      return
     }
-    return response.json()
+
+    toast.success('Votre mot de passe a été réinitialisé avec succès')
+    window.location.href = '/connexion'
   }
 
-  const { mutateAsync, isPending, isSuccess, isError } = useMutation({
-    mutationFn: (data: ResetPasswordParams) => postResetPassword(data),
-    onSuccess: () => {
-      toast.success('Votre mot de passe a été réinitialisé avec succès')
-      router.push('/connexion')
-    },
-    onError: () => {
-      toast.error('Erreur lors de la réinitialisation du mot de passe')
-    },
-  })
-
-  return { mutateAsync, isPending, isSuccess, isError }
+  return { resetPassword, isPending }
 }
