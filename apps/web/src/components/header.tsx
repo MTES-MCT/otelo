@@ -4,11 +4,8 @@ import { FC } from 'react'
 import { BrandTop } from '~/components/brand-top'
 import { HeaderNavigation } from '~/components/navigation/header-navigation'
 import { QuickAccessItems } from '~/components/quick-access-items'
-import { getSession } from '~/lib/auth/server'
 
-export const HeaderComponent: FC = async () => {
-  const session = await getSession()
-
+export const HeaderComponent: FC = () => {
   return (
     <Header
       homeLinkProps={{
@@ -19,7 +16,7 @@ export const HeaderComponent: FC = async () => {
       brandTop={<BrandTop />}
       serviceTagline="Outil gratuit d'aide à l'estimation des besoins en logements sur votre territoire"
       serviceTitle="Otelo"
-      navigation={<HeaderNavigation session={session} />}
+      navigation={<HeaderNavigation />}
       className={fr.cx('fr-header')}
     />
   )
