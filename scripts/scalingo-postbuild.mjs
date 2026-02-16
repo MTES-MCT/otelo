@@ -54,7 +54,6 @@ if (BUILD_TARGET === '@otelo/web') {
   rm('apps/api/src')
   rm('apps/api/test')
   rm('apps/api/prisma/migrations')
-
 }
 
 console.log('\n[scalingo-postbuild] done.\n')
