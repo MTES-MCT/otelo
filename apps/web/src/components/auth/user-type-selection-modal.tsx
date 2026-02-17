@@ -51,7 +51,7 @@ export function UserTypeSelectionModal() {
   })
 
   useEffect(() => {
-    if (shouldSelectType && session?.user) {
+    if (shouldSelectType && session?.user && !session.user.type) {
       form.reset({ userId: session.user.id })
       const timer = setTimeout(() => {
         UserTypeModal.open()

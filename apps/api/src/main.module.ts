@@ -23,6 +23,7 @@ import { EpciGroupsModule } from './epci-groups/epci-groups.module'
 import { EpciNeighborsModule } from './epci-neighbors/epci-neighbors.module'
 import { EpcisModule } from './epcis/epcis.module'
 import { ExportPowerpointModule } from './export-powerpoint/export-powerpoint.module'
+import { FeedbackModule } from './feedback/feedback.module'
 import { FilocomModule } from './filocom/filocom.module'
 import { FinancialInadequationModule } from './financial-inadequation/financial-inadequation.module'
 import { HealthController } from './health/health.controller'
@@ -71,6 +72,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     FinancialInadequationModule,
     PhysicalInadequationModule,
     EmailModule,
+    FeedbackModule,
     CronModule,
     AdminModule,
     StatisticsModule,

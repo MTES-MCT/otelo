@@ -14,7 +14,7 @@ import { useUsers } from '~/hooks/use-users'
 
 export const UsersTableHeader: FC = () => {
   const queryClient = useQueryClient()
-  const [searchQuery, setSearchQuery] = useQueryState('q', { shallow: true })
+  const [searchQuery, setSearchQuery] = useQueryState('q')
   const [inputValue, setInputValue] = useState(searchQuery ?? '')
   const { data: usersResponse } = useUsers()
   const { data: usersSearchResponse } = useSearchUsers()

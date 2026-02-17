@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import LayoutWrapper from '~/app/(authenticated)/layout-wrapper'
 import { UserTypeSelectionModal } from '~/components/auth/user-type-selection-modal'
+import { FeedbackBanner } from '~/components/feedback/feedback-banner'
 import { ImpersonationBanner } from '~/components/impersonation-banner'
 import { getSession } from '~/lib/auth/server'
 
@@ -21,6 +22,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
       <LayoutWrapper>
         {children}
         <UserTypeSelectionModal />
+        <FeedbackBanner />
       </LayoutWrapper>
     </>
   )
