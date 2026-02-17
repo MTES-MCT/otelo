@@ -23,7 +23,6 @@ export const useUsers = (page = 1, limit = 25) => {
     }
   }
 
-  console.log('useUsers', page, limit)
   return useQuery({
     queryFn: fetchUsers,
     queryKey: ['users', page, limit],
