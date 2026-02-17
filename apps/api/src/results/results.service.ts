@@ -85,7 +85,9 @@ export class ResultsService {
           prepeakTotalStock: epciTotal.prepeakTotalStock,
           postpeakTotalStock: epciTotal.postpeakTotalStock,
           secondaryAccommodation: epciTotal.secondaryAccommodation,
-          noAccomodation: noAccomodationEpci ? { value: noAccomodationEpci.value, prorataValue: noAccomodationEpci.prorataValue } : undefined,
+          noAccomodation: noAccomodationEpci
+            ? { value: noAccomodationEpci.value, prorataValue: noAccomodationEpci.prorataValue }
+            : undefined,
           hosted: hostedEpci ? { value: hostedEpci.value, prorataValue: hostedEpci.prorataValue } : undefined,
           financialInadequation: financialInadequationEpci
             ? { value: financialInadequationEpci.value, prorataValue: financialInadequationEpci.prorataValue }
