@@ -140,6 +140,64 @@ describe('UsersService', () => {
     })
   })
 
+  describe('list', () => {
+    it('should return paginated users with default params', async () => {
+      const mockUsers = [
+        {
+          id: 'user-1',
+          email: 'test@example.com',
+          name: 'Test User',
+          image: null,
+          firstname: 'Test',
+          lastname: 'User',
+          role: 'USER',
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+          emailVerified: true,
+          lastLoginAt: new Date('2024-01-01'),
+          hasAccess: false,
+          engaged: false,
+          type: null,
+        },
+      ]
+      prismaService.user.findMany = jest.fn().mockResolvedValue(mockUsers)
+      prismaService.user.count = jest.fn().mockResolvedValue(1)
+
+      const result = await service.list()
+      expect(result).toEqual({
+        users: mockUsers,
+        userCount: 1,
+        page: 1,
+        limit: 25,
+        totalPages: 1,
+      })
+      expect(prismaService.user.findMany).toHaveBeenCalledWith({
+        select: expect.objectContaining({ id: true, email: true }),
+        skip: 0,
+        take: 25,
+      })
+    })
+
+    it('should apply pagination with custom page and limit', async () => {
+      prismaService.user.findMany = jest.fn().mockResolvedValue([])
+      prismaService.user.count = jest.fn().mockResolvedValue(100)
+
+      const result = await service.list(3, 10)
+      expect(result).toEqual({
+        users: [],
+        userCount: 100,
+        page: 3,
+        limit: 10,
+        totalPages: 10,
+      })
+      expect(prismaService.user.findMany).toHaveBeenCalledWith({
+        select: expect.objectContaining({ id: true, email: true }),
+        skip: 20,
+        take: 10,
+      })
+    })
+  })
+
   describe('findByEmail', () => {
     it('should return a user when a valid email is provided', async () => {
       const mockUser: TUser = {
