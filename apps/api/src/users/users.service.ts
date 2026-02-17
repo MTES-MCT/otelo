@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'
 import { TUpdateUserType } from '~/schemas/users/update-user'
-import { TUser, TUserList } from '~/schemas/users/user'
+import { TUser } from '~/schemas/users/user'
 
 const fieldsWithoutPassword = {
   id: true,
@@ -39,13 +39,22 @@ export class UsersService {
     return !!whitelistEntry
   }
 
-  async list(): Promise<{ userCount: number; users: TUser[] }> {
-    const users = await this.prisma.user.findMany()
-    const userCount = await this.prisma.user.count()
+  async list(page = 1, limit = 25): Promise<{ users: TUser[]; userCount: number; page: number; limit: number; totalPages: number }> {
+    const [users, userCount] = await Promise.all([
+      this.prisma.user.findMany({
+        select: fieldsWithoutPassword,
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.user.count(),
+    ])
 
     return {
-      userCount,
       users,
+      userCount,
+      page,
+      limit,
+      totalPages: Math.ceil(userCount / limit),
     }
   }
 
@@ -58,40 +67,6 @@ export class UsersService {
       where: { id },
       select: fieldsWithoutPassword,
     })
-  }
-
-  async search(query: string): Promise<{ userCount: number; users: TUserList[] }> {
-    const foundUsers = await this.prisma.user.findMany({
-      select: {
-        createdAt: true,
-        email: true,
-        firstname: true,
-        id: true,
-        lastLoginAt: true,
-        lastname: true,
-        hasAccess: true,
-        engaged: true,
-        role: true,
-      },
-      where: {
-        OR: [{ firstname: { contains: query } }, { lastname: { contains: query } }, { email: { contains: query } }],
-      },
-    })
-    const users = foundUsers.map(({ createdAt, hasAccess, engaged, email, firstname, id, lastLoginAt, lastname, role }) => ({
-      createdAt,
-      email,
-      firstname,
-      id,
-      lastLoginAt,
-      lastname,
-      role,
-      hasAccess,
-      engaged,
-    }))
-    return {
-      userCount: users.length,
-      users,
-    }
   }
 
   async findByEmail(email: string): Promise<TUser | null> {
@@ -127,6 +102,29 @@ export class UsersService {
 
   async delete(id: string): Promise<void> {
     await this.prisma.user.delete({ where: { id } })
+  }
+
+  async search(query: string): Promise<{ users: TUser[]; userCount: number; page: number; limit: number; totalPages: number }> {
+    const where: Prisma.UserWhereInput = {
+      OR: [
+        { firstname: { contains: query, mode: 'insensitive' } },
+        { lastname: { contains: query, mode: 'insensitive' } },
+        { email: { contains: query, mode: 'insensitive' } },
+      ],
+    }
+
+    const [users, userCount] = await Promise.all([
+      this.prisma.user.findMany({ select: fieldsWithoutPassword, where }),
+      this.prisma.user.count({ where }),
+    ])
+
+    return { users, userCount, page: 1, limit: userCount, totalPages: 1 }
+  }
+
+  async exportCsv(): Promise<TUser[]> {
+    return this.prisma.user.findMany({
+      select: fieldsWithoutPassword,
+    })
   }
 
   async updateType(id: string, { type }: TUpdateUserType): Promise<TUser> {

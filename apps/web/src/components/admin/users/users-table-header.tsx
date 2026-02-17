@@ -4,46 +4,46 @@ import { fr } from '@codegouvfr/react-dsfr'
 import Button from '@codegouvfr/react-dsfr/Button'
 import Input from '@codegouvfr/react-dsfr/Input'
 import { useQueryClient } from '@tanstack/react-query'
-import { useQueryState } from 'nuqs'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { tss } from 'tss-react'
-import { useSearchUsers } from '~/hooks/use-search-users'
+import { useExportCsvUsers } from '~/hooks/use-export-csv-users'
 import { useSynchroDs } from '~/hooks/use-synchro-ds'
-import { useUsers } from '~/hooks/use-users'
 
-export const UsersTableHeader: FC = () => {
+interface UsersTableHeaderProps {
+  userCount: number
+  searchQuery: string
+  onSearchQueryChange: (q: string) => void
+}
+
+export const UsersTableHeader: FC<UsersTableHeaderProps> = ({ userCount, searchQuery, onSearchQueryChange }) => {
   const queryClient = useQueryClient()
-  const [searchQuery, setSearchQuery] = useQueryState('q')
   const [inputValue, setInputValue] = useState(searchQuery ?? '')
-  const { data: usersResponse } = useUsers()
-  const { data: usersSearchResponse } = useSearchUsers()
   const { mutate, isPending } = useSynchroDs()
+  const { mutateAsync: exportCsv, isPending: isExporting } = useExportCsvUsers()
 
   const { classes, cx } = useStyles()
 
   useEffect(() => {
     const handler = setTimeout(() => {
       if (inputValue.length === 0) {
-        setSearchQuery(null)
+        onSearchQueryChange('')
       } else if (inputValue.length >= 3) {
-        setSearchQuery(inputValue)
+        onSearchQueryChange(inputValue)
       }
     }, 150)
 
     return () => clearTimeout(handler)
-  }, [inputValue, setSearchQuery])
+  }, [inputValue, onSearchQueryChange])
 
   const handleSynchroDs = async () => {
     await mutate()
-    setSearchQuery(null)
+    onSearchQueryChange('')
     queryClient.invalidateQueries({ queryKey: ['users'] })
   }
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value)
   }, [])
-
-  const userCount = searchQuery ? usersSearchResponse?.userCount : usersResponse?.userCount
 
   return (
     <div className={classes.container}>
@@ -65,14 +65,24 @@ export const UsersTableHeader: FC = () => {
           <span className={classes.userCount}>{userCount} utilisateurs</span>
         </div>
       </div>
-      <Button onClick={handleSynchroDs} disabled={isPending}>
-        {isPending ? 'Synchronisation en cours...' : 'Synchronisation Démarches Simplifiées'}
-      </Button>
+      <div className={classes.actionsContainer}>
+        <Button priority="secondary" onClick={() => exportCsv()} disabled={isExporting}>
+          {isExporting ? 'Export en cours...' : 'Exporter CSV'}
+        </Button>
+        <Button onClick={handleSynchroDs} disabled={isPending}>
+          {isPending ? 'Synchronisation en cours...' : 'Synchronisation Démarches Simplifiées'}
+        </Button>
+      </div>
     </div>
   )
 }
 
 const useStyles = tss.create({
+  actionsContainer: {
+    alignItems: 'center',
+    display: 'flex',
+    gap: '1rem',
+  },
   container: {
     alignItems: 'center',
     display: 'flex',
@@ -90,7 +100,6 @@ const useStyles = tss.create({
     alignItems: 'center',
     display: 'flex',
     gap: '1rem',
-    justifyContent: 'center',
   },
   searchInput: {
     marginBottom: '0.5rem !important',

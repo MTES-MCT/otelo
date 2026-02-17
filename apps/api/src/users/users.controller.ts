@@ -1,4 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Param, Patch, Query, Res } from '@nestjs/common'
+import dayjs from 'dayjs'
+import { Response } from 'express'
+import * as Papa from 'papaparse'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Role } from '~/generated/prisma/enums'
@@ -15,17 +18,49 @@ export class UsersController {
   })
   @HttpCode(HttpStatus.OK)
   @Get()
-  async list() {
-    return this.usersService.list()
+  async list(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.usersService.list(page ? Number(page) : undefined, limit ? Number(limit) : undefined)
   }
 
   @AccessControl({
     roles: [Role.ADMIN],
   })
   @HttpCode(HttpStatus.OK)
-  @Get('/search')
-  async search(@Query('q') query: string) {
-    return this.usersService.search(query)
+  @Get('search')
+  async search(@Query('q') q: string) {
+    return this.usersService.search(q ?? '')
+  }
+
+  @AccessControl({
+    roles: [Role.ADMIN],
+  })
+  @Get('export/csv')
+  @Header('Content-Type', 'text/csv')
+  async exportCsv(@Res() res: Response) {
+    const users = await this.usersService.exportCsv()
+
+    const data = users.map((user) => ({
+      Nom: user.lastname ?? '',
+      Prénom: user.firstname ?? '',
+      Email: user.email,
+      Rôle: user.role,
+      'Date de création': user.createdAt ? dayjs(user.createdAt).format('DD/MM/YYYY') : '',
+      'Dernière connexion': user.lastLoginAt ? dayjs(user.lastLoginAt).format('DD/MM/YYYY') : '',
+      Accès: user.hasAccess ? 'Oui' : 'Non',
+      'Démarches simplifiées': user.engaged ? 'Oui' : 'Non',
+    }))
+
+    const dateStr = dayjs().format('DD-MM-YYYY')
+    const filename = `export-utilisateurs-${dateStr}.csv`
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+
+    const csvData = Papa.unparse(data, {
+      header: true,
+      delimiter: ';',
+    })
+
+    res.send(csvData)
   }
 
   @AccessControl({

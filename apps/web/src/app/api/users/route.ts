@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server'
 import { authFetch, getSession } from '~/lib/auth/server'
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getSession()
 
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const res = await authFetch('/users')
+  const { searchParams } = new URL(request.url)
+  const query = searchParams.toString()
+  const res = await authFetch(`/users${query ? `?${query}` : ''}`)
 
   if (!res.ok) {
     return NextResponse.json({ error: 'Failed to fetch users list' }, { status: res.status })

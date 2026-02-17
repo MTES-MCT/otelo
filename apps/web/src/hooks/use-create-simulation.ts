@@ -30,6 +30,7 @@ export const useCreateSimulation = (options: CreateSimulationOptions = {}) => {
     mutationFn: (initSimulationDto: TInitSimulationDto) => postSimulation(initSimulationDto),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] })
+      queryClient.invalidateQueries({ queryKey: ['feedback-status'] })
 
       if (!options.redirectUri) {
         toast.success('Simulation créée avec succès.', {

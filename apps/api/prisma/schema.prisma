@@ -38,6 +38,7 @@ model User {
   epciGroups                        EpciGroup[]
   scenarios                         Scenario[]
   simulations                       Simulation[]
+  feedback                          UserFeedback?
 
   @@map("users")
 }
@@ -684,6 +685,24 @@ model HouseholdSizes {
 
   @@id([epciCode, year])
   @@map("household_sizes")
+}
+
+model UserFeedback {
+  id        String         @id @default(uuid())
+  userId    String         @unique @map("user_id")
+  status    FeedbackStatus
+  rating    Int?
+  comment   String?
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_feedbacks")
+}
+
+enum FeedbackStatus {
+  SNOOZED
+  SUBMITTED
 }
 
 enum Role {

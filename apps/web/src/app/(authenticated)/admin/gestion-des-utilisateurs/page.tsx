@@ -1,9 +1,6 @@
 import { notFound } from 'next/navigation'
-import { UsersTable } from '~/components/admin/users/users-table'
-import { UsersTableHeader } from '~/components/admin/users/users-table-header'
+import { UsersManagement } from '~/components/admin/users/users-management'
 import { getSession } from '~/lib/auth/server'
-
-export const dynamic = 'force-dynamic'
 
 export default async function AdminPage() {
   const session = await getSession()
@@ -13,10 +10,9 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="fr-container fr-py-10v">
+    <div className="fr-px-4w fr-py-10v">
       <h1>Gestion des utilisateurs</h1>
-      <UsersTableHeader />
-      <UsersTable />
+      <UsersManagement />
     </div>
   )
 }

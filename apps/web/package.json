@@ -22,6 +22,7 @@
     "@shared": "workspace:*",
     "@socialgouv/matomo-next": "^1.11.0",
     "@tanstack/react-query": "^5.90.20",
+    "@tanstack/react-table": "^8.21.3",
     "better-auth": "^1.4.18",
     "classnames": "^2.5.1",
     "dayjs": "catalog:",
