@@ -17,7 +17,13 @@ export class RecalculateResultsCommand {
   ) {}
 
   async execute(options: { simulationId?: string; dryRun?: boolean }): Promise<void> {
-    const { simulationId, dryRun } = options
+    const { simulationId, dryRun = true } = options
+
+    if (dryRun) {
+      console.log('Mode DRY-RUN : aucune écriture en base. Utiliser --write pour persister.')
+    } else {
+      console.log('Mode WRITE : les résultats seront persistés en base.')
+    }
 
     const simulations = simulationId
       ? await this.prisma.simulation.findMany({
@@ -34,7 +40,7 @@ export class RecalculateResultsCommand {
       return
     }
 
-    console.log(`${simulations.length} simulation(s) à recalculer${dryRun ? ' (dry-run)' : ''}`)
+    console.log(`${simulations.length} simulation(s) à recalculer\n`)
 
     let success = 0
     let errors = 0
@@ -59,13 +65,19 @@ export class RecalculateResultsCommand {
         }
 
         success++
-        console.log(`  [${index + 1}/${simulations.length}] ✓ ${simulation.id} (${simulation.name})`)
+        const epciCount = simulation.epcis.length
+        console.log(
+          `  [${index + 1}/${simulations.length}] ✓ ${simulation.id} (${simulation.name}) — ${epciCount} EPCI, total=${results.total}${dryRun ? '' : ' [écrit]'}`,
+        )
       } catch (error) {
         errors++
         console.error(`  [${index + 1}/${simulations.length}] ✗ ${sim.id}: ${error instanceof Error ? error.message : error}`)
       }
     }
 
-    console.log(`\nTerminé: ${success} succès, ${errors} erreur(s)${dryRun ? ' (dry-run, rien écrit en base)' : ''}`)
+    console.log(`\nTerminé: ${success} succès, ${errors} erreur(s)`)
+    if (dryRun) {
+      console.log('Aucune donnée écrite en base (dry-run). Relancer avec --write pour persister.')
+    }
   }
 }
