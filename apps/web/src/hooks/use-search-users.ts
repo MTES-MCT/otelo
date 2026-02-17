@@ -21,7 +21,7 @@ export const useSearchUsers = () => {
       return data
     } catch (error) {
       console.error('Failed to search users with error:', error)
-      return { userCount: 0, users: [] }
+      return { userCount: 0, users: [], page: 1, limit: 25, totalPages: 0 }
     }
   }
 
