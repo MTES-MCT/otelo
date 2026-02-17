@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core'
 import { Command } from 'commander'
 import { CliModule } from './cli.module'
 import { ImportBackupCommand } from './commands/import-backup.command'
+import { RecalculateResultsCommand } from './commands/recalculate-results.command'
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(CliModule, {
@@ -20,6 +21,27 @@ async function bootstrap() {
       try {
         const command = app.get(ImportBackupCommand)
         await command.execute()
+        await app.close()
+        process.exit(0)
+      } catch (error) {
+        console.error('✗ Erreur fatale:', error instanceof Error ? error.message : error)
+        await app.close()
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('recalculate-results')
+    .description('Recalcule et enrichit les résultats de simulation en base')
+    .option('--simulation-id <id>', 'Recalculer une seule simulation')
+    .option('--dry-run', 'Simuler sans écrire en base')
+    .action(async (options) => {
+      try {
+        const command = app.get(RecalculateResultsCommand)
+        await command.execute({
+          simulationId: options.simulationId,
+          dryRun: options.dryRun,
+        })
         await app.close()
         process.exit(0)
       } catch (error) {

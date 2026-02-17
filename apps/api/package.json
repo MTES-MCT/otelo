@@ -15,7 +15,7 @@
     "start:dev": "nest start --watch --exec \"node -r tsconfig-paths/register\"",
     "start:debug": "nest start --debug --watch --exec \"node -r tsconfig-paths/register\"",
     "start:prod": "node dist/main",
-    "cli": "ts-node -r tsconfig-paths/register src/cli/cli.ts",
+    "cli": "ts-node -r tsconfig-paths/register --project tsconfig.cli.json src/cli/cli.ts",
     "lint": "biome check src",
     "lint:format": "biome check src --fix",
     "test": "jest",
