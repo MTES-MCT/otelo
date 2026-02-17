@@ -7,17 +7,19 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useQueryState } from 'nuqs'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { tss } from 'tss-react'
+import { useExportCsvUsers } from '~/hooks/use-export-csv-users'
 import { useSearchUsers } from '~/hooks/use-search-users'
 import { useSynchroDs } from '~/hooks/use-synchro-ds'
 import { useUsers } from '~/hooks/use-users'
 
 export const UsersTableHeader: FC = () => {
   const queryClient = useQueryClient()
-  const [searchQuery, setSearchQuery] = useQueryState('q')
+  const [searchQuery, setSearchQuery] = useQueryState('q', { shallow: true })
   const [inputValue, setInputValue] = useState(searchQuery ?? '')
   const { data: usersResponse } = useUsers()
   const { data: usersSearchResponse } = useSearchUsers()
   const { mutate, isPending } = useSynchroDs()
+  const { mutateAsync: exportCsv, isPending: isExporting } = useExportCsvUsers()
 
   const { classes, cx } = useStyles()
 
@@ -62,17 +64,27 @@ export const UsersTableHeader: FC = () => {
           <div className={classes.iconWrapper}>
             <span className={cx(classes.userIcon, fr.cx('fr-icon-user-fill'))}></span>
           </div>
-          <span className={classes.userCount}>{userCount} utilisateurs</span>
+          <span className={classes.userCount}>{userCount ?? 0} utilisateurs</span>
         </div>
       </div>
-      <Button onClick={handleSynchroDs} disabled={isPending}>
-        {isPending ? 'Synchronisation en cours...' : 'Synchronisation Démarches Simplifiées'}
-      </Button>
+      <div className={classes.actionsContainer}>
+        <Button priority="secondary" onClick={() => exportCsv()} disabled={isExporting}>
+          {isExporting ? 'Export en cours...' : 'Exporter CSV'}
+        </Button>
+        <Button onClick={handleSynchroDs} disabled={isPending}>
+          {isPending ? 'Synchronisation en cours...' : 'Synchronisation Démarches Simplifiées'}
+        </Button>
+      </div>
     </div>
   )
 }
 
 const useStyles = tss.create({
+  actionsContainer: {
+    alignItems: 'center',
+    display: 'flex',
+    gap: '1rem',
+  },
   container: {
     alignItems: 'center',
     display: 'flex',
@@ -90,7 +102,6 @@ const useStyles = tss.create({
     alignItems: 'center',
     display: 'flex',
     gap: '1rem',
-    justifyContent: 'center',
   },
   searchInput: {
     marginBottom: '0.5rem !important',
