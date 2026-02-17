@@ -17,13 +17,10 @@ import {
 } from '@tanstack/react-table'
 import classNames from 'classnames'
 import dayjs from 'dayjs'
-import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC, useMemo, useState } from 'react'
 import { useDeleteUser } from '~/hooks/use-delete-user'
 import { useStartImpersonation } from '~/hooks/use-impersonation'
-import { useSearchUsers } from '~/hooks/use-search-users'
 import { useUpdateUserAccess } from '~/hooks/use-update-user-access'
-import { useUsers } from '~/hooks/use-users'
 import { TUser } from '~/schemas/user'
 import styles from './users-table.module.css'
 
@@ -257,17 +254,16 @@ function SortableHeader<TData>({ column, label }: { column: Column<TData>; label
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50]
 
-export const UsersTable: FC = () => {
-  const [queryStates, setQueryStates] = useQueryStates(
-    {
-      limit: parseAsInteger.withDefault(25),
-      page: parseAsInteger.withDefault(1),
-      q: parseAsString.withDefault(''),
-    },
-    { shallow: true },
-  )
-  const { data: usersResponse } = useUsers(queryStates.page, queryStates.limit)
-  const { data: usersSearchResponse } = useSearchUsers()
+interface UsersTableProps {
+  users: TUser[]
+  totalPages: number
+  isSearching: boolean
+  queryStates: { limit: number; page: number; q: string }
+  onPageChange: (page: number) => void
+  onLimitChange: (limit: number) => void
+}
+
+export const UsersTable: FC<UsersTableProps> = ({ users, totalPages, isSearching, queryStates, onPageChange, onLimitChange }) => {
   const { mutate: updateUserAccess, isPending } = useUpdateUserAccess()
   const { mutate: deleteUser } = useDeleteUser()
   const { startImpersonation } = useStartImpersonation()
@@ -275,17 +271,13 @@ export const UsersTable: FC = () => {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
-  const isSearching = !!queryStates.q
-  const activeResponse = isSearching ? usersSearchResponse : usersResponse
-  const totalPages = isSearching ? 0 : (usersResponse?.totalPages ?? 0)
-
   const columns = useMemo(
     () => getColumns(updateUserAccess, deleteUser, startImpersonation, isPending),
     [updateUserAccess, deleteUser, startImpersonation, isPending],
   )
 
   const table = useReactTable({
-    data: activeResponse?.users ?? [],
+    data: users,
     columns,
     state: { sorting, columnFilters },
     onSortingChange: setSorting,
@@ -356,13 +348,11 @@ export const UsersTable: FC = () => {
                 count={totalPages}
                 defaultPage={queryStates.page}
                 getPageLinkProps={(pageNumber) => ({
-                  href: (() => {
-                    const params = new URLSearchParams()
-                    if (queryStates.q) params.set('q', queryStates.q)
-                    params.set('limit', queryStates.limit.toString())
-                    params.set('page', pageNumber.toString())
-                    return `?${params.toString()}`
-                  })(),
+                  href: '#',
+                  onClick: (e: React.MouseEvent) => {
+                    e.preventDefault()
+                    onPageChange(pageNumber)
+                  },
                 })}
               />
             )}
@@ -373,13 +363,8 @@ export const UsersTable: FC = () => {
               id="page-size-select"
               className="fr-select"
               value={queryStates.limit}
-              onChange={(e) => {
-                setQueryStates({
-                  limit: Number(e.target.value),
-                  page: 1,
-                })
-              }}
-              style={{ width: '0px', padding: '0.25rem 0.5rem' }}
+              onChange={(e) => onLimitChange(Number(e.target.value))}
+              style={{ width: '80px', padding: '0.25rem 0.5rem' }}
             >
               {PAGE_SIZE_OPTIONS.map((size) => (
                 <option key={size} value={size}>

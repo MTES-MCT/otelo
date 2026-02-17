@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { useSession } from '~/lib/auth/client'
 import { TUser } from '~/schemas/user'
 
 export interface UsersResponse {
@@ -11,8 +10,6 @@ export interface UsersResponse {
 }
 
 export const useUsers = (page = 1, limit = 25) => {
-  const { data: session } = useSession()
-
   const fetchUsers = async (): Promise<UsersResponse> => {
     try {
       const response = await fetch(`/api/users?page=${page}&limit=${limit}`)
@@ -26,11 +23,9 @@ export const useUsers = (page = 1, limit = 25) => {
     }
   }
 
-  const { data, isLoading } = useQuery({
-    enabled: !!session && session.user.role === 'ADMIN',
+  console.log('useUsers', page, limit)
+  return useQuery({
     queryFn: fetchUsers,
     queryKey: ['users', page, limit],
   })
-
-  return { data, isLoading }
 }

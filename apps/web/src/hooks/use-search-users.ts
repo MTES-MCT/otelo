@@ -1,15 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect } from 'react'
 import { UsersResponse } from '~/hooks/use-users'
 
 const REQUIRED_MINIMUM_LENGTH = 2
 const DEBOUNCE_TIME = 500
 
-export const useSearchUsers = () => {
-  const searchParams = useSearchParams()
-  const q = searchParams.get('q')
-
+export const useSearchUsers = (q: string) => {
   const searchUsers = async (): Promise<UsersResponse> => {
     try {
       const response = await fetch(`/api/users/search?q=${q}`)
