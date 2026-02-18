@@ -50,6 +50,7 @@ export const ZScenario = ZCommonDateFields.extend({
   source_b11: z.nativeEnum(ESourceB11),
   source_b14: z.union([z.literal('RP'), z.literal('Filo'), z.literal('FF')]),
   source_b15: z.union([z.literal('RP'), z.literal('Filo')]),
+  millesime: z.string(),
   demographicEvolutionOmphaleCustom: z.array(ZDemographicEvolutionOmphaleCustom).optional(),
 })
 

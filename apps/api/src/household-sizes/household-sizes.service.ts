@@ -7,7 +7,7 @@ import { THouseholdSizesChart, THouseholdSizesDataResults } from '~/schemas/data
 export class HouseholdSizesService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getHouseholdSizesByEpci(epciCode: string): Promise<Omit<THouseholdSizesDataResults, 'epci'>> {
+  async getHouseholdSizesByEpci(epciCode: string, millesime?: string): Promise<Omit<THouseholdSizesDataResults, 'epci'>> {
     const data = await this.prismaService.householdSizes.findMany({
       select: {
         year: true,
@@ -23,6 +23,7 @@ export class HouseholdSizesService {
       },
       where: {
         epciCode,
+        ...(millesime && { millesime }),
       },
     })
 
@@ -59,10 +60,10 @@ export class HouseholdSizesService {
     }
   }
 
-  async getHouseholdSizes(epcis: TEpci[]): Promise<THouseholdSizesChart> {
+  async getHouseholdSizes(epcis: TEpci[], millesime?: string): Promise<THouseholdSizesChart> {
     const results = await Promise.all(
       epcis.map(async (epci) => ({
-        ...(await this.getHouseholdSizesByEpci(epci.code)),
+        ...(await this.getHouseholdSizesByEpci(epci.code, millesime)),
         epci,
       })),
     )

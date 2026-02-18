@@ -24,6 +24,7 @@ export const ZSimulationWithEpci = ZSimulation.pick({
   scenario: ZScenario.pick({
     b2_scenario: true,
     projection: true,
+    millesime: true,
   }).optional(),
   epciGroup: z
     .object({
@@ -52,6 +53,13 @@ export const ZCloneSimulationDto = z.object({
 })
 
 export type TCloneSimulationDto = z.infer<typeof ZCloneSimulationDto>
+
+export const ZActualizeSimulationDto = z.object({
+  millesime: z.string().min(1, 'Le millésime est requis'),
+  name: z.string().max(100).optional(),
+})
+
+export type TActualizeSimulationDto = z.infer<typeof ZActualizeSimulationDto>
 
 export const ZGroupedSimulationWithResults = z.object({
   name: z.string(),

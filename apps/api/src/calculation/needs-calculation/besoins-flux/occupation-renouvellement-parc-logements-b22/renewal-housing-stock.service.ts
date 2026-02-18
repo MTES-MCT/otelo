@@ -19,6 +19,7 @@ export class RenewalHousingStockService {
     return this.prismaService.filocomFlux.findFirstOrThrow({
       where: {
         epciCode,
+        millesime: this.context.millesime,
       },
     })
   }
@@ -58,7 +59,7 @@ export class RenewalHousingStockService {
   ): Promise<Record<number, number>> {
     const { projection } = scenario
     const { baseYear } = this.context
-    const accommodationRates = await this.accommodationRatesService.getAccommodationRates(epciCode)
+    const accommodationRates = await this.accommodationRatesService.getAccommodationRates(epciCode, this.context.millesime)
     const longTermVacancyRate = accommodationRates[epciCode].longTermVacancyRate
     const shortTermVacancyRate = accommodationRates[epciCode].shortTermVacancyRate
 

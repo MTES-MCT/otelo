@@ -17,6 +17,7 @@ import { AuthModule } from './auth/auth.module'
 import { BadQualityModule } from './bad-quality/bad-quality.module'
 import { CalculationModule } from './calculation/calculation.module'
 import { ConsumersModule } from './consumers/consumers.module'
+import { DataPackVersionsModule } from './data-pack-versions/data-pack-versions.module'
 import { DataVisualisationModule } from './data-visualisation/data-visualisation.module'
 import { DemographicEvolutionModule } from './demographic-evolution/demographic-evolution.module'
 import { DemographicEvolutionCustomModule } from './demographic-evolution-custom/demographic-evolution-custom.module'
@@ -66,6 +67,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     AccommodationRatesModule,
     VacancyModule,
     BassinModule,
+    DataPackVersionsModule,
     DataVisualisationModule,
     RpInseeModule,
     FilocomModule,

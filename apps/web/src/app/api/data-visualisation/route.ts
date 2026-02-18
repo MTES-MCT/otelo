@@ -13,8 +13,10 @@ export async function GET(request: Request) {
   const type = searchParams.get('type')
   const populationType = searchParams.get('populationType')
   const source = searchParams.get('source')
+  const millesime = searchParams.get('millesime')
 
-  const res = await authFetch(`/data-visualisation?epci=${epci}&type=${type}&populationType=${populationType}&source=${source}`)
+  const millesimeParam = millesime ? `&millesime=${millesime}` : ''
+  const res = await authFetch(`/data-visualisation?epci=${epci}&type=${type}&populationType=${populationType}&source=${source}${millesimeParam}`)
 
   if (!res.ok) {
     return NextResponse.json({ error: 'Failed to fetch data visualisation' }, { status: res.status })

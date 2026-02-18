@@ -39,6 +39,7 @@ export class DemographicEvolutionService {
       where: {
         epciCode,
         year,
+        millesime: this.context.millesime,
       },
     })
 
@@ -67,6 +68,7 @@ export class DemographicEvolutionService {
       select: { epciCode: true, [omphale]: true, year: true },
       where: {
         epciCode,
+        millesime: this.context.millesime,
         year: {
           lte: yearProjection,
         },

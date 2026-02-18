@@ -6,20 +6,21 @@ import { PrismaService } from '~/db/prisma.service'
 export class NoAccommodationService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getNoAccommodationByEpci(epciCode: string) {
+  async getNoAccommodationByEpci(epciCode: string, millesime?: string) {
     const [homeless, hotel, makeShiftHousingRp, finess] = await Promise.all([
       this.prismaService.homeless.findFirst({
-        where: { epciCode },
+        where: { epciCode, ...(millesime && { millesime }) },
       }),
       this.prismaService.hotel.findFirst({
-        where: { epciCode },
+        where: { epciCode, ...(millesime && { millesime }) },
       }),
       this.prismaService.makeShiftHousing_RP.findFirst({
-        where: { epciCode },
+        where: { epciCode, ...(millesime && { millesime }) },
       }),
       this.prismaService.hostedFiness.findFirst({
         where: {
           epciCode,
+          ...(millesime && { millesime }),
         },
       }),
     ])
@@ -35,10 +36,10 @@ export class NoAccommodationService {
       finess: Math.round(finessRes),
     }
   }
-  async getNoAccommodation(epcis: TEpci[]) {
+  async getNoAccommodation(epcis: TEpci[], millesime?: string) {
     const results = await Promise.all(
       epcis.map(async (epci) => ({
-        ...(await this.getNoAccommodationByEpci(epci.code)),
+        ...(await this.getNoAccommodationByEpci(epci.code, millesime)),
         epci,
       })),
     )

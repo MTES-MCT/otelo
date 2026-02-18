@@ -1,6 +1,7 @@
 import { AuthenticatedBreadcrumb } from '~/components/breadcrumbs/authenticated-breadcrumb'
 import DemographicSettingsSimulationSideMenu from '~/components/simulations/settings/demographic-settings-simulation-side-menu'
 import { DemographicSettingsSimulationStepper } from '~/components/simulations/settings/demographic-settings-simulation-stepper'
+import { MillesimeSelector } from '~/components/simulations/settings/millesime-selector'
 import { SimulationFormRatesProviderContextWrapper } from '~/components/simulations/settings/simulation-form-context-wrapper'
 
 type PageProps = {
@@ -19,6 +20,7 @@ export default function CreateSimulationLayout({ children }: PageProps) {
 
           <div className="fr-col-md-9">
             <main className="fr-container">
+              <MillesimeSelector />
               <DemographicSettingsSimulationStepper />
               {children}
             </main>

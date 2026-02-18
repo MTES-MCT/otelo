@@ -16,18 +16,18 @@ export class BadQualityService extends BaseCalculator {
 
   async getRPBadQuality(epciCode: string) {
     return this.prismaService.badQuality_RP.findUniqueOrThrow({
-      where: { epciCode },
+      where: { epciCode_millesime: { epciCode, millesime: this.context.millesime } },
     })
   }
 
   async getFilocomBadQuality(epciCode: string) {
     return this.prismaService.badQuality_Filocom.findUniqueOrThrow({
-      where: { epciCode },
+      where: { epciCode_millesime: { epciCode, millesime: this.context.millesime } },
     })
   }
   async getFFBadQuality(epciCode: string) {
     return this.prismaService.badQuality_Fonciers.findUniqueOrThrow({
-      where: { epciCode },
+      where: { epciCode_millesime: { epciCode, millesime: this.context.millesime } },
     })
   }
 

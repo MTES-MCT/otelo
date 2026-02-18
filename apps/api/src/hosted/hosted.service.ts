@@ -6,16 +6,18 @@ import { PrismaService } from '~/db/prisma.service'
 export class HostedService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getHostedByEpci(epciCode: string) {
+  async getHostedByEpci(epciCode: string, millesime?: string) {
     const [hostedFilocom, hostedSne] = await Promise.all([
       this.prismaService.hostedFilocom.findFirst({
         where: {
           epciCode,
+          ...(millesime && { millesime }),
         },
       }),
       this.prismaService.hostedSne.findFirst({
         where: {
           epciCode,
+          ...(millesime && { millesime }),
         },
       }),
     ])
@@ -32,10 +34,10 @@ export class HostedService {
     }
   }
 
-  async getHosted(epcis: TEpci[]) {
+  async getHosted(epcis: TEpci[], millesime?: string) {
     const results = await Promise.all(
       epcis.map(async (epci) => ({
-        ...(await this.getHostedByEpci(epci.code)),
+        ...(await this.getHostedByEpci(epci.code, millesime)),
         epci,
       })),
     )

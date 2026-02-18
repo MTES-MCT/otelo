@@ -9,6 +9,7 @@ import { ResultsService } from '~/results/results.service'
 import { ScenariosModule } from '~/scenarios/scenarios.module'
 import { SimulationsService } from '~/simulations/simulations.service'
 import { ImportBackupCommand } from './commands/import-backup.command'
+import { ImportCsvCommand } from './commands/import-csv.command'
 import { RecalculateResultsCommand } from './commands/recalculate-results.command'
 import { ScalingoBackupService } from './services/scalingo-backup.service'
 
@@ -25,7 +26,7 @@ import { ScalingoBackupService } from './services/scalingo-backup.service'
     ScenariosModule,
     EpciGroupsModule,
   ],
-  providers: [ScalingoBackupService, ImportBackupCommand, RecalculateResultsCommand, ResultsService, SimulationsService],
-  exports: [ImportBackupCommand, RecalculateResultsCommand],
+  providers: [ScalingoBackupService, ImportBackupCommand, ImportCsvCommand, RecalculateResultsCommand, ResultsService, SimulationsService],
+  exports: [ImportBackupCommand, ImportCsvCommand, RecalculateResultsCommand],
 })
 export class CliModule {}

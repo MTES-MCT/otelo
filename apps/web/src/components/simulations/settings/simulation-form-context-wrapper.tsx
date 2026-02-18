@@ -12,11 +12,12 @@ interface SimulationFormContextWrapperProps {
 export const SimulationFormRatesProviderContextWrapper = ({ children, epcis }: SimulationFormContextWrapperProps) => {
   const [queryStates] = useQueryStates({
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
+    millesime: parseAsString,
     type: parseAsString,
   })
   const epcisCodes = epcis ?? queryStates.epcis
 
-  const { data: accommodationRates } = useAccommodationRatesByEpci(epcisCodes)
+  const { data: accommodationRates } = useAccommodationRatesByEpci(epcisCodes, queryStates.millesime || undefined)
 
   return <RatesProvider initialRates={accommodationRates || {}}>{children}</RatesProvider>
 }

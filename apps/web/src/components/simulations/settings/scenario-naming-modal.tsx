@@ -20,6 +20,7 @@ export const ScenarioNamingModal: FC = () => {
 
   const [queryStates] = useQueryStates({
     epci: parseAsString,
+    millesime: parseAsString,
     omphale: parseAsString,
     baseEpci: parseAsString,
     projection: parseAsInteger,
@@ -43,6 +44,7 @@ export const ScenarioNamingModal: FC = () => {
     resolver: zodResolver(ZInitSimulationDto),
     values: {
       name: undefined,
+      millesime: queryStates.millesime || undefined,
       epci: selectedEpcis.map((epciCode) => ({ code: epciCode })),
       epciGroupId: queryStates.epciGroupId,
       epciGroupName: queryStates.epciGroupName,

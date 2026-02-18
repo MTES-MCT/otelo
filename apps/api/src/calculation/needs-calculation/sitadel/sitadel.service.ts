@@ -34,6 +34,7 @@ export class SitadelService extends BaseCalculator {
       },
       where: {
         epciCode,
+        millesime: this.context.millesime,
       },
     })
     const { max, min } = sitadel.reduce(

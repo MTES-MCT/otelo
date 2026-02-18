@@ -10,8 +10,10 @@ export async function GET(request: NextRequest) {
 
   const url = new URL(request.url)
   const epcis = url.searchParams.get('epcis')
+  const millesime = url.searchParams.get('millesime')
 
-  const res = await authFetch(`/accommodation-rates?epcis=${epcis}`)
+  const millesimeParam = millesime ? `&millesime=${millesime}` : ''
+  const res = await authFetch(`/accommodation-rates?epcis=${epcis}${millesimeParam}`)
   if (!res.ok) {
     return NextResponse.json({ error: 'Failed to fetch accommodation rates by epci' }, { status: res.status })
   }
