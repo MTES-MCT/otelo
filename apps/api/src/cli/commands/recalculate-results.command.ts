@@ -13,7 +13,7 @@ export class RecalculateResultsCommand {
     private readonly needsCalculationService: NeedsCalculationService,
     private readonly coefficientCalculationService: CoefficientCalculationService,
     private readonly resultsService: ResultsService,
-    @Inject('CalculationContext') private readonly calculationContext: { coefficient: number; baseYear: number },
+    @Inject('CalculationContext') private readonly calculationContext: { coefficient: number; baseYear: number; millesime: string },
   ) {}
 
   async execute(options: { simulationId?: string; dryRun?: boolean }): Promise<void> {
@@ -54,6 +54,7 @@ export class RecalculateResultsCommand {
           simulation.scenario.projection,
         )
         this.calculationContext.coefficient = coefficient
+        this.calculationContext.millesime = simulation.scenario.millesime
 
         const results = await this.needsCalculationService.calculate(simulation)
 

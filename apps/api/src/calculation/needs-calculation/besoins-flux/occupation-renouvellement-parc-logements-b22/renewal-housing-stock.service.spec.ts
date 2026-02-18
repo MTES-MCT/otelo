@@ -136,7 +136,7 @@ describe('RenewalHousingStockService', () => {
 
       const result = await service.getFilocomFlux('200000001')
       expect(result).toEqual(mockData)
-      expect(prisma.filocomFlux.findFirstOrThrow).toHaveBeenCalledWith({ where: { epciCode: '200000001' } })
+      expect(prisma.filocomFlux.findFirstOrThrow).toHaveBeenCalledWith({ where: { epciCode: '200000001', millesime: '2021' } })
     })
   })
 })

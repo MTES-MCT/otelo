@@ -1,4 +1,3 @@
-import { ESourceB11 } from '~/schemas/scenarios/scenario'
 import { BaseCalculator, CalculationContext } from './base-calculator'
 
 // Create a concrete implementation for testing
@@ -17,50 +16,8 @@ describe('BaseCalculator', () => {
   let calculator: TestCalculator
   const mockContext: CalculationContext = {
     coefficient: 1.5,
-    periodProjection: 6,
-    simulation: {
-      createdAt: new Date('2024-01-01'),
-      epci: {
-        code: 'epci-1',
-        name: 'EPCI 1',
-        region: 'region-1',
-      },
-      id: 'simulation-1',
-      scenario: {
-        b11_etablissement: [],
-        b11_fortune: true,
-        b11_hotel: true,
-        b11_part_etablissement: 100,
-        b11_sa: true,
-        b12_cohab_interg_subie: 50,
-        b12_heberg_particulier: true,
-        b12_heberg_temporaire: true,
-        b13_acc: true,
-        b13_plp: true,
-        b13_taux_effort: 30,
-        b13_taux_reallocation: 80,
-        b14_confort: 'RP_abs_sani',
-        b14_occupation: 'prop_loc',
-        b14_qualite: '',
-        b14_taux_reallocation: 80,
-        b15_loc_hors_hlm: true,
-        b15_proprietaire: false,
-        b15_surocc: 'Acc',
-        b15_taux_reallocation: 80,
-        b17_motif: 'Tout',
-        b1_horizon_resorption: 20,
-        b2_scenario: 'Central_C',
-        createdAt: new Date('2024-01-01'),
-        id: 'scenario-1',
-        isConfidential: false,
-        projection: 2024,
-        source_b11: ESourceB11.RP,
-        source_b14: ESourceB11.RP,
-        source_b15: ESourceB11.RP,
-        updatedAt: new Date('2024-01-01'),
-      },
-      updatedAt: new Date('2024-01-01'),
-    },
+    baseYear: 2021,
+    millesime: '2021',
   }
 
   beforeEach(() => {

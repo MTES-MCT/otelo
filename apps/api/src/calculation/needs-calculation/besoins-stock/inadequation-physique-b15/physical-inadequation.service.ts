@@ -24,13 +24,13 @@ export class PhysicalInadequationService extends BaseCalculator {
 
   async getPhysicalInadequationRP(epciCode: string) {
     return this.prismaService.physicalInadequation_RP.findFirstOrThrow({
-      where: { epciCode },
+      where: { epciCode, millesime: this.context.millesime },
     })
   }
 
   async getPhysicalInadequationFilo(epciCode: string) {
     return this.prismaService.physicalInadequation_Filo.findFirstOrThrow({
-      where: { epciCode },
+      where: { epciCode, millesime: this.context.millesime },
     })
   }
 

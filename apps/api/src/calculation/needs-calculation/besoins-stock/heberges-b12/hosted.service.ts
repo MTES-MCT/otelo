@@ -19,6 +19,7 @@ export class HostedService extends BaseCalculator {
     return this.prismaService.hostedFilocom.findFirstOrThrow({
       where: {
         epciCode,
+        millesime: this.context.millesime,
       },
     })
   }
@@ -27,6 +28,7 @@ export class HostedService extends BaseCalculator {
     return this.prismaService.hostedSne.findFirstOrThrow({
       where: {
         epciCode,
+        millesime: this.context.millesime,
       },
     })
   }

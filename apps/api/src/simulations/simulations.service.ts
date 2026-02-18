@@ -34,7 +34,7 @@ export class SimulationsService {
         createdAt: true,
         name: true,
         epcis: { select: { code: true, name: true, region: true, bassinName: true } },
-        scenario: { select: { b2_scenario: true, projection: true } },
+        scenario: { select: { b2_scenario: true, projection: true, millesime: true } },
         id: true,
         updatedAt: true,
         epciGroup: { select: { id: true, name: true } },
@@ -100,7 +100,7 @@ export class SimulationsService {
   }
 
   async create(userId: string, data: TInitSimulation): Promise<Simulation> {
-    const scenario = await this.scenariosService.create(userId, data.scenario)
+    const scenario = await this.scenariosService.create(userId, data.scenario, data.millesime)
 
     let epciGroupId = data.epciGroupId
 
@@ -190,6 +190,26 @@ export class SimulationsService {
         ...(originalSimulation.epciGroupId && { epciGroup: { connect: { id: originalSimulation.epciGroupId } } }),
       },
     })
+  }
+
+  async actualize(userId: string, originalId: string, targetMillesime: string, name?: string): Promise<Simulation> {
+    const original = await this.prismaService.simulation.findUniqueOrThrow({
+      where: { id: originalId, userId },
+      select: { name: true },
+    })
+    const cloneName = name || `${original.name} (millésime ${targetMillesime})`
+    const cloned = await this.clone(userId, originalId, {
+      name: cloneName,
+    })
+    const clonedSimulation = await this.prismaService.simulation.findUniqueOrThrow({
+      where: { id: cloned.id },
+      select: { scenarioId: true },
+    })
+    await this.prismaService.scenario.update({
+      where: { id: clonedSimulation.scenarioId },
+      data: { millesime: targetMillesime },
+    })
+    return cloned
   }
 
   /**

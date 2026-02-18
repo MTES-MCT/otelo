@@ -6,6 +6,7 @@ export function makeCalculationContext(overrides?: Partial<CalculationContext>):
   return {
     coefficient: 1,
     baseYear: 2021,
+    millesime: '2021',
     ...overrides,
   }
 }
@@ -52,6 +53,7 @@ export function makeScenario(overrides?: Partial<TScenario>): TScenario {
     b2_scenario: 'Central_H',
     epciScenarios: [makeEpciScenario()],
     isConfidential: false,
+    millesime: '2021',
     projection: 2041,
     source_b11: 'RP',
     source_b14: 'RP',
