@@ -121,6 +121,16 @@ export class ResultsService {
   }
 
   async insertResultsHistory(simulationId: string, results: TResults) {
+    const lastEntry = await this.prisma.simulationResultsHistory.findFirst({
+      where: { simulationId },
+      orderBy: { calculatedAt: 'desc' },
+      select: { resultsJson: true },
+    })
+
+    if (lastEntry && JSON.stringify(lastEntry.resultsJson) === JSON.stringify(results)) {
+      return
+    }
+
     await this.prisma.simulationResultsHistory.create({
       data: {
         simulationId,
