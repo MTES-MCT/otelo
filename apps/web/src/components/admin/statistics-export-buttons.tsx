@@ -1,12 +1,14 @@
 'use client'
 
 import Button from '@codegouvfr/react-dsfr/Button'
+import { useExportResultsStatistics } from '~/hooks/use-export-results-statistics'
 import { useExportSimulationsStatistics } from '~/hooks/use-export-simulations-statistics'
 import { useExportUsersStatistics } from '~/hooks/use-export-users-statistics'
 
 export default function StatisticsExportButtons() {
   const { isPending: isExportingUsers, mutateAsync: exportUsersStatistics } = useExportUsersStatistics()
   const { isPending: isExportingSimulations, mutateAsync: exportSimulationsStatistics } = useExportSimulationsStatistics()
+  const { isPending: isExportingResults, mutateAsync: exportResultsStatistics } = useExportResultsStatistics()
 
   const handleExportUsers = async () => {
     try {
@@ -24,6 +26,14 @@ export default function StatisticsExportButtons() {
     }
   }
 
+  const handleExportResults = async () => {
+    try {
+      await exportResultsStatistics()
+    } catch (error) {
+      console.error('Failed to export results statistics:', error)
+    }
+  }
+
   return (
     <div className="fr-flex fr-flex-gap-2v">
       <div>
@@ -34,6 +44,11 @@ export default function StatisticsExportButtons() {
       <div>
         <Button iconId="ri-folder-chart-line" onClick={handleExportSimulations} disabled={isExportingSimulations}>
           {isExportingSimulations ? 'Export en cours...' : 'Export rapports scénarios'}
+        </Button>
+      </div>
+      <div>
+        <Button iconId="ri-bar-chart-line" onClick={handleExportResults} disabled={isExportingResults}>
+          {isExportingResults ? 'Export en cours...' : 'Export résultats'}
         </Button>
       </div>
     </div>

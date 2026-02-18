@@ -213,21 +213,22 @@ model Epci {
 }
 
 model Simulation {
-  id                String              @id @default(uuid())
-  name              String
-  createdAt         DateTime            @default(now()) @map("created_at")
-  updatedAt         DateTime            @updatedAt @map("updated_at")
-  userId            String              @map("user_id")
-  scenarioId        String              @map("scenario_id")
-  epciGroupId       String?             @map("epci_group_id")
-  exports           Export[]
-  SimulationResults SimulationResults[]
-  epciGroup         EpciGroup?          @relation(fields: [epciGroupId], references: [id])
-  scenario          Scenario            @relation(fields: [scenarioId], references: [id])
-  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  epcis             Epci[]              @relation("EpciToSimulation")
+  id                        String                     @id @default(uuid())
+  name                      String
+  createdAt                 DateTime                   @default(now()) @map("created_at")
+  updatedAt                 DateTime                   @updatedAt @map("updated_at")
+  userId                    String                     @map("user_id")
+  scenarioId                String                     @map("scenario_id")
+  epciGroupId               String?                    @map("epci_group_id")
+  exports                   Export[]
+  SimulationResults         SimulationResults[]
+  SimulationResultsHistory  SimulationResultsHistory[]
+  epciGroup                 EpciGroup?                 @relation(fields: [epciGroupId], references: [id])
+  scenario                  Scenario                   @relation(fields: [scenarioId], references: [id])
+  user                      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  epcis                     Epci[]                     @relation("EpciToSimulation")
 
-  deleted           DateTime?
+  deleted                   DateTime?
 
   @@map("simulations")
 }
@@ -655,18 +656,57 @@ model DemographicEvolutionOmphaleCustom {
 
 
 model SimulationResults {
-  id                 String     @id @default(uuid())
-  epciCode           String     @map("epci_code")
-  simulationId       String     @map("simulation_id")
-  totalFlux          Int        @default(0)
-  totalStock         Int        @default(0)
-  vacantAccomodation Int        @default(0)
-  exported           Boolean    @default(false)
-  epci               Epci       @relation(fields: [epciCode], references: [code])
-  simulation         Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  id                     String     @id @default(uuid())
+  epciCode               String     @map("epci_code")
+  simulationId           String     @map("simulation_id")
+
+  // Existing scalar totals
+  totalFlux              Int        @default(0)
+  totalStock             Int        @default(0)
+  vacantAccomodation     Int        @default(0)
+  exported               Boolean    @default(false)
+
+  // Aggregated EPCI totals
+  total                  Int        @default(0)
+  prepeakTotalStock      Int        @default(0) @map("prepeak_total_stock")
+  postpeakTotalStock     Int        @default(0) @map("postpeak_total_stock")
+  secondaryAccommodation Int        @default(0) @map("secondary_accommodation")
+
+  // Stock metrics B11-B15 per EPCI (JSON: { value, prorataValue })
+  noAccomodation         Json?      @map("no_accomodation")
+  hosted                 Json?
+  financialInadequation  Json?      @map("financial_inadequation")
+  badQuality             Json?      @map("bad_quality")
+  physicalInadequation   Json?      @map("physical_inadequation")
+
+  // Flow totals per EPCI (JSON: { demographicEvolution, renewalNeeds, ... })
+  flowTotals             Json?      @map("flow_totals")
+
+  // Flow data by year per EPCI (JSON: { parcEvolution, housingNeeds, surplusHousing, peakYear })
+  flowDataByYear         Json?      @map("flow_data_by_year")
+
+  // Sitadel data per EPCI (JSON: [{ year, authorizedHousingCount, startedHousingCount }])
+  sitadelData            Json?      @map("sitadel_data")
+
+  // Calculation timestamp
+  calculatedAt           DateTime   @default(now()) @map("calculated_at")
+
+  epci                   Epci       @relation(fields: [epciCode], references: [code])
+  simulation             Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
 
   @@unique([epciCode, simulationId])
   @@map("simulation_results")
+}
+
+model SimulationResultsHistory {
+  id           String     @id @default(uuid())
+  simulationId String     @map("simulation_id")
+  calculatedAt DateTime   @default(now()) @map("calculated_at")
+  resultsJson  Json       @map("results_json")
+  simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  @@index([simulationId, calculatedAt])
+  @@map("simulation_results_history")
 }
 
 model HouseholdSizes {

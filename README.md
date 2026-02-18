@@ -43,6 +43,42 @@ pnpm --filter @otelo/api cli import-backup
 | `SCALINGO_REGION` | Région Scalingo (ex: `osc-fr1`) |
 | `DATABASE_URL` | URL de connexion PostgreSQL locale |
 
+### Commande `recalculate-results`
+
+Recalcule et enrichit les résultats de simulation en base (métriques stock B11-B15, flux, sitadel, données par année).
+
+**Par défaut, la commande fonctionne en dry-run** (aucune écriture en base). Il faut passer `--write` pour persister.
+
+```bash
+# Dry-run sur toutes les simulations (défaut, aucune écriture)
+pnpm -F api cli recalculate-results
+
+# Écriture en base pour toutes les simulations
+pnpm -F api cli recalculate-results --write
+
+# Dry-run sur une seule simulation
+pnpm -F api cli recalculate-results --simulation-id <uuid>
+
+# Écriture en base pour une seule simulation
+pnpm -F api cli recalculate-results --simulation-id <uuid> --write
+```
+
+**Options :**
+
+| Option | Description |
+|--------|-------------|
+| `--simulation-id <id>` | Recalculer une seule simulation |
+| `--write` | Persister les résultats en base (sans ce flag = dry-run) |
+
+**Données calculées et stockées :**
+
+- Totaux agrégés par EPCI (total, flux, stock, pre/post-peak)
+- Métriques stock B11-B15 par EPCI (hors logement, hébergés, inadéquation financière, mauvaise qualité, inadéquation physique)
+- Totaux flux par EPCI (évolution démographique, renouvellement, résidences secondaires, vacance courte/longue durée)
+- Données flux par année par EPCI (évolution du parc, besoins en logements, surplus)
+- Données Sitadel par EPCI
+- Historique complet du calcul (snapshot JSON dans `simulation_results_history`)
+
 ## Architecture technique
 
 ### Structure du monorepo

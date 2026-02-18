@@ -267,6 +267,46 @@ export class StatisticsService {
     `
   }
 
+  async getResultsStats() {
+    const results = await this.prisma.simulationResults.findMany({
+      include: {
+        simulation: {
+          select: { scenario: { select: { projection: true } } },
+        },
+      },
+    })
+
+    return results.map((r) => {
+      const flowData = r.flowDataByYear as Record<string, unknown> | null
+      const peakYear = flowData?.peakYear ?? null
+
+      return {
+        id: r.id,
+        epci_code: r.epciCode,
+        simulation_id: r.simulationId,
+        horizon_projection: r.simulation.scenario.projection,
+        peak_year: peakYear,
+        totalFlux: r.totalFlux,
+        totalStock: r.totalStock,
+        vacantAccomodation: r.vacantAccomodation,
+        exported: r.exported,
+        bad_quality: r.badQuality ? JSON.stringify(r.badQuality) : null,
+        calculated_at: r.calculatedAt,
+        financial_inadequation: r.financialInadequation ? JSON.stringify(r.financialInadequation) : null,
+        flow_data_by_year: r.flowDataByYear ? JSON.stringify(r.flowDataByYear) : null,
+        flow_totals: r.flowTotals ? JSON.stringify(r.flowTotals) : null,
+        hosted: r.hosted ? JSON.stringify(r.hosted) : null,
+        no_accomodation: r.noAccomodation ? JSON.stringify(r.noAccomodation) : null,
+        physical_inadequation: r.physicalInadequation ? JSON.stringify(r.physicalInadequation) : null,
+        postpeak_total_stock: r.postpeakTotalStock,
+        prepeak_total_stock: r.prepeakTotalStock,
+        secondary_accommodation: r.secondaryAccommodation,
+        sitadel_data: r.sitadelData ? JSON.stringify(r.sitadelData) : null,
+        total: r.total,
+      }
+    })
+  }
+
   async getSimulationsStats(): Promise<
     Array<{
       nom_utilisateur: string

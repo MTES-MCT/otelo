@@ -23,6 +23,7 @@ export const ZResultsBase = ZStockRequirementsResults.extend({
       vacantAccomodation: z.number(),
       prepeakTotalStock: z.number(),
       postpeakTotalStock: z.number(),
+      secondaryAccommodation: z.number(),
     }),
   ),
   flowRequirement: ZFlowRequirementChartDataResult,
