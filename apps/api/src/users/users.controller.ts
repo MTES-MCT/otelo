@@ -18,8 +18,18 @@ export class UsersController {
   })
   @HttpCode(HttpStatus.OK)
   @Get()
-  async list(@Query('page') page?: string, @Query('limit') limit?: string) {
-    return this.usersService.list(page ? Number(page) : undefined, limit ? Number(limit) : undefined)
+  async list(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+  ) {
+    return this.usersService.list(
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
+      sortBy,
+      sortOrder as 'asc' | 'desc' | undefined,
+    )
   }
 
   @AccessControl({

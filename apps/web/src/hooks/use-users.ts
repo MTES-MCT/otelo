@@ -9,10 +9,13 @@ export interface UsersResponse {
   totalPages: number
 }
 
-export const useUsers = (page = 1, limit = 25) => {
+export const useUsers = (page = 1, limit = 25, sortBy?: string, sortOrder?: string) => {
   const fetchUsers = async (): Promise<UsersResponse> => {
     try {
-      const response = await fetch(`/api/users?page=${page}&limit=${limit}`)
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+      if (sortBy) params.set('sortBy', sortBy)
+      if (sortOrder) params.set('sortOrder', sortOrder)
+      const response = await fetch(`/api/users?${params}`)
       if (!response.ok) {
         throw new Error('Failed to fetch users')
       }
@@ -25,6 +28,6 @@ export const useUsers = (page = 1, limit = 25) => {
 
   return useQuery({
     queryFn: fetchUsers,
-    queryKey: ['users', page, limit],
+    queryKey: ['users', page, limit, sortBy, sortOrder],
   })
 }

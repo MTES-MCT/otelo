@@ -13,11 +13,18 @@ export const UsersManagement: FC = () => {
       limit: parseAsInteger.withDefault(25),
       page: parseAsInteger.withDefault(1),
       q: parseAsString.withDefault(''),
+      sortBy: parseAsString.withDefault(''),
+      sortOrder: parseAsString.withDefault(''),
     },
     { shallow: true },
   )
 
-  const { data: usersResponse } = useUsers(queryStates.page, queryStates.limit)
+  const { data: usersResponse } = useUsers(
+    queryStates.page,
+    queryStates.limit,
+    queryStates.sortBy || undefined,
+    queryStates.sortOrder || undefined,
+  )
   const { data: usersSearchResponse } = useSearchUsers(queryStates.q)
 
   const isSearching = !!queryStates.q
@@ -44,6 +51,13 @@ export const UsersManagement: FC = () => {
     [setQueryStates],
   )
 
+  const handleSortChange = useCallback(
+    (sortBy: string, sortOrder: string) => {
+      setQueryStates({ sortBy, sortOrder, page: 1 })
+    },
+    [setQueryStates],
+  )
+
   return (
     <>
       <UsersTableHeader userCount={userCount} searchQuery={queryStates.q} onSearchQueryChange={handleSearchQueryChange} />
@@ -52,8 +66,11 @@ export const UsersManagement: FC = () => {
         totalPages={isSearching ? 0 : (usersResponse?.totalPages ?? 0)}
         isSearching={isSearching}
         queryStates={queryStates}
+        sortBy={queryStates.sortBy || undefined}
+        sortOrder={queryStates.sortOrder || undefined}
         onPageChange={handlePageChange}
         onLimitChange={handleLimitChange}
+        onSortChange={handleSortChange}
       />
     </>
   )
