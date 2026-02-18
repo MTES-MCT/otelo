@@ -11,7 +11,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getSortedRowModel,
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
@@ -259,16 +258,29 @@ interface UsersTableProps {
   totalPages: number
   isSearching: boolean
   queryStates: { limit: number; page: number; q: string }
+  sortBy?: string
+  sortOrder?: string
   onPageChange: (page: number) => void
   onLimitChange: (limit: number) => void
+  onSortChange: (sortBy: string, sortOrder: string) => void
 }
 
-export const UsersTable: FC<UsersTableProps> = ({ users, totalPages, isSearching, queryStates, onPageChange, onLimitChange }) => {
+export const UsersTable: FC<UsersTableProps> = ({
+  users,
+  totalPages,
+  isSearching,
+  queryStates,
+  sortBy,
+  sortOrder,
+  onPageChange,
+  onLimitChange,
+  onSortChange,
+}) => {
   const { mutate: updateUserAccess, isPending } = useUpdateUserAccess()
   const { mutate: deleteUser } = useDeleteUser()
   const { startImpersonation } = useStartImpersonation()
 
-  const [sorting, setSorting] = useState<SortingState>([])
+  const sorting: SortingState = sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : []
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const columns = useMemo(
@@ -280,11 +292,18 @@ export const UsersTable: FC<UsersTableProps> = ({ users, totalPages, isSearching
     data: users,
     columns,
     state: { sorting, columnFilters },
-    onSortingChange: setSorting,
+    manualSorting: true,
+    onSortingChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(sorting) : updater
+      if (next.length > 0) {
+        onSortChange(next[0].id, next[0].desc ? 'desc' : 'asc')
+      } else {
+        onSortChange('', '')
+      }
+    },
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   })
 
   return (

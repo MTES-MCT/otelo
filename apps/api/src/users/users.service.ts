@@ -21,6 +21,14 @@ const fieldsWithoutPassword = {
   type: true,
 } satisfies Prisma.UserSelect
 
+const SORTABLE_FIELDS: Record<string, string> = {
+  fullName: 'firstname',
+  email: 'email',
+  role: 'role',
+  createdAt: 'createdAt',
+  lastLoginAt: 'lastLoginAt',
+}
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -39,12 +47,21 @@ export class UsersService {
     return !!whitelistEntry
   }
 
-  async list(page = 1, limit = 25): Promise<{ users: TUser[]; userCount: number; page: number; limit: number; totalPages: number }> {
+  async list(
+    page = 1,
+    limit = 25,
+    sortBy?: string,
+    sortOrder?: 'asc' | 'desc',
+  ): Promise<{ users: TUser[]; userCount: number; page: number; limit: number; totalPages: number }> {
+    const prismaField = sortBy ? SORTABLE_FIELDS[sortBy] : undefined
+    const orderBy: Prisma.UserOrderByWithRelationInput | undefined = prismaField ? { [prismaField]: sortOrder ?? 'asc' } : undefined
+
     const [users, userCount] = await Promise.all([
       this.prisma.user.findMany({
         select: fieldsWithoutPassword,
         skip: (page - 1) * limit,
         take: limit,
+        ...(orderBy && { orderBy }),
       }),
       this.prisma.user.count(),
     ])
