@@ -3,6 +3,7 @@ import { DatavisualisationAutocomplete } from '~/components/data-visualisation/d
 import { DataVisualisationFilters } from '~/components/data-visualisation/data-visualisation-filters'
 import { DataVisualisationPage } from '~/components/data-visualisation/data-visualisation-page'
 import { SelectDataType } from '~/components/data-visualisation/select-data-type'
+import { SelectMillesime } from '~/components/data-visualisation/select-millesime'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default function InfographiesPage() {
         <div className="fr-flex fr-flex-gap-8v">
           <DatavisualisationAutocomplete />
           <SelectDataType />
+          <SelectMillesime />
         </div>
         <div className="fr-flex fr-justify-content-center fr-align-items-center">
           <DataVisualisationFilters />

@@ -122,9 +122,9 @@ const createProjectionMenagesTableData = (
 export class DemographicEvolutionService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getDemographicEvolution(epciCodes: string, years?: number[]): Promise<TDemographicEvolutionMenagesByEpciRecord> {
+  async getDemographicEvolution(epciCodes: string, years?: number[], millesime?: string): Promise<TDemographicEvolutionMenagesByEpciRecord> {
     const epcisArray = epciCodes.split(',')
-    const whereCond: Prisma.Sql = Prisma.sql`WHERE epci_code IN (${Prisma.join(epcisArray)})${years && years.length > 0 ? Prisma.sql` AND year IN (${Prisma.join(years)})` : Prisma.empty}`
+    const whereCond: Prisma.Sql = Prisma.sql`WHERE epci_code IN (${Prisma.join(epcisArray)})${years && years.length > 0 ? Prisma.sql` AND year IN (${Prisma.join(years)})` : Prisma.empty}${millesime ? Prisma.sql` AND millesime = ${millesime}` : Prisma.empty}`
 
     const projections = await this.prismaService.$queryRaw<
       Array<{
@@ -239,9 +239,9 @@ export class DemographicEvolutionService {
     return groupedByEpci
   }
 
-  async getDemographicEvolutionPopulationByEpci(epciCodes: string, years?: number[]): Promise<TDemographicEvolutionPopulationByEpciRecord> {
+  async getDemographicEvolutionPopulationByEpci(epciCodes: string, years?: number[], millesime?: string): Promise<TDemographicEvolutionPopulationByEpciRecord> {
     const epcisArray = epciCodes.split(',')
-    const whereCond: Prisma.Sql = Prisma.sql`WHERE epci_code IN (${Prisma.join(epcisArray)})${years && years.length > 0 ? Prisma.sql` AND year IN (${Prisma.join(years)})` : Prisma.empty}`
+    const whereCond: Prisma.Sql = Prisma.sql`WHERE epci_code IN (${Prisma.join(epcisArray)})${years && years.length > 0 ? Prisma.sql` AND year IN (${Prisma.join(years)})` : Prisma.empty}${millesime ? Prisma.sql` AND millesime = ${millesime}` : Prisma.empty}`
 
     const projections = await this.prismaService.$queryRaw<
       Array<{
@@ -367,10 +367,10 @@ export class DemographicEvolutionService {
     }, {} as TDemographicPopulationMaxYearsByEpci)
   }
 
-  async getDemographicEvolutionPopulationAndYear(epcis: TEpci[]) {
+  async getDemographicEvolutionPopulationAndYear(epcis: TEpci[], millesime?: string) {
     const results: TDemographicEvolutionPopulationByEpciAndYear[] = await Promise.all(
       epcis.map(async (epci) => {
-        const data = await this.getDemographicEvolutionPopulationByEpci(epci.code)
+        const data = await this.getDemographicEvolutionPopulationByEpci(epci.code, undefined, millesime)
         return {
           data: data[epci.code]?.data || [],
           metadata: data[epci.code]?.metadata || {},
@@ -383,7 +383,7 @@ export class DemographicEvolutionService {
 
     const tableResults = await Promise.all(
       epcis.map(async (epci) => {
-        const data = await this.getDemographicEvolutionPopulationByEpci(epci.code, [2021, 2030, 2040, 2050])
+        const data = await this.getDemographicEvolutionPopulationByEpci(epci.code, [2021, 2030, 2040, 2050], millesime)
         return {
           data: data[epci.code]?.data || [],
           metadata: data[epci.code]?.metadata || {},
@@ -440,10 +440,10 @@ export class DemographicEvolutionService {
     }, {} as TDemographicMenagesMaxYearsByEpci)
   }
 
-  async getDemographicEvolutionOmphaleAndYear(epcis: TEpci[], populationType?: string) {
+  async getDemographicEvolutionOmphaleAndYear(epcis: TEpci[], populationType?: string, millesime?: string) {
     const results = await Promise.all(
       epcis.map(async (epci) => {
-        const data = await this.getDemographicEvolution(epci.code)
+        const data = await this.getDemographicEvolution(epci.code, undefined, millesime)
         return {
           data: data[epci.code]?.data || [],
           metadata: data[epci.code]?.metadata || {},
@@ -453,7 +453,7 @@ export class DemographicEvolutionService {
     )
     const tableResults = await Promise.all(
       epcis.map(async (epci) => {
-        const data = await this.getDemographicEvolution(epci.code, [2021, 2030, 2040, 2050])
+        const data = await this.getDemographicEvolution(epci.code, [2021, 2030, 2040, 2050], millesime)
         return {
           data: data[epci.code]?.data || [],
           metadata: data[epci.code]?.metadata || {},

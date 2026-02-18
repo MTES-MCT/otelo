@@ -6,7 +6,7 @@ import { PrismaService } from '~/db/prisma.service'
 export class SitadelService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getSitadel(epcis: TEpci[]) {
+  async getSitadel(epcis: TEpci[], millesime?: string) {
     const epciCodes = epcis.map((epci) => epci.code)
     const sitadelData = await this.prismaService.sitadel.findMany({
       orderBy: {
@@ -22,6 +22,7 @@ export class SitadelService {
         epciCode: {
           in: epciCodes,
         },
+        ...(millesime && { millesime }),
       },
     })
 

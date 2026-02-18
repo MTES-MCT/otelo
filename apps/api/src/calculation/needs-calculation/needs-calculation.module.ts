@@ -46,6 +46,7 @@ interface AuthenticatedRequest extends Request {
           return {
             baseYear: 2021,
             coefficient: 1,
+            millesime: '2021',
           }
         }
         const simulation = await simulationService.get(simulationId as string)
@@ -57,6 +58,7 @@ interface AuthenticatedRequest extends Request {
         return {
           coefficient,
           baseYear: 2021,
+          millesime: simulation.scenario.millesime,
         }
       },
     },

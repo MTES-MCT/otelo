@@ -242,8 +242,8 @@ export class ExportExcelService {
       shouldSetLegend = peakYearDisplay === '*'
 
       const fluxValue = epciTotals.total > 0 ? epciTotals.totalFlux : 0
-      const stockValue = peakYear && peakYear > 2021 ? epciTotals.prepeakTotalStock : epciTotals.totalStock
-      const constructionsNeuves = epciTotals.total > 0 ? epciTotals.total : 0
+      const stockValue = peakYear && peakYear > Number(simulation.scenario.millesime) ? epciTotals.prepeakTotalStock : epciTotals.totalStock
+      const constructionsNeuves = fluxValue + stockValue
 
       const dataRow = syntheseWorksheet.getRow(currentRow)
       dataRow.values = [
@@ -406,7 +406,7 @@ export class ExportExcelService {
     await this.createDemographicSection(epciWorksheet, simulation, epciScenario, results)
     await this.createVacantHousingSection(epciWorksheet, simulation, epciScenario, results)
     await this.createSecondaryResidencesSection(epciWorksheet, simulation, epciScenario, results)
-    await this.createUrbanRenewalSection(epciWorksheet, epciScenario)
+    await this.createUrbanRenewalSection(epciWorksheet, simulation, epciScenario)
     await this.createBadHousingSection(epciWorksheet, simulation)
   }
   private async createTimeHorizonSection(
@@ -442,9 +442,11 @@ export class ExportExcelService {
   ): Promise<void> {
     const demographicPopulationEvolution = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(
       epciScenario.epciCode,
+      undefined,
+      simulation.scenario.millesime,
     )
     const demographicPopulationEvolutionEpciData = demographicPopulationEvolution[epciScenario.epciCode]
-    const demographicEvolution = await this.demographicEvolutionService.getDemographicEvolution(epciScenario.epciCode)
+    const demographicEvolution = await this.demographicEvolutionService.getDemographicEvolution(epciScenario.epciCode, undefined, simulation.scenario.millesime)
     const demographicEvolutionEpciData = demographicEvolution[epciScenario.epciCode]
     const populationKey = getPopulationKey(simulation.scenario.b2_scenario)
     const peakYear = results.flowRequirement.epcis.find((epci) => epci.code === epciScenario.epciCode)?.data.peakYear
@@ -456,14 +458,14 @@ export class ExportExcelService {
       data: [
         { cell: 'A9', value: 'Evolution démographique', style: 'sectionHeader' },
         { cell: 'B9', value: 'Modalités', style: 'standardBorder' },
-        { cell: 'C9', value: 'Valeur 2021', style: 'standardBorder' },
+        { cell: 'C9', value: `Valeur ${simulation.scenario.millesime}`, style: 'standardBorder' },
         { cell: 'D9', value: `Valeur ${targetYear}`, style: 'standardBorder' },
         { cell: 'A10', value: 'Evolution de la population', style: 'standardBorder' },
         { cell: 'B10', value: getPopulationLabel(simulation.scenario.b2_scenario), style: 'standardBorder' },
         {
           cell: 'C10',
           value: (() => {
-            const found = demographicPopulationEvolutionEpciData.data.find((d) => d.year === 2021)
+            const found = demographicPopulationEvolutionEpciData.data.find((d) => d.year === Number(simulation.scenario.millesime))
             return populationKey ? found?.[populationKey] : 0
           })(),
           style: 'standardBorder',
@@ -482,7 +484,7 @@ export class ExportExcelService {
           cell: 'C11',
           value: (() => {
             const key = getOmphaleKey(simulation.scenario.b2_scenario)
-            const found = demographicEvolutionEpciData.data.find((d) => d.year === 2021)
+            const found = demographicEvolutionEpciData.data.find((d) => d.year === Number(simulation.scenario.millesime))
             return key ? found?.[key] : 0
           })(),
           style: 'standardBorder',
@@ -508,7 +510,7 @@ export class ExportExcelService {
     epciScenario: TEpciScenario,
     results: TResults,
   ): Promise<void> {
-    const rates = await this.accommodationRatesService.getAccommodationRates(epciScenario.epciCode)
+    const rates = await this.accommodationRatesService.getAccommodationRates(epciScenario.epciCode, simulation.scenario.millesime)
     const peakYear = results.flowRequirement.epcis.find((epci) => epci.code === epciScenario.epciCode)?.data.peakYear
     // If peakYear < projection, use peakYear and its associated values
     // If peakYear > projection, use projection and its associated values
@@ -544,7 +546,7 @@ export class ExportExcelService {
 
     epciWorksheet.mergeCells('A14:A16')
     const situation2021Cell = epciWorksheet.getCell('A14')
-    situation2021Cell.value = 'Situation en 2021'
+    situation2021Cell.value = `Situation en ${simulation.scenario.millesime}`
     situation2021Cell.alignment = { horizontal: 'center', vertical: 'middle' }
     situation2021Cell.fill = {
       type: 'pattern',
@@ -571,7 +573,7 @@ export class ExportExcelService {
     epciScenario: TEpciScenario,
     results: TResults,
   ): Promise<void> {
-    const rates = await this.accommodationRatesService.getAccommodationRates(epciScenario.epciCode)
+    const rates = await this.accommodationRatesService.getAccommodationRates(epciScenario.epciCode, simulation.scenario.millesime)
     const peakYear = results.flowRequirement.epcis.find((epci) => epci.code === epciScenario.epciCode)?.data.peakYear
     // If peakYear < projection, use peakYear and its associated values
     // If peakYear > projection, use projection and its associated values
@@ -583,7 +585,7 @@ export class ExportExcelService {
         { cell: 'B23', value: 'Modalités', style: 'standardBorder' },
         { cell: 'C23', value: '%', style: 'standardBorder' },
         { cell: 'D23', value: 'Nombre de logements', style: 'standardBorder' },
-        { cell: 'B24', value: 'Résidences secondaires en 2021', style: 'standardBorder' },
+        { cell: 'B24', value: `Résidences secondaires en ${simulation.scenario.millesime}`, style: 'standardBorder' },
         { cell: 'C24', value: this.toPercentage(rates[epciScenario.epciCode].txRs), style: 'standardBorder' },
         { cell: 'B25', value: 'Variation du taux', style: 'standardBorder' },
         { cell: 'C25', value: this.toPercentage(rates[epciScenario.epciCode].txRs - epciScenario.b2_tx_rs), style: 'standardBorder' },
@@ -595,8 +597,8 @@ export class ExportExcelService {
     CellStyleHelper.applySectionConfig(epciWorksheet, secondaryResidencesConfig)
   }
 
-  private async createUrbanRenewalSection(epciWorksheet: ExcelJS.Worksheet, epciScenario: TEpciScenario): Promise<void> {
-    const rates = await this.accommodationRatesService.getAccommodationRates(epciScenario.epciCode)
+  private async createUrbanRenewalSection(epciWorksheet: ExcelJS.Worksheet, simulation: TSimulationWithEpciAndScenario, epciScenario: TEpciScenario): Promise<void> {
+    const rates = await this.accommodationRatesService.getAccommodationRates(epciScenario.epciCode, simulation.scenario.millesime)
 
     const urbanRenewalConfig: SectionConfig = {
       data: [
@@ -619,7 +621,7 @@ export class ExportExcelService {
 
     epciWorksheet.mergeCells('A29:A30')
     const observedRatesCell = epciWorksheet.getCell('A29')
-    observedRatesCell.value = 'Taux observés entre 2015 et 2021'
+    observedRatesCell.value = `Taux observés entre 2015 et ${simulation.scenario.millesime}`
     observedRatesCell.alignment = { horizontal: 'center', vertical: 'middle' }
     observedRatesCell.fill = {
       type: 'pattern',
@@ -821,9 +823,9 @@ export class ExportExcelService {
     const badHousingSectionConfig: SectionConfig = {
       data: [
         { cell: 'F14', value: '', style: 'standardBorder' as CellStyle },
-        { cell: 'G14', value: `Sur la période 2021 - ${period}`, style: 'resultHeader' as CellStyle },
+        { cell: 'G14', value: `Sur la période ${simulation.scenario.millesime} - ${period}`, style: 'resultHeader' as CellStyle },
         ...(showTotalColumn
-          ? [{ cell: 'H14', value: `Sur la période 2021 - ${simulation.scenario.projection}`, style: 'resultHeader' as CellStyle }]
+          ? [{ cell: 'H14', value: `Sur la période ${simulation.scenario.millesime} - ${simulation.scenario.projection}`, style: 'resultHeader' as CellStyle }]
           : []),
         { cell: 'F15', value: 'Besoin lié au mal-logement', style: 'sectionHeader' as CellStyle },
         ...(showTotalColumn
@@ -917,60 +919,61 @@ export class ExportExcelService {
     epciScenario: TEpciScenario,
     simulation: TSimulationWithEpciAndScenario,
   ): Promise<void> {
+    const millesime = simulation.scenario.millesime
     const filocomData = await this.prismaService.filocomFlux.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const hostedFinessData = await this.prismaService.hostedFiness.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const hostedFilocomData = await this.prismaService.hostedFilocom.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const hostedSneData = await this.prismaService.hostedSne.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime }},
     })
 
     const financialInadequationData = await this.prismaService.financialInadequation.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const badQualityFilocomData = await this.prismaService.badQuality_Filocom.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const badQualityFonciersData = await this.prismaService.badQuality_Fonciers.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const badQualityRPData = await this.prismaService.badQuality_RP.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const physicalInadequationFiloData = await this.prismaService.physicalInadequation_Filo.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const physicalInadequationRPData = await this.prismaService.physicalInadequation_RP.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const homelessData = await this.prismaService.homeless.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const hotelData = await this.prismaService.hotel.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const makeShiftHousingRPData = await this.prismaService.makeShiftHousing_RP.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const makeShiftHousingSNEData = await this.prismaService.makeShiftHousing_SNE.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     if (!filocomData) {
@@ -1201,7 +1204,7 @@ export class ExportExcelService {
 
     const explanationCell = epciWorksheet.getCell('O21')
     explanationCell.value =
-      '2021 : point de départ des projections de besoins en logements. Les années représentées dans la ligne ci-dessous donne le nombre de logements autorisés, le nombre de logements commencés, ainsi que le besoin en logements total sur une année entière (du 1er Janvier au 31 Décembre).'
+      `${simulation.scenario.millesime} : point de départ des projections de besoins en logements. Les années représentées dans la ligne ci-dessous donne le nombre de logements autorisés, le nombre de logements commencés, ainsi que le besoin en logements total sur une année entière (du 1er Janvier au 31 Décembre).`
     explanationCell.alignment = { horizontal: 'left', vertical: 'top', wrapText: true }
     explanationCell.font = { size: 10 }
     epciWorksheet.mergeCells('O21:W21')

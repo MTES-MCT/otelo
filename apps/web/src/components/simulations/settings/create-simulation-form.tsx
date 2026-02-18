@@ -25,6 +25,7 @@ export const CreateSimulationForm: FC = () => {
 
   const [queryStates] = useQueryStates({
     epci: parseAsString,
+    millesime: parseAsString,
     omphale: parseAsString,
     baseEpci: parseAsString,
     projection: parseAsInteger,
@@ -47,6 +48,7 @@ export const CreateSimulationForm: FC = () => {
     resolver: zodResolver(ZInitSimulationDto),
     values: {
       name: '',
+      millesime: queryStates.millesime || undefined,
       epci: selectedEpcis.map((epciCode) => ({ code: epciCode })),
       epciGroupId: queryStates.epciGroupId,
       epciGroupName: queryStates.epciGroupName,

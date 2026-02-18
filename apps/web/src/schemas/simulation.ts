@@ -23,13 +23,14 @@ export const ZSimulationWithRelations = ZSimulation.pick({
   updatedAt: true,
 }).extend({
   epcis: z.array(ZEpci),
-  scenario: ZScenario.pick({ b2_scenario: true, projection: true }),
+  scenario: ZScenario.pick({ b2_scenario: true, projection: true, millesime: true }),
 })
 
 export type TSimulationWithRelations = z.infer<typeof ZSimulationWithRelations>
 
 export const ZInitSimulationDto = z.object({
   name: z.string().min(1, 'Veuillez donner un nom pour cette simulation').max(100, 'Le nom ne doit pas dépasser 100 caractères').optional(),
+  millesime: z.string().optional(),
   epci: z.array(z.object({ code: z.string() })),
   scenario: z.object({
     b2_scenario: z.string(),
