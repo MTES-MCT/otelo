@@ -1,7 +1,6 @@
 'use client'
 
 import Button from '@codegouvfr/react-dsfr/Button'
-import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
@@ -54,10 +53,13 @@ export const NextStepLink: FC<NextStepLinkProps> = ({ defaultValue, href, label 
   }
 
   return (
-    <Link href={hrefWithParams}>
-      <Button size="large" iconId="ri-arrow-right-line" iconPosition="right">
-        {label}
-      </Button>
-    </Link>
+    <Button
+      size="large"
+      iconId="ri-arrow-right-line"
+      iconPosition="right"
+      linkProps={{ href: hrefWithParams, onClick: () => window.scrollTo({ top: 0 }) }}
+    >
+      {label}
+    </Button>
   )
 }

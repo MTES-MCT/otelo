@@ -9,7 +9,7 @@ export const ZSimulation = ZCommonDateFields.extend({
   id: z.string(),
   name: z.string(),
   scenarioId: z.string(),
-  userId: z.string(),
+  userId: z.string().nullable(),
 })
 
 export type TSimulation = z.infer<typeof ZSimulation>
