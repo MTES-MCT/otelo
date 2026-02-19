@@ -131,10 +131,25 @@ export class SimulationsService {
   }
 
   async delete(userId: string, id: string): Promise<Simulation> {
-    return this.prismaService.simulation.update({
+    const simulation = await this.prismaService.simulation.update({
       where: { id, userId },
       data: { deleted: new Date() },
     })
+
+    if (simulation.epciGroupId) {
+      const remainingCount = await this.prismaService.simulation.count({
+        where: { epciGroupId: simulation.epciGroupId, deleted: null },
+      })
+
+      if (remainingCount === 0) {
+        await this.prismaService.epciGroup.update({
+          where: { id: simulation.epciGroupId },
+          data: { deleted: new Date() },
+        })
+      }
+    }
+
+    return simulation
   }
 
   async clone(userId: string, originalId: string, data: TCloneSimulationDto): Promise<Simulation> {

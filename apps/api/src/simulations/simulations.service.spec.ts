@@ -176,14 +176,48 @@ describe('SimulationsService', () => {
   })
 
   describe('delete', () => {
-    it('should soft-delete a simulation', async () => {
-      mockPrismaService.simulation.update = jest.fn().mockResolvedValue({ id: 'simulation-1' })
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should soft-delete a simulation without a group', async () => {
+      mockPrismaService.simulation.update = jest.fn().mockResolvedValue({ id: 'simulation-1', epciGroupId: null })
       const result = await service.delete('user-1', 'simulation-1')
-      expect(result).toEqual({ id: 'simulation-1' })
+      expect(result).toEqual({ id: 'simulation-1', epciGroupId: null })
       expect(mockPrismaService.simulation.update).toHaveBeenCalledWith({
         where: { id: 'simulation-1', userId: 'user-1' },
         data: { deleted: expect.any(Date) },
       })
+      expect(mockPrismaService.simulation.count).not.toHaveBeenCalled()
+      expect(mockPrismaService.epciGroup.update).not.toHaveBeenCalled()
+    })
+
+    it('should soft-delete the group when the last simulation in it is deleted', async () => {
+      mockPrismaService.simulation.update = jest.fn().mockResolvedValue({ id: 'simulation-1', epciGroupId: 'group-1' })
+      mockPrismaService.simulation.count = jest.fn().mockResolvedValue(0)
+      mockPrismaService.epciGroup.update = jest.fn().mockResolvedValue({ id: 'group-1' })
+
+      await service.delete('user-1', 'simulation-1')
+
+      expect(mockPrismaService.simulation.count).toHaveBeenCalledWith({
+        where: { epciGroupId: 'group-1', deleted: null },
+      })
+      expect(mockPrismaService.epciGroup.update).toHaveBeenCalledWith({
+        where: { id: 'group-1' },
+        data: { deleted: expect.any(Date) },
+      })
+    })
+
+    it('should not soft-delete the group when other simulations remain', async () => {
+      mockPrismaService.simulation.update = jest.fn().mockResolvedValue({ id: 'simulation-1', epciGroupId: 'group-1' })
+      mockPrismaService.simulation.count = jest.fn().mockResolvedValue(2)
+
+      await service.delete('user-1', 'simulation-1')
+
+      expect(mockPrismaService.simulation.count).toHaveBeenCalledWith({
+        where: { epciGroupId: 'group-1', deleted: null },
+      })
+      expect(mockPrismaService.epciGroup.update).not.toHaveBeenCalled()
     })
   })
 })

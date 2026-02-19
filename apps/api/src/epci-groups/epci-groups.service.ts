@@ -8,7 +8,7 @@ export class EpciGroupsService {
 
   async findAll(userId: string): Promise<TEpciGroupWithEpcis[]> {
     return this.prisma.epciGroup.findMany({
-      where: { userId },
+      where: { userId, deleted: null },
       include: {
         epciGroupEpcis: {
           include: {

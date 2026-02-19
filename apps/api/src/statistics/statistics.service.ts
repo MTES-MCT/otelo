@@ -289,7 +289,6 @@ export class StatisticsService {
         totalFlux: r.totalFlux,
         totalStock: r.totalStock,
         vacantAccomodation: r.vacantAccomodation,
-        exported: r.exported,
         bad_quality: r.badQuality ? JSON.stringify(r.badQuality) : null,
         calculated_at: r.calculatedAt,
         financial_inadequation: r.financialInadequation ? JSON.stringify(r.financialInadequation) : null,
