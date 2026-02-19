@@ -186,6 +186,14 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
               },
               text: 'Retours utilisateurs',
             },
+            {
+              isActive: pathname.includes('/admin/consommateurs'),
+              linkProps: {
+                href: '/admin/consommateurs',
+                target: '_self',
+              },
+              text: 'Consommateurs API',
+            },
           ],
           text: 'Administration',
         },

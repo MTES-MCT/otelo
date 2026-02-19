@@ -108,6 +108,22 @@ model Export {
 }
 
 
+model ApiConsumer {
+  id           String       @id @default(uuid())
+  name         String
+  hashedKey    String       @unique @map("hashed_key")
+  encryptedKey String       @map("encrypted_key")
+  prefix       String
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  lastUsedAt   DateTime?    @map("last_used_at")
+  scenarios    Scenario[]
+  simulations  Simulation[]
+  epciGroups   EpciGroup[]
+
+  @@map("api_consumers")
+}
+
 model Scenario {
   id                                String                              @id @default(uuid())
   isConfidential                    Boolean                             @default(true)
@@ -135,7 +151,8 @@ model Scenario {
   source_b15                        SourceB15                           @default(Filo)
   b15_taux_reallocation             Int                                 @default(90)
   b17_motif                         MotifB17                            @default(Tout)
-  userId                            String                              @map("user_id")
+  userId                            String?                             @map("user_id")
+  apiConsumerId                     String?                             @map("api_consumer_id")
   createdAt                         DateTime                            @default(now()) @map("created_at")
   updatedAt                         DateTime                            @updatedAt @map("updated_at")
   b2_scenario                       String
@@ -143,7 +160,8 @@ model Scenario {
   b15_surocc                        B15Surocc                           @default(Acc)
   demographicEvolutionOmphaleCustom DemographicEvolutionOmphaleCustom[]
   epciScenarios                     EPCIScenario[]
-  user                              User                                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                              User?                               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiConsumer                       ApiConsumer?                         @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
   simulations                       Simulation[]
 
   @@map("scenarios")
@@ -219,15 +237,17 @@ model Simulation {
   name                      String
   createdAt                 DateTime                   @default(now()) @map("created_at")
   updatedAt                 DateTime                   @updatedAt @map("updated_at")
-  userId                    String                     @map("user_id")
+  userId                    String?                    @map("user_id")
+  apiConsumerId             String?                    @map("api_consumer_id")
   scenarioId                String                     @map("scenario_id")
   epciGroupId               String?                    @map("epci_group_id")
   exports                   Export[]
-  SimulationResults         SimulationResults[]
-  SimulationResultsHistory  SimulationResultsHistory[]
+  simulationResults         SimulationResults[]
+  simulationResultsHistory  SimulationResultsHistory[]
   epciGroup                 EpciGroup?                 @relation(fields: [epciGroupId], references: [id])
   scenario                  Scenario                   @relation(fields: [scenarioId], references: [id])
-  user                      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                      User?                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiConsumer               ApiConsumer?               @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
   epcis                     Epci[]                     @relation("EpciToSimulation")
 
   deleted                   DateTime?
@@ -620,9 +640,11 @@ model EpciGroup {
   name           String
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
-  userId         String           @map("user_id")
+  userId         String?          @map("user_id")
+  apiConsumerId  String?          @map("api_consumer_id")
   epciGroupEpcis EpciGroupEpcis[]
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiConsumer    ApiConsumer?     @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
   simulations    Simulation[]
   deleted        DateTime?
 
