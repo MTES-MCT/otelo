@@ -34,4 +34,22 @@ export class FeedbackService {
       update: { status: FeedbackStatus.SNOOZED },
     })
   }
+
+  async findAllSubmitted(startDate?: string, endDate?: string) {
+    return this.prisma.userFeedback.findMany({
+      where: {
+        status: FeedbackStatus.SUBMITTED,
+        ...(startDate || endDate
+          ? {
+              createdAt: {
+                ...(startDate ? { gte: new Date(startDate) } : {}),
+                ...(endDate ? { lte: new Date(endDate) } : {}),
+              },
+            }
+          : {}),
+      },
+      include: { user: { select: { email: true } } },
+      orderBy: { createdAt: 'desc' },
+    })
+  }
 }

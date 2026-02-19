@@ -137,4 +137,55 @@ describe('FeedbackService', () => {
       })
     })
   })
+
+  describe('findAllSubmitted', () => {
+    it('should return all submitted feedbacks without date filter', async () => {
+      const mockFeedbacks = [
+        { id: 'fb-1', rating: 5, comment: 'Super', user: { email: 'a@b.com' } },
+        { id: 'fb-2', rating: 3, comment: null, user: { email: 'c@d.com' } },
+      ]
+      prismaService.userFeedback.findMany = jest.fn().mockResolvedValue(mockFeedbacks)
+
+      const result = await service.findAllSubmitted()
+      expect(result).toEqual(mockFeedbacks)
+      expect(prismaService.userFeedback.findMany).toHaveBeenCalledWith({
+        where: { status: FeedbackStatus.SUBMITTED },
+        include: { user: { select: { email: true } } },
+        orderBy: { createdAt: 'desc' },
+      })
+    })
+
+    it('should filter by startDate and endDate', async () => {
+      prismaService.userFeedback.findMany = jest.fn().mockResolvedValue([])
+
+      await service.findAllSubmitted('2025-01-01', '2025-12-31')
+      expect(prismaService.userFeedback.findMany).toHaveBeenCalledWith({
+        where: {
+          status: FeedbackStatus.SUBMITTED,
+          createdAt: {
+            gte: new Date('2025-01-01'),
+            lte: new Date('2025-12-31'),
+          },
+        },
+        include: { user: { select: { email: true } } },
+        orderBy: { createdAt: 'desc' },
+      })
+    })
+
+    it('should filter by startDate only', async () => {
+      prismaService.userFeedback.findMany = jest.fn().mockResolvedValue([])
+
+      await service.findAllSubmitted('2025-06-01')
+      expect(prismaService.userFeedback.findMany).toHaveBeenCalledWith({
+        where: {
+          status: FeedbackStatus.SUBMITTED,
+          createdAt: {
+            gte: new Date('2025-06-01'),
+          },
+        },
+        include: { user: { select: { email: true } } },
+        orderBy: { createdAt: 'desc' },
+      })
+    })
+  })
 })

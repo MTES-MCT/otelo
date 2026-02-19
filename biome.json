@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/node_modules/**", "!**/dist/**", "!**/.next/**", "!**/generated/**"]
+    "includes": ["**", "!**/node_modules/**", "!**/dist/**", "!**/.next/**", "!**/generated/**", "!apps/web/next-env.d.ts"]
   },
   "css": {
     "parser": {
