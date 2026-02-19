@@ -16,11 +16,16 @@ console.log(`\n[scalingo-postbuild] BUILD_TARGET=${BUILD_TARGET}\n`)
 
 // scalingo-postbuild replaces "build" — run the build first
 console.log('Running build...\n')
-execSync(`pnpm --filter @shared build && pnpm --filter ${BUILD_TARGET} build`, {
-  stdio: 'inherit',
-  cwd: ROOT,
-  env: { ...process.env, CI: 'true' },
-})
+try {
+  execSync(`pnpm --filter @shared build && pnpm --filter ${BUILD_TARGET} build`, {
+    stdio: 'inherit',
+    cwd: ROOT,
+    env: { ...process.env, CI: 'true' },
+  })
+} catch {
+  console.error('\nBuild failed — aborting postbuild (no migrations will be applied).\n')
+  process.exit(1)
+}
 
 console.log('\nBuild complete.\n')
 
