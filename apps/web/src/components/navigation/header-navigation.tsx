@@ -147,6 +147,14 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
               },
               text: 'Statistiques',
             },
+            {
+              isActive: pathname.includes('/admin/feedbacks'),
+              linkProps: {
+                href: '/admin/feedbacks',
+                target: '_self',
+              },
+              text: 'Retours utilisateurs',
+            },
           ],
           text: 'Administration',
         },

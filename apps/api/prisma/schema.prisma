@@ -623,6 +623,7 @@ model EpciGroup {
   epciGroupEpcis EpciGroupEpcis[]
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   simulations    Simulation[]
+  deleted        DateTime?
 
   @@map("epci_groups")
 }
@@ -664,7 +665,6 @@ model SimulationResults {
   totalFlux              Int        @default(0)
   totalStock             Int        @default(0)
   vacantAccomodation     Int        @default(0)
-  exported               Boolean    @default(false)
 
   // Aggregated EPCI totals
   total                  Int        @default(0)

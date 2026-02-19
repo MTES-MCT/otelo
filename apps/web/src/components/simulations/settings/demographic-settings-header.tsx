@@ -4,6 +4,7 @@ import { Select } from '@codegouvfr/react-dsfr/Select'
 import Tabs from '@codegouvfr/react-dsfr/Tabs'
 import classNames from 'classnames'
 import { parseAsString, useQueryState, useQueryStates } from 'nuqs'
+import { useRef } from 'react'
 import { tss } from 'tss-react'
 import { useEpcis } from '~/hooks/use-epcis'
 
@@ -45,6 +46,7 @@ export const DemographicSettingsHeader = ({ children }: DemographicSettingsHeade
     populationTouched: parseAsString,
   })
 
+  const tabsRef = useRef<HTMLDivElement>(null)
   const { classes } = useStyles({ population: queryState.population })
   const selectedTabId = queryState.scenario ?? 'population'
 
@@ -57,10 +59,12 @@ export const DemographicSettingsHeader = ({ children }: DemographicSettingsHeade
       return
     }
     setQueryState({ scenario: tabId === 'population' ? 'population' : 'menages' })
+    tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
     <Tabs
+      ref={tabsRef}
       className="fr-mt-2w"
       label="Scénario de projection démographique"
       classes={{ tab: classes.tab, panel: 'fr-background-default--grey' }}

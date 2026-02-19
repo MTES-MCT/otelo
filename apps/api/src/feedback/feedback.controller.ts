@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Role } from '~/generated/prisma/enums'
@@ -35,5 +35,14 @@ export class FeedbackController {
   @Post('snooze')
   async snooze(@User() user: TUser) {
     return this.feedbackService.snooze(user.id)
+  }
+
+  @AccessControl({
+    roles: [Role.ADMIN],
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('admin/list')
+  async findAllSubmitted(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
+    return this.feedbackService.findAllSubmitted(startDate, endDate)
   }
 }
