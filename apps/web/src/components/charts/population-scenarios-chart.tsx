@@ -87,7 +87,10 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
   const evol =
     popEvolution[queryStates.population as keyof typeof popEvolution] -
     basePopulation[queryStates.population as keyof typeof basePopulation]
-
+  const handleClick = () => {
+    setQueryStates({ scenario: 'menages' })
+    window.scrollTo({ top: 0 })
+  }
   return (
     <>
       <PopulationScenariosSelection />
@@ -168,7 +171,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
         })()}
 
       <div className={classes.buttonContainer} data-chart-download-exclude>
-        <Button disabled={!queryStates.population} onClick={() => setQueryStates({ scenario: 'menages' })} className="fr-mt-4w">
+        <Button disabled={!queryStates.population} onClick={handleClick} className="fr-mt-4w">
           Choisir une projection de ménages
         </Button>
       </div>

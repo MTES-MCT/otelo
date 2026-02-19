@@ -19,6 +19,7 @@ const ZEnvSchema = z.object({
   OAUTH_PROCONNECT_CLIENT_ID: z.string(),
   OAUTH_PROCONNECT_CLIENT_SECRET: z.string(),
   OAUTH_PROCONNECT_ISSUER: z.string(),
+  API_KEY_ENCRYPTION_SECRET: z.string(),
 })
 
 export const validateEnvConfig = (config: Record<string, unknown>): Record<string, unknown> => ZEnvSchema.parse(config)

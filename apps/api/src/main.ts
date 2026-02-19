@@ -1,21 +1,53 @@
 import { Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { cleanupOpenApiDoc } from 'nestjs-zod'
+import { ExternalModule } from '~/external/external.module'
 import { MainModule } from '~/main.module'
 
 const bootstrap = async () => {
   const app = await NestFactory.create(MainModule, { bodyParser: false })
   const globalPrefix = 'api'
 
-  const config = new DocumentBuilder()
-    .setTitle('Otelo v4 - Open API')
-    .setDescription('Here you can find the Open API documentation for Otelo v4')
+  // Swagger complet (tous les endpoints)
+  const fullConfig = new DocumentBuilder()
+    .setTitle('Otelo - API interne')
+    .setDescription("Documentation complete de l'API Otelo (endpoints internes + externes).")
     .setVersion('1.0')
-    .addTag('Otelo v4')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      description: 'API Key au format otelo_xxx',
+    })
     .build()
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('swagger', app, documentFactory, {
+  const fullDocumentFactory = () => cleanupOpenApiDoc(SwaggerModule.createDocument(app, fullConfig))
+  SwaggerModule.setup('swagger', app, fullDocumentFactory, {
+    useGlobalPrefix: true,
+  })
+
+  const externalConfig = new DocumentBuilder()
+    .setTitle('Otelo - API externe')
+    .setDescription(
+      'API Otelo pour les consommateurs externes.\n\n' +
+        'Authentification : `Authorization: Bearer otelo_xxx`\n\n' +
+        'Contactez un administrateur pour obtenir une clé API par mail : otelo@beta.gouv.fr',
+    )
+    .setVersion('1.0')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      description: 'API Key au format otelo_xxx',
+    })
+    .build()
+
+  const externalDocumentFactory = () =>
+    cleanupOpenApiDoc(
+      SwaggerModule.createDocument(app, externalConfig, {
+        include: [ExternalModule],
+      }),
+    )
+  SwaggerModule.setup('swagger-external', app, externalDocumentFactory, {
     useGlobalPrefix: true,
   })
 

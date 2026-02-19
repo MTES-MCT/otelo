@@ -4,7 +4,7 @@ import { z } from 'zod'
 export const ZEpciGroup = ZCommonDateFields.extend({
   id: z.string(),
   name: z.string(),
-  userId: z.string(),
+  userId: z.string().nullable(),
 })
 
 export type TEpciGroup = z.infer<typeof ZEpciGroup>
