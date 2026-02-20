@@ -2,17 +2,7 @@ import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 import { ZExternalUpdateScenario } from '~/schemas/scenarios/scenario'
 
-const B2_SCENARIOS = [
-  'Central_B',
-  'Central_C',
-  'Central_H',
-  'PB_B',
-  'PB_C',
-  'PB_H',
-  'PH_B',
-  'PH_C',
-  'PH_H',
-] as const
+const B2_SCENARIOS = ['Central_B', 'Central_C', 'Central_H', 'PB_B', 'PB_C', 'PB_H', 'PH_B', 'PH_C', 'PH_H'] as const
 
 const ZCreateSimulationBody = z.object({
   name: z.string().describe('Nom de la simulation'),

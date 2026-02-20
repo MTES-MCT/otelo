@@ -7,11 +7,14 @@ import { CronService } from './cron.service'
 import { DossierNode } from './interfaces/demarches-simplifiees.interface'
 
 describe('CronService', () => {
+  const originalEnv = process.env.NODE_ENV
+
   let service: CronService
   let httpService: { post: jest.Mock }
   let prisma: { user: { updateMany: jest.Mock } }
 
   beforeEach(async () => {
+    process.env.NODE_ENV = 'production'
     httpService = { post: jest.fn() }
     prisma = { user: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) } }
 
@@ -37,6 +40,10 @@ describe('CronService', () => {
     }).compile()
 
     service = module.get<CronService>(CronService)
+  })
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalEnv
   })
 
   it('should be defined', () => {
@@ -230,6 +237,15 @@ describe('CronService', () => {
   })
 
   describe('handleUserAccessUpdate', () => {
+    it('should be a no-op when NODE_ENV is not production', async () => {
+      process.env.NODE_ENV = 'test'
+
+      await service.handleUserAccessUpdate()
+
+      expect(httpService.post).not.toHaveBeenCalled()
+      expect(prisma.user.updateMany).not.toHaveBeenCalled()
+    })
+
     it('should process dossiers and update user access', async () => {
       httpService.post.mockReturnValue(
         of({
