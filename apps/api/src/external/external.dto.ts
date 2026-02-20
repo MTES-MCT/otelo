@@ -2,12 +2,28 @@ import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 import { ZExternalUpdateScenario } from '~/schemas/scenarios/scenario'
 
+const B2_SCENARIOS = [
+  'Central_B',
+  'Central_C',
+  'Central_H',
+  'PB_B',
+  'PB_C',
+  'PB_H',
+  'PH_B',
+  'PH_C',
+  'PH_H',
+] as const
+
 const ZCreateSimulationBody = z.object({
   name: z.string().describe('Nom de la simulation'),
   epci: z.array(z.object({ code: z.string().describe('Code EPCI (SIREN)') })).describe('Liste des EPCI'),
   scenario: z.object({
-    b2_scenario: z.string().describe('Scénario démographique (central, haut, bas)'),
-    projection: z.number().describe('Année de projection'),
+    b2_scenario: z
+      .enum(B2_SCENARIOS)
+      .describe(
+        'Scénario démographique : Population (Central, PH=haute, PB=basse) + Ménages (B=décélération, C=tendanciel, H=accélération)',
+      ),
+    projection: z.number().int().min(2021).max(2050).describe('Année de projection (entre 2021 et 2050)'),
     epcis: z
       .record(
         z.string(),
@@ -86,8 +102,8 @@ const ZSimulationListItem = z.object({
     }),
   ),
   scenario: z.object({
-    b2_scenario: z.string(),
-    projection: z.number(),
+    b2_scenario: z.enum(B2_SCENARIOS),
+    projection: z.number().int().min(2021).max(2050),
   }),
   epciGroup: z.object({ id: z.string(), name: z.string() }).optional(),
 })
