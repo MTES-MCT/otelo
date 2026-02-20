@@ -35,10 +35,14 @@ export class ApiKeyGuard implements CanActivate {
       throw new UnauthorizedException('API key is disabled')
     }
 
-    await this.prisma.apiConsumer.update({
-      where: { id: consumer.id },
-      data: { lastUsedAt: new Date() },
-    })
+    this.prisma.apiConsumer
+      .update({
+        where: { id: consumer.id },
+        data: { lastUsedAt: new Date() },
+      })
+      .catch(() => {
+        // fire and forget strat: silently ignore
+      })
 
     request.apiConsumer = consumer
 
