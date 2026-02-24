@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { FlowRequirementService } from '~/calculation/needs-calculation/besoins-flux/flow-requirement.service'
 import { SitadelService } from '~/calculation/needs-calculation/sitadel/sitadel.service'
 import { StockRequirementsService } from '~/stock-requirements/stock-requirements.service'
-import { makeScenario, makeSimulation, makeStockRequirementsResults } from './__test-utils__/calculation-test-fixtures'
+import { makeEpciScenario, makeScenario, makeSimulation, makeStockRequirementsResults } from './__test-utils__/calculation-test-fixtures'
 import { NeedsCalculationService } from './needs-calculation.service'
 
 describe('NeedsCalculationService', () => {
@@ -167,6 +167,74 @@ describe('NeedsCalculationService', () => {
       const result = await service.calculate(simulation)
       expect(result.total).toBeDefined()
       expect(typeof result.total).toBe('number')
+    })
+
+    it('should not accumulate vacantAccomodation and secondaryAccommodation across EPCIs', async () => {
+      stockService.calculateStock.mockResolvedValue(makeStockRequirementsResults('200000001'))
+      stockService.calculateProrataStockByEpci.mockReturnValue({
+        total: 200,
+        prePeakTotal: 150,
+        postPeakTotal: 50,
+      })
+
+      flowService.calculate.mockResolvedValue({
+        epcis: [
+          {
+            code: '200000001',
+            data: { peakYear: 2031, parcEvolution: {}, housingNeeds: {}, surplusHousing: {} },
+            totals: {
+              demographicEvolution: 100,
+              renewalNeeds: 50,
+              secondaryResidenceAccomodationEvolution: -10,
+              housingNeeds: 200,
+              surplusHousing: 0,
+              vacantAccomodation: -82,
+              shortTermVacantAccomodation: -20,
+              longTermVacantAccomodation: -62,
+            },
+            metadata: { max: 2041, min: 2021 },
+          },
+          {
+            code: '200000002',
+            data: { peakYear: 2031, parcEvolution: {}, housingNeeds: {}, surplusHousing: {} },
+            totals: {
+              demographicEvolution: 80,
+              renewalNeeds: 30,
+              secondaryResidenceAccomodationEvolution: -5,
+              housingNeeds: 150,
+              surplusHousing: 0,
+              vacantAccomodation: -15,
+              shortTermVacantAccomodation: -5,
+              longTermVacantAccomodation: -10,
+            },
+            metadata: { max: 2041, min: 2021 },
+          },
+        ],
+      })
+
+      sitadelService.calculate.mockResolvedValue({ epcis: [] } as any)
+
+      const simulation = makeSimulation({
+        epcis: [
+          { code: '200000001', name: 'EPCI A', bassinName: null },
+          { code: '200000002', name: 'EPCI B', bassinName: null },
+        ],
+        scenario: makeScenario({
+          epciScenarios: [makeEpciScenario({ epciCode: '200000001' }), makeEpciScenario({ epciCode: '200000002' })],
+        }),
+      })
+
+      const result = await service.calculate(simulation)
+
+      // Each EPCI should have its own value, not the accumulated sum
+      expect(result.epcisTotals[0].vacantAccomodation).toBe(-62)
+      expect(result.epcisTotals[0].secondaryAccommodation).toBe(-10)
+      expect(result.epcisTotals[1].vacantAccomodation).toBe(-10)
+      expect(result.epcisTotals[1].secondaryAccommodation).toBe(-5)
+
+      // Global totals should be the sum of all per-EPCI values
+      expect(result.vacantAccomodation).toBe(-72)
+      expect(result.secondaryAccommodation).toBe(-15)
     })
   })
 })

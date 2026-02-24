@@ -46,12 +46,14 @@ export class NeedsCalculationService {
       total += epciTotalFlux + (peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total)
       totalFlux += epciTotalFlux
       totalStock += peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total
-      if (epciFlowRequirement.totals.longTermVacantAccomodation <= 0) {
-        vacantAccomodation += epciFlowRequirement.totals.longTermVacantAccomodation
-      }
-      if (epciFlowRequirement.totals.longTermVacantAccomodation <= 0) {
-        secondaryAccommodation += epciFlowRequirement.totals.secondaryResidenceAccomodationEvolution
-      }
+      const epciVacantAccomodation =
+        epciFlowRequirement.totals.longTermVacantAccomodation <= 0 ? epciFlowRequirement.totals.longTermVacantAccomodation : 0
+
+      const epciSecondaryAccommodation =
+        epciFlowRequirement.totals.longTermVacantAccomodation <= 0 ? epciFlowRequirement.totals.secondaryResidenceAccomodationEvolution : 0
+
+      vacantAccomodation += epciVacantAccomodation
+      secondaryAccommodation += epciSecondaryAccommodation
 
       return {
         epciCode: epci.code,
@@ -60,8 +62,8 @@ export class NeedsCalculationService {
         postpeakTotalStock: epciTotalStock.postPeakTotal,
         totalFlux: epciTotalFlux,
         totalStock: epciTotalStock.total,
-        vacantAccomodation,
-        secondaryAccommodation,
+        vacantAccomodation: epciVacantAccomodation,
+        secondaryAccommodation: epciSecondaryAccommodation,
       }
     })
 
