@@ -356,23 +356,20 @@ describe('ExportExcelService', () => {
       const parctotProj = RP_PROJ / txRpProj
 
       it('should use parctotProj (not filocom parctot) for D19', () => {
-        const vacancyTotalPercent = 0.08 // C19 = toPercentage(b2_tx_vacance_courte + b2_tx_vacance_longue)
-        expect(epciSheet.getCell('D19').value).toBe(Math.round(parctotProj * vacancyTotalPercent))
+        // D19 = parctotProj * (b2_tx_vacance_courte + b2_tx_vacance_longue) using raw rates
+        expect(epciSheet.getCell('D19').value).toBe(Math.round(parctotProj * (0.04 + 0.04)))
       })
 
       it('should use parctotProj for D20', () => {
-        const vacancyShortPercent = 0.04
-        expect(epciSheet.getCell('D20').value).toBe(Math.round(parctotProj * vacancyShortPercent))
+        expect(epciSheet.getCell('D20').value).toBe(Math.round(parctotProj * 0.04))
       })
 
       it('should use parctotProj for D21', () => {
-        const vacancyLongPercent = 0.04
-        expect(epciSheet.getCell('D21').value).toBe(Math.round(parctotProj * vacancyLongPercent))
+        expect(epciSheet.getCell('D21').value).toBe(Math.round(parctotProj * 0.04))
       })
 
       it('should use parctotProj for D26 (secondary residences projection)', () => {
-        const rsProjectionPercent = 0.05 // C26 = toPercentage(b2_tx_rs)
-        expect(epciSheet.getCell('D26').value).toBe(Math.round(parctotProj * rsProjectionPercent))
+        expect(epciSheet.getCell('D26').value).toBe(Math.round(parctotProj * 0.05))
       })
 
       it('should still use filocom parctot for 2021 rows (D14-D16)', () => {
@@ -681,34 +678,28 @@ describe('ExportExcelService', () => {
       const txRpProj = 1 - csvEpciScenario.b2_tx_rs - csvEpciScenario.b2_tx_vacance_longue - csvEpciScenario.b2_tx_vacance_courte
       const parctotProj = CSV_RP_PROJ / txRpProj
 
-      it('should compute D19 with parctotProj and real vacancy rates', () => {
-        // C19 = toPercentage(b2_tx_vacance_courte + b2_tx_vacance_longue) → parsed back
-        const c19Parsed = parseFloat(((csvEpciScenario.b2_tx_vacance_courte + csvEpciScenario.b2_tx_vacance_longue) * 100).toFixed(2)) / 100
-        expect(epciSheet.getCell('D19').value).toBe(Math.round(parctotProj * c19Parsed))
+      it('should compute D19 with parctotProj and raw vacancy rates', () => {
+        expect(epciSheet.getCell('D19').value).toBe(
+          Math.round(parctotProj * (csvEpciScenario.b2_tx_vacance_courte + csvEpciScenario.b2_tx_vacance_longue)),
+        )
       })
 
       it('should compute D20 with parctotProj', () => {
-        const c20Parsed = parseFloat((csvEpciScenario.b2_tx_vacance_courte * 100).toFixed(2)) / 100
-        expect(epciSheet.getCell('D20').value).toBe(Math.round(parctotProj * c20Parsed))
+        expect(epciSheet.getCell('D20').value).toBe(Math.round(parctotProj * csvEpciScenario.b2_tx_vacance_courte))
       })
 
       it('should compute D21 with parctotProj', () => {
-        const c21Parsed = parseFloat((csvEpciScenario.b2_tx_vacance_longue * 100).toFixed(2)) / 100
-        expect(epciSheet.getCell('D21').value).toBe(Math.round(parctotProj * c21Parsed))
+        expect(epciSheet.getCell('D21').value).toBe(Math.round(parctotProj * csvEpciScenario.b2_tx_vacance_longue))
       })
 
       it('should compute D26 with parctotProj', () => {
-        const c26Parsed = parseFloat((csvEpciScenario.b2_tx_rs * 100).toFixed(2)) / 100
-        expect(epciSheet.getCell('D26').value).toBe(Math.round(parctotProj * c26Parsed))
+        expect(epciSheet.getCell('D26').value).toBe(Math.round(parctotProj * csvEpciScenario.b2_tx_rs))
       })
 
       it('should use filocom parctot for 2021 rows D14-D16', () => {
-        const c14Parsed = parseFloat((0.0858 * 100).toFixed(2)) / 100
-        const c15Parsed = parseFloat((0.05 * 100).toFixed(2)) / 100
-        const c16Parsed = parseFloat((0.0358 * 100).toFixed(2)) / 100
-        expect(epciSheet.getCell('D14').value).toBe(Math.round(CSV_PARCTOT * c14Parsed))
-        expect(epciSheet.getCell('D15').value).toBe(Math.round(CSV_PARCTOT * c15Parsed))
-        expect(epciSheet.getCell('D16').value).toBe(Math.round(CSV_PARCTOT * c16Parsed))
+        expect(epciSheet.getCell('D14').value).toBe(Math.round(CSV_PARCTOT * 0.0858))
+        expect(epciSheet.getCell('D15').value).toBe(Math.round(CSV_PARCTOT * 0.05))
+        expect(epciSheet.getCell('D16').value).toBe(Math.round(CSV_PARCTOT * 0.0358))
       })
     })
 

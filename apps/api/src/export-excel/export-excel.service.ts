@@ -933,42 +933,26 @@ export class ExportExcelService {
       return
     }
 
-    // Get percentage values from column C to calculate the number of logements
-    const vacancyGlobalPercent = parseFloat(epciWorksheet.getCell('C14').value?.toString() || '0') / 100
-    const vacancyShortTermPercent = parseFloat(epciWorksheet.getCell('C15').value?.toString() || '0') / 100
-    const vacancyLongTermPercent = parseFloat(epciWorksheet.getCell('C16').value?.toString() || '0') / 100
-
-    const vacancyTotalPercentHorizon = parseFloat(epciWorksheet.getCell('C19').value?.toString() || '0') / 100
-    const vacancyShortTermPercentHorizon = parseFloat(epciWorksheet.getCell('C20').value?.toString() || '0') / 100
-    const vacancyLongTermPercentHorizon = parseFloat(epciWorksheet.getCell('C21').value?.toString() || '0') / 100
-
-    // Get secondary residences percentage values from column C (rows 24-26)
-    const secondaryResidences2021Percent = parseFloat(epciWorksheet.getCell('C24').value?.toString() || '0') / 100
-    const secondaryResidencesVariationPercent = parseFloat(epciWorksheet.getCell('C25').value?.toString() || '0') / 100
-    const secondaryResidencesProjectionPercent = parseFloat(epciWorksheet.getCell('C26').value?.toString() || '0') / 100
-
-    // Get urban renewal percentage values from column C (rows 29-32)
-    const restructuringRateObservedPercent = parseFloat(epciWorksheet.getCell('C29').value?.toString() || '0') / 100
-    const disappearanceRateObservedPercent = parseFloat(epciWorksheet.getCell('C30').value?.toString() || '0') / 100
-    const restructuringRateFixedPercent = parseFloat(epciWorksheet.getCell('C31').value?.toString() || '0') / 100
-    const disappearanceRateFixedPercent = parseFloat(epciWorksheet.getCell('C32').value?.toString() || '0') / 100
+    // Use raw rates directly (not re-parsed from rounded percentages in column C)
+    const rates = await this.accommodationRatesService.getAccommodationRates(epciScenario.epciCode)
+    const epciRates = rates[epciScenario.epciCode]
 
     // Calculate number of logements for 2021 situation (rows 14-16)
     const config2021: SectionConfig = {
       data: [
         {
           cell: 'D14',
-          value: Math.round(filocomData.parctot * vacancyGlobalPercent),
+          value: Math.round(filocomData.parctot * epciRates.vacancyRate),
           style: 'standardBorder',
         },
         {
           cell: 'D15',
-          value: Math.round(filocomData.parctot * vacancyShortTermPercent),
+          value: Math.round(filocomData.parctot * epciRates.shortTermVacancyRate),
           style: 'standardBorder',
         },
         {
           cell: 'D16',
-          value: Math.round(filocomData.parctot * vacancyLongTermPercent),
+          value: Math.round(filocomData.parctot * epciRates.longTermVacancyRate),
           style: 'standardBorder',
         },
       ],
@@ -986,17 +970,17 @@ export class ExportExcelService {
       data: [
         {
           cell: 'D19',
-          value: Math.round(parctotProj * vacancyTotalPercentHorizon),
+          value: Math.round(parctotProj * (epciScenario.b2_tx_vacance_courte + epciScenario.b2_tx_vacance_longue)),
           style: 'standardBorder',
         },
         {
           cell: 'D20',
-          value: Math.round(parctotProj * vacancyShortTermPercentHorizon),
+          value: Math.round(parctotProj * epciScenario.b2_tx_vacance_courte),
           style: 'standardBorder',
         },
         {
           cell: 'D21',
-          value: Math.round(parctotProj * vacancyLongTermPercentHorizon),
+          value: Math.round(parctotProj * epciScenario.b2_tx_vacance_longue),
           style: 'standardBorder',
         },
       ],
@@ -1007,17 +991,17 @@ export class ExportExcelService {
       data: [
         {
           cell: 'D24',
-          value: Math.round(filocomData.parctot * secondaryResidences2021Percent),
+          value: Math.round(filocomData.parctot * epciRates.txRs),
           style: 'standardBorder',
         },
         {
           cell: 'D25',
-          value: Math.round(filocomData.parctot * secondaryResidencesVariationPercent),
+          value: Math.round(filocomData.parctot * (epciRates.txRs - epciScenario.b2_tx_rs)),
           style: 'standardBorder',
         },
         {
           cell: 'D26',
-          value: Math.round(parctotProj * secondaryResidencesProjectionPercent),
+          value: Math.round(parctotProj * epciScenario.b2_tx_rs),
           style: 'standardBorder',
         },
       ],
@@ -1028,22 +1012,22 @@ export class ExportExcelService {
       data: [
         {
           cell: 'D29',
-          value: Math.round(filocomData.parctot * restructuringRateObservedPercent),
+          value: Math.round(filocomData.parctot * epciRates.restructuringRate),
           style: 'standardBorder',
         },
         {
           cell: 'D30',
-          value: Math.round(filocomData.parctot * disappearanceRateObservedPercent),
+          value: Math.round(filocomData.parctot * epciRates.disappearanceRate),
           style: 'standardBorder',
         },
         {
           cell: 'D31',
-          value: Math.round(filocomData.parctot * restructuringRateFixedPercent),
+          value: Math.round(filocomData.parctot * epciScenario.b2_tx_restructuration),
           style: 'standardBorder',
         },
         {
           cell: 'D32',
-          value: Math.round(filocomData.parctot * disappearanceRateFixedPercent),
+          value: Math.round(filocomData.parctot * epciScenario.b2_tx_disparition),
           style: 'standardBorder',
         },
       ],
