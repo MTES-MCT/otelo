@@ -44,7 +44,7 @@ export const SimulationSecondaryVacantsAccommodationsSummary = ({ results, epci,
             {secondaryAccommodation < 0 ? 'résorber' : 'remobiliser'}
           </span>
           <span className="fr-text--bold fr-mt-2w fr-h3 fr-mb-0">
-            {formatNumber(scdAccomodations)} résidence{sPluriel(scdAccomodations)} secondaires
+            {secondaryAccommodation < 0 ? formatNumber(scdAccomodations) : 0} résidence{sPluriel(scdAccomodations)} secondaires
           </span>
         </div>
       </div>
