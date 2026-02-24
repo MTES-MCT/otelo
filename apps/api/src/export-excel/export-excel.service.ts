@@ -637,8 +637,8 @@ export class ExportExcelService {
       headers: [
         { cell: 'A34', value: 'Mal-logement', style: 'sectionHeader' },
         { cell: 'B34', value: 'Modalités', style: 'standardBorder' },
-        { cell: 'C34', value: 'Part retenue', style: 'standardBorder' },
-        { cell: 'D34', value: 'Ménages concernés', style: 'standardBorder' },
+        { cell: 'C34', value: 'Ménages concernés en 2021', style: 'standardBorder' },
+        { cell: 'D34', value: 'Part retenue', style: 'standardBorder' },
       ],
     }
 
@@ -702,7 +702,7 @@ export class ExportExcelService {
       }
       if (item.percentage) {
         CellStyleHelper.applyCellConfig(epciWorksheet, {
-          cell: `C${item.row}`,
+          cell: `D${item.row}`,
           value: item.percentage,
           style: 'standardBorder',
         })
@@ -877,15 +877,15 @@ export class ExportExcelService {
       where: { epciCode: epciScenario.epciCode },
     })
 
-    const homelessData = await this.prismaService.homeless.findUnique({
-      where: { epciCode: epciScenario.epciCode },
-    })
-
     const hostedFinessData = await this.prismaService.hostedFiness.findUnique({
       where: { epciCode: epciScenario.epciCode },
     })
 
     const hostedFilocomData = await this.prismaService.hostedFilocom.findUnique({
+      where: { epciCode: epciScenario.epciCode },
+    })
+
+    const hostedSneData = await this.prismaService.hostedSne.findUnique({
       where: { epciCode: epciScenario.epciCode },
     })
 
@@ -910,6 +910,22 @@ export class ExportExcelService {
     })
 
     const physicalInadequationRPData = await this.prismaService.physicalInadequation_RP.findUnique({
+      where: { epciCode: epciScenario.epciCode },
+    })
+
+    const homelessData = await this.prismaService.homeless.findUnique({
+      where: { epciCode: epciScenario.epciCode },
+    })
+
+    const hotelData = await this.prismaService.hotel.findUnique({
+      where: { epciCode: epciScenario.epciCode },
+    })
+
+    const makeShiftHousingRPData = await this.prismaService.makeShiftHousing_RP.findUnique({
+      where: { epciCode: epciScenario.epciCode },
+    })
+
+    const makeShiftHousingSNEData = await this.prismaService.makeShiftHousing_SNE.findUnique({
       where: { epciCode: epciScenario.epciCode },
     })
 
@@ -958,22 +974,29 @@ export class ExportExcelService {
       ],
     }
 
+    // Calculate projected total housing stock (parc total projeté)
+    // parctot_proj = RP projetées / taux RP projeté
+    // taux RP projeté = 1 - tx RS projeté - tx vacance longue projeté - tx vacance courte projeté
+    const rpProj = parseFloat(epciWorksheet.getCell('D11').value?.toString() || '0')
+    const txRpProj = 1 - epciScenario.b2_tx_rs - epciScenario.b2_tx_vacance_longue - epciScenario.b2_tx_vacance_courte
+    const parctotProj = txRpProj > 0 ? rpProj / txRpProj : filocomData.parctot
+
     // Calculate number of logements for projection horizon (rows 19-21)
     const configHorizon: SectionConfig = {
       data: [
         {
           cell: 'D19',
-          value: Math.round(filocomData.parctot * vacancyTotalPercentHorizon),
+          value: Math.round(parctotProj * vacancyTotalPercentHorizon),
           style: 'standardBorder',
         },
         {
           cell: 'D20',
-          value: Math.round(filocomData.parctot * vacancyShortTermPercentHorizon),
+          value: Math.round(parctotProj * vacancyShortTermPercentHorizon),
           style: 'standardBorder',
         },
         {
           cell: 'D21',
-          value: Math.round(filocomData.parctot * vacancyLongTermPercentHorizon),
+          value: Math.round(parctotProj * vacancyLongTermPercentHorizon),
           style: 'standardBorder',
         },
       ],
@@ -994,7 +1017,7 @@ export class ExportExcelService {
         },
         {
           cell: 'D26',
-          value: Math.round(filocomData.parctot * secondaryResidencesProjectionPercent),
+          value: Math.round(parctotProj * secondaryResidencesProjectionPercent),
           style: 'standardBorder',
         },
       ],
@@ -1031,69 +1054,65 @@ export class ExportExcelService {
     CellStyleHelper.applySectionConfig(epciWorksheet, configSecondaryResidences)
     CellStyleHelper.applySectionConfig(epciWorksheet, configUrbanRenewal)
 
-    // Calculate homeless data for D35 based on source_b11
+    // C35 - Hors logement (Sans-abri: homeless + hotel + makeShiftHousing from raw DB)
     if (homelessData) {
-      const homelessPercent = parseFloat(epciWorksheet.getCell('C35').value?.toString() || '0') / 100
-      const homelessValue = simulation.scenario.source_b11 === 'RP' ? homelessData.rp : homelessData.sne
-
-      const configHomeless: SectionConfig = {
-        data: [
-          {
-            cell: 'D35',
-            value: Math.round(homelessValue * homelessPercent),
-            style: 'standardBorder',
-          },
-        ],
+      const sourceMap = {
+        RP: {
+          sans_abri: homelessData.rp,
+          hotel: hotelData?.rp ?? 0,
+          habitat_fortune: makeShiftHousingRPData?.value ?? 0,
+        },
+        SNE: {
+          sans_abri: homelessData.sne,
+          hotel: hotelData?.sne ?? 0,
+          habitat_fortune: (makeShiftHousingSNEData?.camping ?? 0) + (makeShiftHousingSNEData?.squat ?? 0),
+        },
       }
+      const source = sourceMap[simulation.scenario.source_b11]
+      const sansAbriTotal =
+        (simulation.scenario.b11_sa ? source.sans_abri : 0) +
+        (simulation.scenario.b11_fortune ? source.habitat_fortune : 0) +
+        (simulation.scenario.b11_hotel ? source.hotel : 0)
 
-      CellStyleHelper.applySectionConfig(epciWorksheet, configHomeless)
+      CellStyleHelper.applyCellConfig(epciWorksheet, {
+        cell: 'C35',
+        value: Math.round(sansAbriTotal),
+        style: 'standardBorder',
+      })
     }
 
-    // Calculate hosted FINESS data for D36 based on b11_etablissement
+    // C36 - FINESS (raw, based on b11_etablissement)
     if (hostedFinessData) {
-      const hostedFinessPercent = parseFloat(epciWorksheet.getCell('C36').value?.toString() || '0') / 100
-
-      // Sum values from hosted_finess table based on b11_etablissement array
       const totalHostedValue = simulation.scenario.b11_etablissement.reduce((sum, etablissement) => {
         const fieldValue = hostedFinessData[etablissement as keyof typeof hostedFinessData] as number
         return sum + (fieldValue || 0)
       }, 0)
 
-      const configHostedFiness: SectionConfig = {
-        data: [
-          {
-            cell: 'D36',
-            value: Math.round(totalHostedValue * hostedFinessPercent),
-            style: 'standardBorder',
-          },
-        ],
-      }
-
-      CellStyleHelper.applySectionConfig(epciWorksheet, configHostedFiness)
+      CellStyleHelper.applyCellConfig(epciWorksheet, { cell: 'C36', value: Math.round(totalHostedValue), style: 'standardBorder' })
     }
 
-    // Calculate hosted Filocom data for D37 based on b12_cohab_interg_subie
+    // C37 - Hébergés Filocom (cohabitation) raw value
     if (hostedFilocomData) {
-      const configHostedFilocom: SectionConfig = {
-        data: [
-          {
-            cell: 'D38',
-            value: Math.round(hostedFilocomData.value),
-            style: 'standardBorder',
-          },
-        ],
-      }
-
-      CellStyleHelper.applySectionConfig(epciWorksheet, configHostedFilocom)
+      CellStyleHelper.applyCellConfig(epciWorksheet, {
+        cell: 'C37',
+        value: Math.round(hostedFilocomData.value),
+        style: 'standardBorder',
+      })
     }
 
-    // Calculate financial inadequation data for D39 based on b13_acc, b13_plp, and b13_taux_effort
-    if (financialInadequationData) {
-      const financialInadequationPercent = parseFloat(epciWorksheet.getCell('C39').value?.toString() || '0') / 100
+    // C38 - Hébergés SNE (raw, based on scenario flags)
+    if (hostedSneData) {
+      let hostedSneValue = 0
+      if (simulation.scenario.b12_heberg_particulier) hostedSneValue += hostedSneData.particular
+      if (simulation.scenario.b12_heberg_temporaire) hostedSneValue += hostedSneData.temporary
 
+      CellStyleHelper.applyCellConfig(epciWorksheet, { cell: 'C38', value: Math.round(hostedSneValue), style: 'standardBorder' })
+    }
+
+    // C39 - Inadéquation financière raw value
+    if (financialInadequationData) {
       let totalFinancialValue = 0
 
-      // Add AccessionPropriete value if b13_acc is true
       if (simulation.scenario.b13_acc) {
         const accessionFieldName =
           `nbAllPlus${simulation.scenario.b13_taux_effort}AccessionPropriete` as keyof typeof financialInadequationData
@@ -1101,7 +1120,6 @@ export class ExportExcelService {
         totalFinancialValue += accessionValue || 0
       }
 
-      // Add ParcLocatifPrive value if b13_plp is true
       if (simulation.scenario.b13_plp) {
         const parcLocatifFieldName =
           `nbAllPlus${simulation.scenario.b13_taux_effort}ParcLocatifPrive` as keyof typeof financialInadequationData
@@ -1109,21 +1127,14 @@ export class ExportExcelService {
         totalFinancialValue += parcLocatifValue || 0
       }
 
-      const configFinancialInadequation: SectionConfig = {
-        data: [
-          {
-            cell: 'D39',
-            value: Math.round(totalFinancialValue * financialInadequationPercent),
-            style: 'standardBorder',
-          },
-        ],
-      }
-
-      CellStyleHelper.applySectionConfig(epciWorksheet, configFinancialInadequation)
+      CellStyleHelper.applyCellConfig(epciWorksheet, {
+        cell: 'C39',
+        value: Math.round(totalFinancialValue),
+        style: 'standardBorder',
+      })
     }
 
-    // Calculate bad quality data for D40 based on source_b14
-    const badQualityPercent = parseFloat(epciWorksheet.getCell('C40').value?.toString() || '0') / 100
+    // C40 - Mauvaise qualité raw value
     let totalBadQualityValue = 0
 
     switch (simulation.scenario.source_b14) {
@@ -1143,7 +1154,6 @@ export class ExportExcelService {
         break
       case 'FF':
         if (badQualityFonciersData) {
-          // Sum all fields from BadQuality_Fonciers
           totalBadQualityValue = Object.values(badQualityFonciersData)
             .filter((value): value is number => typeof value === 'number')
             .reduce((sum, value) => sum + value, 0)
@@ -1152,62 +1162,36 @@ export class ExportExcelService {
     }
 
     if (totalBadQualityValue > 0) {
-      const configBadQuality: SectionConfig = {
-        data: [
-          {
-            cell: 'D40',
-            value: Math.round(totalBadQualityValue * badQualityPercent),
-            style: 'standardBorder',
-          },
-        ],
-      }
-
-      CellStyleHelper.applySectionConfig(epciWorksheet, configBadQuality)
+      CellStyleHelper.applyCellConfig(epciWorksheet, {
+        cell: 'C40',
+        value: Math.round(totalBadQualityValue),
+        style: 'standardBorder',
+      })
     }
 
-    const physicalInadequationPercent = parseFloat(epciWorksheet.getCell('C41').value?.toString() || '0') / 100
-    let totalPhysicalValue = 0
-
-    if (simulation.scenario.source_b15 === 'Filo' && physicalInadequationFiloData) {
-      const surocc = simulation.scenario.b15_surocc === 'Mod' ? 'Leg' : 'Lourde'
-
-      const values = [
-        simulation.scenario.b15_proprietaire
-          ? (physicalInadequationFiloData[`surocc${surocc}Po` as keyof typeof physicalInadequationFiloData] as number)
-          : 0,
-        simulation.scenario.b15_loc_hors_hlm
-          ? (physicalInadequationFiloData[`surocc${surocc}Lp` as keyof typeof physicalInadequationFiloData] as number)
-          : 0,
-      ]
-
-      totalPhysicalValue = values.reduce((sum, value) => sum + (value || 0), 0)
-    } else if (simulation.scenario.source_b15 === 'RP' && physicalInadequationRPData) {
-      const surocc = simulation.scenario.b15_surocc
-
-      const values = [
-        simulation.scenario.b15_proprietaire
-          ? (physicalInadequationRPData[`nbMen${surocc}PpT` as keyof typeof physicalInadequationRPData] as number)
-          : 0,
-        simulation.scenario.b15_loc_hors_hlm
-          ? (physicalInadequationRPData[`nbMen${surocc}LocNonHLM` as keyof typeof physicalInadequationRPData] as number)
-          : 0,
-      ]
-
-      totalPhysicalValue = values.reduce((sum, value) => sum + (value || 0), 0)
-    }
-
-    if (totalPhysicalValue > 0) {
-      const configPhysicalInadequation: SectionConfig = {
-        data: [
-          {
-            cell: 'D41',
-            value: Math.round(totalPhysicalValue * physicalInadequationPercent),
-            style: 'standardBorder',
-          },
-        ],
+    // C41 - Suroccupation raw DB value
+    {
+      let totalPhysicalValue = 0
+      if (simulation.scenario.source_b15 === 'Filo' && physicalInadequationFiloData) {
+        const surocc = simulation.scenario.b15_surocc === 'Mod' ? 'Leg' : 'Lourde'
+        const poKey = `surocc${surocc}Po` as keyof typeof physicalInadequationFiloData
+        const lpKey = `surocc${surocc}Lp` as keyof typeof physicalInadequationFiloData
+        totalPhysicalValue =
+          ((simulation.scenario.b15_proprietaire && (physicalInadequationFiloData[poKey] as number)) || 0) +
+          ((simulation.scenario.b15_loc_hors_hlm && (physicalInadequationFiloData[lpKey] as number)) || 0)
+      } else if (simulation.scenario.source_b15 === 'RP' && physicalInadequationRPData) {
+        const surocc = simulation.scenario.b15_surocc
+        const pptKey = `nbMen${surocc}Ppt` as keyof typeof physicalInadequationRPData
+        const locKey = `nbMen${surocc}LocNonHLM` as keyof typeof physicalInadequationRPData
+        totalPhysicalValue =
+          ((simulation.scenario.b15_proprietaire && (physicalInadequationRPData[pptKey] as number)) || 0) +
+          ((simulation.scenario.b15_loc_hors_hlm && (physicalInadequationRPData[locKey] as number)) || 0)
       }
-
-      CellStyleHelper.applySectionConfig(epciWorksheet, configPhysicalInadequation)
+      CellStyleHelper.applyCellConfig(epciWorksheet, {
+        cell: 'C41',
+        value: Math.round(totalPhysicalValue),
+        style: 'standardBorder',
+      })
     }
   }
 
@@ -1377,7 +1361,7 @@ export class ExportExcelService {
     const columnWidths = {
       A: 65,
       B: 40,
-      C: 15,
+      C: 30,
       D: 20,
       E: 5,
       F: 50,
