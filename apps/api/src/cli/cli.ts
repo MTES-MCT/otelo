@@ -75,18 +75,19 @@ async function bootstrap() {
         "Utiliser --execute pour insérer directement en base locale.",
         'Utiliser --output <fichier.sql> pour écrire le SQL dans un fichier.',
         '',
-        'Le SQL utilise ON CONFLICT DO NOTHING : les doublons sont ignorés,',
-        "aucune donnée existante n'est écrasée.",
+        'Le SQL utilise ON CONFLICT DO NOTHING : les doublons sont ignorés.',
+        'Supporte plusieurs fichiers CSV : les lignes sont fusionnées par clé primaire.',
         '',
         'Exemples :',
         '  pnpm -F api cli import-csv --table rp --csv ./data/rp.csv --millesime 2024',
         '  pnpm -F api cli import-csv --table rp --csv ./data/rp.csv --millesime 2024 --output import-rp.sql',
         '  pnpm -F api cli import-csv --table rp --csv ./data/rp.csv --millesime 2024 --execute',
+        '  pnpm -F api cli import-csv --table homeless --csv ./data/homeless_rp.csv --csv ./data/homeless_sne.csv --millesime 2024',
         '  pnpm -F api cli import-csv --table data_pack_versions --csv ./data/versions.csv',
       ].join('\n'),
     )
     .requiredOption('--table <name>', 'Nom de la table PostgreSQL (ex: rp, sitadel, homeless...)')
-    .requiredOption('--csv <path>', 'Chemin du fichier CSV à importer')
+    .requiredOption('--csv <path>', 'Chemin(s) du/des fichier(s) CSV (répétable)', (val: string, prev: string[]) => prev.concat(val), [] as string[])
     .option('--millesime <value>', 'Millésime à injecter (ex: 2024). Créé automatiquement si inexistant.')
     .option('--execute', "Exécuter le SQL directement en base (⚠ local uniquement !)")
     .option('--output <path>', 'Écrire le SQL dans un fichier au lieu de stdout')

@@ -34,7 +34,6 @@ model DataPackVersion {
   makeshiftHousingRP             MakeShiftHousing_RP[]
   makeshiftHousingSNE            MakeShiftHousing_SNE[]
   homeless                       Homeless[]
-  socialParc                     SocialParc[]
   rp                             RP[]
   sitadel                        Sitadel[]
   demographicEvolutionOmphale    DemographicEvolutionOmphale[]
@@ -256,7 +255,6 @@ model Epci {
   RP                                RP[]
   SimulationResults                 SimulationResults[]
   sitadel                           Sitadel[]
-  socialParc                        SocialParc[]
   vacancyAccommodation              VacancyAccommodation[]
   simulations                       Simulation[]                        @relation("EpciToSimulation")
   neighborsFrom                     EPCINeighbor[]                      @relation("EPCINeighborFrom")
@@ -467,21 +465,6 @@ model HostedSne {
 
   @@id([epciCode, millesime])
   @@map("hosted_sne")
-}
-
-model SocialParc {
-  crea            Int
-  voisin          Int
-  mater           Int
-  services        Int
-  motifs          Int
-  epciCode        String          @map("epci_code")
-  millesime       String          @default("2021")
-  epci            Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
-
-  @@id([epciCode, millesime])
-  @@map("social_parc")
 }
 
 model Hotel {
