@@ -30,7 +30,8 @@ export const SimulationDemographicBadHousingSummary = ({
 
   // Calculate chevron positions: centered on their chart section but constrained within their card
   const badHousingValue = epci && prepeakTotalStock ? prepeakTotalStock : totalStock
-  const demographyPercent = totalFlux > 0 ? ((totalFlux - badHousingValue) / totalFlux) * 100 : 50
+  const total = totalFlux + badHousingValue
+  const demographyPercent = total > 0 ? (totalFlux / total) * 100 : 50
   const badHousingPercent = 100 - demographyPercent
   // Left chevron: center of demography section, but max 45% (stays under left card)
   const leftChevronPosition = Math.min(demographyPercent / 2, 45)

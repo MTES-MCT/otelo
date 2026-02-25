@@ -71,6 +71,7 @@ const makeResults = (): TResults => ({
       totalFlux: 800,
       totalStock: 650,
       vacantAccomodation: 50,
+      secondaryAccommodation: 50,
       prepeakTotalStock: 500,
       postpeakTotalStock: 150,
     },
@@ -229,40 +230,40 @@ describe('ExportExcelService', () => {
     beforeEach(async () => {
       const simulation = makeSimulationData()
 
-      prisma.simulation.findUniqueOrThrow.mockResolvedValue(simulation as any)
+      prisma.simulation.findUniqueOrThrow = jest.fn().mockResolvedValue(simulation as any)
       resultsService.getResults.mockResolvedValue({ ...simulation, results } as any)
       accommodationRatesService.getAccommodationRates.mockResolvedValue(makeAccommodationRates() as any)
       demographicEvolutionService.getDemographicEvolutionPopulationByEpci.mockResolvedValue(makeDemographicPopulation() as any)
       demographicEvolutionService.getDemographicEvolution.mockResolvedValue(makeDemographicMenages() as any)
 
-      prisma.filocomFlux.findUnique.mockResolvedValue(makeFilocomFlux() as any)
-      prisma.hostedFiness.findUnique.mockResolvedValue({ epciCode: EPCI_CODE, autreCentre: 200 } as any)
-      prisma.hostedFilocom.findUnique.mockResolvedValue({ epciCode: EPCI_CODE, value: 800 } as any)
-      prisma.hostedSne.findUnique.mockResolvedValue({ epciCode: EPCI_CODE, particular: 50, temporary: 30, free: 10 } as any)
-      prisma.financialInadequation.findUnique.mockResolvedValue({
+      prisma.filocomFlux.findUnique = jest.fn().mockResolvedValue(makeFilocomFlux() as any)
+      prisma.hostedFiness.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, autreCentre: 200 } as any)
+      prisma.hostedFilocom.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, value: 800 } as any)
+      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, particular: 50, temporary: 30, free: 10 } as any)
+      prisma.financialInadequation.findUnique = jest.fn().mockResolvedValue({
         epciCode: EPCI_CODE,
         nbAllPlus30AccessionPropriete: 300,
         nbAllPlus30ParcLocatifPrive: 400,
       } as any)
-      prisma.badQuality_RP.findUnique.mockResolvedValue({
+      prisma.badQuality_RP.findUnique = jest.fn().mockResolvedValue({
         epciCode: EPCI_CODE,
         saniLocNonhlm: 100,
         saniPpT: 150,
         saniChflLocNonhlm: 50,
         saniChflPpT: 75,
       } as any)
-      prisma.badQuality_Filocom.findUnique.mockResolvedValue(null)
-      prisma.badQuality_Fonciers.findUnique.mockResolvedValue(null)
-      prisma.physicalInadequation_RP.findUnique.mockResolvedValue({
+      prisma.badQuality_Filocom.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.badQuality_Fonciers.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.physicalInadequation_RP.findUnique = jest.fn().mockResolvedValue({
         epciCode: EPCI_CODE,
         nbMenModPpt: 60,
         nbMenModLocNonHLM: 45,
       } as any)
-      prisma.physicalInadequation_Filo.findUnique.mockResolvedValue(null)
-      prisma.homeless.findUnique.mockResolvedValue({ epciCode: EPCI_CODE, rp: 500, sne: 400 } as any)
-      prisma.hotel.findUnique.mockResolvedValue({ epciCode: EPCI_CODE, rp: 150, sne: 120 } as any)
-      prisma.makeShiftHousing_RP.findUnique.mockResolvedValue({ epciCode: EPCI_CODE, value: 80 } as any)
-      prisma.makeShiftHousing_SNE.findUnique.mockResolvedValue(null)
+      prisma.physicalInadequation_Filo.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.homeless.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, rp: 500, sne: 400 } as any)
+      prisma.hotel.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, rp: 150, sne: 120 } as any)
+      prisma.makeShiftHousing_RP.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, value: 80 } as any)
+      prisma.makeShiftHousing_SNE.findUnique = jest.fn().mockResolvedValue(null)
 
       const result = await service.exportScenario('sim-1')
       workbook = result.workbook
@@ -518,6 +519,7 @@ describe('ExportExcelService', () => {
           totalFlux: 1000,
           totalStock: 900,
           vacantAccomodation: 100,
+          secondaryAccommodation: 100,
           prepeakTotalStock: 700,
           postpeakTotalStock: 200,
         },
@@ -574,7 +576,7 @@ describe('ExportExcelService', () => {
     beforeEach(async () => {
       const simulation = csvSimulation()
 
-      prisma.simulation.findUniqueOrThrow.mockResolvedValue(simulation as any)
+      prisma.simulation.findUniqueOrThrow = jest.fn().mockResolvedValue(simulation as any)
       resultsService.getResults.mockResolvedValue({ ...simulation, results } as any)
       accommodationRatesService.getAccommodationRates.mockResolvedValue({
         [CSV_EPCI]: {
@@ -609,39 +611,39 @@ describe('ExportExcelService', () => {
         },
       } as any)
 
-      prisma.filocomFlux.findUnique.mockResolvedValue({
+      prisma.filocomFlux.findUnique = jest.fn().mockResolvedValue({
         epciCode: CSV_EPCI,
         parctot: CSV_PARCTOT,
         txLvParctot: 0.0858,
         txRsParctot: 0.045,
       } as any)
-      prisma.hostedFiness.findUnique.mockResolvedValue({
+      prisma.hostedFiness.findUnique = jest.fn().mockResolvedValue({
         epciCode: CSV_EPCI,
         autreCentre: 120,
         demandeAsile: 95,
         reinsertion: 180,
         centreProvisoire: 60,
       } as any)
-      prisma.hostedFilocom.findUnique.mockResolvedValue({ epciCode: CSV_EPCI, value: 620 } as any)
-      prisma.hostedSne.findUnique.mockResolvedValue({ epciCode: CSV_EPCI, particular: 45, temporary: 25, free: 8 } as any)
-      prisma.financialInadequation.findUnique.mockResolvedValue({
+      prisma.hostedFilocom.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, value: 620 } as any)
+      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, particular: 45, temporary: 25, free: 8 } as any)
+      prisma.financialInadequation.findUnique = jest.fn().mockResolvedValue({
         epciCode: CSV_EPCI,
         nbAllPlus30AccessionPropriete: 200,
         nbAllPlus30ParcLocatifPrive: 350,
       } as any)
-      prisma.badQuality_Filocom.findUnique.mockResolvedValue({ epciCode: CSV_EPCI, pppiLp: 280, pppiPo: 190 } as any)
-      prisma.badQuality_RP.findUnique.mockResolvedValue(null)
-      prisma.badQuality_Fonciers.findUnique.mockResolvedValue(null)
-      prisma.physicalInadequation_Filo.findUnique.mockResolvedValue({
+      prisma.badQuality_Filocom.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, pppiLp: 280, pppiPo: 190 } as any)
+      prisma.badQuality_RP.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.badQuality_Fonciers.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.physicalInadequation_Filo.findUnique = jest.fn().mockResolvedValue({
         epciCode: CSV_EPCI,
         suroccLourdePo: 0,
         suroccLourdeLp: 70,
       } as any)
-      prisma.physicalInadequation_RP.findUnique.mockResolvedValue(null)
-      prisma.homeless.findUnique.mockResolvedValue({ epciCode: CSV_EPCI, rp: 300, sne: 250 } as any)
-      prisma.hotel.findUnique.mockResolvedValue({ epciCode: CSV_EPCI, rp: 100, sne: 90 } as any)
-      prisma.makeShiftHousing_RP.findUnique.mockResolvedValue({ epciCode: CSV_EPCI, value: 50 } as any)
-      prisma.makeShiftHousing_SNE.findUnique.mockResolvedValue(null)
+      prisma.physicalInadequation_RP.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.homeless.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, rp: 300, sne: 250 } as any)
+      prisma.hotel.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, rp: 100, sne: 90 } as any)
+      prisma.makeShiftHousing_RP.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, value: 50 } as any)
+      prisma.makeShiftHousing_SNE.findUnique = jest.fn().mockResolvedValue(null)
 
       const result = await service.exportScenario('sim-csv')
       workbook = result.workbook
