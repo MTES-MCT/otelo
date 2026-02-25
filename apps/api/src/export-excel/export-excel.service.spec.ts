@@ -239,7 +239,7 @@ describe('ExportExcelService', () => {
       prisma.filocomFlux.findUnique = jest.fn().mockResolvedValue(makeFilocomFlux() as any)
       prisma.hostedFiness.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, autreCentre: 200 } as any)
       prisma.hostedFilocom.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, value: 800 } as any)
-      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, particular: 50, temporary: 30, free: 10 } as any)
+      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, particular: 50, temporary: 30 } as any)
       prisma.financialInadequation.findUnique = jest.fn().mockResolvedValue({
         epciCode: EPCI_CODE,
         nbAllPlus30AccessionPropriete: 300,
@@ -629,7 +629,7 @@ describe('ExportExcelService', () => {
         centreProvisoire: 60,
       } as any)
       prisma.hostedFilocom.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, value: 620 } as any)
-      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, particular: 45, temporary: 25, free: 8 } as any)
+      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, particular: 45, temporary: 25 } as any)
       prisma.financialInadequation.findUnique = jest.fn().mockResolvedValue({
         epciCode: CSV_EPCI,
         nbAllPlus30AccessionPropriete: 200,
