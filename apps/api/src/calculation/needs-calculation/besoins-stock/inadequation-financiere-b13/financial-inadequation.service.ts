@@ -21,7 +21,7 @@ export class FinancialInadequationService extends BaseCalculator {
 
   async getFinancialInadequation(epciCode: string): Promise<FinancialInadequation> {
     return this.prismaService.financialInadequation.findUniqueOrThrow({
-      where: { epciCode_millesime: { epciCode, millesime: this.context.millesime } },
+      where: { epciCode },
     })
   }
 

@@ -52,7 +52,7 @@ POST /api/external/simulations
 ### Mettre à jour le scénario
 
 ```
-PUT /api/external/simulations/:id/scenario
+PUT /api/external/simulations/:simulationId/scenario
 ```
 
 Met à jour les paramètres du scénario et recalcule les résultats. 
@@ -60,7 +60,7 @@ Met à jour les paramètres du scénario et recalcule les résultats.
 ### Obtenir les re2sultats
 
 ```
-GET /api/external/simulations/:id/results
+GET /api/external/simulations/:simulationId/results
 ```
 
 ### Lister ses simulations
@@ -72,8 +72,13 @@ GET /api/external/simulations
 ### Supprimer une simulation
 
 ```
-DELETE /api/external/simulations/:id
+DELETE /api/external/simulations/:simulationId
 ```
+
+## Contexte de calcul
+
+- Quand un `simulationId` est present dans l'URL, le calcul utilise toujours le millesime et les parametres de cette simulation.
+- Quand aucun `simulationId` n'est disponible, le calcul utilise le data pack actif (`data_pack_versions.is_active = true`).
 
 ## Exemples
 

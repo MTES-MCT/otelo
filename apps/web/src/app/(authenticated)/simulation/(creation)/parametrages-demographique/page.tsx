@@ -22,10 +22,10 @@ type PageProps = {
 }
 
 export default async function DemographicSettingsPage({ searchParams }: PageProps) {
-  const { epcis } = await searchParamsCache.parse(searchParams)
+  const { epcis, millesime } = await searchParamsCache.parse(searchParams)
   const [omphaleEvolution, populationEvolution, epcisWithoutInseeProjection] = await Promise.all([
-    getOmphaleDemographicEvolutionByEpci(epcis),
-    getPopulationDemographicEvolutionByEpci(epcis),
+    getOmphaleDemographicEvolutionByEpci(epcis, millesime),
+    getPopulationDemographicEvolutionByEpci(epcis, millesime),
     getEpcisWithoutInseeProjection(epcis),
   ])
   const href = `/simulation/taux-cibles-logements-vacants`

@@ -1,14 +1,14 @@
 import { authFetch, getSession } from '~/lib/auth/server'
 import { TOmphaleDemographicEvolution } from '~/schemas/demographic-evolution'
 
-export const getOmphaleDemographicEvolutionByEpci = async (epcis: string[]) => {
+export const getOmphaleDemographicEvolutionByEpci = async (epcis: string[], millesime: string) => {
   const session = await getSession()
 
   if (!session) {
     throw new Error('Unauthorized')
   }
 
-  const res = await authFetch(`/demographic-evolution/omphale?epciCodes=${epcis.join(',')}`)
+  const res = await authFetch(`/demographic-evolution/omphale?epciCodes=${epcis.join(',')}&millesime=${millesime}`)
   if (!res.ok) {
     throw new Error('Failed to get omphale demographic evolution by epci')
   }

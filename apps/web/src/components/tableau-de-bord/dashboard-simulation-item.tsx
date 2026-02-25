@@ -15,7 +15,9 @@ export function DashboardSimulationItem({ simulation }: DashboardSimulationItemP
     <div className="fr-flex fr-direction-column fr-flex-gap-3v">
       <div className="fr-flex fr-flex-gap-2v fr-direction-column">
         <div className="fr-flex fr-align-items-center fr-justify-content-space-between">
-          <Tag className="fr-text--xs fr-mb-0">{simulation.scenario.millesime} → {simulation.scenario.projection}</Tag>
+          <Tag className="fr-text--xs fr-mb-0">
+            {simulation.scenario.millesime} → {simulation.scenario.projection}
+          </Tag>
           <div className="fr-grid-row fr-grid-row--middle">
             <div className="fr-grid-row fr-grid-row--middle">
               <CloneSimulationButton simulation={simulation} />

@@ -17,6 +17,7 @@ import { DemographicEvolutionCustomService } from '~/demographic-evolution-custo
 import { StockRequirementsService } from '~/stock-requirements/stock-requirements.service'
 import { VacancyModule } from '~/vacancy/vacancy.module'
 
+// todo - get data version pack enabled
 export const CLI_CALCULATION_CONTEXT = { coefficient: 1, baseYear: 2021, millesime: '2021' }
 
 @Module({

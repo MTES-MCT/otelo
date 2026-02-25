@@ -30,6 +30,7 @@ export const DataVisualisationChart: FC<{
   const { classes } = useStyles()
 
   const chartTypeClassNames: Record<string, string> = {
+    'projection-population-evolution': classes.buttonOffset,
     'projection-menages-evolution': classes.buttonOffset,
     'taille-menages': classes.buttonOffset,
     'residences-secondaires': classes.buttonOffset,
@@ -38,14 +39,13 @@ export const DataVisualisationChart: FC<{
     sitadel: classes.buttonOffset,
   }
 
-  const isPopulationEvolution = ['population-evolution', 'menage-evolution'].includes(type ?? '')
   const isProjectionPopulationEvolution = ['projection-population-evolution'].includes(type ?? '')
   const isProjectionMenagesEvolution = ['projection-menages-evolution'].includes(type ?? '')
+  const isPopulationEvolution = ['population-evolution', 'menage-evolution'].includes(type ?? '')
   const isAccommodationEvolution = ['residences-secondaires', 'logements-vacants'].includes(type ?? '')
   const isMalLogement = ['mal-logement'].includes(type ?? '')
   const isSitadel = ['sitadel'].includes(type ?? '')
   const isTailleMenages = ['taille-menages'].includes(type ?? '')
-
   let chartContent: ReactNode = null
 
   if (isPopulationEvolution) {
@@ -58,10 +58,6 @@ export const DataVisualisationChart: FC<{
     if (source === 'rp') {
       chartContent = <RPAccommodationEvolutionChart data={data as TAccommodationEvolution} type={type} />
     }
-    //todo : reenable as soon as filocom data is available
-    // if (source === 'filocom') {
-    // chartContent = <FilocomAccommodationEvolutionChart data={data as TAccommodationEvolution} type={type} />
-    // }
     if (source === 'lovac') {
       chartContent = <LovacAccommodationEvolutionChart data={data as TAccommodationLovacEvolution} />
     }

@@ -53,16 +53,14 @@ const createTableData = (results: TVacancyAccommodationEvolution[]): TVacancyAcc
 export class VacancyService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getNewestVacancy(epcisCodes: string[], millesime?: string): Promise<VacancyAccommodation[]> {
+  async getNewestVacancy(epcisCodes: string[]): Promise<VacancyAccommodation[]> {
     return this.prismaService.vacancyAccommodation.findMany({
-      where: { epciCode: { in: epcisCodes }, year: { equals: 2021 }, ...(millesime && { millesime }) },
+      where: { epciCode: { in: epcisCodes }, year: { equals: 2021 } },
     })
   }
 
-  async getVacancyByEpci(epciCode: string, years?: number[], millesime?: string) {
-    const whereCond = years
-      ? { epciCode, year: { in: years }, ...(millesime && { millesime }) }
-      : { epciCode, ...(millesime && { millesime }) }
+  async getVacancyByEpci(epciCode: string, years?: number[]) {
+    const whereCond = years ? { epciCode, year: { in: years } } : { epciCode }
     const data = await this.prismaService.vacancyAccommodation.findMany({
       select: {
         year: true,
@@ -95,10 +93,10 @@ export class VacancyService {
     }
   }
 
-  async getVacancy(epcis: TEpci[], millesime?: string) {
+  async getVacancy(epcis: TEpci[]) {
     const results = await Promise.all(
       epcis.map(async (epci) => ({
-        ...(await this.getVacancyByEpci(epci.code, [2014, 2019, 2024], millesime)),
+        ...(await this.getVacancyByEpci(epci.code, [2014, 2019, 2024])),
         epci,
       })),
     )

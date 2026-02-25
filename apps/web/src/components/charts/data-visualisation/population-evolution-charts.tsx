@@ -75,6 +75,7 @@ export const PopulationEvolutionChart: FC<PopulationEvolutionChartProps> = ({ da
   const linearDataKey = type?.split('-')[0]
   const epciName = chartData.tableData[queryStates.epci as string]?.name
   const barChartData = Object.entries(chartData.tableData)
+    // todo millesime
     .filter(([key]) => queryStates.epcis.includes(key))
     .map(([key, value]) => ({
       '2010-2015': value.annualEvolution?.['2010-2015']?.value ?? 0,
@@ -101,6 +102,7 @@ export const PopulationEvolutionChart: FC<PopulationEvolutionChartProps> = ({ da
       <h2 className={fr.cx('fr-h5')}>
         {title} - {epciName}
       </h2>
+
       <div className={classes.chartContainer}>
         <div className={classes.chartLabelContainer}>
           <ResponsiveContainer width="100%" height="100%">

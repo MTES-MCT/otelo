@@ -20,7 +20,7 @@ export class AccommodationRatesService {
           ...(millesime && { millesime }),
         },
       }),
-      this.vacancyService.getNewestVacancy(epcisCodes, millesime),
+      this.vacancyService.getNewestVacancy(epcisCodes),
     ])
 
     return epcisCodes.reduce<TEpcisAccommodationRates>((acc, epciCode) => {

@@ -6,9 +6,12 @@ import { FC, useEffect } from 'react'
 import { useDataPackVersions } from '~/hooks/use-data-pack-versions'
 
 export const SelectMillesime: FC = () => {
-  const { data: dataPackVersions, isLoading } = useDataPackVersions()
+  const { data: dataPackVersions } = useDataPackVersions()
   const [queryStates, setQueryStates] = useQueryStates({
     millesime: parseAsString,
+    type: parseAsString,
+    source: parseAsString,
+    epci: parseAsString,
   })
 
   const activeVersion = dataPackVersions?.find((dp) => dp.isActive)
@@ -20,13 +23,13 @@ export const SelectMillesime: FC = () => {
     }
   }, [activeVersion, queryStates.millesime, setQueryStates])
 
-  if (isLoading || !dataPackVersions) {
+  if (!dataPackVersions) {
     return null
   }
 
   return (
     <Select
-      label="Millésime"
+      label={undefined}
       nativeSelectProps={{
         onChange: (event) => setQueryStates({ millesime: event.target.value }),
         value: queryStates.millesime || activeVersion?.millesime || '',

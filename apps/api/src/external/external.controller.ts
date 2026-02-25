@@ -4,7 +4,6 @@ import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 import { Consumer } from '~/common/decorators/api-consumer'
 import { ApiKeyGuard } from '~/common/guards/api-key.guard'
 import { ApiConsumer } from '~/generated/prisma/client'
-import { TExternalUpdateScenario, TInitScenario } from '~/schemas/scenarios/scenario'
 import {
   CreateSimulationDto,
   NotFoundResponseDto,
@@ -34,14 +33,11 @@ export class ExternalController {
   @ApiBody({ type: CreateSimulationDto })
   @ApiResponse({ status: 201, description: 'Simulation créée avec résultats', type: SimulationWithResultsDto })
   @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', type: UnauthorizedResponseDto })
-  async createSimulation(
-    @Consumer() consumer: ApiConsumer,
-    @Body() body: { name: string; epci: { code: string }[]; scenario: TInitScenario; epciGroupName?: string },
-  ) {
+  async createSimulation(@Consumer() consumer: ApiConsumer, @Body() body: CreateSimulationDto) {
     return this.externalService.createSimulation(consumer.id, body)
   }
 
-  @Put('simulations/:id/scenario')
+  @Put('simulations/:simulationId/scenario')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Mettre à jour le paramétrage et recalculer les résultats',
@@ -49,27 +45,27 @@ export class ExternalController {
       'Met à jour les paramètres du scénario (B1-B15, projection, etc.) ' +
       'et/ou les taux par EPCI (B2). Recalcule et retourne les résultats.',
   })
-  @ApiParam({ name: 'id', description: 'ID de la simulation', format: 'uuid' })
+  @ApiParam({ name: 'simulationId', description: 'ID de la simulation', format: 'uuid' })
   @ApiBody({ type: UpdateScenarioDto })
   @ApiResponse({ status: 200, description: 'Résultats recalculés', type: SimulationWithResultsDto })
   @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, description: 'Simulation non trouvée', type: NotFoundResponseDto })
-  async updateSimulation(@Consumer() consumer: ApiConsumer, @Param('id') id: string, @Body() body: TExternalUpdateScenario) {
-    return this.externalService.updateSimulation(consumer.id, id, body)
+  async updateSimulation(@Consumer() consumer: ApiConsumer, @Param('simulationId') simulationId: string, @Body() body: UpdateScenarioDto) {
+    return this.externalService.updateSimulation(consumer.id, simulationId, body)
   }
 
-  @Get('simulations/:id/results')
+  @Get('simulations/:simulationId/results')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: "Obtenir les résultats d'une simulation",
     description: 'Calcule (ou recalcule) les besoins en logements et retourne les résultats complets.',
   })
-  @ApiParam({ name: 'id', description: 'ID de la simulation', format: 'uuid' })
+  @ApiParam({ name: 'simulationId', description: 'ID de la simulation', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Résultats de la simulation', type: SimulationWithResultsDto })
   @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, description: 'Simulation non trouvée', type: NotFoundResponseDto })
-  async getResults(@Consumer() consumer: ApiConsumer, @Param('id') id: string) {
-    return this.externalService.getResults(consumer.id, id)
+  async getResults(@Consumer() consumer: ApiConsumer, @Param('simulationId') simulationId: string) {
+    return this.externalService.getResults(consumer.id, simulationId)
   }
 
   @Get('simulations')
@@ -84,17 +80,17 @@ export class ExternalController {
     return this.externalService.listSimulations(consumer.id)
   }
 
-  @Delete('simulations/:id')
+  @Delete('simulations/:simulationId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Supprimer une simulation',
     description: 'Supprime (soft-delete) une simulation appartenant au consommateur.',
   })
-  @ApiParam({ name: 'id', description: 'ID de la simulation', format: 'uuid' })
+  @ApiParam({ name: 'simulationId', description: 'ID de la simulation', format: 'uuid' })
   @ApiResponse({ status: 204, description: 'Simulation supprimée' })
   @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, description: 'Simulation non trouvée', type: NotFoundResponseDto })
-  async deleteSimulation(@Consumer() consumer: ApiConsumer, @Param('id') id: string) {
-    return this.externalService.deleteSimulation(consumer.id, id)
+  async deleteSimulation(@Consumer() consumer: ApiConsumer, @Param('simulationId') simulationId: string) {
+    return this.externalService.deleteSimulation(consumer.id, simulationId)
   }
 }

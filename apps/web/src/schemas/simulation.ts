@@ -75,6 +75,7 @@ export type TGroupedSimulationWithResults = z.infer<typeof ZGroupedSimulationWit
 export const ZUpdateBadHousingSimulationDto = z.object({
   id: z.string(),
   scenario: ZScenario.omit({
+    millesime: true,
     b17_motif: true,
     b2_scenario: true,
     createdAt: true,
