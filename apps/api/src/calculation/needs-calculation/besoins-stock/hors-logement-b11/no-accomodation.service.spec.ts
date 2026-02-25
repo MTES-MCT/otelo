@@ -46,11 +46,11 @@ describe('NoAccomodationService', () => {
       }
       const vals = { ...defaults, ...overrides }
 
-      prisma.homeless.findFirstOrThrow.mockResolvedValue(vals.homeless as any)
-      prisma.hotel.findFirstOrThrow.mockResolvedValue(vals.hotel as any)
-      prisma.makeShiftHousing_RP.findFirstOrThrow.mockResolvedValue(vals.rpMakeShift as any)
-      prisma.makeShiftHousing_SNE.findFirstOrThrow.mockResolvedValue(vals.sneMakeShift as any)
-      prisma.hostedFiness.findFirstOrThrow.mockResolvedValue(vals.hostedFiness as any)
+      prisma.homeless.findFirstOrThrow = jest.fn().mockResolvedValue(vals.homeless as any)
+      prisma.hotel.findFirstOrThrow = jest.fn().mockResolvedValue(vals.hotel as any)
+      prisma.makeShiftHousing_RP.findFirstOrThrow = jest.fn().mockResolvedValue(vals.rpMakeShift as any)
+      prisma.makeShiftHousing_SNE.findFirstOrThrow = jest.fn().mockResolvedValue(vals.sneMakeShift as any)
+      prisma.hostedFiness.findFirstOrThrow = jest.fn().mockResolvedValue(vals.hostedFiness as any)
     }
 
     it('should calculate using RP source with all flags enabled', async () => {
@@ -136,11 +136,11 @@ describe('NoAccomodationService', () => {
     })
 
     it('should return 0 when hostedFiness throws', async () => {
-      prisma.homeless.findFirstOrThrow.mockResolvedValue({ rp: 100, sne: 120 } as any)
-      prisma.hotel.findFirstOrThrow.mockResolvedValue({ rp: 200, sne: 250 } as any)
-      prisma.makeShiftHousing_RP.findFirstOrThrow.mockResolvedValue({ value: 50 } as any)
-      prisma.makeShiftHousing_SNE.findFirstOrThrow.mockResolvedValue({ camping: 30, squat: 40 } as any)
-      prisma.hostedFiness.findFirstOrThrow.mockRejectedValue(new Error('Not found'))
+      prisma.homeless.findFirstOrThrow = jest.fn().mockResolvedValue({ rp: 100, sne: 120 } as any)
+      prisma.hotel.findFirstOrThrow = jest.fn().mockResolvedValue({ rp: 200, sne: 250 } as any)
+      prisma.makeShiftHousing_RP.findFirstOrThrow = jest.fn().mockResolvedValue({ value: 50 } as any)
+      prisma.makeShiftHousing_SNE.findFirstOrThrow = jest.fn().mockResolvedValue({ camping: 30, squat: 40 } as any)
+      prisma.hostedFiness.findFirstOrThrow = jest.fn().mockRejectedValue(new Error('Not found'))
 
       const simulation = makeSimulation({
         scenario: makeScenario({ source_b11: ESourceB11.RP, b11_sa: true, b11_fortune: true, b11_hotel: true }),
@@ -152,11 +152,11 @@ describe('NoAccomodationService', () => {
 
   describe('calculate', () => {
     it('should compute prorata when horizon > projection', async () => {
-      prisma.homeless.findFirstOrThrow.mockResolvedValue({ rp: 100 } as any)
-      prisma.hotel.findFirstOrThrow.mockResolvedValue({ rp: 0 } as any)
-      prisma.makeShiftHousing_RP.findFirstOrThrow.mockResolvedValue({ value: 0 } as any)
-      prisma.makeShiftHousing_SNE.findFirstOrThrow.mockResolvedValue({ camping: 0, squat: 0 } as any)
-      prisma.hostedFiness.findFirstOrThrow.mockResolvedValue({} as any)
+      prisma.homeless.findFirstOrThrow = jest.fn().mockResolvedValue({ rp: 100 } as any)
+      prisma.hotel.findFirstOrThrow = jest.fn().mockResolvedValue({ rp: 0 } as any)
+      prisma.makeShiftHousing_RP.findFirstOrThrow = jest.fn().mockResolvedValue({ value: 0 } as any)
+      prisma.makeShiftHousing_SNE.findFirstOrThrow = jest.fn().mockResolvedValue({ camping: 0, squat: 0 } as any)
+      prisma.hostedFiness.findFirstOrThrow = jest.fn().mockResolvedValue({} as any)
 
       const simulation = makeSimulation({
         scenario: makeScenario({
@@ -177,11 +177,11 @@ describe('NoAccomodationService', () => {
     })
 
     it('should not apply prorata when horizon <= projection', async () => {
-      prisma.homeless.findFirstOrThrow.mockResolvedValue({ rp: 100 } as any)
-      prisma.hotel.findFirstOrThrow.mockResolvedValue({ rp: 0 } as any)
-      prisma.makeShiftHousing_RP.findFirstOrThrow.mockResolvedValue({ value: 0 } as any)
-      prisma.makeShiftHousing_SNE.findFirstOrThrow.mockResolvedValue({ camping: 0, squat: 0 } as any)
-      prisma.hostedFiness.findFirstOrThrow.mockResolvedValue({} as any)
+      prisma.homeless.findFirstOrThrow = jest.fn().mockResolvedValue({ rp: 100 } as any)
+      prisma.hotel.findFirstOrThrow = jest.fn().mockResolvedValue({ rp: 0 } as any)
+      prisma.makeShiftHousing_RP.findFirstOrThrow = jest.fn().mockResolvedValue({ value: 0 } as any)
+      prisma.makeShiftHousing_SNE.findFirstOrThrow = jest.fn().mockResolvedValue({ camping: 0, squat: 0 } as any)
+      prisma.hostedFiness.findFirstOrThrow = jest.fn().mockResolvedValue({} as any)
 
       const simulation = makeSimulation({
         scenario: makeScenario({

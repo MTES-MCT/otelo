@@ -38,7 +38,7 @@ describe('FinancialInadequationService', () => {
 
   describe('calculateByEpci', () => {
     const setupMocks = (financialData: Record<string, number> = {}, badQuality = 100, ratio43 = 0.1) => {
-      prisma.financialInadequation.findUniqueOrThrow.mockResolvedValue({
+      prisma.financialInadequation.findUniqueOrThrow = jest.fn().mockResolvedValue({
         nbAllPlus30AccessionPropriete: 200,
         nbAllPlus30ParcLocatifPrive: 300,
         nbAllPlus40AccessionPropriete: 150,
@@ -119,7 +119,7 @@ describe('FinancialInadequationService', () => {
 
   describe('calculate', () => {
     it('should compute totals and prorata', async () => {
-      prisma.financialInadequation.findUniqueOrThrow.mockResolvedValue({
+      prisma.financialInadequation.findUniqueOrThrow = jest.fn().mockResolvedValue({
         nbAllPlus30AccessionPropriete: 200,
         nbAllPlus30ParcLocatifPrive: 0,
       } as any)

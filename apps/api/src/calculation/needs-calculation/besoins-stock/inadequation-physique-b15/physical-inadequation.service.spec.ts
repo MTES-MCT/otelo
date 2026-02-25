@@ -46,7 +46,7 @@ describe('PhysicalInadequationService', () => {
 
   describe('calculateByEpci - RP source', () => {
     const setupRPMocks = (suroccData: Record<string, number> = {}) => {
-      prisma.physicalInadequation_RP.findFirstOrThrow.mockResolvedValue({
+      prisma.physicalInadequation_RP.findFirstOrThrow = jest.fn().mockResolvedValue({
         nbMenModPpT: 100,
         nbMenModLocNonHLM: 200,
         nbMenAccPpT: 150,
@@ -117,7 +117,7 @@ describe('PhysicalInadequationService', () => {
 
   describe('calculateByEpci - Filo source', () => {
     it('should calculate Filo with Mod surocc (maps to Leg)', async () => {
-      prisma.physicalInadequation_Filo.findFirstOrThrow.mockResolvedValue({
+      prisma.physicalInadequation_Filo.findFirstOrThrow = jest.fn().mockResolvedValue({
         suroccLegPo: 300,
         suroccLegLp: 400,
         suroccLourdePo: 500,
@@ -146,7 +146,7 @@ describe('PhysicalInadequationService', () => {
     })
 
     it('should calculate Filo with Acc surocc (maps to Lourde)', async () => {
-      prisma.physicalInadequation_Filo.findFirstOrThrow.mockResolvedValue({
+      prisma.physicalInadequation_Filo.findFirstOrThrow = jest.fn().mockResolvedValue({
         suroccLegPo: 300,
         suroccLegLp: 400,
         suroccLourdePo: 500,
@@ -177,7 +177,7 @@ describe('PhysicalInadequationService', () => {
 
   describe('calculateByEpci - reallocation and ratio deductions', () => {
     it('should apply reallocation rate', async () => {
-      prisma.physicalInadequation_Filo.findFirstOrThrow.mockResolvedValue({
+      prisma.physicalInadequation_Filo.findFirstOrThrow = jest.fn().mockResolvedValue({
         suroccLegPo: 1000,
         suroccLegLp: 0,
       } as any)
@@ -204,7 +204,7 @@ describe('PhysicalInadequationService', () => {
     })
 
     it('should subtract ratio-weighted deductions from other services', async () => {
-      prisma.physicalInadequation_Filo.findFirstOrThrow.mockResolvedValue({
+      prisma.physicalInadequation_Filo.findFirstOrThrow = jest.fn().mockResolvedValue({
         suroccLegPo: 1000,
         suroccLegLp: 0,
       } as any)
@@ -233,7 +233,7 @@ describe('PhysicalInadequationService', () => {
 
   describe('calculate', () => {
     it('should compute totals across epcis', async () => {
-      prisma.physicalInadequation_RP.findFirstOrThrow.mockResolvedValue({
+      prisma.physicalInadequation_RP.findFirstOrThrow = jest.fn().mockResolvedValue({
         nbMenModPpT: 100,
         nbMenModLocNonHLM: 0,
       } as any)

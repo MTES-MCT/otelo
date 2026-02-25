@@ -1,4 +1,4 @@
-import { createMock } from '@golevelup/ts-jest'
+import { createMock, type DeepMocked } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
@@ -8,8 +8,8 @@ import { SimulationsService } from './simulations.service'
 
 describe('SimulationsService', () => {
   let service: SimulationsService
-  let mockPrismaService: jest.Mocked<PrismaService>
-  let mockScenariosService: jest.Mocked<ScenariosService>
+  let mockPrismaService: DeepMocked<PrismaService>
+  let mockScenariosService: DeepMocked<ScenariosService>
 
   beforeEach(async () => {
     mockPrismaService = createMock<PrismaService>()

@@ -17,7 +17,7 @@ export const SimulationDemographicBadHousingChartSummary = ({
 }) => {
   const { prepeakTotalStock } = epci ?? {}
   const badHousingValue = epci && prepeakTotalStock ? prepeakTotalStock : totalStock
-  const demographyValue = totalFlux - badHousingValue
+  const demographyValue = totalFlux
 
   // Use only positive values for chart proportions
   const demographyForChart = Math.max(0, demographyValue)

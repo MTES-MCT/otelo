@@ -203,7 +203,7 @@ describe('CronService', () => {
 
   describe('updateUserAccess', () => {
     it('should update users matching accepted emails', async () => {
-      prisma.user.updateMany.mockResolvedValue({ count: 2 })
+      prisma.user.updateMany = jest.fn().mockResolvedValue({ count: 2 })
       const emails = new Set(['a@test.com', 'b@test.com'])
 
       await (service as any).updateUserAccess(emails)
@@ -223,7 +223,7 @@ describe('CronService', () => {
     })
 
     it('should propagate errors from prisma', async () => {
-      prisma.user.updateMany.mockRejectedValue(new Error('DB error'))
+      prisma.user.updateMany = jest.fn().mockRejectedValue(new Error('DB error'))
       const emails = new Set(['a@test.com'])
       await expect((service as any).updateUserAccess(emails)).rejects.toThrow('DB error')
     })
@@ -256,7 +256,7 @@ describe('CronService', () => {
           },
         }),
       )
-      prisma.user.updateMany.mockResolvedValue({ count: 1 })
+      prisma.user.updateMany = jest.fn().mockResolvedValue({ count: 1 })
 
       await service.handleUserAccessUpdate()
 

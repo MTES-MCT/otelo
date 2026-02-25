@@ -26,8 +26,8 @@ describe('HostedService', () => {
 
   describe('calculateByEpci', () => {
     const setupMocks = () => {
-      prisma.hostedFilocom.findFirstOrThrow.mockResolvedValue({ value: 1000 } as any)
-      prisma.hostedSne.findFirstOrThrow.mockResolvedValue({ particular: 50, temporary: 30 } as any)
+      prisma.hostedFilocom.findFirstOrThrow = jest.fn().mockResolvedValue({ value: 1000 } as any)
+      prisma.hostedSne.findFirstOrThrow = jest.fn().mockResolvedValue({ particular: 50, temporary: 30 } as any)
     }
 
     it('should calculate with cohab_interg_subie percentage applied to filocom', async () => {
@@ -109,8 +109,8 @@ describe('HostedService', () => {
 
   describe('calculate', () => {
     it('should aggregate results across epcis and compute totals', async () => {
-      prisma.hostedFilocom.findFirstOrThrow.mockResolvedValue({ value: 1000 } as any)
-      prisma.hostedSne.findFirstOrThrow.mockResolvedValue({ particular: 0, temporary: 0 } as any)
+      prisma.hostedFilocom.findFirstOrThrow = jest.fn().mockResolvedValue({ value: 1000 } as any)
+      prisma.hostedSne.findFirstOrThrow = jest.fn().mockResolvedValue({ particular: 0, temporary: 0 } as any)
 
       const simulation = makeSimulation({
         scenario: makeScenario({
