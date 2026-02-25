@@ -26,7 +26,7 @@ describe('BadQualityService', () => {
 
   describe('calculateByEpci - RP source', () => {
     it('should calculate RP_abs_sani for locataire', async () => {
-      prisma.badQuality_RP.findUniqueOrThrow.mockResolvedValue({
+      prisma.badQuality_RP.findUniqueOrThrow = jest.fn().mockResolvedValue({
         saniLocNonhlm: 100,
         saniPpT: 200,
         saniChflLocNonhlm: 150,
@@ -46,7 +46,7 @@ describe('BadQualityService', () => {
     })
 
     it('should calculate RP_abs_sani for proprietaire', async () => {
-      prisma.badQuality_RP.findUniqueOrThrow.mockResolvedValue({
+      prisma.badQuality_RP.findUniqueOrThrow = jest.fn().mockResolvedValue({
         saniLocNonhlm: 100,
         saniPpT: 200,
         saniChflLocNonhlm: 150,
@@ -66,7 +66,7 @@ describe('BadQualityService', () => {
     })
 
     it('should calculate RP_abs_sani_chfl for both loc and prop', async () => {
-      prisma.badQuality_RP.findUniqueOrThrow.mockResolvedValue({
+      prisma.badQuality_RP.findUniqueOrThrow = jest.fn().mockResolvedValue({
         saniLocNonhlm: 100,
         saniPpT: 200,
         saniChflLocNonhlm: 150,
@@ -88,7 +88,7 @@ describe('BadQualityService', () => {
 
   describe('calculateByEpci - Filo source', () => {
     it('should calculate for locataire', async () => {
-      prisma.badQuality_Filocom.findUniqueOrThrow.mockResolvedValue({
+      prisma.badQuality_Filocom.findUniqueOrThrow = jest.fn().mockResolvedValue({
         pppiLp: 300,
         pppiPo: 400,
       } as any)
@@ -104,7 +104,7 @@ describe('BadQualityService', () => {
     })
 
     it('should calculate for proprietaire', async () => {
-      prisma.badQuality_Filocom.findUniqueOrThrow.mockResolvedValue({
+      prisma.badQuality_Filocom.findUniqueOrThrow = jest.fn().mockResolvedValue({
         pppiLp: 300,
         pppiPo: 400,
       } as any)
@@ -123,7 +123,7 @@ describe('BadQualityService', () => {
 
   describe('calculateByEpci - FF source', () => {
     it('should construct dynamic column name and sum loc + prop', async () => {
-      prisma.badQuality_Fonciers.findUniqueOrThrow.mockResolvedValue({
+      prisma.badQuality_Fonciers.findUniqueOrThrow = jest.fn().mockResolvedValue({
         ppSsChauffLoc: 500,
         ppSsChauffPpt: 600,
       } as any)
@@ -142,7 +142,7 @@ describe('BadQualityService', () => {
     })
 
     it('should handle FF with only loc', async () => {
-      prisma.badQuality_Fonciers.findUniqueOrThrow.mockResolvedValue({
+      prisma.badQuality_Fonciers.findUniqueOrThrow = jest.fn().mockResolvedValue({
         ppSsWcLoc: 700,
         ppSsWcPpt: 800,
       } as any)
@@ -173,7 +173,7 @@ describe('BadQualityService', () => {
       }).compile()
       const coeffService = module.get<BadQualityService>(BadQualityService)
 
-      prisma.badQuality_Filocom.findUniqueOrThrow.mockResolvedValue({
+      prisma.badQuality_Filocom.findUniqueOrThrow = jest.fn().mockResolvedValue({
         pppiLp: 200,
         pppiPo: 0,
       } as any)
@@ -192,7 +192,7 @@ describe('BadQualityService', () => {
 
   describe('calculate', () => {
     it('should compute totals across epcis', async () => {
-      prisma.badQuality_RP.findUniqueOrThrow.mockResolvedValue({
+      prisma.badQuality_RP.findUniqueOrThrow = jest.fn().mockResolvedValue({
         saniLocNonhlm: 100,
         saniPpT: 0,
       } as any)

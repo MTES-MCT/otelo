@@ -100,7 +100,7 @@ describe('RenewalHousingStockService', () => {
 
   describe('getSecondaryResidenceAccomodationEvolutionByEpciAndYear', () => {
     it('should linearly interpolate secondary residence rate', async () => {
-      prisma.filocomFlux.findFirstOrThrow.mockResolvedValue({ txRsParctot: 0.05, parctot: 10000 } as any)
+      prisma.filocomFlux.findFirstOrThrow = jest.fn().mockResolvedValue({ txRsParctot: 0.05, parctot: 10000 } as any)
 
       const simulation = makeSimulation({
         scenario: makeScenario({
@@ -115,7 +115,7 @@ describe('RenewalHousingStockService', () => {
     })
 
     it('should keep rate flat after peak year', async () => {
-      prisma.filocomFlux.findFirstOrThrow.mockResolvedValue({ txRsParctot: 0.05, parctot: 10000 } as any)
+      prisma.filocomFlux.findFirstOrThrow = jest.fn().mockResolvedValue({ txRsParctot: 0.05, parctot: 10000 } as any)
 
       const simulation = makeSimulation({
         scenario: makeScenario({
@@ -132,7 +132,7 @@ describe('RenewalHousingStockService', () => {
   describe('getFilocomFlux', () => {
     it('should query prisma for filocom flux data', async () => {
       const mockData = { epciCode: '200000001', parctot: 10000, txRsParctot: 0.05 }
-      prisma.filocomFlux.findFirstOrThrow.mockResolvedValue(mockData as any)
+      prisma.filocomFlux.findFirstOrThrow = jest.fn().mockResolvedValue(mockData as any)
 
       const result = await service.getFilocomFlux('200000001')
       expect(result).toEqual(mockData)

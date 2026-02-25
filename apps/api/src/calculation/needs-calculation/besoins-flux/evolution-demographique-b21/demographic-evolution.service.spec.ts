@@ -108,7 +108,7 @@ describe('DemographicEvolutionService', () => {
 
   describe('getProjectionsByOmphale', () => {
     it('should query prisma with correct parameters', async () => {
-      prisma.demographicEvolutionOmphale.findMany.mockResolvedValue([
+      prisma.demographicEvolutionOmphale.findMany = jest.fn().mockResolvedValue([
         { epciCode: '200000001', centralH: 1000, year: 2021 },
         { epciCode: '200000001', centralH: 1100, year: 2022 },
       ] as any)
