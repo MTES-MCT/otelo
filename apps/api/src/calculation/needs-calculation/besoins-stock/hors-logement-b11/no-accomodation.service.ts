@@ -20,7 +20,6 @@ export class NoAccomodationService extends BaseCalculator {
     return this.prismaService.hostedFiness.findFirstOrThrow({
       where: {
         epciCode,
-        millesime: this.context.millesime,
       },
     })
   }
@@ -29,7 +28,6 @@ export class NoAccomodationService extends BaseCalculator {
     return this.prismaService.hotel.findFirstOrThrow({
       where: {
         epciCode,
-        millesime: this.context.millesime,
       },
     })
   }
@@ -38,7 +36,6 @@ export class NoAccomodationService extends BaseCalculator {
     return this.prismaService.makeShiftHousing_RP.findFirstOrThrow({
       where: {
         epciCode,
-        millesime: this.context.millesime,
       },
     })
   }
@@ -47,7 +44,6 @@ export class NoAccomodationService extends BaseCalculator {
     return this.prismaService.makeShiftHousing_SNE.findFirstOrThrow({
       where: {
         epciCode,
-        millesime: this.context.millesime,
       },
     })
   }
@@ -56,7 +52,6 @@ export class NoAccomodationService extends BaseCalculator {
     return this.prismaService.homeless.findFirstOrThrow({
       where: {
         epciCode,
-        millesime: this.context.millesime,
       },
     })
   }

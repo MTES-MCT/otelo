@@ -36,3 +36,4 @@ coverage
 
 apps/api/.cache/*
 apps/api/src/generated/*
+apps/api/import-error.sql

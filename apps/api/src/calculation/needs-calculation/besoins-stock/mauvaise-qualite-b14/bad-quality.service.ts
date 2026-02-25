@@ -16,7 +16,7 @@ export class BadQualityService extends BaseCalculator {
 
   async getRPBadQuality(epciCode: string) {
     return this.prismaService.badQuality_RP.findUniqueOrThrow({
-      where: { epciCode_millesime: { epciCode, millesime: this.context.millesime } },
+      where: { epciCode },
     })
   }
 
@@ -27,7 +27,7 @@ export class BadQualityService extends BaseCalculator {
   }
   async getFFBadQuality(epciCode: string) {
     return this.prismaService.badQuality_Fonciers.findUniqueOrThrow({
-      where: { epciCode_millesime: { epciCode, millesime: this.context.millesime } },
+      where: { epciCode },
     })
   }
 

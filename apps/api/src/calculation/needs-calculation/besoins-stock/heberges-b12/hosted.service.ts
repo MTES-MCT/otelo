@@ -28,7 +28,6 @@ export class HostedService extends BaseCalculator {
     return this.prismaService.hostedSne.findFirstOrThrow({
       where: {
         epciCode,
-        millesime: this.context.millesime,
       },
     })
   }

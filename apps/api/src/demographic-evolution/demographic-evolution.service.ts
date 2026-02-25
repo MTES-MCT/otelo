@@ -122,9 +122,9 @@ const createProjectionMenagesTableData = (
 export class DemographicEvolutionService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getDemographicEvolution(epciCodes: string, years?: number[], millesime?: string): Promise<TDemographicEvolutionMenagesByEpciRecord> {
+  async getDemographicEvolution(epciCodes: string, millesime: string, years?: number[]): Promise<TDemographicEvolutionMenagesByEpciRecord> {
     const epcisArray = epciCodes.split(',')
-    const whereCond: Prisma.Sql = Prisma.sql`WHERE epci_code IN (${Prisma.join(epcisArray)})${years && years.length > 0 ? Prisma.sql` AND year IN (${Prisma.join(years)})` : Prisma.empty}${millesime ? Prisma.sql` AND millesime = ${millesime}` : Prisma.empty}`
+    const whereCond: Prisma.Sql = Prisma.sql`WHERE epci_code IN (${Prisma.join(epcisArray)})${years && years.length > 0 ? Prisma.sql` AND year IN (${Prisma.join(years)})` : Prisma.empty}${Prisma.sql` AND millesime = ${millesime}`}`
 
     const projections = await this.prismaService.$queryRaw<
       Array<{
@@ -239,9 +239,13 @@ export class DemographicEvolutionService {
     return groupedByEpci
   }
 
-  async getDemographicEvolutionPopulationByEpci(epciCodes: string, years?: number[], millesime?: string): Promise<TDemographicEvolutionPopulationByEpciRecord> {
+  async getDemographicEvolutionPopulationByEpci(
+    epciCodes: string,
+    millesime: string,
+    years?: number[],
+  ): Promise<TDemographicEvolutionPopulationByEpciRecord> {
     const epcisArray = epciCodes.split(',')
-    const whereCond: Prisma.Sql = Prisma.sql`WHERE epci_code IN (${Prisma.join(epcisArray)})${years && years.length > 0 ? Prisma.sql` AND year IN (${Prisma.join(years)})` : Prisma.empty}${millesime ? Prisma.sql` AND millesime = ${millesime}` : Prisma.empty}`
+    const whereCond: Prisma.Sql = Prisma.sql`WHERE epci_code IN (${Prisma.join(epcisArray)})${years && years.length > 0 ? Prisma.sql` AND year IN (${Prisma.join(years)})` : Prisma.empty}${Prisma.sql` AND millesime = ${millesime}`}`
 
     const projections = await this.prismaService.$queryRaw<
       Array<{
@@ -329,23 +333,6 @@ export class DemographicEvolutionService {
     return groupedByEpci
   }
 
-  async getDemographicEvolutionPopulation(epcis: TEpci[]) {
-    const results = await Promise.all(
-      epcis.map(async (epci) => ({
-        data: await this.getDemographicEvolutionPopulationByEpci(epci.code),
-        epci,
-      })),
-    )
-
-    return results.reduce(
-      (acc, { data, epci }) => ({
-        ...acc,
-        [epci.code]: { ...data, name: epci.name },
-      }),
-      {},
-    )
-  }
-
   getDemographicEvolutionPopulationMaxYearsByEpci(
     demographicEvolutionPopulationByEpci: TDemographicEvolutionPopulationByEpciAndYear[],
   ): TDemographicPopulationMaxYearsByEpci {
@@ -367,10 +354,10 @@ export class DemographicEvolutionService {
     }, {} as TDemographicPopulationMaxYearsByEpci)
   }
 
-  async getDemographicEvolutionPopulationAndYear(epcis: TEpci[], millesime?: string) {
+  async getDemographicEvolutionPopulationAndYear(epcis: TEpci[], millesime: string) {
     const results: TDemographicEvolutionPopulationByEpciAndYear[] = await Promise.all(
       epcis.map(async (epci) => {
-        const data = await this.getDemographicEvolutionPopulationByEpci(epci.code, undefined, millesime)
+        const data = await this.getDemographicEvolutionPopulationByEpci(epci.code, millesime)
         return {
           data: data[epci.code]?.data || [],
           metadata: data[epci.code]?.metadata || {},
@@ -383,7 +370,7 @@ export class DemographicEvolutionService {
 
     const tableResults = await Promise.all(
       epcis.map(async (epci) => {
-        const data = await this.getDemographicEvolutionPopulationByEpci(epci.code, [2021, 2030, 2040, 2050], millesime)
+        const data = await this.getDemographicEvolutionPopulationByEpci(epci.code, millesime, [2021, 2030, 2040, 2050])
         return {
           data: data[epci.code]?.data || [],
           metadata: data[epci.code]?.metadata || {},
@@ -440,10 +427,10 @@ export class DemographicEvolutionService {
     }, {} as TDemographicMenagesMaxYearsByEpci)
   }
 
-  async getDemographicEvolutionOmphaleAndYear(epcis: TEpci[], populationType?: string, millesime?: string) {
+  async getDemographicEvolutionOmphaleAndYear(epcis: TEpci[], millesime: string, populationType?: string) {
     const results = await Promise.all(
       epcis.map(async (epci) => {
-        const data = await this.getDemographicEvolution(epci.code, undefined, millesime)
+        const data = await this.getDemographicEvolution(epci.code, millesime)
         return {
           data: data[epci.code]?.data || [],
           metadata: data[epci.code]?.metadata || {},
@@ -453,7 +440,7 @@ export class DemographicEvolutionService {
     )
     const tableResults = await Promise.all(
       epcis.map(async (epci) => {
-        const data = await this.getDemographicEvolution(epci.code, [2021, 2030, 2040, 2050], millesime)
+        const data = await this.getDemographicEvolution(epci.code, millesime, [2021, 2030, 2040, 2050])
         return {
           data: data[epci.code]?.data || [],
           metadata: data[epci.code]?.metadata || {},

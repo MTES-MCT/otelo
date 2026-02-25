@@ -15,6 +15,8 @@ import { BadQualityService } from '~/calculation/needs-calculation/besoins-stock
 import { NeedsCalculationService } from '~/calculation/needs-calculation/needs-calculation.service'
 import { SitadelService } from '~/calculation/needs-calculation/sitadel/sitadel.service'
 import { RatioCalculationModule } from '~/calculation/ratio-calculation/ratio-calculation.module'
+import { DataPackVersionsModule } from '~/data-pack-versions/data-pack-versions.module'
+import { DataPackVersionsService } from '~/data-pack-versions/data-pack-versions.service'
 import { PrismaModule } from '~/db/prisma.module'
 import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
 import { SimulationsModule } from '~/simulations/simulations.module'
@@ -30,23 +32,33 @@ interface AuthenticatedRequest extends Request {
 
 @Module({
   exports: [NeedsCalculationService],
-  imports: [PrismaModule, CoefficientCalculationModule, RatioCalculationModule, SimulationsModule, VacancyModule, AccommodationRatesModule],
+  imports: [
+    PrismaModule,
+    CoefficientCalculationModule,
+    RatioCalculationModule,
+    SimulationsModule,
+    VacancyModule,
+    AccommodationRatesModule,
+    DataPackVersionsModule,
+  ],
   providers: [
     {
-      inject: [CoefficientCalculationService, SimulationsService, REQUEST],
+      inject: [CoefficientCalculationService, SimulationsService, DataPackVersionsService, REQUEST],
       provide: 'CalculationContext',
       scope: Scope.REQUEST,
       useFactory: async (
         coefficientCalculationService: CoefficientCalculationService,
         simulationService: SimulationsService,
+        dataPackVersionsService: DataPackVersionsService,
         request: AuthenticatedRequest,
       ) => {
         const simulationId = request.params.simulationId as string | undefined
         if (!simulationId) {
+          const activeDataPackVersion = await dataPackVersionsService.getActive()
           return {
-            baseYear: 2021,
+            baseYear: Number(activeDataPackVersion.millesime),
             coefficient: 1,
-            millesime: '2021',
+            millesime: activeDataPackVersion.millesime,
           }
         }
         const simulation = await simulationService.get(simulationId as string)
@@ -57,7 +69,7 @@ interface AuthenticatedRequest extends Request {
 
         return {
           coefficient,
-          baseYear: 2021,
+          baseYear: Number(simulation.scenario.millesime),
           millesime: simulation.scenario.millesime,
         }
       },

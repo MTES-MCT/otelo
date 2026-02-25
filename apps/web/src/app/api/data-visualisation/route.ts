@@ -16,7 +16,9 @@ export async function GET(request: Request) {
   const millesime = searchParams.get('millesime')
 
   const millesimeParam = millesime ? `&millesime=${millesime}` : ''
-  const res = await authFetch(`/data-visualisation?epci=${epci}&type=${type}&populationType=${populationType}&source=${source}${millesimeParam}`)
+  const res = await authFetch(
+    `/data-visualisation?epci=${epci}&type=${type}&populationType=${populationType}&source=${source}${millesimeParam}`,
+  )
 
   if (!res.ok) {
     return NextResponse.json({ error: 'Failed to fetch data visualisation' }, { status: res.status })

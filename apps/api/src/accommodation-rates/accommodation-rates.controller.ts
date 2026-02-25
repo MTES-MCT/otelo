@@ -10,7 +10,7 @@ export class AccommodationRatesController {
 
   @AccessControl({ roles: [Role.ADMIN, Role.USER] })
   @Get()
-  async getAccommodationRates(@Query() { epcis }: { epcis: string }): Promise<TEpcisAccommodationRates> {
-    return this.accommodationRatesService.getAccommodationRates(epcis)
+  async getAccommodationRates(@Query() { epcis, millesime }: { epcis: string; millesime?: string }): Promise<TEpcisAccommodationRates> {
+    return this.accommodationRatesService.getAccommodationRates(epcis, millesime)
   }
 }

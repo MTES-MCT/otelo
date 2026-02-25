@@ -337,6 +337,7 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
     additionalHousingUnitsForNewHouseholds: TDemographicEvolution,
     additionalHousingUnitsForDeficitReduction: Record<number, number>,
   ) {
+    // todo - get millesime
     const firstYearValue = additionalHousingUnitsForNewHouseholds.data.find(({ year }) => year === 2021)?.yearValue || 0
 
     const { peakYear } = additionalHousingUnitsForNewHouseholds.data.reduce(

@@ -88,6 +88,7 @@ export type TDemographicEvolutionByEpci = z.infer<typeof ZDemographicEvolutionBy
 export const ZDemographicEvolutionPopulationMaxYearsByEpci = z.object({})
 export const ZGetDemographicEvolutionByEpciQuery = z.object({
   epciCodes: z.string(),
+  millesime: z.string(),
 })
 
 export type TGetDemographicEvolutionByEpciQuery = z.infer<typeof ZGetDemographicEvolutionByEpciQuery>

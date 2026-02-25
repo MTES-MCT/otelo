@@ -6,17 +6,17 @@ import { PrismaService } from '~/db/prisma.service'
 export class FinancialInadequationService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getFinancialInadequationByEpci(epciCode: string, millesime?: string) {
+  async getFinancialInadequationByEpci(epciCode: string) {
     const financialInadequation = await this.prismaService.financialInadequation.findFirst({
-      where: { epciCode, ...(millesime && { millesime }) },
+      where: { epciCode },
     })
     return { data: financialInadequation?.nbAllPlus30ParcLocatifPrive ?? 0 }
   }
 
-  async getFinancialInadequation(epcis: TEpci[], millesime?: string) {
+  async getFinancialInadequation(epcis: TEpci[]) {
     const results = await Promise.all(
       epcis.map(async (epci) => ({
-        ...(await this.getFinancialInadequationByEpci(epci.code, millesime)),
+        ...(await this.getFinancialInadequationByEpci(epci.code)),
         epci,
       })),
     )

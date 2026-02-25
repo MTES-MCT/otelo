@@ -9,9 +9,9 @@ import type { TooltipContentProps } from 'recharts'
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { tss } from 'tss-react'
 import { DATA_TYPE_OPTIONS } from '~/components/data-visualisation/select-data-type'
+import { SelectMillesime } from '~/components/data-visualisation/select-millesime'
 import { TInadequateHousing } from '~/schemas/population-evolution'
 import { formatNumber } from '~/utils/format-numbers'
-import styles from './accommodation-evolution-charts.module.css'
 import { getChartColor } from './colors'
 
 interface BadHousingChartProps {
@@ -58,6 +58,7 @@ export const BadHousingChart: FC<BadHousingChartProps> = ({ data }) => {
   const chartTitle = withOteloParams
     ? `Graphique sur les situations de mal-logement traduites en besoins en logements supplémentaires à ${name}`
     : `Graphique sur les situations de mal logement à ${name}`
+
   // Calculate total volume and max value for Otelo params description
   const totalVolume = withOteloParams
     ? Math.round(
@@ -189,6 +190,7 @@ export const BadHousingChart: FC<BadHousingChartProps> = ({ data }) => {
       <p>On retrouve sur le territoire :</p>
       <ul>
         <li>
+          {/* todo millesime */}
           <span className={fr.cx('fr-text--bold')}>Mauvaise qualité</span> : {formatNumber(chartData[0].badQuality)} ménages habitant un
           logement indigne, d’après le le Parc privé potentiellement indigne (2021) ;
         </li>
@@ -229,24 +231,28 @@ export const BadHousingChart: FC<BadHousingChartProps> = ({ data }) => {
   )
   return (
     <>
-      <div className={styles.headerContainer}>
+      <div className="fr-flex fr-justify-content-space-between">
         <h2 className={fr.cx('fr-h5')}>
           {title} - {name}
         </h2>
-        <div>
-          <Select
-            label=""
-            nativeSelectProps={{
-              onChange: (event) => setQueryStates({ epci: event.target.value }),
-              value: queryStates.epci || '',
-            }}
-          >
-            {EPCIS_OPTIONS.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </Select>
+        <div className="fr-flex fr-direction-column fr-align-items-end">
+          <div className="fr-flex fr-justify-content-end fr-flex-gap-4v">
+            <SelectMillesime />
+
+            <Select
+              label=""
+              nativeSelectProps={{
+                onChange: (event) => setQueryStates({ epci: event.target.value }),
+                value: queryStates.epci || '',
+              }}
+            >
+              {EPCIS_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </Select>
+          </div>
           <Checkbox
             options={[
               {
@@ -298,7 +304,6 @@ const useStyles = tss.create({
   titleContainer: {
     display: 'flex',
     justifyContent: 'center',
-    marginTop: '1rem',
   },
   legend: {
     display: 'flex',

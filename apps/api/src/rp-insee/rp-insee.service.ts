@@ -51,7 +51,7 @@ const createTableData = (results: TRPDataResults[], type: 'menage' | 'population
 export class RpInseeService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getRPByEpci(epciCode: string, type: 'menage' | 'population' | 'secondaryAccommodation' | 'vacant', millesime?: string) {
+  async getRPByEpci(epciCode: string, type: 'menage' | 'population' | 'secondaryAccommodation' | 'vacant') {
     const data = await this.prismaService.rP.findMany({
       select: {
         menage: type === 'menage',
@@ -63,7 +63,6 @@ export class RpInseeService {
       },
       where: {
         epciCode,
-        ...(millesime && { millesime }),
       },
     })
 
@@ -97,10 +96,10 @@ export class RpInseeService {
     }
   }
 
-  async getRP(epcis: TEpci[], type: 'menage' | 'population' | 'secondaryAccommodation' | 'vacant', millesime?: string) {
+  async getRP(epcis: TEpci[], type: 'menage' | 'population' | 'secondaryAccommodation' | 'vacant') {
     const results = await Promise.all(
       epcis.map(async (epci) => ({
-        ...(await this.getRPByEpci(epci.code, type, millesime)),
+        ...(await this.getRPByEpci(epci.code, type)),
         epci,
       })),
     )

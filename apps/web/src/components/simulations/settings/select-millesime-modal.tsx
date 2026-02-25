@@ -1,6 +1,5 @@
 'use client'
 
-import Button from '@codegouvfr/react-dsfr/Button'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
 import { Select } from '@codegouvfr/react-dsfr/Select'
 import { parseAsString, useQueryStates } from 'nuqs'
@@ -12,7 +11,7 @@ const warningModal = createModal({
   isOpenedByDefault: false,
 })
 
-export const MillesimeSelector = () => {
+export const SelectMillesimeModal = () => {
   const { data: dataPackVersions, isLoading } = useDataPackVersions()
   const [queryStates, setQueryStates] = useQueryStates({
     millesime: parseAsString,
@@ -21,7 +20,6 @@ export const MillesimeSelector = () => {
   const pendingMillesimeRef = useRef<string | null>(null)
   const activeVersion = dataPackVersions?.find((dp) => dp.isActive)
 
-  // Set default millesime to the active version on first load
   useEffect(() => {
     if (!queryStates.millesime && activeVersion) {
       setQueryStates({ millesime: activeVersion.millesime })
@@ -66,7 +64,7 @@ export const MillesimeSelector = () => {
   return (
     <>
       <Select
-        label="Millésime des données"
+        label="Millésime des données utilisées pour le scénario"
         nativeSelectProps={{
           onChange: handleChange,
           value: queryStates.millesime || activeVersion?.millesime || '',

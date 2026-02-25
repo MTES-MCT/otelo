@@ -28,7 +28,14 @@ export const useDataVisualisation = () => {
   const { data, isLoading } = useQuery({
     enabled: !!queryStates.epci && !!queryStates.type,
     queryFn: () => fetchDataVisualisation(),
-    queryKey: ['data-visualisation', queryStates.epci, queryStates.type, queryStates.populationType, queryStates.source, queryStates.millesime],
+    queryKey: [
+      'data-visualisation',
+      queryStates.epci,
+      queryStates.type,
+      queryStates.populationType,
+      queryStates.source,
+      queryStates.millesime,
+    ],
   })
   return { data, isLoading }
 }
