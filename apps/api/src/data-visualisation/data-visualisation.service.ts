@@ -31,9 +31,9 @@ export class DataVisualisationService {
 
   async getInadequateHousing(epcis: TEpci[], millesime?: string): Promise<TInadequateHousing> {
     const { hosted } = await this.hostedService.getHosted(epcis, millesime)
-    const { noAccommodation } = await this.noAccommodationService.getNoAccommodation(epcis, millesime)
+    const { noAccommodation } = await this.noAccommodationService.getNoAccommodation(epcis)
     const { badQuality } = await this.badQualityService.getBadQuality(epcis, millesime)
-    const { financialInadequation } = await this.financialInadequationService.getFinancialInadequation(epcis, millesime)
+    const { financialInadequation } = await this.financialInadequationService.getFinancialInadequation(epcis)
     const { physicalInadequation } = await this.physicalInadequationService.getPhysicalInadequation(epcis, millesime)
 
     return epcis.reduce((acc, epci) => {
@@ -79,28 +79,25 @@ export class DataVisualisationService {
       region: epci.region,
       bassinName: epci.bassinName,
     }))
-
     switch (type) {
       case 'projection-menages-evolution':
-        return this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(epcis, populationType, millesime)
+        return this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(epcis, millesime, populationType)
       case 'projection-population-evolution':
         return this.demographicEvolutionService.getDemographicEvolutionPopulationAndYear(epcis, millesime)
       case 'menage-evolution':
-        return this.rpInseeService.getRP(epcis, 'menage', millesime)
+        return this.rpInseeService.getRP(epcis, 'menage')
       case 'population-evolution':
-        return this.rpInseeService.getRP(epcis, 'population', millesime)
+        return this.rpInseeService.getRP(epcis, 'population')
       case 'residences-secondaires':
         if (source === 'rp') {
-          return this.rpInseeService.getRP(epcis, 'secondaryAccommodation', millesime)
+          return this.rpInseeService.getRP(epcis, 'secondaryAccommodation')
         }
         return []
-      // todo - handle it when filocom data is available
-      // return this.filocomService.getFilocomByEpci(epcis)
       case 'logements-vacants':
         if (source === 'rp') {
-          return this.rpInseeService.getRP(epcis, 'vacant', millesime)
+          return this.rpInseeService.getRP(epcis, 'vacant')
         }
-        return this.vacancyService.getVacancy(epcis, millesime)
+        return this.vacancyService.getVacancy(epcis)
       case 'mal-logement':
         return this.getInadequateHousing(epcis, millesime)
       case 'sitadel':

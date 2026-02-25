@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { TEpci } from '@shared'
+import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
 import { Simulation } from '~/generated/prisma/client'
@@ -13,6 +14,7 @@ export class SimulationsService {
     private readonly prismaService: PrismaService,
     private readonly scenariosService: ScenariosService,
     private readonly epciGroupsService: EpciGroupsService,
+    private readonly accommodationRatesService: AccommodationRatesService,
   ) {}
 
   async hasUserAccessTo(id: string, userId: string): Promise<boolean> {
@@ -195,7 +197,10 @@ export class SimulationsService {
   async actualize(userId: string, originalId: string, targetMillesime: string, name?: string): Promise<Simulation> {
     const original = await this.prismaService.simulation.findUniqueOrThrow({
       where: { id: originalId, userId },
-      select: { name: true },
+      include: {
+        epcis: { select: { code: true } },
+        scenario: { select: { millesime: true, epciScenarios: true } },
+      },
     })
     const cloneName = name || `${original.name} (millésime ${targetMillesime})`
     const cloned = await this.clone(userId, originalId, {
@@ -205,10 +210,46 @@ export class SimulationsService {
       where: { id: cloned.id },
       select: { scenarioId: true },
     })
+
+    // Update millesime on the cloned scenario
     await this.prismaService.scenario.update({
       where: { id: clonedSimulation.scenarioId },
       data: { millesime: targetMillesime },
     })
+
+    const epciCodes = original.epcis.map((e) => e.code)
+
+    // Fetch raw rates for both the original and target millesimes
+    const [originalRawRates, freshRates] = await Promise.all([
+      this.accommodationRatesService.getAccommodationRates(epciCodes.join(','), original.scenario.millesime),
+      this.accommodationRatesService.getAccommodationRates(epciCodes.join(','), targetMillesime),
+    ])
+
+    // Update each epciScenario with fresh rates, preserving user-applied reduction ratios
+    await Promise.all(
+      epciCodes.map((epciCode) => {
+        const fresh = freshRates[epciCode]
+        const originalRaw = originalRawRates[epciCode]
+        const originalEpci = original.scenario.epciScenarios.find((e) => e.epciCode === epciCode)
+
+        if (!fresh || !originalRaw || !originalEpci) return Promise.resolve()
+
+        const ratio = (stored: number, raw: number) => (raw > 0 ? stored / raw : 1)
+
+        return this.prismaService.ePCIScenario.updateMany({
+          where: { scenarioId: clonedSimulation.scenarioId, epciCode },
+          data: {
+            b2_tx_rs: fresh.txRs * ratio(originalEpci.b2_tx_rs, originalRaw.txRs),
+            b2_tx_vacance: fresh.vacancyRate * ratio(originalEpci.b2_tx_vacance, originalRaw.vacancyRate),
+            b2_tx_vacance_longue: fresh.longTermVacancyRate * ratio(originalEpci.b2_tx_vacance_longue, originalRaw.longTermVacancyRate),
+            b2_tx_vacance_courte: fresh.shortTermVacancyRate * ratio(originalEpci.b2_tx_vacance_courte, originalRaw.shortTermVacancyRate),
+            b2_tx_restructuration: fresh.restructuringRate * ratio(originalEpci.b2_tx_restructuration, originalRaw.restructuringRate),
+            b2_tx_disparition: fresh.disappearanceRate * ratio(originalEpci.b2_tx_disparition, originalRaw.disappearanceRate),
+          },
+        })
+      }),
+    )
+
     return cloned
   }
 

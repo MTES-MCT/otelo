@@ -13,7 +13,7 @@
     "build": "next build",
     "start": "node .next/standalone/apps/web/server.js",
     "lint": "biome check src",
-    "lint:format": "biome check src --fix"
+    "lint:fix": "biome format src --fix && biome check --write src"
   },
   "dependencies": {
     "@codegouvfr/react-dsfr": "1.31.0",

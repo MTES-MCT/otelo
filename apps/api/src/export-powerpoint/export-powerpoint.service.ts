@@ -214,7 +214,7 @@ export class ExportPowerpointService {
     const millesime = commonData.privilegedScenario.scenario.millesime
     const data = await this.demographicEvolutionService.getDemographicEvolutionPopulationAndYear(epcis, millesime)
     const evolutionData = data.tableData[epciCode]?.annualEvolution
-    const demographicData = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCode, undefined, millesime)
+    const demographicData = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCode, millesime)
     const chartData = demographicData[epciCode]
 
     return {
@@ -248,9 +248,21 @@ export class ExportPowerpointService {
     const epciCode = commonData.data.epci.code
     const epcis = commonData.epcis.filter((epci) => epci.code === epciCode)
     const millesime = commonData.privilegedScenario.scenario.millesime
-    const hauteDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(epcis, 'haute', millesime)
-    const basseDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(epcis, 'basse', millesime)
-    const centralDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(epcis, 'central', millesime)
+    const hauteDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(
+      epcis,
+      millesime,
+      'haute',
+    )
+    const basseDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(
+      epcis,
+      millesime,
+      'basse',
+    )
+    const centralDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(
+      epcis,
+      millesime,
+      'central',
+    )
 
     const centralData = centralDemographicEvolution.tableData[epciCode]
     const hauteData = hauteDemographicEvolution.tableData[epciCode]
@@ -403,7 +415,10 @@ export class ExportPowerpointService {
     const othersSimulations = simulations.filter((sim) => sim.id !== privilegedScenario.id)
     const [firstSimulation, lastSimulation] = othersSimulations
 
-    const demographicData = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCode, undefined, commonData.privilegedScenario.scenario.millesime)
+    const demographicData = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(
+      epciCode,
+      commonData.privilegedScenario.scenario.millesime,
+    )
 
     const [sim1Data, sim2Data, sim3Data] = await Promise.all([
       processSimulation(firstSimulation, epciCode),
@@ -805,7 +820,7 @@ export class ExportPowerpointService {
   private async calculateSlide23Data(commonData: CommonSlideData) {
     const epciCode = commonData.data.epci.code
     const epcis = commonData.epcis.filter((epci) => epci.code === epciCode)
-    const data = await this.rpInseeService.getRP(epcis, 'vacant', commonData.privilegedScenario.scenario.millesime)
+    const data = await this.rpInseeService.getRP(epcis, 'vacant')
 
     return {
       text: { ...commonData.baseLayout },

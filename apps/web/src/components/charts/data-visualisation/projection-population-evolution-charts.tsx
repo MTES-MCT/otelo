@@ -7,6 +7,7 @@ import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { DATA_TYPE_OPTIONS } from '~/components/data-visualisation/select-data-type'
+import { SelectMillesime } from '~/components/data-visualisation/select-millesime'
 import { TDemographicProjectionEvolution } from '~/schemas/population-evolution'
 import { formatNumber } from '~/utils/format-numbers'
 
@@ -120,9 +121,15 @@ export const ProjectionPopulationEvolutionChart: FC<ProjectionPopulationEvolutio
 
   return (
     <>
-      <h2 className={fr.cx('fr-h5')}>
-        {title} - {epciName}
-      </h2>
+      <div className="fr-flex fr-justify-content-space-between">
+        <h2 className={fr.cx('fr-h5')}>
+          {title} - {epciName}
+        </h2>
+        <div className="fr-flex fr-justify-content-end fr-mb-8w">
+          <SelectMillesime />
+        </div>
+      </div>
+
       <div className={classes.chartsContainer}>
         <div className={classes.chartContainer}>
           <ResponsiveContainer width="100%" height="100%">

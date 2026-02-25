@@ -12,16 +12,16 @@ export class DemographicEvolutionController {
     roles: [Role.ADMIN, Role.USER],
   })
   @Get('/omphale')
-  async getDemographicEvolution(@Query() { epciCodes }: TGetDemographicEvolutionByEpciQuery) {
-    return this.demographicEvolutionService.getDemographicEvolution(epciCodes)
+  async getDemographicEvolution(@Query() { epciCodes, millesime }: TGetDemographicEvolutionByEpciQuery) {
+    return this.demographicEvolutionService.getDemographicEvolution(epciCodes, millesime)
   }
 
   @AccessControl({
     roles: [Role.ADMIN, Role.USER],
   })
   @Get('/population')
-  async getPopulationDemographicEvolution(@Query() { epciCodes }: TGetDemographicEvolutionByEpciQuery) {
-    return this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCodes)
+  async getPopulationDemographicEvolution(@Query() { epciCodes, millesime }: TGetDemographicEvolutionByEpciQuery) {
+    return this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCodes, millesime)
   }
 
   @AccessControl({

@@ -17,7 +17,6 @@ export class HostedService {
       this.prismaService.hostedSne.findFirst({
         where: {
           epciCode,
-          ...(millesime && { millesime }),
         },
       }),
     ])

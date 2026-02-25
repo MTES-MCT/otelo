@@ -68,6 +68,8 @@ export class DemographicEvolutionCustomService {
     return results[0]
   }
 
+  // todo - voir avec Luc pour ce truc là
+
   /**
    * Recalibrate values to 2021
    * @param sqlCondition

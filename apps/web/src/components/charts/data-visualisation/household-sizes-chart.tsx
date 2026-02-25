@@ -1,4 +1,3 @@
-import { fr } from '@codegouvfr/react-dsfr'
 import Select from '@codegouvfr/react-dsfr/Select'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
@@ -8,9 +7,9 @@ import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { DATA_TYPE_OPTIONS } from '~/components/data-visualisation/select-data-type'
+import { SelectMillesime } from '~/components/data-visualisation/select-millesime'
 import { THouseholdSizesChart } from '~/schemas/household-sizes'
 import { formatNumber } from '~/utils/format-numbers'
-import styles from './projection-menages-evolution-charts.module.css'
 
 export const HOUSEHOLD_SIZES_TYPE_OPTIONS = [
   { label: 'Population haute', value: 'haute' },
@@ -142,23 +141,26 @@ export const HouseholdSizesChart: FC<HouseholdSizesChartProps> = ({ data: chartD
 
   return (
     <>
-      <div className={styles.headerContainer}>
-        <h2 className={fr.cx('fr-h5')}>
+      <div className="fr-flex fr-justify-content-space-between">
+        <h2 className="fr-h5">
           {title} - {epciName}
         </h2>
-        <Select
-          label=""
-          nativeSelectProps={{
-            onChange: (event) => setQueryStates({ populationType: event.target.value }),
-            value: queryStates.populationType || '',
-          }}
-        >
-          {HOUSEHOLD_SIZES_TYPE_OPTIONS.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </Select>
+        <div className="fr-flex fr-flex-gap-4v fr-mb-4w">
+          <SelectMillesime />
+          <Select
+            label=""
+            nativeSelectProps={{
+              onChange: (event) => setQueryStates({ populationType: event.target.value }),
+              value: queryStates.populationType || '',
+            }}
+          >
+            {HOUSEHOLD_SIZES_TYPE_OPTIONS.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </Select>
+        </div>
       </div>
       <div className={classes.chartContainer}>
         <ResponsiveContainer width="100%" height="100%">

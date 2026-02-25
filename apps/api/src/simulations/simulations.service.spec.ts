@@ -1,5 +1,6 @@
 import { createMock, type DeepMocked } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
+import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
 import { ScenariosService } from '~/scenarios/scenarios.service'
@@ -21,6 +22,7 @@ describe('SimulationsService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: ScenariosService, useValue: mockScenariosService },
         { provide: EpciGroupsService, useValue: createMock<EpciGroupsService>() },
+        { provide: AccommodationRatesService, useValue: createMock<AccommodationRatesService>() },
       ],
     }).compile()
 

@@ -20,13 +20,15 @@ export const SelectDataType: FC = () => {
   const [queryStates, setQueryStates] = useQueryStates({
     type: parseAsString,
     source: parseAsString.withDefault('rp'),
+    millesime: parseAsString,
   })
 
   return (
     <Select
       label="Choix du type de données à visualiser"
+      className="fr-mb-0"
       nativeSelectProps={{
-        onChange: (event) => setQueryStates({ type: event.target.value, source: null }),
+        onChange: (event) => setQueryStates({ type: event.target.value, source: null, millesime: null }),
         value: queryStates.type || '',
       }}
     >

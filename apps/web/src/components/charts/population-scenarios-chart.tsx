@@ -4,7 +4,7 @@ import Badge from '@codegouvfr/react-dsfr/Badge'
 import Button from '@codegouvfr/react-dsfr/Button'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import classNames from 'classnames'
-import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
+import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { tss } from 'tss-react'
@@ -47,6 +47,7 @@ const SCENARIOS = [
 export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ demographicEvolution, epcis }) => {
   const { classes } = useStyles()
   const [queryStates, setQueryStates] = useQueryStates({
+    millesime: parseAsInteger,
     population: parseAsString,
     projection: parseAsString,
     scenario: parseAsString,
@@ -80,8 +81,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
       : scenario.stroke,
     strokeWidth: queryStates.population && scenario.queryValue === queryStates.population ? 2 : 1,
   }))
-
-  const basePopulation = data.find((item) => item.year === 2021) as TPopulationEvolution
+  const basePopulation = data.find((item) => item.year === queryStates.millesime) as TPopulationEvolution
   const popEvolution = data.find((item) => item.year === Number(period)) as TPopulationEvolution
 
   const evol =

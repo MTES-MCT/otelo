@@ -1,6 +1,6 @@
 generator client {
-  provider     = "prisma-client"
-  output = "../src/generated/prisma"
+  provider   = "prisma-client"
+  output     = "../src/generated/prisma"
   engineType = "client"
 }
 
@@ -10,7 +10,7 @@ generator json {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model DataPackVersion {
@@ -21,25 +21,12 @@ model DataPackVersion {
 
   scenarios                      Scenario[]
   badQualityFilocom              BadQuality_Filocom[]
-  badQualityRP                   BadQuality_RP[]
-  badQualityFonciers             BadQuality_Fonciers[]
-  physicalInadequationRP         PhysicalInadequation_RP[]
   physicalInadequationFilo       PhysicalInadequation_Filo[]
-  financialInadequation          FinancialInadequation[]
   filocomFlux                    FilocomFlux[]
   hostedFilocom                  HostedFilocom[]
-  hostedFiness                   HostedFiness[]
-  hostedSne                      HostedSne[]
-  hotel                          Hotel[]
-  makeshiftHousingRP             MakeShiftHousing_RP[]
-  makeshiftHousingSNE            MakeShiftHousing_SNE[]
-  homeless                       Homeless[]
-  rp                             RP[]
-  sitadel                        Sitadel[]
   demographicEvolutionOmphale    DemographicEvolutionOmphale[]
   demographicEvolutionPopulation DemographicEvolutionPopulation[]
   householdSizes                 HouseholdSizes[]
-  vacancyAccommodation           VacancyAccommodation[]
 
   @@map("data_pack_versions")
 }
@@ -102,16 +89,16 @@ model Account {
 }
 
 model Session {
-  id             String    @id @default(uuid())
-  expiresAt      DateTime  @map("expires_at")
-  token          String    @unique
-  ipAddress      String?   @map("ip_address")
-  userAgent      String?   @map("user_agent")
-  userId         String    @map("user_id")
-  impersonatedBy String?   @map("impersonated_by")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id @default(uuid())
+  expiresAt      DateTime @map("expires_at")
+  token          String   @unique
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  userId         String   @map("user_id")
+  impersonatedBy String?  @map("impersonated_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -122,7 +109,7 @@ model Verification {
   value      String
   expiresAt  DateTime @map("expires_at")
   createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at") 
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("verifications")
 }
@@ -137,7 +124,6 @@ model Export {
 
   @@map("exports")
 }
-
 
 model ApiConsumer {
   id           String       @id @default(uuid())
@@ -193,7 +179,7 @@ model Scenario {
   demographicEvolutionOmphaleCustom DemographicEvolutionOmphaleCustom[]
   epciScenarios                     EPCIScenario[]
   user                              User?                               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  apiConsumer                       ApiConsumer?                         @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
+  apiConsumer                       ApiConsumer?                        @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
   dataPackVersion                   DataPackVersion                     @relation(fields: [millesime], references: [millesime])
   simulations                       Simulation[]
 
@@ -265,24 +251,24 @@ model Epci {
 }
 
 model Simulation {
-  id                        String                     @id @default(uuid())
-  name                      String
-  createdAt                 DateTime                   @default(now()) @map("created_at")
-  updatedAt                 DateTime                   @updatedAt @map("updated_at")
-  userId                    String?                    @map("user_id")
-  apiConsumerId             String?                    @map("api_consumer_id")
-  scenarioId                String                     @map("scenario_id")
-  epciGroupId               String?                    @map("epci_group_id")
-  exports                   Export[]
-  simulationResults         SimulationResults[]
-  simulationResultsHistory  SimulationResultsHistory[]
-  epciGroup                 EpciGroup?                 @relation(fields: [epciGroupId], references: [id])
-  scenario                  Scenario                   @relation(fields: [scenarioId], references: [id])
-  user                      User?                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  apiConsumer               ApiConsumer?               @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
-  epcis                     Epci[]                     @relation("EpciToSimulation")
+  id                       String                     @id @default(uuid())
+  name                     String
+  createdAt                DateTime                   @default(now()) @map("created_at")
+  updatedAt                DateTime                   @updatedAt @map("updated_at")
+  userId                   String?                    @map("user_id")
+  apiConsumerId            String?                    @map("api_consumer_id")
+  scenarioId               String                     @map("scenario_id")
+  epciGroupId              String?                    @map("epci_group_id")
+  exports                  Export[]
+  simulationResults        SimulationResults[]
+  simulationResultsHistory SimulationResultsHistory[]
+  epciGroup                EpciGroup?                 @relation(fields: [epciGroupId], references: [id])
+  scenario                 Scenario                   @relation(fields: [scenarioId], references: [id])
+  user                     User?                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiConsumer              ApiConsumer?               @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
+  epcis                    Epci[]                     @relation("EpciToSimulation")
 
-  deleted                   DateTime?
+  deleted DateTime?
 
   @@map("simulations")
 }
@@ -324,19 +310,19 @@ model DemographicEvolutionPopulation {
 }
 
 model PhysicalInadequation_Filo {
-  suroccLeg      Int             @map("surocc_leg")
-  suroccLegPo    Int             @map("surocc_leg_po")
-  suroccLegLp    Int             @map("surocc_leg_lp")
-  suroccLegLh    Int             @map("surocc_leg_lh")
-  suroccLegAu    Int             @map("surocc_leg_au")
-  suroccLourde   Int             @map("surocc_lourde")
-  suroccLourdePo Int             @map("surocc_lourde_po")
-  suroccLourdeLp Int             @map("surocc_lourde_lp")
-  suroccLourdeLh Int             @map("surocc_lourde_lh")
-  suroccLourdeAu Int             @map("surocc_lourde_au")
-  epciCode       String          @map("epci_code")
-  millesime      String          @default("2021")
-  epci           Epci            @relation(fields: [epciCode], references: [code])
+  suroccLeg       Int             @map("surocc_leg")
+  suroccLegPo     Int             @map("surocc_leg_po")
+  suroccLegLp     Int             @map("surocc_leg_lp")
+  suroccLegLh     Int             @map("surocc_leg_lh")
+  suroccLegAu     Int             @map("surocc_leg_au")
+  suroccLourde    Int             @map("surocc_lourde")
+  suroccLourdePo  Int             @map("surocc_lourde_po")
+  suroccLourdeLp  Int             @map("surocc_lourde_lp")
+  suroccLourdeLh  Int             @map("surocc_lourde_lh")
+  suroccLourdeAu  Int             @map("surocc_lourde_au")
+  epciCode        String          @map("epci_code")
+  millesime       String          @default("2021")
+  epci            Epci            @relation(fields: [epciCode], references: [code])
   dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
 
   @@id([epciCode, millesime])
@@ -344,32 +330,29 @@ model PhysicalInadequation_Filo {
 }
 
 model PhysicalInadequation_RP {
-  nbMenAccLocHlm         Float           @map("nb_men_acc_loc_hlm")
-  nbMenAccLocMeuble      Float           @map("nb_men_acc_loc_meuble")
-  nbMenAccLocNonHLM      Float           @map("nb_men_acc_loc_non_hlm")
-  nbMenAccLogeGratuit    Float           @map("nb_men_acc_loge_gratuit")
-  nbMenAccPpt            Float           @map("nb_men_acc_ppt")
-  nbMenModLocHlm         Float           @map("nb_men_mod_loc_hlm")
-  nbMenModLocMeuble      Float           @map("nb_men_mod_loc_meuble")
-  nbMenModLocNonHLM      Float           @map("nb_men_mod_loc_non_hlm")
-  nbMenModLogeGratuit    Float           @map("nb_men_mod_loge_gratuit")
-  nbMenModPpt            Float           @map("nb_men_mod_ppt")
-  nbMenNormLocHlm        Float           @map("nb_men_norm_loc_hlm")
-  nbMenNormLocMeuble     Float           @map("nb_men_norm_loc_meuble")
-  nbMenNormLocNonHLM     Float           @map("nb_men_norm_loc_non_hlm")
-  nbMenNormLogeGratuit   Float           @map("nb_men_norm_loge_gratuit")
-  nbMenNormPpt           Float           @map("nb_men_norm_ppt")
-  nbMenStudioLocHlm      Float           @map("nb_men_studio_loc_hlm")
-  nbMenStudioLocMeuble   Float           @map("nb_men_studio_loc_meuble")
-  nbMenStudioLocNonHLM   Float           @map("nb_men_studio_loc_non_hlm")
-  nbMenStudioLogeGratuit Float           @map("nb_men_studio_loge_gratuit")
-  nbMenStudioPpt         Float           @map("nb_men_studio_ppt")
-  epciCode               String          @map("epci_code")
-  millesime              String          @default("2021")
-  epci                   Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion        DataPackVersion @relation(fields: [millesime], references: [millesime])
+  nbMenAccLocHlm         Float  @map("nb_men_acc_loc_hlm")
+  nbMenAccLocMeuble      Float  @map("nb_men_acc_loc_meuble")
+  nbMenAccLocNonHLM      Float  @map("nb_men_acc_loc_non_hlm")
+  nbMenAccLogeGratuit    Float  @map("nb_men_acc_loge_gratuit")
+  nbMenAccPpt            Float  @map("nb_men_acc_ppt")
+  nbMenModLocHlm         Float  @map("nb_men_mod_loc_hlm")
+  nbMenModLocMeuble      Float  @map("nb_men_mod_loc_meuble")
+  nbMenModLocNonHLM      Float  @map("nb_men_mod_loc_non_hlm")
+  nbMenModLogeGratuit    Float  @map("nb_men_mod_loge_gratuit")
+  nbMenModPpt            Float  @map("nb_men_mod_ppt")
+  nbMenNormLocHlm        Float  @map("nb_men_norm_loc_hlm")
+  nbMenNormLocMeuble     Float  @map("nb_men_norm_loc_meuble")
+  nbMenNormLocNonHLM     Float  @map("nb_men_norm_loc_non_hlm")
+  nbMenNormLogeGratuit   Float  @map("nb_men_norm_loge_gratuit")
+  nbMenNormPpt           Float  @map("nb_men_norm_ppt")
+  nbMenStudioLocHlm      Float  @map("nb_men_studio_loc_hlm")
+  nbMenStudioLocMeuble   Float  @map("nb_men_studio_loc_meuble")
+  nbMenStudioLocNonHLM   Float  @map("nb_men_studio_loc_non_hlm")
+  nbMenStudioLogeGratuit Float  @map("nb_men_studio_loge_gratuit")
+  nbMenStudioPpt         Float  @map("nb_men_studio_ppt")
+  epciCode               String @id @map("epci_code")
+  epci                   Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("physical_inadequation_rp")
 }
 
@@ -416,12 +399,9 @@ model FinancialInadequation {
   nbAllPlus38AccessionPropriete Float  @map("nb_all_plus38_accession_propriete")
   nbAllPlus39AccessionPropriete Float  @map("nb_all_plus39_accession_propriete")
   nbAllPlus40AccessionPropriete Float  @map("nb_all_plus40_accession_propriete")
-  epciCode                      String          @map("epci_code")
-  millesime                     String          @default("2021")
-  epci                          Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion               DataPackVersion @relation(fields: [millesime], references: [millesime])
+  epciCode                      String @id @map("epci_code")
+  epci                          Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("financial_inadequation")
 }
 
@@ -437,80 +417,62 @@ model HostedFilocom {
 }
 
 model HostedFiness {
-  autreCentre      Int             @map("autre_centre")
-  demandeAsile     Int             @map("demande_asile")
-  reinsertion      Int             @map("reinsertion")
-  centreProvisoire Int             @map("centre_provisoire")
-  jeuneTravailleur Int             @map("jeune_travailleur")
-  foyerMigrants    Int             @map("foyer_migrants")
-  malade           Int             @map("malade")
-  maisonRelai      Int             @map("maison_relai")
-  horsMaisonRelai  Int             @map("hors_maison_relai")
-  epciCode         String          @map("epci_code")
-  millesime        String          @default("2021")
-  epci             Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion  DataPackVersion @relation(fields: [millesime], references: [millesime])
+  autreCentre      Int    @map("autre_centre")
+  demandeAsile     Int    @map("demande_asile")
+  reinsertion      Int    @map("reinsertion")
+  centreProvisoire Int    @map("centre_provisoire")
+  jeuneTravailleur Int    @map("jeune_travailleur")
+  foyerMigrants    Int    @map("foyer_migrants")
+  malade           Int    @map("malade")
+  maisonRelai      Int    @map("maison_relai")
+  horsMaisonRelai  Int    @map("hors_maison_relai")
+  epciCode         String @id @map("epci_code")
+  epci             Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("hosted_finess")
 }
 
 model HostedSne {
-  particular      Int
-  temporary       Int
-  epciCode        String          @map("epci_code")
-  millesime       String          @default("2021")
-  epci            Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+  particular Int
+  temporary  Int
+  epciCode   String @id @map("epci_code")
+  epci       Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("hosted_sne")
 }
 
 model Hotel {
-  rp              Int
-  sne             Int
-  epciCode        String          @map("epci_code")
-  millesime       String          @default("2021")
-  epci            Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+  rp       Int
+  sne      Int
+  epciCode String @id @map("epci_code")
+  epci     Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("hotel")
 }
 
 model MakeShiftHousing_RP {
-  value           Float
-  epciCode        String          @map("epci_code")
-  millesime       String          @default("2021")
-  epci            Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+  value    Float
+  epciCode String @id @map("epci_code")
+  epci     Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("makeshift_housing_rp")
 }
 
 model MakeShiftHousing_SNE {
-  camping         Int
-  squat           Int
-  epciCode        String          @map("epci_code")
-  millesime       String          @default("2021")
-  epci            Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+  camping  Int
+  squat    Int
+  epciCode String @id @map("epci_code")
+  epci     Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("makeshift_housing_sne")
 }
 
 model Homeless {
-  rp              Float
-  sne             Float
-  epciCode        String          @map("epci_code")
-  millesime       String          @default("2021")
-  epci            Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+  rp       Float
+  sne      Float
+  epciCode String @id @map("epci_code")
+  epci     Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("homeless")
 }
 
@@ -527,16 +489,13 @@ model BadQuality_Filocom {
 }
 
 model BadQuality_RP {
-  saniLocNonhlm     Int             @map("sani_loc_nonhlm")
-  saniPpT           Int             @map("sani_ppt")
-  saniChflLocNonhlm Int             @map("sani_chfl_loc_nonhlm")
-  saniChflPpT       Int             @map("sani_chfl_ppt")
-  epciCode          String          @map("epci_code")
-  millesime         String          @default("2021")
-  epci              Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion   DataPackVersion @relation(fields: [millesime], references: [millesime])
+  saniLocNonhlm     Int    @map("sani_loc_nonhlm")
+  saniPpT           Int    @map("sani_ppt")
+  saniChflLocNonhlm Int    @map("sani_chfl_loc_nonhlm")
+  saniChflPpT       Int    @map("sani_chfl_ppt")
+  epciCode          String @id @map("epci_code")
+  epci              Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("bad_quality_rp")
 }
 
@@ -604,12 +563,9 @@ model BadQuality_Fonciers {
   ppSsQualiEnt3eltsLoc     Int    @map("pp_ss_quali_ent_3elts_loc")
   ppSsQualiEnt3eltsPpt     Int    @map("pp_ss_quali_ent_3elts_ppt")
   ppSsQualiEnt3eltsAu      Int    @map("pp_ss_quali_ent_3elts_au")
-  epciCode                 String          @map("epci_code")
-  millesime                String          @default("2021")
-  epci                     Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion          DataPackVersion @relation(fields: [millesime], references: [millesime])
+  epciCode                 String @id @map("epci_code")
+  epci                     Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, millesime])
   @@map("bad_quality_fonciers")
 }
 
@@ -630,35 +586,29 @@ model FilocomFlux {
 }
 
 model VacancyAccommodation {
-  epciCode        String          @map("epci_code")
-  nbLogVac2Less   Int             @map("nb_log_vac_2less")
-  nbLogVac2More   Int             @map("nb_log_vac_2more")
-  nbLogVac5More   Int             @map("nb_log_vac_5more")
-  nbTotal         Int             @map("nb_total")
-  propLogVac2Less Float           @map("prop_log_vac_2less")
-  propLogVac2More Float           @map("prop_log_vac_2more")
-  propLogVac5More Float           @map("prop_log_vac_5more")
+  epciCode        String @map("epci_code")
+  nbLogVac2Less   Int    @map("nb_log_vac_2less")
+  nbLogVac2More   Int    @map("nb_log_vac_2more")
+  nbLogVac5More   Int    @map("nb_log_vac_5more")
+  nbTotal         Int    @map("nb_total")
+  propLogVac2Less Float  @map("prop_log_vac_2less")
+  propLogVac2More Float  @map("prop_log_vac_2more")
+  propLogVac5More Float  @map("prop_log_vac_5more")
   year            Int
-  millesime       String          @default("2021")
-  epci            Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+  epci            Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, year, millesime])
-  @@index([millesime])
+  @@id([epciCode, year])
   @@map("vacancy_accommodation")
 }
 
 model Sitadel {
   year                   Int
-  epciCode               String          @map("epci_code")
-  startedHousingCount    Int             @map("started_housing_count")
-  authorizedHousingCount Int             @map("authorized_housing_count")
-  millesime              String          @default("2021")
-  epci                   Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion        DataPackVersion @relation(fields: [millesime], references: [millesime])
+  epciCode               String @map("epci_code")
+  startedHousingCount    Int    @map("started_housing_count")
+  authorizedHousingCount Int    @map("authorized_housing_count")
+  epci                   Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, year, millesime])
-  @@index([millesime])
+  @@id([epciCode, year])
   @@map("sitadel")
 }
 
@@ -667,16 +617,13 @@ model RP {
   menage                 Float
   population             Float
   vacant                 Float
-  principalAccommodation Float           @map("principal_accommodation")
-  secondaryAccommodation Float           @map("secondary_accommodation")
-  totalAccommodation     Float           @map("total_accommodation")
-  epciCode               String          @map("epci_code")
-  millesime              String          @default("2021")
-  epci                   Epci            @relation(fields: [epciCode], references: [code])
-  dataPackVersion        DataPackVersion @relation(fields: [millesime], references: [millesime])
+  principalAccommodation Float  @map("principal_accommodation")
+  secondaryAccommodation Float  @map("secondary_accommodation")
+  totalAccommodation     Float  @map("total_accommodation")
+  epciCode               String @map("epci_code")
+  epci                   Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, year, millesime])
-  @@index([millesime])
+  @@id([epciCode, year])
   @@map("rp")
 }
 
@@ -691,8 +638,8 @@ model EPCIContiguity {
 }
 
 model EPCINeighbor {
-  epciCode         String          @map("epci_code")
-  neighborEpciCode String          @map("neighbor_epci_code")
+  epciCode         String           @map("epci_code")
+  neighborEpciCode String           @map("neighbor_epci_code")
   category         NeighborCategory
   rank             Int
   score            Float
@@ -755,44 +702,43 @@ model DemographicEvolutionOmphaleCustom {
   @@map("demographic_evolution_omphale_custom")
 }
 
-
 model SimulationResults {
-  id                     String     @id @default(uuid())
-  epciCode               String     @map("epci_code")
-  simulationId           String     @map("simulation_id")
+  id           String @id @default(uuid())
+  epciCode     String @map("epci_code")
+  simulationId String @map("simulation_id")
 
   // Existing scalar totals
-  totalFlux              Int        @default(0)
-  totalStock             Int        @default(0)
-  vacantAccomodation     Int        @default(0)
+  totalFlux          Int @default(0)
+  totalStock         Int @default(0)
+  vacantAccomodation Int @default(0)
 
   // Aggregated EPCI totals
-  total                  Int        @default(0)
-  prepeakTotalStock      Int        @default(0) @map("prepeak_total_stock")
-  postpeakTotalStock     Int        @default(0) @map("postpeak_total_stock")
-  secondaryAccommodation Int        @default(0) @map("secondary_accommodation")
+  total                  Int @default(0)
+  prepeakTotalStock      Int @default(0) @map("prepeak_total_stock")
+  postpeakTotalStock     Int @default(0) @map("postpeak_total_stock")
+  secondaryAccommodation Int @default(0) @map("secondary_accommodation")
 
   // Stock metrics B11-B15 per EPCI (JSON: { value, prorataValue })
-  noAccomodation         Json?      @map("no_accomodation")
-  hosted                 Json?
-  financialInadequation  Json?      @map("financial_inadequation")
-  badQuality             Json?      @map("bad_quality")
-  physicalInadequation   Json?      @map("physical_inadequation")
+  noAccomodation        Json? @map("no_accomodation")
+  hosted                Json?
+  financialInadequation Json? @map("financial_inadequation")
+  badQuality            Json? @map("bad_quality")
+  physicalInadequation  Json? @map("physical_inadequation")
 
   // Flow totals per EPCI (JSON: { demographicEvolution, renewalNeeds, ... })
-  flowTotals             Json?      @map("flow_totals")
+  flowTotals Json? @map("flow_totals")
 
   // Flow data by year per EPCI (JSON: { parcEvolution, housingNeeds, surplusHousing, peakYear })
-  flowDataByYear         Json?      @map("flow_data_by_year")
+  flowDataByYear Json? @map("flow_data_by_year")
 
   // Sitadel data per EPCI (JSON: [{ year, authorizedHousingCount, startedHousingCount }])
-  sitadelData            Json?      @map("sitadel_data")
+  sitadelData Json? @map("sitadel_data")
 
   // Calculation timestamp
-  calculatedAt           DateTime   @default(now()) @map("calculated_at")
+  calculatedAt DateTime @default(now()) @map("calculated_at")
 
-  epci                   Epci       @relation(fields: [epciCode], references: [code])
-  simulation             Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  epci       Epci       @relation(fields: [epciCode], references: [code])
+  simulation Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
 
   @@unique([epciCode, simulationId])
   @@map("simulation_results")
