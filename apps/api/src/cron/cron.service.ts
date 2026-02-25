@@ -72,13 +72,14 @@ export class CronService {
 
   @Cron(CronExpression.EVERY_12_HOURS)
   async handleUserAccessUpdate() {
-    this.logger.log('Starting user access update CRON job')
-
-    try {
-      await this.processAllDossiers()
-      this.logger.log('User access update CRON job completed successfully')
-    } catch (error) {
-      this.logger.error('Error in user access update CRON job:', error)
+    if (process.env.NODE_ENV === 'production') {
+      this.logger.log('Starting user access update CRON job')
+      try {
+        await this.processAllDossiers()
+        this.logger.log('User access update CRON job completed successfully')
+      } catch (error) {
+        this.logger.error('Error in user access update CRON job:', error)
+      }
     }
   }
 
