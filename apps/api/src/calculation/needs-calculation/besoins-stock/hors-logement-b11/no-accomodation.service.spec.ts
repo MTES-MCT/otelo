@@ -135,7 +135,7 @@ describe('NoAccomodationService', () => {
       expect(result).toBe(150)
     })
 
-    it('should return 0 when hostedFiness throws', async () => {
+    it('should skip finess and return base result when hostedFiness throws', async () => {
       prisma.homeless.findFirstOrThrow = jest.fn().mockResolvedValue({ rp: 100, sne: 120 } as any)
       prisma.hotel.findFirstOrThrow = jest.fn().mockResolvedValue({ rp: 200, sne: 250 } as any)
       prisma.makeShiftHousing_RP.findFirstOrThrow = jest.fn().mockResolvedValue({ value: 50 } as any)
@@ -146,7 +146,8 @@ describe('NoAccomodationService', () => {
         scenario: makeScenario({ source_b11: ESourceB11.RP, b11_sa: true, b11_fortune: true, b11_hotel: true }),
       })
       const result = await service.calculateByEpci(simulation, '200000001')
-      expect(result).toBe(0)
+      // sans_abri(100) + fortune(50) + hotel(200) = 350
+      expect(result).toBe(350)
     })
   })
 
