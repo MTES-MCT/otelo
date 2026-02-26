@@ -112,10 +112,9 @@ export class NoAccomodationService extends BaseCalculator {
       const establishmentResult = scenario.b11_etablissement.reduce((sum, etab) => sum + hostedFiness[etab], 0)
 
       const totalResult = result + Math.round(establishmentResult * (scenario.b11_part_etablissement / 100.0))
-
       return this.applyCoefficient(totalResult)
     } catch {
-      return 0
+      return this.applyCoefficient(result)
     }
   }
 }
