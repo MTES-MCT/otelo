@@ -1,4 +1,5 @@
 import { FC } from 'react'
+import { YearData } from '~/components/table/projection-menages-evolution-table'
 import {
   TDemographicMaxYearsByEpci,
   TDemographicProjectionDataTable,
@@ -96,7 +97,7 @@ export const ProjectionPopulationEvolutionTable: FC<ProjectionPopulationEvolutio
                     </td>
                   )}
                   <td className={styles.scenarioCell}>{scenario.name}</td>
-                  <td className={styles.dataCell}>{formatNumber(territoryData[baseYear]?.[scenario.key])}</td>
+                  <td className={styles.dataCell}>{formatNumber((territoryData[baseYear] as YearData)?.[scenario.key])}</td>
                   <td className={styles.dataCell}>{formatNumber(territoryData['2030']?.[scenario.key])}</td>
                   <td className={styles.dataCell}>{formatNumber(territoryData['2040']?.[scenario.key])}</td>
                   <td className={styles.dataCell}>{formatNumber(territoryData['2050']?.[scenario.key])}</td>
