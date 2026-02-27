@@ -34,7 +34,6 @@ export class BadQualityService extends BaseCalculator {
   async calculateByEpci(simulation: TSimulationWithEpciAndScenario, epciCode: string): Promise<number> {
     const { scenario } = simulation
     const { b14_confort, b14_occupation, b14_qualite, b14_taux_reallocation, source_b14 } = scenario
-    console.log('source_b14', source_b14, b14_occupation)
     const sourceCalculators = {
       FF: async () => {
         const getColumnPrefix = () => {
@@ -74,7 +73,14 @@ export class BadQualityService extends BaseCalculator {
       },
       Filo: async () => {
         const filoData = await this.getFilocomBadQuality(epciCode)
-        return (filoData.pppiLp || 0) + (filoData.pppiPo || 0)
+        let sum = 0
+        if (b14_occupation.includes('loc')) {
+          sum += filoData.pppiLp || 0
+        }
+        if (b14_occupation.includes('prop')) {
+          sum += filoData.pppiPo || 0
+        }
+        return sum
       },
       RP: async () => {
         const badQuality = await this.getRPBadQuality(epciCode)

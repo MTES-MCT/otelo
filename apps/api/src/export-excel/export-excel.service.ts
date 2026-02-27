@@ -793,8 +793,16 @@ export class ExportExcelService {
     const epciTotals = results.epcisTotals.find((epci) => epci.epciCode === epciScenario.epciCode)
     const peakYear = results.flowRequirement.epcis.find((epci) => epci.code === epciScenario.epciCode)?.data.peakYear
 
-    const period = peakYear !== simulation.scenario.projection ? peakYear : simulation.scenario.projection
-    const showTotalColumn = peakYear !== simulation.scenario.projection
+    const isPeakAt2021 = !peakYear || peakYear === 2021
+    let period: number
+    if (isPeakAt2021) {
+      period = simulation.scenario.b1_horizon_resorption
+    } else if (peakYear !== 2050) {
+      period = peakYear
+    } else {
+      period = simulation.scenario.projection
+    }
+    const showTotalColumn = !isPeakAt2021 && peakYear < simulation.scenario.projection
 
     const badHousingSectionConfig: SectionConfig = {
       data: [
@@ -815,7 +823,7 @@ export class ExportExcelService {
           : []),
         {
           cell: 'G15',
-          value: epciTotals?.prepeakTotalStock,
+          value: isPeakAt2021 ? epciTotals?.totalStock : epciTotals?.prepeakTotalStock,
           style: 'importantValue' as CellStyle,
         },
         { cell: 'F16', value: 'Hors logement', style: 'standardBorder' as CellStyle },
@@ -838,7 +846,13 @@ export class ExportExcelService {
     simulation: TSimulationWithEpciAndScenario,
   ): void {
     const peakYear = results.flowRequirement.epcis.find((epci) => epci.code === epciScenario.epciCode)?.data.peakYear
-    const showTotalColumn = peakYear !== simulation.scenario.projection
+    const isPeakAt2021 = !peakYear || peakYear === 2021
+    const { projection, b1_horizon_resorption: horizon } = simulation.scenario
+    const showTotalColumn = !isPeakAt2021 && peakYear < projection
+
+    const baseYear = 2021
+    const horizonDelta = horizon - baseYear
+    const safeDenominator = horizonDelta > 0 ? horizonDelta : 1
 
     const resultCategories = [
       { key: 'noAccomodation', row: 16 },
@@ -851,16 +865,32 @@ export class ExportExcelService {
       const epciData = results[key].epcis.find((epci) => epci.epciCode === epciScenario.epciCode)
 
       if (epciData) {
+        let gValue: number
+        let hValue: number | undefined
+
+        if (showTotalColumn) {
+          const prePeakYears = Math.min(peakYear - baseYear, horizonDelta)
+          const postPeakYears = Math.min(projection - peakYear, Math.max(0, horizonDelta - prePeakYears))
+          const baseValue = projection > peakYear ? epciData.value : epciData.prorataValue
+          const prePeakValue =
+            horizonDelta > 0 ? Math.round((Math.max(prePeakYears, 0) * baseValue) / safeDenominator) : Math.round(baseValue)
+          const postPeakValue = horizonDelta > 0 ? Math.round((Math.max(postPeakYears, 0) * baseValue) / safeDenominator) : 0
+          gValue = prePeakValue
+          hValue = prePeakValue + postPeakValue
+        } else {
+          gValue = epciData.prorataValue
+        }
+
         CellStyleHelper.applyCellConfig(epciWorksheet, {
           cell: `G${row}`,
-          value: epciData.prorataValue,
+          value: gValue,
           style: 'standardBorder',
         })
 
-        if (showTotalColumn) {
+        if (showTotalColumn && hValue !== undefined) {
           CellStyleHelper.applyCellConfig(epciWorksheet, {
             cell: `H${row}`,
-            value: epciData.value,
+            value: hValue,
             style: 'standardBorder',
           })
         }
@@ -938,23 +968,14 @@ export class ExportExcelService {
     const epciRates = rates[epciScenario.epciCode]
 
     // Calculate number of logements for 2021 situation (rows 14-16)
+    const d15Raw = filocomData.parctot * epciRates.shortTermVacancyRate
+    const d16Raw = filocomData.parctot * epciRates.longTermVacancyRate
+
     const config2021: SectionConfig = {
       data: [
-        {
-          cell: 'D14',
-          value: Math.round(filocomData.parctot * epciRates.vacancyRate),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D15',
-          value: Math.round(filocomData.parctot * epciRates.shortTermVacancyRate),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D16',
-          value: Math.round(filocomData.parctot * epciRates.longTermVacancyRate),
-          style: 'standardBorder',
-        },
+        { cell: 'D14', value: Math.round(d15Raw + d16Raw), style: 'standardBorder' },
+        { cell: 'D15', value: Math.round(d15Raw), style: 'standardBorder' },
+        { cell: 'D16', value: Math.round(d16Raw), style: 'standardBorder' },
       ],
     }
 
@@ -966,70 +987,36 @@ export class ExportExcelService {
     const parctotProj = txRpProj > 0 ? rpProj / txRpProj : filocomData.parctot
 
     // Calculate number of logements for projection horizon (rows 19-21)
+    const d20Raw = parctotProj * epciScenario.b2_tx_vacance_courte
+    const d21Raw = parctotProj * epciScenario.b2_tx_vacance_longue
+
     const configHorizon: SectionConfig = {
       data: [
-        {
-          cell: 'D19',
-          value: Math.round(parctotProj * (epciScenario.b2_tx_vacance_courte + epciScenario.b2_tx_vacance_longue)),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D20',
-          value: Math.round(parctotProj * epciScenario.b2_tx_vacance_courte),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D21',
-          value: Math.round(parctotProj * epciScenario.b2_tx_vacance_longue),
-          style: 'standardBorder',
-        },
+        { cell: 'D19', value: Math.round(d20Raw + d21Raw), style: 'standardBorder' },
+        { cell: 'D20', value: Math.round(d20Raw), style: 'standardBorder' },
+        { cell: 'D21', value: Math.round(d21Raw), style: 'standardBorder' },
       ],
     }
 
     // Calculate number of logements for secondary residences (rows 24-26)
+    const d24Raw = filocomData.parctot * epciRates.txRs
+    const d26Raw = parctotProj * epciScenario.b2_tx_rs
+
     const configSecondaryResidences: SectionConfig = {
       data: [
-        {
-          cell: 'D24',
-          value: Math.round(filocomData.parctot * epciRates.txRs),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D25',
-          value: Math.round(filocomData.parctot * (epciRates.txRs - epciScenario.b2_tx_rs)),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D26',
-          value: Math.round(parctotProj * epciScenario.b2_tx_rs),
-          style: 'standardBorder',
-        },
+        { cell: 'D24', value: Math.round(d24Raw), style: 'standardBorder' },
+        { cell: 'D25', value: Math.round(d24Raw - d26Raw), style: 'standardBorder' },
+        { cell: 'D26', value: Math.round(d26Raw), style: 'standardBorder' },
       ],
     }
 
     // Calculate number of logements for urban renewal (rows 29-32)
     const configUrbanRenewal: SectionConfig = {
       data: [
-        {
-          cell: 'D29',
-          value: Math.round(filocomData.parctot * epciRates.restructuringRate),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D30',
-          value: Math.round(filocomData.parctot * epciRates.disappearanceRate),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D31',
-          value: Math.round(filocomData.parctot * epciScenario.b2_tx_restructuration),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D32',
-          value: Math.round(filocomData.parctot * epciScenario.b2_tx_disparition),
-          style: 'standardBorder',
-        },
+        { cell: 'D29', value: Math.round(filocomData.parctot * epciRates.restructuringRate), style: 'standardBorder' },
+        { cell: 'D30', value: Math.round(filocomData.parctot * epciRates.disappearanceRate), style: 'standardBorder' },
+        { cell: 'D31', value: Math.round(filocomData.parctot * epciScenario.b2_tx_restructuration), style: 'standardBorder' },
+        { cell: 'D32', value: Math.round(filocomData.parctot * epciScenario.b2_tx_disparition), style: 'standardBorder' },
       ],
     }
 

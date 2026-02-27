@@ -43,17 +43,24 @@ export class NeedsCalculationService {
         peakYear,
       )
 
-      total += epciTotalFlux + (peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total)
-      totalFlux += epciTotalFlux
-      totalStock += peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total
+      const epciConstructionsNeuves = epciTotalFlux + epciTotalStock.prePeakTotal
+
+      if (epciConstructionsNeuves > 0) {
+        total += epciConstructionsNeuves
+        totalFlux += epciTotalFlux
+        totalStock += epciTotalStock.prePeakTotal
+      }
+
       const epciVacantAccomodation =
         epciFlowRequirement.totals.longTermVacantAccomodation <= 0 ? epciFlowRequirement.totals.longTermVacantAccomodation : 0
 
       const epciSecondaryAccommodation =
         epciFlowRequirement.totals.longTermVacantAccomodation <= 0 ? epciFlowRequirement.totals.secondaryResidenceAccomodationEvolution : 0
 
-      vacantAccomodation += epciVacantAccomodation
-      secondaryAccommodation += epciSecondaryAccommodation
+      if (epciConstructionsNeuves > 0) {
+        vacantAccomodation += epciVacantAccomodation
+        secondaryAccommodation += epciSecondaryAccommodation
+      }
 
       return {
         epciCode: epci.code,
