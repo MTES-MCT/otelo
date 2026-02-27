@@ -11,6 +11,7 @@ import { formatNumber } from '~/utils/format-numbers'
 import styles from './projection-evolution-table.module.css'
 
 type ScenarioKey = 'basse' | 'central' | 'haute'
+export type YearData = Record<ScenarioKey, number>
 
 export type ProjectionMenagesEvolutionTableProps = {
   data: TDemographicProjectionDataTable
@@ -115,7 +116,7 @@ export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTable
                     </td>
                   )}
                   <td className={styles.scenarioCell}>{scenario.name}</td>
-                  <td className={styles.dataCell}>{formatNumber(territoryData[baseYear]?.[scenario.key])}</td>
+                  <td className={styles.dataCell}>{formatNumber((territoryData[baseYear] as YearData)?.[scenario.key])}</td>
                   <td className={styles.dataCell}>{formatNumber(territoryData['2030']?.[scenario.key])}</td>
                   <td className={styles.dataCell}>{formatNumber(territoryData['2040']?.[scenario.key])}</td>
                   <td className={styles.dataCell}>{formatNumber(territoryData['2050']?.[scenario.key])}</td>
