@@ -9,7 +9,7 @@ import { RecalculateResultsCommand } from './commands/recalculate-results.comman
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(CliModule, {
-    logger: false, // Disable NestJS logger to avoid cluttering CLI output
+    logger: ['error', 'warn'],
   })
 
   const program = new Command()
