@@ -7,6 +7,7 @@ import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { DATA_TYPE_OPTIONS } from '~/components/data-visualisation/select-data-type'
+import { SelectMillesime } from '~/components/data-visualisation/select-millesime'
 import { TDemographicProjectionEvolution } from '~/schemas/population-evolution'
 import { formatNumber } from '~/utils/format-numbers'
 
@@ -72,6 +73,15 @@ export type ProjectionPopulationEvolutionChartProps = {
   type: string | null
 }
 
+const HORIZON_YEARS = [2030, 2040, 2050]
+
+const getBaseYear = (tableData: TDemographicProjectionEvolution['tableData']): string => {
+  const firstRow = Object.values(tableData)[0]
+  if (!firstRow) return '2021'
+  const yearKeys = Object.keys(firstRow).filter((k) => /^\d{4}$/.test(k) && !HORIZON_YEARS.includes(Number(k)))
+  return yearKeys[0] || '2021'
+}
+
 export const ProjectionPopulationEvolutionChart: FC<ProjectionPopulationEvolutionChartProps> = ({ data: chartData, type }) => {
   const [queryStates] = useQueryStates({
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
@@ -80,17 +90,19 @@ export const ProjectionPopulationEvolutionChart: FC<ProjectionPopulationEvolutio
   const { classes } = useStyles()
   const epcisLinearChart = Object.keys(chartData.linearChart).filter((epci) => queryStates.epcis.includes(epci))
   const epciName = chartData.tableData[queryStates.epci]?.name
+  const baseYear = getBaseYear(chartData.tableData)
+  const firstPeriod = `${baseYear}-2030`
 
   const barChartData = Object.entries(chartData.tableData)
     .filter(([key]) => queryStates.epcis.includes(key))
     .map(([_, epciData]) => {
       return [
         {
-          basse: epciData.annualEvolution?.['2021-2030']?.basse?.value || 0,
-          central: epciData.annualEvolution?.['2021-2030']?.central?.value || 0,
-          haute: epciData.annualEvolution?.['2021-2030']?.haute?.value || 0,
+          basse: epciData.annualEvolution?.[firstPeriod]?.basse?.value || 0,
+          central: epciData.annualEvolution?.[firstPeriod]?.central?.value || 0,
+          haute: epciData.annualEvolution?.[firstPeriod]?.haute?.value || 0,
           name: epciData.name,
-          period: '2021-2030',
+          period: firstPeriod,
         },
         {
           basse: epciData.annualEvolution?.['2030-2040']?.basse?.value || 0,
@@ -120,9 +132,15 @@ export const ProjectionPopulationEvolutionChart: FC<ProjectionPopulationEvolutio
 
   return (
     <>
-      <h2 className={fr.cx('fr-h5')}>
-        {title} - {epciName}
-      </h2>
+      <div className="fr-flex fr-justify-content-space-between">
+        <h2 className={fr.cx('fr-h5')}>
+          {title} - {epciName}
+        </h2>
+        <div className="fr-flex fr-justify-content-end fr-mb-8w">
+          <SelectMillesime />
+        </div>
+      </div>
+
       <div className={classes.chartsContainer}>
         <div className={classes.chartContainer}>
           <ResponsiveContainer width="100%" height="100%">
@@ -184,7 +202,7 @@ export const ProjectionPopulationEvolutionChart: FC<ProjectionPopulationEvolutio
           <ResponsiveContainer width="100%" height="100%">
             <BarChart width={730} height={600} data={barChartData} margin={{ left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="period" ticks={['2021-2030', '2030-2040', '2040-2050']} />
+              <XAxis dataKey="period" ticks={[firstPeriod, '2030-2040', '2040-2050']} />
               <YAxis />
               <Tooltip
                 content={(props) => {

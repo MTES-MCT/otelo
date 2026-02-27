@@ -6,7 +6,7 @@ import Badge from '@codegouvfr/react-dsfr/Badge'
 import Button from '@codegouvfr/react-dsfr/Button'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import classNames from 'classnames'
-import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
+import { parseAsArrayOf, parseAsString, useQueryState, useQueryStates } from 'nuqs'
 import React, { FC, useEffect, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { NameType, Payload as TooltipPayload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
@@ -115,6 +115,7 @@ const OmphaleScenariosTooltip = ({
   payload?: TooltipPayload<ValueType, NameType>[]
   basePopulation: TOmphaleEvolution
 }) => {
+  const [millesime] = useQueryState('millesime')
   const { classes } = useStyles()
   if (!active || !payload?.length) return null
   return (
@@ -129,7 +130,7 @@ const OmphaleScenariosTooltip = ({
             <div className={classes.tooltipContent}>
               <span className={classes.tooltipLabel}>
                 {item.name}: <strong>{evol > 0 ? `+${formatNumber(evol)}` : formatNumber(evol)}</strong> ménages par rapport à{' '}
-                <strong>2021</strong>
+                <strong>{millesime}</strong>
               </span>
               <span className={classes.tooltipSmallText}>({formatNumber(item.value)} ménages)</span>
             </div>
@@ -152,6 +153,7 @@ const findMaxValueYear = (data: TOmphaleEvolution[], scenarioKey?: string) => {
 
 export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demographicEvolution, epcis: epcisProps, scenarioId }) => {
   const { classes } = useStyles()
+  const [millesime] = useQueryState('millesime')
 
   const [queryStates, setQueryStates] = useQueryStates({
     omphale: parseAsString,
@@ -167,7 +169,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
   const [isUsingCustomData, setIsUsingCustomData] = useState(false)
 
   // Fetch all custom demographic data with a single query
-  const { data: allCustomData = [] } = useDemographicEvolutionCustom(queryStates.demographicEvolutionOmphaleCustomIds)
+  const { data: allCustomData = [] } = useDemographicEvolutionCustom(queryStates.demographicEvolutionOmphaleCustomIds, millesime)
 
   // Find custom data that matches the current EPCI and scenario (if provided)
   const customDataEpci = allCustomData.find((data) => data.epciCode === currentEpci) || null

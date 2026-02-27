@@ -101,6 +101,7 @@ export const PopulationEvolutionChart: FC<PopulationEvolutionChartProps> = ({ da
       <h2 className={fr.cx('fr-h5')}>
         {title} - {epciName}
       </h2>
+
       <div className={classes.chartContainer}>
         <div className={classes.chartLabelContainer}>
           <ResponsiveContainer width="100%" height="100%">

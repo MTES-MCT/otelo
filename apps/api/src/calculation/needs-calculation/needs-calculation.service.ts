@@ -43,9 +43,11 @@ export class NeedsCalculationService {
         peakYear,
       )
 
-      total += epciTotalFlux + (peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total)
+      const simulationMillesime = Number(simulation.scenario.millesime)
+
+      total += epciTotalFlux + (peakYear && peakYear > simulationMillesime ? epciTotalStock.prePeakTotal : epciTotalStock.total)
       totalFlux += epciTotalFlux
-      totalStock += peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total
+      totalStock += peakYear && peakYear > simulationMillesime ? epciTotalStock.prePeakTotal : epciTotalStock.total
       const epciVacantAccomodation =
         epciFlowRequirement.totals.longTermVacantAccomodation <= 0 ? epciFlowRequirement.totals.longTermVacantAccomodation : 0
 

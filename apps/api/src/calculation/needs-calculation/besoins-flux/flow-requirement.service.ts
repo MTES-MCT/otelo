@@ -315,7 +315,11 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
   ): Promise<TGetDemographicEvolution[]> {
     let menagesEvolution: TGetDemographicEvolution[] = []
 
-    const demographicEvolutionCustom = await this.demographicEvolutionCustomService.findFirstByScenarioAndEpci(scenarioId, epciCode)
+    const demographicEvolutionCustom = await this.demographicEvolutionCustomService.findFirstByScenarioAndEpci(
+      scenarioId,
+      epciCode,
+      this.context.baseYear,
+    )
     if (demographicEvolutionCustom) {
       menagesEvolution = this.formatDemographicEvolutionCustom(demographicEvolutionCustom, omphale)
     }
@@ -337,13 +341,14 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
     additionalHousingUnitsForNewHouseholds: TDemographicEvolution,
     additionalHousingUnitsForDeficitReduction: Record<number, number>,
   ) {
-    const firstYearValue = additionalHousingUnitsForNewHouseholds.data.find(({ year }) => year === 2021)?.yearValue || 0
+    const { baseYear } = this.context
+    const firstYearValue = additionalHousingUnitsForNewHouseholds.data.find(({ year }) => year === baseYear)?.yearValue || 0
 
     const { peakYear } = additionalHousingUnitsForNewHouseholds.data.reduce(
       (acc, { year, value }) => {
         const deficitValue = additionalHousingUnitsForDeficitReduction[year] || 0
         let currentSum = acc.previousSum
-        if (year > 2021) {
+        if (year > baseYear) {
           currentSum = deficitValue + value + acc.previousSum
         }
 
@@ -358,7 +363,7 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
       { maxSum: -Infinity, peakYear: 2050, previousSum: firstYearValue },
     )
 
-    return peakYear < 2021 ? 2021 : peakYear
+    return peakYear < baseYear ? baseYear : peakYear
   }
 
   async calculateByEpci(
@@ -375,7 +380,7 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
 
     const menagesEvolution = await this.getEpciMenageEvolution(epciCode, scenario.id, scenario.projection, omphale)
 
-    // We want to get value from 2021, so we start the calculation one year before, i.e. 2020
+    // We want to get value from baseYear, so we start the calculation one year before
     const additionalHousingUnitsForNewHouseholds = await this.demographicEvolutionService.calculateOmphaleProjectionsByYearAndEpci(
       menagesEvolution,
       simulation,

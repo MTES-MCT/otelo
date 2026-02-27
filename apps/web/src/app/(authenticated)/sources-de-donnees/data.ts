@@ -11,7 +11,7 @@ export const DATA_SOURCES: SourceEntry[] = [
   // --- Projections démographiques ---
   {
     source: 'INSEE Omphale et CGDD/SDES',
-    millesime: '2021-2050',
+    millesime: '2022-2050',
     etape: 'Projections démographiques',
     etapeId: 'projections-demographiques',
     description:

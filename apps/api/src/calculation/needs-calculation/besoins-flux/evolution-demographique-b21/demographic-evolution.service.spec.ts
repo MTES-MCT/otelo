@@ -117,7 +117,7 @@ describe('DemographicEvolutionService', () => {
 
       expect(prisma.demographicEvolutionOmphale.findMany).toHaveBeenCalledWith({
         select: { epciCode: true, centralH: true, year: true },
-        where: { epciCode: '200000001', year: { lte: 2041 } },
+        where: { epciCode: '200000001', millesime: '2021', year: { lte: 2041 } },
       })
       expect(result).toHaveLength(2)
     })

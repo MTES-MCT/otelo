@@ -15,6 +15,7 @@ export const ZInitSimulation = ZCreateSimulation.extend({
   name: z.string(),
   epci: z.array(ZEpci.omit({ name: true })),
   scenario: ZInitScenario,
+  millesime: z.string().optional(),
   epciGroupName: z.string().optional().nullable(),
   epciGroupId: z.string().optional().nullable(),
 })

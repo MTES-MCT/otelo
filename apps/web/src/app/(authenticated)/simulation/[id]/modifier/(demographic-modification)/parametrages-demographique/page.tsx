@@ -52,8 +52,8 @@ export default async function ParametragesDemographiquePage({ params, searchPara
   }
 
   const href = `/simulation/${id}/modifier/taux-cibles-logements-vacants`
-  const omphaleEvolution = await getOmphaleDemographicEvolutionByEpci(epcisCodes)
-  const populationEvolution = await getPopulationDemographicEvolutionByEpci(epcisCodes)
+  const omphaleEvolution = await getOmphaleDemographicEvolutionByEpci(epcisCodes, simulation.scenario.millesime)
+  const populationEvolution = await getPopulationDemographicEvolutionByEpci(epcisCodes, simulation.scenario.millesime)
 
   return (
     <>

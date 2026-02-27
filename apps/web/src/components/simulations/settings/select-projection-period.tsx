@@ -6,6 +6,8 @@ import { FC, useEffect } from 'react'
 
 export const SelectProjectionPeriod: FC = () => {
   const [projection, setProjection] = useQueryState('projection')
+  const [millesime] = useQueryState('millesime')
+  const minYear = millesime ? Number(millesime) : 2021
 
   useEffect(() => {
     if (!projection) {
@@ -17,7 +19,7 @@ export const SelectProjectionPeriod: FC = () => {
     <Range
       label="Faites glisser le curseur pour établir l'horizon de temps du scénario."
       max={2050}
-      min={2021}
+      min={minYear}
       nativeInputProps={{ onChange: (e) => setProjection(e.target.value), value: projection ?? '2030' }}
     />
   )

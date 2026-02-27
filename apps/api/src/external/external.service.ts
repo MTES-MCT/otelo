@@ -2,8 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { NeedsCalculationService } from '~/calculation/needs-calculation/needs-calculation.service'
 import { PrismaService } from '~/db/prisma.service'
 import { ResultsService } from '~/results/results.service'
-import { TExternalUpdateScenario, TInitScenario } from '~/schemas/scenarios/scenario'
+import { TExternalUpdateScenario } from '~/schemas/scenarios/scenario'
 import { SimulationsService } from '~/simulations/simulations.service'
+import { CreateSimulationDto } from './external.dto'
 
 @Injectable()
 export class ExternalService {
@@ -14,16 +15,8 @@ export class ExternalService {
     private readonly resultsService: ResultsService,
   ) {}
 
-  async createSimulation(
-    apiConsumerId: string,
-    data: {
-      name: string
-      epci: { code: string }[]
-      scenario: TInitScenario
-      epciGroupName?: string
-    },
-  ) {
-    const { epcis, demographicEvolutionOmphaleCustomIds, ...scenarioFields } = data.scenario
+  async createSimulation(apiConsumerId: string, data: CreateSimulationDto) {
+    const { epcis, millesime, ...scenarioFields } = data.scenario
 
     const epciScenariosData = Object.entries(epcis).map(([code, epciScenario]) => ({
       epciCode: code,
@@ -33,6 +26,7 @@ export class ExternalService {
     const scenario = await this.prisma.scenario.create({
       data: {
         ...scenarioFields,
+        ...(millesime && { dataPackVersion: { connect: { millesime } } }),
         epciScenarios: {
           createMany: { data: epciScenariosData },
         },

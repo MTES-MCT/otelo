@@ -10,13 +10,14 @@ export class AccommodationRatesService {
     private readonly vacancyService: VacancyService,
   ) {}
 
-  async getAccommodationRates(epcis: string): Promise<TEpcisAccommodationRates> {
+  async getAccommodationRates(epcis: string, millesime?: string): Promise<TEpcisAccommodationRates> {
     const epcisCodes = epcis.split(',')
 
     const [filocomData, vacancyData] = await Promise.all([
       this.prismaService.filocomFlux.findMany({
         where: {
           epciCode: { in: epcisCodes },
+          ...(millesime && { millesime }),
         },
       }),
       this.vacancyService.getNewestVacancy(epcisCodes),

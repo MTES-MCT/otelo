@@ -4,7 +4,7 @@ import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Prisma, Role } from '~/generated/prisma/client'
 import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
-import { TCloneSimulationDto } from '~/schemas/simulations/simulation'
+import { TActualizeSimulationDto, TCloneSimulationDto } from '~/schemas/simulations/simulation'
 import { TUser } from '~/schemas/users/user'
 import { SimulationsService } from '~/simulations/simulations.service'
 
@@ -83,5 +83,16 @@ export class SimulationsController {
   @HttpCode(HttpStatus.CREATED)
   async cloneSimulation(@Param('id') id: string, @Body() data: TCloneSimulationDto, @User() { id: userId }: TUser) {
     return this.simulationsService.clone(userId, id, data)
+  }
+
+  @AccessControl({
+    entity: Prisma.ModelName.Simulation,
+    paramName: 'id',
+    roles: [Role.ADMIN, Role.USER],
+  })
+  @Post(':id/actualize')
+  @HttpCode(HttpStatus.CREATED)
+  async actualizeSimulation(@Param('id') id: string, @Body() data: TActualizeSimulationDto, @User() { id: userId }: TUser) {
+    return this.simulationsService.actualize(userId, id, data.millesime, data.name)
   }
 }

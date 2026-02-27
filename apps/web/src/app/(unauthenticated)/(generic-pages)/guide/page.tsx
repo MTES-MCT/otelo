@@ -56,18 +56,18 @@ export default function GuidePage() {
       <h4 id="donnees-demarrer">Les données pour démarrer : </h4>
       <ul>
         <li>
-          Le <span className="fr-text--bold">nombre de logements</span> du territoire au 1er janvier 2021
+          Le <span className="fr-text--bold">nombre de logements</span> du territoire au 1er janvier de l'année de référence (millésime)
         </li>
         <li>
-          Le <span className="fr-text--bold">taux de vacance</span> au 1er janvier 2021, en distinguant vacance de courte durée (moins de 2
-          ans) et vacance de <span className="fr-text--bold">longue durée</span> (2 ans ou plus).
+          Le <span className="fr-text--bold">taux de vacance</span> au 1er janvier de l'année de référence, en distinguant vacance de courte
+          durée (moins de 2 ans) et vacance de <span className="fr-text--bold">longue durée</span> (2 ans ou plus).
         </li>
         <li>
-          Le <span className="fr-text--bold">taux de résidences secondaires</span> au 1er janvier 2021
+          Le <span className="fr-text--bold">taux de résidences secondaires</span> au 1er janvier de l'année de référence
         </li>
         <li>
           Des <span className="fr-text--bold">projections démographiques</span> permettant de définir un nombre de ménages sur le territoire
-          pour chaque année entre 2021 et 2050
+          pour chaque année entre l'année de référence et 2050
         </li>
         <li>
           Des données permettant d'estimer le <span className="fr-text--bold">volume de situations de mal-logement</span> et de{' '}
@@ -75,8 +75,13 @@ export default function GuidePage() {
         </li>
       </ul>
       <p>
-        NB : l'année de référence est fixée à <span className="fr-text--bold">2021</span> compte-tenu des données les plus récentes
-        disponibles (recensement, données fiscales…). A chaque mise à jour des données, cette année de référence est susceptible d'évoluer.
+        NB : l'année de référence (appelée <span className="fr-text--bold">millésime</span>) dépend du jeu de données actif. Le millésime
+        par défaut est actuellement <span className="fr-text--bold">2022</span>, mais le millésime 2021 reste disponible. À chaque mise à
+        jour des données (recensement, données fiscales…), un nouveau millésime est susceptible d'être ajouté.
+      </p>
+      <p>
+        Pour la suite de ce guide, les exemples et illustrations utiliseront <span className="fr-text--bold">2022</span> comme année de
+        référence. Les mécanismes décrits s'appliquent de la même manière quel que soit le millésime choisi.
       </p>
       <h4 id="hypotheses-utilisateur">Hypothèses de l'utilisateur</h4>
       <h5 id="hypotheses-calcul-incontournables">Des hypothèses de calcul incontournables</h5>
@@ -86,8 +91,8 @@ export default function GuidePage() {
           logement
         </li>
         <li>Choisir un scénario de projection en population, puis en nombre de ménages</li>
-        <li>Définir une évolution du taux de vacance de longue durée entre 2021 et l'horizon de projection</li>
-        <li>Définir une évolution du taux de résidences secondaires entre 2021 et l'horizon de projection</li>
+        <li>Définir une évolution du taux de vacance de longue durée entre l'année de référence et l'horizon de projection</li>
+        <li>Définir une évolution du taux de résidences secondaires entre l'année de référence et l'horizon de projection</li>
       </ul>
       <p>Pour aller plus loin : </p>
       <ul className="fr-mb-4w">
@@ -130,8 +135,8 @@ export default function GuidePage() {
           « l’année du maximum ») :
           <ul>
             <li>
-              évolution linéaire depuis 2021 jusqu’au taux cible atteint à l’horizon de projection ou à l’année du maximum (C) si celle-ci
-              lui est antérieure;
+              évolution linéaire depuis l’année de référence jusqu’au taux cible atteint à l’horizon de projection ou à l’année du maximum
+              (C) si celle-ci lui est antérieure;
             </li>
             <li>vacance courte supposée stable (txVC); </li>
           </ul>
@@ -145,8 +150,8 @@ export default function GuidePage() {
               Otelo en déduit le volume de logements vacants (dont courte/longue) et de résidences secondaires correspondant à ces taux.{' '}
             </li>
             <li>
-              Si l'un de ces volumes est inférieur à sa valeur 2021, Otelo anticipe une remobilisation (transformation en résidences
-              principales).
+              Si l'un de ces volumes est inférieur à sa valeur de l'année de référence, Otelo anticipe une remobilisation (transformation en
+              résidences principales).
             </li>
           </ul>
         </li>
@@ -172,8 +177,8 @@ export default function GuidePage() {
       </ol>
       <p>
         Cas particulier traité par OTELO : si le besoin en résidences principales de l’année est nul ou négatif, l’outil n’active pas de
-        remobilisation supplémentaire (les taux de vacance et de résidences secondaires sont maintenus à leur niveau de 2021 pour cette
-        année-là). Un volume de logements excédentaires est alors mis en évidence dans les résultats.
+        remobilisation supplémentaire (les taux de vacance et de résidences secondaires sont maintenus à leur niveau de l'année de référence
+        pour cette année-là). Un volume de logements excédentaires est alors mis en évidence dans les résultats.
       </p>
       <h4 id="resultats-otelo">Les résultats fournis par Otelo</h4>
       <p>Pour chaque EPCI et chaque année simulée, Otelo restitue :</p>
@@ -246,7 +251,7 @@ export default function GuidePage() {
       <ul className="fr-mb-4w">
         <li>
           Si aucun EPCI du bassin n'a de projection propre : la projection du bassin est répartie entre les EPCI au prorata du nombre de
-          ménages en 2021.
+          ménages à l'année de référence.
         </li>
         <li>
           Si un ou plusieurs EPCI ont une projection propre : ils la conservent ; les autres partagent le reste de la projection du bassin.{' '}
@@ -296,8 +301,8 @@ export default function GuidePage() {
         signifie qu'à l'échelle locale, Otelo prolonge les tendances passées.
       </p>
       <p>
-        Vous pouvez consulter le solde naturel et le solde migratoire de votre territoire jusqu'en 2021 via les dossiers complets
-        disponibles sur&nbsp;
+        Vous pouvez consulter le solde naturel et le solde migratoire de votre territoire jusqu'à l'année de référence via les dossiers
+        complets disponibles sur&nbsp;
         <a
           href="https://www.insee.fr"
           target="_blank"
@@ -347,11 +352,11 @@ export default function GuidePage() {
       </p>
       <ul className="fr-mb-4w">
         <li>
-          Elle démarre en 2021 à partir de la part réelle de chaque EPCI dans le bassin, selon le nombre de <strong>ménages</strong> ou de{' '}
-          <strong>personnes vivant en ménage</strong>, selon le type de projection.
+          Elle démarre à l'année de référence à partir de la part réelle de chaque EPCI dans le bassin, selon le nombre de{' '}
+          <strong>ménages</strong> ou de <strong>personnes vivant en ménage</strong>, selon le type de projection.
         </li>
         <li>
-          Elle est ajustée chaque année en suivant la <strong>tendance observée entre 2015 et 2021</strong>.
+          Elle est ajustée chaque année en suivant la <strong>tendance observée sur les années précédant l'année de référence</strong>.
         </li>
       </ul>
       <p>📆 Deux périodes différentes :</p>
@@ -373,10 +378,10 @@ export default function GuidePage() {
         </li>
       </ul>
       <h5 id="illustration-simplifiee">🧮 Illustration simplifiée</h5>
-      <p>Un bassin de 25 000 ménages en 2021, avec 3 EPCI :</p>
+      <p>Un bassin de 25 000 ménages en 2022, avec 3 EPCI :</p>
       <Table
-        caption="Répartition des ménages par EPCI en 2021"
-        headers={['EPCI', 'Ménages en 2021', 'Part initiale']}
+        caption="Répartition des ménages par EPCI en 2022"
+        headers={['EPCI', 'Ménages en 2022', 'Part initiale']}
         data={[
           ['EPCI A', '12 500', '50 %'],
           ['EPCI B', '8 250', '33 %'],
@@ -385,7 +390,7 @@ export default function GuidePage() {
         noScroll
         fixed
       />
-      <p>📈 Tendance observée entre 2015 et 2021 :</p>
+      <p>📈 Tendance observée entre 2015 et 2022 :</p>
       <ul className="fr-mb-4w">
         <li>EPCI A : en légère baisse de 0.1 point / an</li>
         <li>EPCI B : stable</li>
@@ -432,7 +437,7 @@ export default function GuidePage() {
       <p>
         L'horizon de résorption correspond à l'année à laquelle l'utilisateur estime que ce déficit actuel en logements sera résorbé, à un
         rythme annuel constant. Par défaut, il est fixé à 2050. Dans ce cas, pour un déficit estimé à 1000, le besoin annuel sera de 1000 /
-        (2050 – 2021) = 34,5 logements par an. Cet horizon de résorption est à définir au début du paramétrage relatif au hors logement et
+        (2050 – 2022) = 35,7 logements par an. Cet horizon de résorption est à définir au début du paramétrage relatif au hors logement et
         au mal-logement.
       </p>
       <p>

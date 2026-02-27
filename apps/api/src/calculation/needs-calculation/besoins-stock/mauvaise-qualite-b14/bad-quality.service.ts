@@ -22,7 +22,7 @@ export class BadQualityService extends BaseCalculator {
 
   async getFilocomBadQuality(epciCode: string) {
     return this.prismaService.badQuality_Filocom.findUniqueOrThrow({
-      where: { epciCode },
+      where: { epciCode_millesime: { epciCode, millesime: this.context.millesime } },
     })
   }
   async getFFBadQuality(epciCode: string) {

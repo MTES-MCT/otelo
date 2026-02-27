@@ -30,7 +30,7 @@ export class PhysicalInadequationService extends BaseCalculator {
 
   async getPhysicalInadequationFilo(epciCode: string) {
     return this.prismaService.physicalInadequation_Filo.findFirstOrThrow({
-      where: { epciCode },
+      where: { epciCode, millesime: this.context.millesime },
     })
   }
 

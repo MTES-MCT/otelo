@@ -211,9 +211,10 @@ export class ExportPowerpointService {
   private async calculateSlide10Data(commonData: CommonSlideData) {
     const epciCode = commonData.data.epci.code
     const epcis = commonData.epcis.filter((epci) => epci.code === epciCode)
-    const data = await this.demographicEvolutionService.getDemographicEvolutionPopulationAndYear(epcis)
+    const millesime = commonData.privilegedScenario.scenario.millesime
+    const data = await this.demographicEvolutionService.getDemographicEvolutionPopulationAndYear(epcis, millesime)
     const evolutionData = data.tableData[epciCode]?.annualEvolution
-    const demographicData = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCode)
+    const demographicData = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCode, millesime)
     const chartData = demographicData[epciCode]
 
     return {
@@ -246,9 +247,22 @@ export class ExportPowerpointService {
     const scenario = commonData.privilegedScenario.scenario.b2_scenario
     const epciCode = commonData.data.epci.code
     const epcis = commonData.epcis.filter((epci) => epci.code === epciCode)
-    const hauteDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(epcis, 'haute')
-    const basseDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(epcis, 'basse')
-    const centralDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(epcis, 'central')
+    const millesime = commonData.privilegedScenario.scenario.millesime
+    const hauteDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(
+      epcis,
+      millesime,
+      'haute',
+    )
+    const basseDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(
+      epcis,
+      millesime,
+      'basse',
+    )
+    const centralDemographicEvolution = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(
+      epcis,
+      millesime,
+      'central',
+    )
 
     const centralData = centralDemographicEvolution.tableData[epciCode]
     const hauteData = hauteDemographicEvolution.tableData[epciCode]
@@ -310,7 +324,7 @@ export class ExportPowerpointService {
   private async calculateSlide12Data(commonData: CommonSlideData) {
     const epciCode = commonData.data.epci.code
     const epcis = commonData.epcis.filter((epci) => epci.code === epciCode)
-    const data = await this.dataVisualisationService.getInadequateHousing(epcis)
+    const data = await this.dataVisualisationService.getInadequateHousing(epcis, commonData.privilegedScenario.scenario.millesime)
     return {
       text: { ...commonData.baseLayout },
       charts: [
@@ -360,6 +374,7 @@ export class ExportPowerpointService {
       const demographicEvolutionData = await this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(
         epcis,
         demographicEvolution,
+        simulation.scenario.millesime,
       )
       const prinData = demographicEvolutionData.linearChart?.[epciCode]?.data.find((d) => d.year === projectionYear)
       const prin = prinData?.[getOmphaleKey(simulation.scenario.b2_scenario)]?.toString() || ''
@@ -370,7 +385,7 @@ export class ExportPowerpointService {
       let vacance = ''
       if (epciScenario?.b2_tx_vacance_longue !== undefined) {
         try {
-          const accommodationRates = await this.accommodationRatesService.getAccommodationRates(epciCode)
+          const accommodationRates = await this.accommodationRatesService.getAccommodationRates(epciCode, simulation.scenario.millesime)
           const defaultLongTermRate = accommodationRates[epciCode]?.longTermVacancyRate
 
           if (defaultLongTermRate && defaultLongTermRate > 0) {
@@ -400,7 +415,10 @@ export class ExportPowerpointService {
     const othersSimulations = simulations.filter((sim) => sim.id !== privilegedScenario.id)
     const [firstSimulation, lastSimulation] = othersSimulations
 
-    const demographicData = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCode)
+    const demographicData = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(
+      epciCode,
+      commonData.privilegedScenario.scenario.millesime,
+    )
 
     const [sim1Data, sim2Data, sim3Data] = await Promise.all([
       processSimulation(firstSimulation, epciCode),
@@ -453,9 +471,10 @@ export class ExportPowerpointService {
       return 'Deceleration'
     }
 
+    const baseYear = Number(commonData.privilegedScenario.scenario.millesime)
     const calculateHousingSum = (projection: number, flowRequirement: { data: { housingNeeds: Record<string, number> } }): number => {
       let sum = 0
-      for (let year = 2021; year <= projection; year++) {
+      for (let year = baseYear; year <= projection; year++) {
         sum += flowRequirement.data.housingNeeds[year.toString()] || 0
       }
       return sum
@@ -617,15 +636,16 @@ export class ExportPowerpointService {
     const endYear = parseInt(data.periodEnd)
     const projectionYear = privilegedScenario.scenario.projection
 
-    let nb1Sum = 0 // Sum from 2021 to docStart-1
+    const baseYear = Number(privilegedScenario.scenario.millesime)
+    let nb1Sum = 0 // Sum from baseYear to docStart-1
     let nb1Count = 0 // Count of years for average
     let nb2Sum = 0 // Sum from docStart to docEnd (for average calculation)
     let nb2Count = 0 // Count of years for average
     let nb3 = 0 // Sum from docEnd+1 to projection
 
     if (flowRequirement) {
-      // nb1: Sum from 2021 to docStart-1
-      for (let year = 2021; year < startYear; year++) {
+      // nb1: Sum from baseYear to docStart-1
+      for (let year = baseYear; year < startYear; year++) {
         const yearStr = year.toString()
         nb1Sum += flowRequirement.data.housingNeeds[yearStr] || 0
         nb1Count++

@@ -4,11 +4,12 @@ import { NestFactory } from '@nestjs/core'
 import { Command } from 'commander'
 import { CliModule } from './cli.module'
 import { ImportBackupCommand } from './commands/import-backup.command'
+import { ImportCsvCommand } from './commands/import-csv.command'
 import { RecalculateResultsCommand } from './commands/recalculate-results.command'
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(CliModule, {
-    logger: false, // Disable NestJS logger to avoid cluttering CLI output
+    logger: ['error', 'warn'],
   })
 
   const program = new Command()
@@ -54,6 +55,56 @@ async function bootstrap() {
         await command.execute({
           simulationId: options.simulationId,
           dryRun: !options.write,
+        })
+        await app.close()
+        process.exit(0)
+      } catch (error) {
+        console.error('✗ Erreur fatale:', error instanceof Error ? error.message : error)
+        await app.close()
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('import-csv')
+    .description(
+      [
+        "Importe un fichier CSV dans une table de données d'Otelo.",
+        '',
+        'Par défaut, génère le SQL INSERT sans exécuter (mode dry-run).',
+        'Utiliser --execute pour insérer directement en base locale.',
+        'Utiliser --output <fichier.sql> pour écrire le SQL dans un fichier.',
+        '',
+        'Le SQL utilise ON CONFLICT DO NOTHING : les doublons sont ignorés.',
+        'Supporte plusieurs fichiers CSV : les lignes sont fusionnées par clé primaire.',
+        '',
+        'Exemples :',
+        '  pnpm -F api cli import-csv --table rp --csv ./data/rp.csv --millesime 2024',
+        '  pnpm -F api cli import-csv --table rp --csv ./data/rp.csv --millesime 2024 --output import-rp.sql',
+        '  pnpm -F api cli import-csv --table rp --csv ./data/rp.csv --millesime 2024 --execute',
+        '  pnpm -F api cli import-csv --table homeless --csv ./data/homeless_rp.csv --csv ./data/homeless_sne.csv --millesime 2024',
+        '  pnpm -F api cli import-csv --table data_pack_versions --csv ./data/versions.csv',
+      ].join('\n'),
+    )
+    .requiredOption('--table <name>', 'Nom de la table PostgreSQL (ex: rp, sitadel, homeless...)')
+    .requiredOption(
+      '--csv <path>',
+      'Chemin(s) du/des fichier(s) CSV (répétable)',
+      (val: string, prev: string[]) => prev.concat(val),
+      [] as string[],
+    )
+    .option('--millesime <value>', 'Millésime à injecter (ex: 2024). Créé automatiquement si inexistant.')
+    .option('--execute', 'Exécuter le SQL directement en base (⚠ local uniquement !)')
+    .option('--output <path>', 'Écrire le SQL dans un fichier au lieu de stdout')
+    .action(async (options) => {
+      try {
+        const command = app.get(ImportCsvCommand)
+        await command.execute({
+          table: options.table,
+          csv: options.csv,
+          millesime: options.millesime,
+          execute: options.execute || false,
+          output: options.output,
         })
         await app.close()
         process.exit(0)

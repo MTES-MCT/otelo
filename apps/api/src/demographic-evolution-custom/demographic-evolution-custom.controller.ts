@@ -15,6 +15,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { DataPackVersionsService } from '~/data-pack-versions/data-pack-versions.service'
 import { Role } from '~/generated/prisma/enums'
 import { ZCreateDemographicEvolutionCustomDto } from '~/schemas/demographic-evolution-custom/demographic-evolution-custom'
 import { TUser } from '~/schemas/users/user'
@@ -22,7 +23,10 @@ import { DemographicEvolutionCustomService } from './demographic-evolution-custo
 
 @Controller('demographic-evolution-custom')
 export class DemographicEvolutionCustomController {
-  constructor(private readonly demographicEvolutionCustomService: DemographicEvolutionCustomService) {}
+  constructor(
+    private readonly demographicEvolutionCustomService: DemographicEvolutionCustomService,
+    private readonly dataPackVersionsService: DataPackVersionsService,
+  ) {}
 
   @AccessControl({
     roles: [Role.USER, Role.ADMIN],
@@ -68,13 +72,14 @@ export class DemographicEvolutionCustomController {
     roles: [Role.USER, Role.ADMIN],
   })
   @Get('find-many')
-  async findMany(@Query('ids') ids: string | string[], @User() { id: userId }: TUser) {
+  async findMany(@Query('ids') ids: string | string[], @Query('millesime') millesime: string | undefined, @User() { id: userId }: TUser) {
     if (!ids) {
       return []
     }
 
+    const baseYear = millesime ? Number(millesime) : Number((await this.dataPackVersionsService.getActive()).millesime)
     const idsArray = Array.isArray(ids) ? ids : [ids]
-    const results = await this.demographicEvolutionCustomService.findManyAndRecalibrate(userId, idsArray)
+    const results = await this.demographicEvolutionCustomService.findManyAndRecalibrate(userId, idsArray, baseYear)
 
     return results
   }

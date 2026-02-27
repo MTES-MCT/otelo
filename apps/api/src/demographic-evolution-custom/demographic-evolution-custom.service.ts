@@ -51,15 +51,15 @@ export class DemographicEvolutionCustomService {
     }))
   }
 
-  async findManyAndRecalibrate(userId: string, ids: string[]) {
+  async findManyAndRecalibrate(userId: string, ids: string[], baseYear: number) {
     const condition = Prisma.sql`AND id IN (${Prisma.join(ids)})
           AND deoc.user_id = ${userId}`
-    return this.findAndRecalibrate(condition)
+    return this.findAndRecalibrate(condition, baseYear)
   }
 
-  async findFirstByScenarioAndEpci(scenarioId: string, epciCode: string) {
+  async findFirstByScenarioAndEpci(scenarioId: string, epciCode: string, baseYear: number) {
     const condition = Prisma.sql`AND deoc.scenario_id = ${scenarioId} AND deoc.epci_code = ${epciCode}`
-    const results = await this.findAndRecalibrate(condition)
+    const results = await this.findAndRecalibrate(condition, baseYear)
 
     // There should be only one result, given a scenarioId and epciCode
     if (results.length > 1) {
@@ -69,21 +69,23 @@ export class DemographicEvolutionCustomService {
   }
 
   /**
-   * Recalibrate values to 2021
+   * Recalibrate values to the base year
    * @param sqlCondition
+   * @param baseYear
    */
-  async findAndRecalibrate(sqlCondition: Prisma.Sql) {
+  async findAndRecalibrate(sqlCondition: Prisma.Sql, baseYear: number) {
+    const baseYearStr = String(baseYear)
     return this.prisma.$queryRaw<Array<TDemographicEvolutionOmphaleCustom>>`
       WITH
         raw_data AS (
-          SELECT 
+          SELECT
             deoc.*,
-            deo.central_c AS reference_insee_2021,
-            elem ->> 'value' AS reference_custom_2021
+            deo.central_c AS reference_insee,
+            elem ->> 'value' AS reference_custom
           FROM demographic_evolution_omphale_custom deoc
-          LEFT JOIN demographic_evolution_omphale deo ON deoc.epci_code = deo.epci_code AND deo.year = 2021,
+          LEFT JOIN demographic_evolution_omphale deo ON deoc.epci_code = deo.epci_code AND deo.year = ${baseYear},
           LATERAL jsonb_array_elements(deoc.data) AS elem
-          WHERE elem ->> 'year' = '2021'
+          WHERE elem ->> 'year' = ${baseYearStr}
           ${sqlCondition}
         )
       SELECT
@@ -94,7 +96,7 @@ export class DemographicEvolutionCustomService {
           jsonb_set(
             element, '{value}',
             to_jsonb(
-              ROUND((element ->> 'value')::numeric / rd.reference_custom_2021::numeric * rd.reference_insee_2021::numeric)
+              ROUND((element ->> 'value')::numeric / rd.reference_custom::numeric * rd.reference_insee::numeric)
             )
           )
         ) AS data,

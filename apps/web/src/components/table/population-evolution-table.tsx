@@ -1,21 +1,39 @@
 import { FC } from 'react'
 import { PopulationEvolutionChartProps } from '~/components/charts/data-visualisation/population-evolution-charts'
+import { TRPDataTable } from '~/schemas/population-evolution'
 import { formatNumber } from '~/utils/format-numbers'
 import styles from './population-evolution-table.module.css'
 
+type EvolutionEntry = { value: number; percent: string }
+
+const getYearKeys = (tableData: TRPDataTable): string[] => {
+  const firstRow = Object.values(tableData)[0]
+  if (!firstRow) return ['2010', '2015', '2021']
+  return Object.keys(firstRow)
+    .filter((k) => /^\d{4}$/.test(k))
+    .sort()
+}
+
 export const PopulationEvolutionTable: FC<PopulationEvolutionChartProps> = ({ data, type }) => {
   const { tableData } = data
-  const dataTable = Object.entries(tableData).map((row) => {
-    const rowValue = row[1]
+  const yearKeys = getYearKeys(tableData)
+  const dataTable = Object.entries(tableData).map(([, rowValue]) => {
+    const rv = rowValue as unknown as { name: string; annualEvolution: Record<string, EvolutionEntry> }
+    const yearEntries = rowValue as unknown as Record<string, { value: number }>
+    const yearData: Record<string, number> = {}
+    yearKeys.forEach((y) => {
+      yearData[y] = yearEntries[y]?.value
+    })
     return {
-      [rowValue.name]: {
-        '2010': rowValue[2010].value,
-        '2015': rowValue[2015].value,
-        '2021': rowValue[2021].value,
-        annualEvolution: rowValue.annualEvolution,
+      [rv.name]: {
+        yearData,
+        annualEvolution: rv.annualEvolution,
       },
     }
   })
+
+  const periods = yearKeys.slice(0, -1).map((y, i) => `${y}-${yearKeys[i + 1]}`)
+
   const title = type === 'population-evolution' ? 'Population' : 'Menage'
   const tableTitle =
     type === 'population-evolution'
@@ -31,24 +49,32 @@ export const PopulationEvolutionTable: FC<PopulationEvolutionChartProps> = ({ da
             <th rowSpan={2} className={styles.headerCellSpan}>
               BH/EPCI
             </th>
-            <th colSpan={3} className={styles.headerCell}>
+            <th colSpan={yearKeys.length} className={styles.headerCell}>
               {title}
             </th>
-            <th colSpan={2} className={styles.headerCell}>
+            <th colSpan={periods.length} className={styles.headerCell}>
               Evolution annuelle moyenne en volume
             </th>
-            <th colSpan={2} className={styles.headerCell}>
+            <th colSpan={periods.length} className={styles.headerCell}>
               Evolution annuelle moyenne en %
             </th>
           </tr>
           <tr>
-            <th className={styles.headerCell}>2010</th>
-            <th className={styles.headerCell}>2015</th>
-            <th className={styles.headerCell}>2021</th>
-            <th className={styles.headerCell}>2010 - 2015</th>
-            <th className={styles.headerCell}>2015 - 2021</th>
-            <th className={styles.headerCell}>2010 - 2015</th>
-            <th className={styles.headerCell}>2015 - 2021</th>
+            {yearKeys.map((y) => (
+              <th key={`year-${y}`} className={styles.headerCell}>
+                {y}
+              </th>
+            ))}
+            {periods.map((p) => (
+              <th key={`evol-vol-${p}`} className={styles.headerCell}>
+                {p.replace('-', ' - ')}
+              </th>
+            ))}
+            {periods.map((p) => (
+              <th key={`evol-pct-${p}`} className={styles.headerCell}>
+                {p.replace('-', ' - ')}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -58,13 +84,21 @@ export const PopulationEvolutionTable: FC<PopulationEvolutionChartProps> = ({ da
             return (
               <tr key={key}>
                 <td className={styles.cell}>{territoryName}</td>
-                <td className={styles.cellMinWidth}>{formatNumber(territoryData['2010'])}</td>
-                <td className={styles.cellMinWidth}>{formatNumber(territoryData['2015'])}</td>
-                <td className={styles.cellMinWidth}>{formatNumber(territoryData['2021'])}</td>
-                <td className={styles.cellMinWidth}>{formatNumber(territoryData.annualEvolution['2010-2015'].value) || '-'}</td>
-                <td className={styles.cellMinWidth}>{formatNumber(territoryData.annualEvolution['2015-2021'].value) || '-'}</td>
-                <td className={styles.cellMinWidth}>{territoryData.annualEvolution['2010-2015'].percent || '-'}</td>
-                <td className={styles.cellMinWidth}>{territoryData.annualEvolution['2015-2021'].percent || '-'}</td>
+                {yearKeys.map((y) => (
+                  <td key={`val-${y}`} className={styles.cellMinWidth}>
+                    {formatNumber(territoryData.yearData[y])}
+                  </td>
+                ))}
+                {periods.map((p) => (
+                  <td key={`evol-vol-${p}`} className={styles.cellMinWidth}>
+                    {formatNumber(territoryData.annualEvolution[p]?.value) || '-'}
+                  </td>
+                ))}
+                {periods.map((p) => (
+                  <td key={`evol-pct-${p}`} className={styles.cellMinWidth}>
+                    {territoryData.annualEvolution[p]?.percent || '-'}
+                  </td>
+                ))}
               </tr>
             )
           })}
