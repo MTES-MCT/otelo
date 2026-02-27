@@ -1,6 +1,7 @@
 import { HttpModule } from '@nestjs/axios'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { AccommodationRatesModule } from '~/accommodation-rates/accommodation-rates.module'
 import { CoefficientCalculationModule } from '~/calculation/coefficient-calculation/coefficient-calculation.module'
 import { NeedsCalculationCliModule } from '~/calculation/needs-calculation/needs-calculation-cli.module'
 import { PrismaModule } from '~/db/prisma.module'
@@ -25,6 +26,7 @@ import { ScalingoBackupService } from './services/scalingo-backup.service'
     CoefficientCalculationModule,
     ScenariosModule,
     EpciGroupsModule,
+    AccommodationRatesModule,
   ],
   providers: [ScalingoBackupService, ImportBackupCommand, ImportCsvCommand, RecalculateResultsCommand, ResultsService, SimulationsService],
   exports: [ImportBackupCommand, ImportCsvCommand, RecalculateResultsCommand],
