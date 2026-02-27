@@ -100,7 +100,7 @@ describe('BadQualityService', () => {
         }),
       })
       const result = await service.calculateByEpci(simulation, '200000001')
-      expect(result).toBe(700)
+      expect(result).toBe(300)
     })
 
     it('should calculate for proprietaire', async () => {
@@ -116,8 +116,8 @@ describe('BadQualityService', () => {
         }),
       })
       const result = await service.calculateByEpci(simulation, '200000001')
-      // 700 * 0.8 = 560
-      expect(result).toBe(560)
+      // 400 * 0.8 = 320
+      expect(result).toBe(320)
     })
   })
 

@@ -280,7 +280,7 @@ describe('ExportExcelService', () => {
         expect(row.getCell(3).value).toBe(epciTotals.totalFlux)
         // peakYear (2035) > 2021 → uses prepeakTotalStock
         expect(row.getCell(4).value).toBe(epciTotals.prepeakTotalStock)
-        expect(row.getCell(5).value).toBe(epciTotals.totalFlux + epciTotals.prepeakTotalStock)
+        expect(row.getCell(5).value).toBe(epciTotals.total)
         expect(row.getCell(6).value).toBe(epciTotals.vacantAccomodation)
         // projection (2041) > peakYear (2035) → display peakYear
         expect(row.getCell(7).value).toBe(flowEpci.data.peakYear)
@@ -290,8 +290,8 @@ describe('ExportExcelService', () => {
         const totalRow = syntheseSheet.getRow(8)
         expect(totalRow.getCell(1).value).toBe('Ensemble des EPCI')
         expect(totalRow.getCell(3).value).toBe(epciTotals.totalFlux)
-        expect(totalRow.getCell(4).value).toBe(epciTotals.totalStock)
-        expect(totalRow.getCell(5).value).toBe(epciTotals.totalFlux + epciTotals.totalStock)
+        expect(totalRow.getCell(4).value).toBe(epciTotals.prepeakTotalStock)
+        expect(totalRow.getCell(5).value).toBe(epciTotals.total)
         expect(totalRow.getCell(6).value).toBe(epciTotals.vacantAccomodation)
       })
     })
@@ -440,9 +440,9 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('D35').value).toBe('100 %')
         expect(epciSheet.getCell('D36').value).toBe('50 %')
         expect(epciSheet.getCell('D37').value).toBe('50 %')
-        expect(epciSheet.getCell('D39').value).toBe('10 %')
-        expect(epciSheet.getCell('D40').value).toBe('10 %')
-        expect(epciSheet.getCell('D41').value).toBe('10 %')
+        expect(epciSheet.getCell('D39').value).toBe('90 %')
+        expect(epciSheet.getCell('D40').value).toBe('90 %')
+        expect(epciSheet.getCell('D41').value).toBe('90 %')
       })
     })
 
@@ -752,16 +752,16 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('D35').value).toBe('100 %')
         expect(epciSheet.getCell('D36').value).toBe('50 %') // b11_part_etablissement
         expect(epciSheet.getCell('D37').value).toBe('30 %') // b12_cohab_interg_subie
-        expect(epciSheet.getCell('D39').value).toBe('90 %') // b13_taux_reallocation
+        expect(epciSheet.getCell('D39').value).toBe('10 %') // b13_taux_reallocation
         expect(epciSheet.getCell('D40').value).toBe('50 %') // b14_taux_reallocation
-        expect(epciSheet.getCell('D41').value).toBe('90 %') // b15_taux_reallocation
+        expect(epciSheet.getCell('D41').value).toBe('10 %') // b15_taux_reallocation
       })
     })
 
     describe('mal-logement labels', () => {
       it('should show Filo source labels for A40 and A41', () => {
         expect(epciSheet.getCell('A40').value).toBe('Mauvaise qualité - PPPI Noyau dur (CGDD/SDES à partir de données fiscales)')
-        expect(epciSheet.getCell('A41').value).toBe('Logements suroccupés - CGDD/SDES')
+        expect(epciSheet.getCell('A41').value).toBe('Logements suroccupés - CGDD/SDES à partir de données fiscales')
       })
 
       it('should show 4 FINESS établissements in B36', () => {

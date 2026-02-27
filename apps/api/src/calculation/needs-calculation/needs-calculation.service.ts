@@ -48,8 +48,10 @@ export class NeedsCalculationService {
       if (epciConstructionsNeuves > 0) {
         total += epciConstructionsNeuves
         totalFlux += epciTotalFlux
-        totalStock += epciTotalStock.prePeakTotal
       }
+
+      // Stock (mal-logement) is always accumulated regardless of construction needs
+      totalStock += peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total
 
       const epciVacantAccomodation =
         epciFlowRequirement.totals.longTermVacantAccomodation <= 0 ? epciFlowRequirement.totals.longTermVacantAccomodation : 0

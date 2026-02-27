@@ -8,6 +8,8 @@ import {
   getHostedLabel,
   getMenagesLabel,
   getNoAccommodationLabel,
+  getNoAccommodationModalitiesLabel,
+  getOccupationLabel,
   getOmphaleKey,
   getPopulationKey,
   getPopulationLabel,
@@ -225,6 +227,7 @@ export class ExportExcelService {
     let currentRow = 7
     let totalFluxSum = 0
     let totalStockSum = 0
+    let totalConstructionsNeuvesSum = 0
     let totalVacantSum = 0
     let shouldSetLegend = false
 
@@ -238,13 +241,17 @@ export class ExportExcelService {
       const peakYearDisplay = peakYear && simulation.scenario.projection <= peakYear ? '*' : peakYear
       shouldSetLegend = peakYearDisplay === '*'
 
+      const fluxValue = epciTotals.total > 0 ? epciTotals.totalFlux : 0
+      const stockValue = peakYear && peakYear > 2021 ? epciTotals.prepeakTotalStock : epciTotals.totalStock
+      const constructionsNeuves = epciTotals.total > 0 ? epciTotals.total : 0
+
       const dataRow = syntheseWorksheet.getRow(currentRow)
       dataRow.values = [
         epciScenario.epciCode,
         simulation.epcis.find((epci) => epci.code === epciScenario.epciCode)?.name,
-        epciTotals.totalFlux, // Besoin démographique
-        peakYear && peakYear > 2021 ? epciTotals.prepeakTotalStock : epciTotals.totalStock, // Besoin mal-logement
-        epciTotals.totalFlux + (peakYear && peakYear > 2021 ? epciTotals.prepeakTotalStock : epciTotals.totalStock), // Total constructions neuves
+        fluxValue, // Besoin démographique
+        stockValue, // Besoin mal-logement
+        constructionsNeuves, // Total constructions neuves
         epciTotals.vacantAccomodation, // Total remobilisation
         peakYearDisplay, // Année du peak ou '*'
       ]
@@ -281,8 +288,9 @@ export class ExportExcelService {
       }
       epciCodeCell.font = { bold: true }
 
-      totalFluxSum += epciTotals.totalFlux
-      totalStockSum += epciTotals.totalStock
+      totalFluxSum += fluxValue
+      totalStockSum += stockValue
+      totalConstructionsNeuvesSum += constructionsNeuves
       totalVacantSum += epciTotals.vacantAccomodation
 
       currentRow++
@@ -291,7 +299,7 @@ export class ExportExcelService {
     // Total row
     syntheseWorksheet.mergeCells(`A${currentRow}:B${currentRow}`)
     const totalRow = syntheseWorksheet.getRow(currentRow)
-    totalRow.values = ['Ensemble des EPCI', '', totalFluxSum, totalStockSum, totalFluxSum + totalStockSum, totalVacantSum]
+    totalRow.values = ['Ensemble des EPCI', '', totalFluxSum, totalStockSum, totalConstructionsNeuvesSum, totalVacantSum]
 
     // Total row style
     totalRow.font = { bold: true, color: { argb: 'FFFFFF' } }
@@ -649,6 +657,11 @@ export class ExportExcelService {
         row: 35,
         label: `Sans-abri - ${getSource(simulation.scenario.source_b11)}`,
         percentage: `100 %`,
+        value: getNoAccommodationModalitiesLabel(
+          simulation.scenario.b11_hotel,
+          simulation.scenario.b11_sa,
+          simulation.scenario.b11_fortune,
+        ),
       },
       {
         row: 36,
@@ -658,31 +671,32 @@ export class ExportExcelService {
       },
       {
         row: 37,
-        label: 'Cohabitation intergénérationnelle présumée subie',
+        label: 'Cohabitation intergénérationnelle présumée subie - CGDD/SDES à partir de données fiscales',
         percentage: `${simulation.scenario.b12_cohab_interg_subie} %`,
         value: null,
       },
       {
         row: 38,
         label: 'Hébergés - SNE',
+        percentage: '100 %',
         value: getHostedLabel(simulation.scenario.b12_heberg_temporaire, simulation.scenario.b12_heberg_particulier),
       },
       {
         row: 39,
         label: 'Inadéquation financière - CNAF',
-        percentage: `${simulation.scenario.b13_taux_reallocation} %`,
+        percentage: `${100 - simulation.scenario.b13_taux_reallocation} %`,
         value: `${getBadHousingCategoryLabel(simulation.scenario.b13_plp, simulation.scenario.b13_acc)} - Taux effort ${simulation.scenario.b13_taux_effort} %`,
       },
       {
         row: 40,
         label: `Mauvaise qualité - ${getSource(simulation.scenario.source_b14, true)}`,
-        percentage: `${simulation.scenario.b14_taux_reallocation} %`,
-        value: null,
+        percentage: `${100 - simulation.scenario.b14_taux_reallocation} %`,
+        value: getOccupationLabel(simulation.scenario.b14_occupation),
       },
       {
         row: 41,
         label: `Logements suroccupés - ${getSource(simulation.scenario.source_b15, false)}`,
-        percentage: `${simulation.scenario.b15_taux_reallocation} %`,
+        percentage: `${100 - simulation.scenario.b15_taux_reallocation} %`,
         value: `${getBadHousingCategoryLabel(simulation.scenario.b15_proprietaire, simulation.scenario.b15_loc_hors_hlm)} - Niveau : ${getSurroccLabel(simulation.scenario.b15_surocc)}`,
       },
     ]
@@ -1330,7 +1344,7 @@ export class ExportExcelService {
 
   private setColumnWidths(epciWorksheet: ExcelJS.Worksheet): void {
     const columnWidths = {
-      A: 65,
+      A: 80,
       B: 40,
       C: 30,
       D: 20,

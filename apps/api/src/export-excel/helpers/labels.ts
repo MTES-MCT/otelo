@@ -91,7 +91,7 @@ export const getOmphaleKey = (scenario: string) => {
 export const getSource = (key: string, isBadQuality?: boolean) => {
   switch (key) {
     case 'Filo':
-      return isBadQuality ? 'PPPI Noyau dur (CGDD/SDES à partir de données fiscales)' : 'CGDD/SDES'
+      return isBadQuality ? 'PPPI Noyau dur (CGDD/SDES à partir de données fiscales)' : 'CGDD/SDES à partir de données fiscales'
     case 'FF':
       return 'Fichiers Fonciers'
     case 'RP':
@@ -139,7 +139,7 @@ export const getHostedLabel = (temporary: boolean, particulier: boolean) => {
 
 export const getBadHousingCategoryLabel = (loc: boolean, acc: boolean) => {
   if (loc && acc) {
-    return 'Propriétaire - Locataires du parc privé'
+    return 'Propriétaire et Locataires du parc privé'
   }
   if (acc) {
     return 'Propriétaire'
@@ -147,6 +147,23 @@ export const getBadHousingCategoryLabel = (loc: boolean, acc: boolean) => {
   if (loc) {
     return 'Locataires du parc privé'
   }
+  return null
+}
+
+export const getNoAccommodationModalitiesLabel = (hotel: boolean, sa: boolean, fortune: boolean) => {
+  const parts: string[] = []
+  if (hotel) parts.push("Logés à l'hôtel")
+  if (sa) parts.push('Sans Abris')
+  if (fortune) parts.push('Habitations de Fortune')
+  return parts.length > 0 ? parts.join(' - ') : null
+}
+
+export const getOccupationLabel = (occupation: string) => {
+  const hasLoc = occupation.includes('loc')
+  const hasProp = occupation.includes('prop')
+  if (hasLoc && hasProp) return 'Propriétaire et Locataires du parc privé'
+  if (hasProp) return 'Propriétaire'
+  if (hasLoc) return 'Locataires du parc privé'
   return null
 }
 
