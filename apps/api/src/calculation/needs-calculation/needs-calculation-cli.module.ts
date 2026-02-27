@@ -12,21 +12,31 @@ import { BadQualityService } from '~/calculation/needs-calculation/besoins-stock
 import { NeedsCalculationService } from '~/calculation/needs-calculation/needs-calculation.service'
 import { SitadelService } from '~/calculation/needs-calculation/sitadel/sitadel.service'
 import { RatioCalculationModule } from '~/calculation/ratio-calculation/ratio-calculation.module'
+import { DataPackVersionsModule } from '~/data-pack-versions/data-pack-versions.module'
+import { DataPackVersionsService } from '~/data-pack-versions/data-pack-versions.service'
 import { PrismaModule } from '~/db/prisma.module'
 import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
 import { StockRequirementsService } from '~/stock-requirements/stock-requirements.service'
 import { VacancyModule } from '~/vacancy/vacancy.module'
 
-// todo - get data version pack enabled
-export const CLI_CALCULATION_CONTEXT = { coefficient: 1, baseYear: 2021, millesime: '2021' }
-
 @Module({
   exports: [NeedsCalculationService, 'CalculationContext'],
-  imports: [PrismaModule, CoefficientCalculationModule, RatioCalculationModule, VacancyModule, AccommodationRatesModule],
+  imports: [
+    PrismaModule,
+    CoefficientCalculationModule,
+    RatioCalculationModule,
+    VacancyModule,
+    AccommodationRatesModule,
+    DataPackVersionsModule,
+  ],
   providers: [
     {
       provide: 'CalculationContext',
-      useValue: CLI_CALCULATION_CONTEXT,
+      useFactory: async (dataPackVersionsService: DataPackVersionsService) => {
+        const activeVersion = await dataPackVersionsService.getActive()
+        return { coefficient: 1, baseYear: Number(activeVersion.millesime), millesime: activeVersion.millesime }
+      },
+      inject: [DataPackVersionsService],
     },
     NeedsCalculationService,
     NoAccomodationService,

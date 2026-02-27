@@ -18,7 +18,6 @@ export const SelectSuroccupationLevel = () => {
       <option value="" selected disabled hidden>
         Selectionnez une option
       </option>
-      {/* todo */}
       <option value="AccMod">Suroccupation modérée et accentuée</option>
       <option value="Acc">Suroccupation accentuée</option>
     </Select>

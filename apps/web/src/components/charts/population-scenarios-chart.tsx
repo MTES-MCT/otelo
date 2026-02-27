@@ -136,13 +136,15 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
           ))}
         </div>
       </div>
+
+
       {queryStates.population &&
         (() => {
           const scenario = queryStates.population as keyof typeof popEvolution
-          const popAt2021 = basePopulation[scenario] as number
+          const popBase = basePopulation[scenario] as number
           const popAtProjection = popEvolution[scenario] as number
-          const periodYears = Number(period) - 2021
-          const tcam = periodYears > 0 && popAt2021 > 0 ? (Math.pow(popAtProjection / popAt2021, 1 / periodYears) - 1) * 100 : 0
+          const periodYears = Number(period) - Number(queryStates.millesime)
+          const tcam = periodYears > 0 && popBase > 0 ? (Math.pow(popAtProjection / popBase, 1 / periodYears) - 1) * 100 : 0
 
           return (
             <CallOut
@@ -157,11 +159,11 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
               <span className="fr-text--md">
                 <span>
                   Ce scénario anticipe une évolution de la population de <strong>{evol > 0 ? `+${evol}` : evol}</strong> habitant
-                  {sPluriel(evol)} sur la période 2021 - {period}.
+                  {sPluriel(evol)} sur la période {queryStates.millesime} - {period}.
                 </span>
                 <br />
                 <span>
-                  Soit un taux de croissance annuel moyen de <strong>{tcam.toFixed(2)} %</strong> sur la période 2021 - {period}.
+                  Soit un taux de croissance annuel moyen de <strong>{tcam.toFixed(2)} %</strong> sur la période {queryStates.millesime} - {period}.
                 </span>
                 <br />
                 <span className="fr-text--sm fr-text-mention--grey fr-mb-0">Source des données : INSEE</span>

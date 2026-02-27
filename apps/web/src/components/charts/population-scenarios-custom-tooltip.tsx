@@ -1,3 +1,4 @@
+import { useQueryState } from 'nuqs'
 import { NameType, Payload as TooltipPayload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { tss } from 'tss-react'
 import { TPopulationEvolution } from '~/schemas/demographic-evolution'
@@ -14,6 +15,7 @@ export const PopulationScenariosCustomTooltip = ({
   payload?: TooltipPayload<ValueType, NameType>[]
   basePopulation: TPopulationEvolution
 }) => {
+  const [millesime] = useQueryState('millesime')
   const { classes } = useStyles()
   if (!active || !payload?.length) return null
   return (
@@ -28,8 +30,7 @@ export const PopulationScenariosCustomTooltip = ({
             <div className={classes.tooltipContent}>
               <span className={classes.tooltipLabel}>
                 {item.name}: <strong>{evol > 0 ? `+${formatNumber(evol)}` : formatNumber(evol)}</strong> habitants par rapport à{' '}
-                {/* todo millesime */}
-                <strong>2021</strong>
+                <strong>{millesime}</strong>
               </span>
               <span className={classes.tooltipSmallText}>({formatNumber(item.value)} habitants)</span>
             </div>
