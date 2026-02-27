@@ -8,7 +8,7 @@ const ZCreateScenario = ZExternalUpdateScenario.omit({ epciScenarios: true }).ex
   b2_scenario: z
     .enum(B2_SCENARIOS)
     .describe('Scénario démographique : Population (Central, PH=haute, PB=basse) + Ménages (B=décélération, C=tendanciel, H=accélération)'),
-  projection: z.number().int().min(2021).max(2050).describe('Année de projection (entre 2021 et 2050)'),
+  projection: z.number().int().min(2020).max(2050).describe('Année de projection (entre 2021 et 2050)'),
   epcis: z
     .record(
       z.string(),
@@ -97,7 +97,7 @@ const ZSimulationListItem = z.object({
   ),
   scenario: z.object({
     b2_scenario: z.enum(B2_SCENARIOS),
-    projection: z.number().int().min(2021).max(2050),
+    projection: z.number().int().min(2020).max(2050),
   }),
   epciGroup: z.object({ id: z.string(), name: z.string() }).optional(),
 })

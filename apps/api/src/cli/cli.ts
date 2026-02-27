@@ -72,7 +72,7 @@ async function bootstrap() {
         "Importe un fichier CSV dans une table de données d'Otelo.",
         '',
         'Par défaut, génère le SQL INSERT sans exécuter (mode dry-run).',
-        "Utiliser --execute pour insérer directement en base locale.",
+        'Utiliser --execute pour insérer directement en base locale.',
         'Utiliser --output <fichier.sql> pour écrire le SQL dans un fichier.',
         '',
         'Le SQL utilise ON CONFLICT DO NOTHING : les doublons sont ignorés.',
@@ -87,9 +87,14 @@ async function bootstrap() {
       ].join('\n'),
     )
     .requiredOption('--table <name>', 'Nom de la table PostgreSQL (ex: rp, sitadel, homeless...)')
-    .requiredOption('--csv <path>', 'Chemin(s) du/des fichier(s) CSV (répétable)', (val: string, prev: string[]) => prev.concat(val), [] as string[])
+    .requiredOption(
+      '--csv <path>',
+      'Chemin(s) du/des fichier(s) CSV (répétable)',
+      (val: string, prev: string[]) => prev.concat(val),
+      [] as string[],
+    )
     .option('--millesime <value>', 'Millésime à injecter (ex: 2024). Créé automatiquement si inexistant.')
-    .option('--execute', "Exécuter le SQL directement en base (⚠ local uniquement !)")
+    .option('--execute', 'Exécuter le SQL directement en base (⚠ local uniquement !)')
     .option('--output <path>', 'Écrire le SQL dans un fichier au lieu de stdout')
     .action(async (options) => {
       try {

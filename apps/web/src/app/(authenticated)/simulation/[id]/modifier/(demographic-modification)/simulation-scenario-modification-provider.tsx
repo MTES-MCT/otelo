@@ -7,6 +7,7 @@ export interface SimulationInitialSettings {
   projection: number
   simulationId: string
   b2_scenario: string
+  millesime: string
   epciScenarios: TScenario['epciScenarios']
 }
 
@@ -15,6 +16,7 @@ export interface SimulationSettings {
   projection: number
   simulationId: string
   b2_scenario: string
+  millesime: string
   epciScenarios: TEpcisAccommodationRates
 }
 

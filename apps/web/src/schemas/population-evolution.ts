@@ -49,51 +49,35 @@ export const ZRPPopulationEvolution = z.object({
 
 export type TRPPopulationEvolution = z.infer<typeof ZRPPopulationEvolution>
 
-const ZDemographicProjectionDataTableRow = z.object({
-  '2021': z.object({
-    basse: z.number(),
-    central: z.number(),
-    haute: z.number(),
-  }),
-  '2030': z.object({
-    basse: z.number(),
-    central: z.number(),
-    haute: z.number(),
-  }),
-  '2040': z.object({
-    basse: z.number(),
-    central: z.number(),
-    haute: z.number(),
-  }),
-  '2050': z.object({
-    basse: z.number(),
-    central: z.number(),
-    haute: z.number(),
-  }),
-  maxYears: z.object({
-    basse: z.number(),
-    central: z.number(),
-    haute: z.number(),
-  }),
-  annualEvolution: z.record(
-    z.string(),
-    z.object({
-      basse: z.object({
-        percent: z.string(),
-        value: z.number(),
-      }),
-      central: z.object({
-        percent: z.string(),
-        value: z.number(),
-      }),
-      haute: z.object({
-        percent: z.string(),
-        value: z.number(),
-      }),
-    }),
-  ),
-  name: z.string(),
+const ZYearData = z.object({
+  basse: z.number(),
+  central: z.number(),
+  haute: z.number(),
 })
+
+const ZDemographicProjectionDataTableRow = z
+  .object({
+    maxYears: ZYearData,
+    annualEvolution: z.record(
+      z.string(),
+      z.object({
+        basse: z.object({
+          percent: z.string(),
+          value: z.number(),
+        }),
+        central: z.object({
+          percent: z.string(),
+          value: z.number(),
+        }),
+        haute: z.object({
+          percent: z.string(),
+          value: z.number(),
+        }),
+      }),
+    ),
+    name: z.string(),
+  })
+  .catchall(ZYearData)
 
 export type TDemographicProjectionDataTableRow = z.infer<typeof ZDemographicProjectionDataTableRow>
 

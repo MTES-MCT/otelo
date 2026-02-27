@@ -7,7 +7,8 @@ import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/mod
 export const UpdateProjectionPeriod: FC = () => {
   const { simulationSettings, setSimulationSettings } = useSimulationSettings()
 
-  const { projection } = simulationSettings
+  const { projection, millesime } = simulationSettings
+  const minYear = millesime ? Number(millesime) : 2021
 
   const handleChange = (value: string) => setSimulationSettings({ ...simulationSettings, projection: Number(value) })
 
@@ -15,7 +16,7 @@ export const UpdateProjectionPeriod: FC = () => {
     <Range
       label="Faites glisser le curseur pour établir l'horizon de temps du scénario."
       max={2050}
-      min={2021}
+      min={minYear}
       nativeInputProps={{
         onChange: (e) => handleChange(e.target.value),
         value: projection,

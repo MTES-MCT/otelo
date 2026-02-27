@@ -26,8 +26,6 @@ export const RPAccommodationEvolutionChart: FC<RPAccommodationEvolutionChart> = 
 
   const SOURCE_OPTIONS = [
     { label: 'RP (INSEE)', value: 'rp' },
-    // todo : reenable as soon as filocom data is available
-    // ...(type === 'residences-secondaires' ? [{ label: 'FILOCOM', value: 'filocom' }] : []),
     ...(type === 'logements-vacants' ? [{ label: 'Fichiers Fonciers', value: 'lovac' }] : []),
   ]
   const { classes } = useStyles()

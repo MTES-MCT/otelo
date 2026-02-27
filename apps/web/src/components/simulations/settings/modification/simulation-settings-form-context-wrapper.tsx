@@ -17,6 +17,7 @@ export const SimulationSettingsFormContextWrapper = ({ children }: SimulationSet
     projection: scenario.projection,
     simulationId: id,
     b2_scenario: scenario.b2_scenario,
+    millesime: scenario.millesime,
     epciScenarios: scenario.epciScenarios,
   }
 

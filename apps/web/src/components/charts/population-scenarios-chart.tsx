@@ -149,8 +149,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
           <span className="fr-text--md">
             <span>
               Ce scénario anticipe une évolution de la population de <strong>{evol > 0 ? `+${evol}` : evol}</strong> habitant
-              {/* todo - millesime */}
-              {sPluriel(evol)} sur la période 2021 - {period}.
+              {sPluriel(evol)} sur la période {queryStates.millesime} - {period}.
             </span>
             <br />
             <span className="fr-text--sm fr-text-mention--grey fr-mb-0">Source des données : INSEE</span>

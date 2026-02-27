@@ -13,9 +13,11 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const ids = searchParams.getAll('ids')
+    const millesime = searchParams.get('millesime')
 
     const params = new URLSearchParams()
     ids.forEach((id) => params.append('ids', id))
+    if (millesime) params.append('millesime', millesime)
     const queryString = params.toString()
 
     const response = await authFetch(`/demographic-evolution-custom/find-many?${queryString}`, {
