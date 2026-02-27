@@ -1,6 +1,5 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
 import Select from '@codegouvfr/react-dsfr/Select'
 import { parseAsString, useQueryStates } from 'nuqs'
@@ -23,6 +22,7 @@ export const BadHousingChart: FC<BadHousingChartProps> = ({ data }) => {
   const [queryStates, setQueryStates] = useQueryStates({
     type: parseAsString,
     epci: parseAsString,
+    millesime: parseAsString,
   })
   const { classes } = useStyles()
 
@@ -39,11 +39,11 @@ export const BadHousingChart: FC<BadHousingChartProps> = ({ data }) => {
   const chartDataOteloParams = [
     {
       name: chartData[0].name,
-      noAccommodation: chartData[0].noAccommodation * 0.5,
-      hosted: chartData[0].hosted * 0.3,
-      financialInadequation: chartData[0].financialInadequation * 0.3,
-      badQuality: chartData[0].badQuality * 0.5,
-      physicalInadequation: chartData[0].physicalInadequation * 0.9,
+      noAccommodation: Math.round(chartData[0].noAccommodation * 0.5),
+      hosted: Math.round(chartData[0].hosted * 0.3),
+      financialInadequation: Math.round(chartData[0].financialInadequation * 0.3),
+      badQuality: Math.round(chartData[0].badQuality * 0.5),
+      physicalInadequation: Math.round(chartData[0].physicalInadequation * 0.9),
     },
   ]
 
@@ -157,54 +157,53 @@ export const BadHousingChart: FC<BadHousingChartProps> = ({ data }) => {
 
   const chartDescription = withOteloParams ? (
     <>
-      <p className={fr.cx('fr-mb-0')}>
-        <span className={fr.cx('fr-text--bold')}>Clé de lecture :</span> Ce graphique présente une estimation du besoin en production de
-        nouveaux logements induit par les situations de mal-logement identifiées sur le territoire de {name}. Chacune de ces situations ne
-        génère pas nécessairement un besoin en logements supplémentaires : certaines peuvent être résolues par des actions sur le parc
-        existant (réhabilitation, relogement, accompagnement social, etc.).
+      <p className="fr-mb-0">
+        <span className="fr-text--bold">Clé de lecture :</span> Ce graphique présente une estimation du besoin en production de nouveaux
+        logements induit par les situations de mal-logement identifiées sur le territoire de {name}. Chacune de ces situations ne génère pas
+        nécessairement un besoin en logements supplémentaires : certaines peuvent être résolues par des actions sur le parc existant
+        (réhabilitation, relogement, accompagnement social, etc.).
       </p>
       <p>
         Le passage du nombre de personnes mal-logées au besoin en logements repose sur un paramétrage par défaut, commun à l'ensemble des
         territoires. Ce paramétrage détermine, pour chaque type de situation, la part considérée comme nécessitant un logement
         supplémentaire.
       </p>
-      <p className={fr.cx('fr-mb-0')}>
+      <p className="fr-mb-0">
         Pour {name}, le paramétrage par défaut estime à {formatNumber(totalVolume)} le nombre de logements à produire pour résorber le
         mal-logement. Les {getMaxCategoryLabel()} représente {maxPercentage}% des besoins liés aux situations de mal-logement, soit{' '}
         {formatNumber(maxValue)} logements.
       </p>
-      <p className={fr.cx('fr-mb-0')}>
+      <p className="fr-mb-0">
         Pour en savoir plus sur le paramétrage par défaut (notamment les pourcentages appliqués par type de mal-logement), vous pouvez
         consulter le guide d'utilisation, onglet "Mal-logement", section "Paramétrage des besoins en logements neufs".
       </p>
     </>
   ) : (
     <>
-      <p className={fr.cx('fr-mb-0')}>
-        <span className={fr.cx('fr-text--bold')}>Clé de lecture :</span> Ce graphique présente le nombre de mal-logés par typologie de
-        mal-logement sur le territoire de {name}. Chacune de ces situations ne génère pas nécessairement un besoin en logements
-        supplémentaires : certaines peuvent être résolues par des actions sur le parc existant (réhabilitation, relogement, accompagnement
-        social, etc.). La part à prendre en compte est paramétrable lors de l’élaboration d’un scenario, via l’espace “Paramétrer le
-        mal-logement” de la page de résultat.
+      <p className="fr-mb-0">
+        <span className="fr-text--bold">Clé de lecture :</span> Ce graphique présente le nombre de mal-logés par typologie de mal-logement
+        sur le territoire de {name}. Chacune de ces situations ne génère pas nécessairement un besoin en logements supplémentaires :
+        certaines peuvent être résolues par des actions sur le parc existant (réhabilitation, relogement, accompagnement social, etc.). La
+        part à prendre en compte est paramétrable lors de l’élaboration d’un scenario, via l’espace “Paramétrer le mal-logement” de la page
+        de résultat.
       </p>
       <p>On retrouve sur le territoire :</p>
       <ul>
         <li>
-          {/* todo millesime */}
-          <span className={fr.cx('fr-text--bold')}>Mauvaise qualité</span> : {formatNumber(chartData[0].badQuality)} ménages habitant un
-          logement indigne, d’après le le Parc privé potentiellement indigne (2021) ;
+          <span className="fr-text--bold">Mauvaise qualité</span> : {formatNumber(chartData[0].badQuality)} ménages habitant un logement
+          indigne, d’après le le Parc privé potentiellement indigne ({queryStates.millesime}) ;
         </li>
         <li>
-          <span className={fr.cx('fr-text--bold')}>Inadéquation financière</span> : {formatNumber(chartData[0].financialInadequation)}
+          <span className="fr-text--bold">Inadéquation financière</span> : {formatNumber(chartData[0].financialInadequation)}
           &nbsp; ménages locataires du parc privé ayant un taux d’effort supérieur à 30% et bénéficiant des APL (CNAF 2022) ;
         </li>
         <li>
-          <span className={fr.cx('fr-text--bold')}>Inadéquation physique</span> : {formatNumber(chartData[0].physicalInadequation)}
-          &nbsp; ménages dans un logement trop petit. Les données fiscales (2021) sont mobilisées pour quantifier le nombre de propriétaires
-          et locataires du parc privé vivant dans un logement comprenant deux pièces en moins ;
+          <span className="fr-text--bold">Inadéquation physique</span> : {formatNumber(chartData[0].physicalInadequation)}
+          &nbsp; ménages dans un logement trop petit. Les données fiscales ({queryStates.millesime}) sont mobilisées pour quantifier le
+          nombre de propriétaires et locataires du parc privé vivant dans un logement comprenant deux pièces en moins ;
         </li>
         <li>
-          <span className={fr.cx('fr-text--bold')}>Hébergés</span> :
+          <span className="fr-text--bold">Hébergés</span> :
           <ul>
             <li>
               {formatNumber(data[queryStates.epci as string].hosted.sne)} personnes hébergés chez un tiers, ou à titre temporaire d’après le
@@ -214,11 +213,11 @@ export const BadHousingChart: FC<BadHousingChartProps> = ({ data }) => {
           </ul>
         </li>
         <li>
-          <span className={fr.cx('fr-text--bold')}>Sans logement</span> :
+          <span className="fr-text--bold">Sans logement</span> :
           <ul>
             <li>
               {formatNumber(homelessMakeshiftHotelSum)} personnes sans abri, vivant en habitation de fortune, ou logées à l’hôtel, d’après
-              les données du recensement de la population (2021). ;
+              les données du recensement de la population ({queryStates.millesime}). ;
             </li>
             <li>
               {formatNumber(data[queryStates.epci as string].noAccommodation.finess)} logés dans un hébergement d’urgence (FINESS 2022 -
@@ -232,7 +231,7 @@ export const BadHousingChart: FC<BadHousingChartProps> = ({ data }) => {
   return (
     <>
       <div className="fr-flex fr-justify-content-space-between">
-        <h2 className={fr.cx('fr-h5')}>
+        <h2 className="fr-h5">
           {title} - {name}
         </h2>
         <div className="fr-flex fr-direction-column fr-align-items-end">

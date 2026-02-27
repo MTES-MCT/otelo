@@ -2,7 +2,7 @@
 
 import Button from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
-import { parseAsBoolean, useQueryState } from 'nuqs'
+import { parseAsBoolean, parseAsString, useQueryState } from 'nuqs'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import styles from './parc-comparison-charts.module.css'
@@ -30,6 +30,8 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
   const ratesByEpci = rates[epci]
   const defaultRatesByEpci = defaultRates[epci]
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
+  const [millesime] = useQueryState('millesime', parseAsString.withDefault('2021'))
+  const baseYear = millesime || '2021'
 
   if (!ratesByEpci || !defaultRatesByEpci) return null
 
@@ -43,10 +45,10 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
   // Calculate dynamic scale with round numbers and unified scale
   // Always include secondary accommodation in scale calculation to ensure consistent scale across pages
   const calculateUnifiedScale = () => {
-    const vacancy2021 = shortTermRate + originalLongTermRate + originalSecondaryAccommodationRate
+    const vacancyBaseYear = shortTermRate + originalLongTermRate + originalSecondaryAccommodationRate
     const vacancyComputed = shortTermRate + computedLongTermRate + computedSecondaryAccommodationRate
 
-    const maxVacancy = Math.max(vacancy2021, vacancyComputed)
+    const maxVacancy = Math.max(vacancyBaseYear, vacancyComputed)
 
     // Use dynamic scale if max vacancy rates are low, otherwise use 100%
     if (maxVacancy < 30) {
@@ -95,7 +97,7 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
     ]
   }
 
-  const data2021 = createScaledData(shortTermRate, originalLongTermRate, originalSecondaryAccommodationRate, unifiedScale)
+  const dataBaseYear = createScaledData(shortTermRate, originalLongTermRate, originalSecondaryAccommodationRate, unifiedScale)
   const computedData = createScaledData(shortTermRate, computedLongTermRate, computedSecondaryAccommodationRate, unifiedScale)
 
   const CustomBar = ({ data, height = 32 }: CustomBarProps) => (
@@ -170,8 +172,8 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
               </div>
               {/* 2021 Section */}
               <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
-                <span className="fr-text--medium">Le parc en 2021</span>
-                <CustomBar data={data2021} />
+                <span className="fr-text--medium">{`Le parc en ${baseYear}`}</span>
+                <CustomBar data={dataBaseYear} />
               </div>
 
               {/* projection section */}

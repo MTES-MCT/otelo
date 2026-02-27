@@ -49,13 +49,7 @@ interface ParsedCsv {
 export class ImportCsvCommand {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(options: {
-    table: string
-    csv: string | string[]
-    millesime?: string
-    execute?: boolean
-    output?: string
-  }): Promise<void> {
+  async execute(options: { table: string; csv: string | string[]; millesime?: string; execute?: boolean; output?: string }): Promise<void> {
     const { table, csv: csvInput, millesime, execute = false, output } = options
     const csvPaths = Array.isArray(csvInput) ? csvInput : [csvInput]
 
@@ -140,15 +134,17 @@ export class ImportCsvCommand {
     const targetDbColumns = dbColumnNames.filter((c) => !autoColumns.has(c))
 
     // If millesime provided, we inject it — don't expect it in CSV
-    const columnsToMapFromCsv = millesime && hasMillesimeColumn
-      ? targetDbColumns.filter((c) => c !== 'millesime')
-      : targetDbColumns
+    const columnsToMapFromCsv = millesime && hasMillesimeColumn ? targetDbColumns.filter((c) => c !== 'millesime') : targetDbColumns
 
     // 6. Parse each CSV and build mappings
     const parsedCsvs: ParsedCsv[] = []
     for (const absPath of absoluteCsvPaths) {
       const csvContent = fs.readFileSync(absPath, 'utf-8')
-      const { data: rows, errors, meta } = Papa.parse<Record<string, string>>(csvContent, {
+      const {
+        data: rows,
+        errors,
+        meta,
+      } = Papa.parse<Record<string, string>>(csvContent, {
         header: true,
         skipEmptyLines: true,
         dynamicTyping: false,
@@ -174,7 +170,9 @@ export class ImportCsvCommand {
         }
       })
 
-      const unmappedCsv = Object.entries(mapping).filter(([, dbCol]) => dbCol === null).map(([h]) => h)
+      const unmappedCsv = Object.entries(mapping)
+        .filter(([, dbCol]) => dbCol === null)
+        .map(([h]) => h)
       if (unmappedCsv.length > 0) {
         console.log(`  ⚠  Colonnes CSV ignorées : ${unmappedCsv.join(', ')}`)
       }
@@ -364,9 +362,7 @@ export class ImportCsvCommand {
         }
 
         // Check if any NOT NULL column has a NULL value
-        const nullNotNullCols = allMappedDbColumns.filter((dbCol, i) =>
-          notNullColumns.has(dbCol) && values[i] === 'NULL'
-        )
+        const nullNotNullCols = allMappedDbColumns.filter((dbCol, i) => notNullColumns.has(dbCol) && values[i] === 'NULL')
         if (nullNotNullCols.length > 0) {
           totalCommented++
           return `  -- NULL sur NOT NULL (${nullNotNullCols.join(', ')}) : (${values.join(', ')})${comma}`
@@ -392,7 +388,9 @@ export class ImportCsvCommand {
       console.log(`\n🚀 Exécution en cours sur la base locale...`)
       try {
         await this.prisma.$executeRawUnsafe(sql)
-        console.log(`✓ ${insertedCount} lignes importées avec succès (${totalCommented} ignorée(s) car NULL sur NOT NULL, doublons ignorés).`)
+        console.log(
+          `✓ ${insertedCount} lignes importées avec succès (${totalCommented} ignorée(s) car NULL sur NOT NULL, doublons ignorés).`,
+        )
       } catch (error) {
         console.error(`\n✗ Erreur SQL :`, error instanceof Error ? error.message : error)
         console.error(`\nLe SQL a été écrit dans import-error.sql pour debug.`)
@@ -403,7 +401,9 @@ export class ImportCsvCommand {
       const absoluteOutput = path.resolve(output)
       fs.writeFileSync(absoluteOutput, sql)
       console.log(`\n✓ SQL écrit dans ${absoluteOutput}`)
-      console.log(`  ${insertedCount} lignes, ${Math.ceil(finalRows.length / BATCH_SIZE)} batch(es)${totalCommented > 0 ? `, ${totalCommented} commentée(s)` : ''}`)
+      console.log(
+        `  ${insertedCount} lignes, ${Math.ceil(finalRows.length / BATCH_SIZE)} batch(es)${totalCommented > 0 ? `, ${totalCommented} commentée(s)` : ''}`,
+      )
       console.log(`\nPour exécuter en local : ajouter --execute`)
       console.log(`Pour exécuter manuellement : copier le SQL dans pgAdmin/DBeaver`)
     } else {
@@ -420,10 +420,7 @@ export class ImportCsvCommand {
   /**
    * Maps CSV headers to DB column names using multiple strategies
    */
-  private buildColumnMapping(
-    csvHeaders: string[],
-    dbColumns: string[],
-  ): Record<string, string | null> {
+  private buildColumnMapping(csvHeaders: string[], dbColumns: string[]): Record<string, string | null> {
     const mapping: Record<string, string | null> = {}
     const matchedDb = new Set<string>()
 
@@ -438,9 +435,7 @@ export class ImportCsvCommand {
       }
 
       // Strategy 2: Case-insensitive match
-      const lowerMatch = dbColumns.find(
-        (db) => db.toLowerCase() === trimmed.toLowerCase() && !matchedDb.has(db),
-      )
+      const lowerMatch = dbColumns.find((db) => db.toLowerCase() === trimmed.toLowerCase() && !matchedDb.has(db))
       if (lowerMatch) {
         mapping[csvH] = lowerMatch
         matchedDb.add(lowerMatch)

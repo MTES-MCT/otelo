@@ -16,29 +16,24 @@ const ZAccommodationEvolutionData = z.object({
   metadata: ZMetadata,
 })
 
-const ZAccommodationEvolutionDataTableRow = z.object({
-  '2010': z.object({
-    value: z.number(),
-    percent: z.string(),
-  }),
-  '2015': z.object({
-    value: z.number(),
-    percent: z.string(),
-  }),
-  '2021': z.object({
-    value: z.number(),
-    percent: z.string(),
-  }),
-  annualEvolution: z.record(
-    z.string(),
+const ZAccommodationEvolutionDataTableRow = z
+  .object({
+    annualEvolution: z.record(
+      z.string(),
+      z.object({
+        percent: z.string(),
+        value: z.number(),
+        percentPoint: z.string(),
+      }),
+    ),
+    name: z.string(),
+  })
+  .catchall(
     z.object({
-      percent: z.string(),
       value: z.number(),
-      percentPoint: z.string(),
+      percent: z.string(),
     }),
-  ),
-  name: z.string(),
-})
+  )
 
 export const ZAccommodationEvolutionDataTable = z.record(z.string(), ZAccommodationEvolutionDataTableRow)
 export type TAccommodationEvolutionDataTable = z.infer<typeof ZAccommodationEvolutionDataTable>

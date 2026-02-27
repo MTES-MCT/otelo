@@ -295,7 +295,6 @@ export class ChartGenerationService {
 
     const menagesDataJson = JSON.stringify(menagesData)
     const datasetsConfigJson = JSON.stringify(datasetsConfig)
-    // todo - arrondir a l'entier superieur ou inferieur
     const yAxisMin = typeof metadata?.min === 'number' ? metadata.min : null
     const yAxisMax = typeof metadata?.max === 'number' ? metadata.max : null
 
