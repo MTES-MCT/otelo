@@ -43,7 +43,6 @@ export class PhysicalInadequationService extends BaseCalculator {
       Filo: async (): Promise<number> => {
         const physicalInadequation = await this.getPhysicalInadequationFilo(epciCode)
         const surocc = scenario.b15_surocc === 'Mod' ? 'Leg' : 'Lourde'
-
         return [
           (scenario.b15_proprietaire && physicalInadequation[`surocc${surocc}Po`]) || 0,
           (scenario.b15_loc_hors_hlm && physicalInadequation[`surocc${surocc}Lp`]) || 0,

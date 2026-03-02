@@ -72,15 +72,14 @@ export class BadQualityService extends BaseCalculator {
         return sum
       },
       Filo: async () => {
+        const filoData = await this.getFilocomBadQuality(epciCode)
         let sum = 0
-        let type: string = ''
         if (b14_occupation.includes('loc')) {
-          type = 'pppiLp'
+          sum += filoData.pppiLp || 0
         }
         if (b14_occupation.includes('prop')) {
-          type = 'pppiPo'
+          sum += filoData.pppiPo || 0
         }
-        sum += (await this.getFilocomBadQuality(epciCode))[type]
         return sum
       },
       RP: async () => {

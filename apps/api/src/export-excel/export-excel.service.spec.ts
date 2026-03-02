@@ -280,7 +280,7 @@ describe('ExportExcelService', () => {
         expect(row.getCell(3).value).toBe(epciTotals.totalFlux)
         // peakYear (2035) > 2021 → uses prepeakTotalStock
         expect(row.getCell(4).value).toBe(epciTotals.prepeakTotalStock)
-        expect(row.getCell(5).value).toBe(epciTotals.totalFlux + epciTotals.prepeakTotalStock)
+        expect(row.getCell(5).value).toBe(epciTotals.total)
         expect(row.getCell(6).value).toBe(epciTotals.vacantAccomodation)
         // projection (2041) > peakYear (2035) → display peakYear
         expect(row.getCell(7).value).toBe(flowEpci.data.peakYear)
@@ -290,8 +290,8 @@ describe('ExportExcelService', () => {
         const totalRow = syntheseSheet.getRow(8)
         expect(totalRow.getCell(1).value).toBe('Ensemble des EPCI')
         expect(totalRow.getCell(3).value).toBe(epciTotals.totalFlux)
-        expect(totalRow.getCell(4).value).toBe(epciTotals.totalStock)
-        expect(totalRow.getCell(5).value).toBe(epciTotals.totalFlux + epciTotals.totalStock)
+        expect(totalRow.getCell(4).value).toBe(epciTotals.prepeakTotalStock)
+        expect(totalRow.getCell(5).value).toBe(epciTotals.total)
         expect(totalRow.getCell(6).value).toBe(epciTotals.vacantAccomodation)
       })
     })
@@ -338,15 +338,14 @@ describe('ExportExcelService', () => {
       })
 
       it.each([
-        ['noAccomodation', 16],
-        ['hosted', 17],
-        ['financialInadequation', 18],
-        ['badQuality', 19],
-        ['physicalInadequation', 20],
-      ] as const)('should write %s prorataValue to G%d and value to H%d', (key, row) => {
-        const epciData = results[key].epcis[0]
-        expect(epciSheet.getCell(`G${row}`).value).toBe(epciData.prorataValue)
-        expect(epciSheet.getCell(`H${row}`).value).toBe(epciData.value)
+        ['noAccomodation', 16, 70, 100],
+        ['hosted', 17, 140, 200],
+        ['financialInadequation', 18, 105, 150],
+        ['badQuality', 19, 56, 80],
+        ['physicalInadequation', 20, 84, 120],
+      ] as const)('should write %s peak-prorated value to G%d and full value to H%d', (key, row, expectedG, expectedH) => {
+        expect(epciSheet.getCell(`G${row}`).value).toBe(expectedG)
+        expect(epciSheet.getCell(`H${row}`).value).toBe(expectedH)
       })
     })
 
@@ -356,9 +355,10 @@ describe('ExportExcelService', () => {
       const txRpProj = 1 - 0.05 - 0.04 - 0.04 // 0.87
       const parctotProj = RP_PROJ / txRpProj
 
-      it('should use parctotProj (not filocom parctot) for D19', () => {
-        // D19 = parctotProj * (b2_tx_vacance_courte + b2_tx_vacance_longue) using raw rates
-        expect(epciSheet.getCell('D19').value).toBe(Math.round(parctotProj * (0.04 + 0.04)))
+      it('should derive D19 from D20 + D21', () => {
+        const d20Raw = parctotProj * 0.04
+        const d21Raw = parctotProj * 0.04
+        expect(epciSheet.getCell('D19').value).toBe(Math.round(d20Raw + d21Raw))
       })
 
       it('should use parctotProj for D20', () => {
@@ -373,15 +373,19 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('D26').value).toBe(Math.round(parctotProj * 0.05))
       })
 
-      it('should still use filocom parctot for 2021 rows (D14-D16)', () => {
-        expect(epciSheet.getCell('D14').value).toBe(Math.round(PARCTOT * 0.08))
-        expect(epciSheet.getCell('D15').value).toBe(Math.round(PARCTOT * 0.04))
-        expect(epciSheet.getCell('D16').value).toBe(Math.round(PARCTOT * 0.04))
+      it('should derive D14 from D15 + D16 using filocom parctot', () => {
+        const d15Raw = PARCTOT * 0.04
+        const d16Raw = PARCTOT * 0.04
+        expect(epciSheet.getCell('D15').value).toBe(Math.round(d15Raw))
+        expect(epciSheet.getCell('D16').value).toBe(Math.round(d16Raw))
+        expect(epciSheet.getCell('D14').value).toBe(Math.round(d15Raw + d16Raw))
       })
 
-      it('should still use filocom parctot for D24 (RS 2021) and D25 (variation)', () => {
-        expect(epciSheet.getCell('D24').value).toBe(Math.round(PARCTOT * 0.06))
-        expect(epciSheet.getCell('D25').value).toBe(Math.round(PARCTOT * (0.06 - 0.05)))
+      it('should derive D25 from D24 - D26', () => {
+        const d24Raw = PARCTOT * 0.06
+        const d26Raw = parctotProj * 0.05
+        expect(epciSheet.getCell('D24').value).toBe(Math.round(d24Raw))
+        expect(epciSheet.getCell('D25').value).toBe(Math.round(d24Raw - d26Raw))
       })
     })
 
@@ -436,9 +440,9 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('D35').value).toBe('100 %')
         expect(epciSheet.getCell('D36').value).toBe('50 %')
         expect(epciSheet.getCell('D37').value).toBe('50 %')
-        expect(epciSheet.getCell('D39').value).toBe('10 %')
-        expect(epciSheet.getCell('D40').value).toBe('10 %')
-        expect(epciSheet.getCell('D41').value).toBe('10 %')
+        expect(epciSheet.getCell('D39').value).toBe('90 %')
+        expect(epciSheet.getCell('D40').value).toBe('90 %')
+        expect(epciSheet.getCell('D41').value).toBe('90 %')
       })
     })
 
@@ -680,10 +684,10 @@ describe('ExportExcelService', () => {
       const txRpProj = 1 - csvEpciScenario.b2_tx_rs - csvEpciScenario.b2_tx_vacance_longue - csvEpciScenario.b2_tx_vacance_courte
       const parctotProj = CSV_RP_PROJ / txRpProj
 
-      it('should compute D19 with parctotProj and raw vacancy rates', () => {
-        expect(epciSheet.getCell('D19').value).toBe(
-          Math.round(parctotProj * (csvEpciScenario.b2_tx_vacance_courte + csvEpciScenario.b2_tx_vacance_longue)),
-        )
+      it('should derive D19 from D20 + D21', () => {
+        const d20Raw = parctotProj * csvEpciScenario.b2_tx_vacance_courte
+        const d21Raw = parctotProj * csvEpciScenario.b2_tx_vacance_longue
+        expect(epciSheet.getCell('D19').value).toBe(Math.round(d20Raw + d21Raw))
       })
 
       it('should compute D20 with parctotProj', () => {
@@ -698,10 +702,12 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('D26').value).toBe(Math.round(parctotProj * csvEpciScenario.b2_tx_rs))
       })
 
-      it('should use filocom parctot for 2021 rows D14-D16', () => {
-        expect(epciSheet.getCell('D14').value).toBe(Math.round(CSV_PARCTOT * 0.0858))
-        expect(epciSheet.getCell('D15').value).toBe(Math.round(CSV_PARCTOT * 0.05))
-        expect(epciSheet.getCell('D16').value).toBe(Math.round(CSV_PARCTOT * 0.0358))
+      it('should derive D14 from D15 + D16 using filocom parctot', () => {
+        const d15Raw = CSV_PARCTOT * 0.05
+        const d16Raw = CSV_PARCTOT * 0.0358
+        expect(epciSheet.getCell('D15').value).toBe(Math.round(d15Raw))
+        expect(epciSheet.getCell('D16').value).toBe(Math.round(d16Raw))
+        expect(epciSheet.getCell('D14').value).toBe(Math.round(d15Raw + d16Raw))
       })
     })
 
@@ -746,16 +752,16 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('D35').value).toBe('100 %')
         expect(epciSheet.getCell('D36').value).toBe('50 %') // b11_part_etablissement
         expect(epciSheet.getCell('D37').value).toBe('30 %') // b12_cohab_interg_subie
-        expect(epciSheet.getCell('D39').value).toBe('90 %') // b13_taux_reallocation
+        expect(epciSheet.getCell('D39').value).toBe('10 %') // b13_taux_reallocation
         expect(epciSheet.getCell('D40').value).toBe('50 %') // b14_taux_reallocation
-        expect(epciSheet.getCell('D41').value).toBe('90 %') // b15_taux_reallocation
+        expect(epciSheet.getCell('D41').value).toBe('10 %') // b15_taux_reallocation
       })
     })
 
     describe('mal-logement labels', () => {
       it('should show Filo source labels for A40 and A41', () => {
         expect(epciSheet.getCell('A40').value).toBe('Mauvaise qualité - PPPI Noyau dur (CGDD/SDES à partir de données fiscales)')
-        expect(epciSheet.getCell('A41').value).toBe('Logements suroccupés - CGDD/SDES')
+        expect(epciSheet.getCell('A41').value).toBe('Logements suroccupés - CGDD/SDES à partir de données fiscales')
       })
 
       it('should show 4 FINESS établissements in B36', () => {
