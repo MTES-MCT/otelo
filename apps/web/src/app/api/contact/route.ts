@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
+import { unauthFetch } from '~/lib/auth/server'
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/email/contact`, {
+    const res = await unauthFetch('/email/contact', {
       headers: {
         'Content-Type': 'application/json',
       },

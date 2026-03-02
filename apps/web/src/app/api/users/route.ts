@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { authFetch, getSession } from '~/lib/auth/server'
+import { authFetch, getSession, unauthFetch } from '~/lib/auth/server'
 
 export async function GET(request: Request) {
   const session = await getSession()
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await request.json()
-  const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/api/auth/sign-up/email`, {
+  const res = await unauthFetch('/auth/sign-up/email', {
     headers: {
       'Content-Type': 'application/json',
     },

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCookieHeader, getSession } from '~/lib/auth/server'
+import { authFetch, getSession } from '~/lib/auth/server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,13 +30,8 @@ export async function POST(request: NextRequest) {
       backendFormData.append('scenarioId', scenarioId)
     }
 
-    const cookieHeader = await getCookieHeader()
-
-    const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/demographic-evolution-custom/upload`, {
+    const response = await authFetch('/demographic-evolution-custom/upload', {
       method: 'POST',
-      headers: {
-        cookie: cookieHeader,
-      },
       body: backendFormData,
     })
 

@@ -1,6 +1,35 @@
 import { cookies } from 'next/headers'
 
-const API_URL = `${process.env.NEXT_PUBLIC_AUTH_API_URL}/api` || 'http://localhost:4200/api'
+const DEFAULT_API_ORIGIN = 'http://localhost:4200'
+
+function normalizeApiBaseUrl(rawUrl: string): string {
+  const trimmed = rawUrl.replace(/\/+$/, '')
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`
+}
+
+export function resolveApiBaseUrl(): string {
+  const rawUrl = process.env.NEXT_PUBLIC_AUTH_API_URL || DEFAULT_API_ORIGIN
+  return normalizeApiBaseUrl(rawUrl)
+}
+
+function buildApiUrl(path: string): string {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return `${resolveApiBaseUrl()}${normalizedPath}`
+}
+
+function buildHeaders(options: RequestInit, cookieHeader?: string): Headers {
+  const headers = new Headers(options.headers)
+
+  if (cookieHeader) {
+    headers.set('cookie', cookieHeader)
+  }
+
+  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json')
+  }
+
+  return headers
+}
 
 interface SessionUser {
   id: string
@@ -36,7 +65,7 @@ export async function getSession(): Promise<Session | null> {
   try {
     const cookieHeader = cookieStore.toString()
 
-    const response = await fetch(`${API_URL}/auth/get-session`, {
+    const response = await fetch(buildApiUrl('/auth/get-session'), {
       headers: {
         cookie: cookieHeader,
       },
@@ -71,12 +100,15 @@ export async function getCookieHeader(): Promise<string> {
 export async function authFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const cookieHeader = await getCookieHeader()
 
-  return fetch(`${API_URL}${path}`, {
+  return fetch(buildApiUrl(path), {
     ...options,
-    headers: {
-      ...options.headers,
-      cookie: cookieHeader,
-      'Content-Type': 'application/json',
-    },
+    headers: buildHeaders(options, cookieHeader),
+  })
+}
+
+export async function unauthFetch(path: string, options: RequestInit = {}): Promise<Response> {
+  return fetch(buildApiUrl(path), {
+    ...options,
+    headers: buildHeaders(options),
   })
 }
