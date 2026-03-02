@@ -67,13 +67,13 @@ export class StockRequirementsService {
           return acc
         }
 
-        const yearsBeforePeak = peakYear - baseYear
-        const yearsAfterPeak = projection - peakYear
+        const yearsBeforePeak = Math.min(peakYear, projection) - baseYear
+        const yearsAfterPeak = Math.max(0, projection - peakYear)
 
         const prePeakYears = Math.min(yearsBeforePeak, horizonDelta)
         const postPeakYears = Math.min(yearsAfterPeak, Math.max(0, horizonDelta - prePeakYears))
 
-        const baseValue = projection > peakYear ? epciResult.value : epciResult.prorataValue
+        const baseValue = epciResult.value
         const prePeakValue = computeScaledValue(baseValue, prePeakYears)
         const postPeakValue = computeScaledValue(baseValue, postPeakYears)
 
