@@ -162,7 +162,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
   return (
     <>
       <div className="fr-container fr-direction-column fr-flex fr-flex-gap-8v">
-        <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} />
+        <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
         <div className="fr-col-md-12 fr-flex fr-direction-column fr-direction-sm-row fr-align-items-center fr-mb-4w">
           <div className="fr-col-md-8 fr-mb-2w fr-mb-md-0">
             <SimulationHeaderSegmentedControls segments={segments} activeId={id} />
