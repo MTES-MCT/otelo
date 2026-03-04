@@ -4,6 +4,7 @@ import { SimulationChartTableSwitch } from '~/components/simulations/results/sim
 
 type SimulationAnnualsNeedsProps = {
   horizon: number
+  millesime: string
   results: {
     badQuality: number
     financialInadequation: number
@@ -14,7 +15,7 @@ type SimulationAnnualsNeedsProps = {
   }
 }
 
-export const SimulationBadHousing = ({ horizon, results }: SimulationAnnualsNeedsProps) => {
+export const SimulationBadHousing = ({ horizon, millesime, results }: SimulationAnnualsNeedsProps) => {
   const { badQuality, financialInadequation, hosted, noAccomodation, physicalInadequation, totalStock } = results
   const chartData = [
     { name: 'Hébergés', value: hosted },
@@ -34,7 +35,13 @@ export const SimulationBadHousing = ({ horizon, results }: SimulationAnnualsNeed
           <h3 className="fr-h4 fr-mb-0">Situations de mal logement</h3>
           <SimulationChartTableSwitch queryState="mal-logement" />
         </div>
-        <SimulationBadHousingDescription horizon={horizon} totalStock={totalStock} maxValue={maxValue} maxValueName={maxValueName} />
+        <SimulationBadHousingDescription
+          horizon={horizon}
+          millesime={millesime}
+          totalStock={totalStock}
+          maxValue={maxValue}
+          maxValueName={maxValueName}
+        />
         <SimulationBadHousingDataWrapper chartData={chartData} results={results} horizon={horizon} />
       </div>
     </div>

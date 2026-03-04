@@ -99,7 +99,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
             epciName={epci.name}
           />
           {hasNewHousingNeeds && <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} />}
-          <SimulationBadHousing horizon={simulation.scenario.projection} results={stockResults} />
+          <SimulationBadHousing horizon={simulation.scenario.projection} millesime={simulation.scenario.millesime} results={stockResults} />
         </div>
       ),
       iconId: 'ri-road-map-line' as RiIconClassName,
