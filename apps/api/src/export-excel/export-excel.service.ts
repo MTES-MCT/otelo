@@ -168,6 +168,10 @@ export class ExportExcelService {
     return sanitized
   }
 
+  private getObservedUrbanRenewalPeriodLabel(millesime: string): string {
+    return `2015 et ${millesime}`
+  }
+
   async createSyntheseSheet(workbook: ExcelJS.Workbook, simulation: TSimulationWithEpciAndScenario, results: TResults) {
     const syntheseWorksheet = workbook.addWorksheet('Ensemble des EPCI', {
       properties: { defaultColWidth: 25 },
@@ -627,7 +631,7 @@ export class ExportExcelService {
 
     epciWorksheet.mergeCells('A29:A30')
     const observedRatesCell = epciWorksheet.getCell('A29')
-    observedRatesCell.value = `Taux observés entre 2015 et ${simulation.scenario.millesime}`
+    observedRatesCell.value = `Taux observés entre ${this.getObservedUrbanRenewalPeriodLabel(simulation.scenario.millesime)}`
     observedRatesCell.alignment = { horizontal: 'center', vertical: 'middle' }
     observedRatesCell.fill = {
       type: 'pattern',
@@ -993,7 +997,7 @@ export class ExportExcelService {
     }
 
     // Use raw rates directly (not re-parsed from rounded percentages in column C)
-    const rates = await this.accommodationRatesService.getAccommodationRates(epciScenario.epciCode)
+    const rates = await this.accommodationRatesService.getAccommodationRates(epciScenario.epciCode, millesime)
     const epciRates = rates[epciScenario.epciCode]
 
     // Calculate number of logements for millesime situation (rows 14-16)
