@@ -28,8 +28,8 @@ const COLORS = {
 export const AggregatedParcsComparisonChart = () => {
   const { rates, defaultRates } = useEpcisRates()
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
-  const [millesime] = useQueryState('millesime', parseAsString.withDefault('2021'))
-  const baseYear = millesime || '2021'
+  const [millesime] = useQueryState('millesime', parseAsString)
+  const baseYear = millesime
 
   const epciIds = Object.keys(defaultRates)
   if (epciIds.length === 0) return null

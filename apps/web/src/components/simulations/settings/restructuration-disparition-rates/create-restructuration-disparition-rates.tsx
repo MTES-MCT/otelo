@@ -43,9 +43,9 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, observedPeriodLabel })
 
 export const CreateRestructurationDisparitionRates: FC<CreateRestructurationDisparitionRatesProps> = ({ epcis }) => {
   const epcisCodes = epcis.map((epci) => epci.code)
-  const { data: rates } = useAccommodationRatesByEpci(epcisCodes)
-  const [ratesMode] = useQueryState('restructurationRates', parseAsString)
   const [millesime] = useQueryState('millesime', parseAsString)
+  const { data: rates } = useAccommodationRatesByEpci(epcisCodes, millesime ?? undefined)
+  const [ratesMode] = useQueryState('restructurationRates', parseAsString)
   const observedPeriodLabel = getObservedRatesPeriodLabel(millesime ?? undefined)
 
   if (!rates) return null

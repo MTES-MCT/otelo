@@ -29,9 +29,9 @@ const COLORS = {
 
 export const ModifyAggregatedSecondaryParcsComparisonChart = () => {
   const { simulationSettings } = useSimulationSettings()
-  const baseYear = simulationSettings.millesime || '2021'
+  const baseYear = simulationSettings.millesime
   const epciIds = Object.keys(simulationSettings.epciScenarios)
-  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
+  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
 
   if (!originalRatesData || epciIds.length === 0) return null

@@ -46,8 +46,9 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates }) => {
 }
 
 export const ModifyEpcisSecondaryAccommodationRates: FC<ModifyEpcisSecondaryAccomodationRatesProps> = ({ epcis }) => {
+  const { simulationSettings } = useSimulationSettings()
   const epcisCodes = epcis.map((epci) => epci.code)
-  const { data: rates } = useAccommodationRatesByEpci(epcisCodes)
+  const { data: rates } = useAccommodationRatesByEpci(epcisCodes, simulationSettings.millesime)
   const [ratesMode] = useQueryState('secondaryRates', parseAsString)
 
   if (!rates) return null

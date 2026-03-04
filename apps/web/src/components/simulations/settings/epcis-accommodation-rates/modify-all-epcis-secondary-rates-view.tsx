@@ -13,7 +13,7 @@ interface ModifyAllEpcisSecondaryRatesViewProps {
 export const ModifyAllEpcisSecondaryRatesView: FC<ModifyAllEpcisSecondaryRatesViewProps> = ({ epcis }) => {
   const { simulationSettings } = useSimulationSettings()
   const epciIds = Object.keys(simulationSettings.epciScenarios)
-  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
+  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
 
   // Calculate weighted average secondary accommodation rate across all EPCIs
   const totalParc = originalRatesData ? epciIds.reduce((sum, epciId) => sum + (originalRatesData[epciId]?.urbanRenewal || 0), 0) : 0

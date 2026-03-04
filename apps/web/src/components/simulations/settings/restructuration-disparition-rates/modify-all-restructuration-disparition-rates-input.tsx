@@ -13,7 +13,7 @@ import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci
 export const ModifyAllRestructurationDisparitionRatesInput: FC = () => {
   const { simulationSettings, updateAllRates } = useSimulationSettings()
   const epciIds = Object.keys(simulationSettings.epciScenarios)
-  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
+  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
 
   // Calculate average rates across all EPCIs
   const averageRestructuringRate =
