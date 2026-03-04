@@ -66,6 +66,7 @@ describe('AccommodationRatesService', () => {
         millesime: '2021',
       },
     })
+    expect(mockVacancyService.getNewestVacancy).toHaveBeenCalledWith([epciCode], '2021')
   })
 
   it('should not apply /6 for 2022', async () => {
@@ -91,5 +92,6 @@ describe('AccommodationRatesService', () => {
         millesime: '2022',
       },
     })
+    expect(mockVacancyService.getNewestVacancy).toHaveBeenCalledWith([epciCode], '2022')
   })
 })
