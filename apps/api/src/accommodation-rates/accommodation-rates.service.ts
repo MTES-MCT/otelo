@@ -25,15 +25,17 @@ export class AccommodationRatesService {
           ...(millesime && { millesime }),
         },
       }),
-      this.vacancyService.getNewestVacancy(epcisCodes),
+      this.vacancyService.getNewestVacancy(epcisCodes, millesime),
     ])
 
     return epcisCodes.reduce<TEpcisAccommodationRates>((acc, epciCode) => {
       const epciVacancy = vacancyData.find((v) => v.epciCode === epciCode)
       const epciFilocom = filocomData.find((f) => f.epciCode === epciCode)
       const divisor = this.getUrbanRenewalAnnualizationDivisor(millesime ?? epciFilocom?.millesime)
-      const ratioLongGlobalTerm = epciVacancy!.nbLogVac2More / epciVacancy!.nbLogVac2Less
-      const ratioShortGlobalTerm = (epciVacancy!.nbLogVac2Less - epciVacancy!.nbLogVac2More) / epciVacancy!.nbLogVac2Less
+      const totalVacantCount = epciVacancy?.nbLogVac2Less ?? 0
+      const longTermVacantCount = epciVacancy?.nbLogVac2More ?? 0
+      const ratioLongGlobalTerm = totalVacantCount > 0 ? longTermVacantCount / totalVacantCount : 0
+      const ratioShortGlobalTerm = totalVacantCount > 0 ? (totalVacantCount - longTermVacantCount) / totalVacantCount : 0
       const longTermVacancyRate = (epciFilocom?.txLvParctot ?? 0) * ratioLongGlobalTerm
       const shortTermVacancyRate = (epciFilocom?.txLvParctot ?? 0) * ratioShortGlobalTerm
 
@@ -49,8 +51,8 @@ export class AccommodationRatesService {
         },
         restructuringRate: (epciFilocom?.txRestParctot ?? 0) / divisor,
         disappearanceRate: (epciFilocom?.txDispParctot ?? 0) / divisor,
-        totalVacantCount: epciVacancy!.nbLogVac2Less,
-        longTermVacantCount: epciVacancy!.nbLogVac2More,
+        totalVacantCount,
+        longTermVacantCount,
       }
       return acc
     }, {})
