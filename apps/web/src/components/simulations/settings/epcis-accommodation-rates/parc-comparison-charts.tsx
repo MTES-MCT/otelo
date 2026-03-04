@@ -30,8 +30,8 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
   const ratesByEpci = rates[epci]
   const defaultRatesByEpci = defaultRates[epci]
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
-  const [millesime] = useQueryState('millesime', parseAsString.withDefault('2021'))
-  const baseYear = millesime || '2021'
+  const [millesime] = useQueryState('millesime', parseAsString)
+  const baseYear = millesime
 
   if (!ratesByEpci || !defaultRatesByEpci) return null
 
