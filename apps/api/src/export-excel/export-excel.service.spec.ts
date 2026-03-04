@@ -805,4 +805,74 @@ describe('ExportExcelService', () => {
       })
     })
   })
+
+  describe('exportScenario - millesime labels and rates (2022)', () => {
+    it('should use millesime year in labels and 2022 rates in urban renewal cells', async () => {
+      const simulation = makeSimulationData()
+      simulation.scenario.millesime = '2022'
+
+      prisma.simulation.findUniqueOrThrow = jest.fn().mockResolvedValue(simulation as any)
+      resultsService.getResults.mockResolvedValue({ ...simulation, results: makeResults() } as any)
+      accommodationRatesService.getAccommodationRates.mockResolvedValue({
+        [EPCI_CODE]: {
+          vacancyRate: 0.08,
+          longTermVacancyRate: 0.04,
+          shortTermVacancyRate: 0.04,
+          txRs: 0.06,
+          urbanRenewal: PARCTOT,
+          vacancy: { nbAccommodation: 5000, year: 2022 },
+          restructuringRate: 0.018,
+          disappearanceRate: 0.03,
+          totalVacantCount: 8000,
+          longTermVacantCount: 4000,
+        },
+      } as any)
+      demographicEvolutionService.getDemographicEvolutionPopulationByEpci.mockResolvedValue(makeDemographicPopulation() as any)
+      demographicEvolutionService.getDemographicEvolution.mockResolvedValue(makeDemographicMenages() as any)
+
+      prisma.filocomFlux.findUnique = jest.fn().mockResolvedValue({
+        epciCode: EPCI_CODE,
+        parctot: PARCTOT,
+        txLvParctot: 0.08,
+        txRsParctot: 0.06,
+      } as any)
+      prisma.hostedFiness.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, autreCentre: 200 } as any)
+      prisma.hostedFilocom.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, value: 800 } as any)
+      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, particular: 50, temporary: 30 } as any)
+      prisma.financialInadequation.findUnique = jest.fn().mockResolvedValue({
+        epciCode: EPCI_CODE,
+        nbAllPlus30AccessionPropriete: 300,
+        nbAllPlus30ParcLocatifPrive: 400,
+      } as any)
+      prisma.badQuality_RP.findUnique = jest.fn().mockResolvedValue({
+        epciCode: EPCI_CODE,
+        saniLocNonhlm: 100,
+        saniPpT: 150,
+        saniChflLocNonhlm: 50,
+        saniChflPpT: 75,
+      } as any)
+      prisma.badQuality_Filocom.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.badQuality_Fonciers.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.physicalInadequation_RP.findUnique = jest.fn().mockResolvedValue({
+        epciCode: EPCI_CODE,
+        nbMenModPpt: 60,
+        nbMenModLocNonHLM: 45,
+      } as any)
+      prisma.physicalInadequation_Filo.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.homeless.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, rp: 500, sne: 400 } as any)
+      prisma.hotel.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, rp: 150, sne: 120 } as any)
+      prisma.makeShiftHousing_RP.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, value: 80 } as any)
+      prisma.makeShiftHousing_SNE.findUnique = jest.fn().mockResolvedValue(null)
+
+      const result = await service.exportScenario('sim-1')
+      const epciSheet = result.workbook.worksheets[1]
+
+      expect(epciSheet.getCell('A14').value).toBe('Situation en 2022')
+      expect(epciSheet.getCell('A29').value).toBe('Taux observés entre 2015 et 2022')
+      expect(epciSheet.getCell('C29').value).toBe('1.80')
+      expect(epciSheet.getCell('D29').value).toBe(Math.round(PARCTOT * 0.018))
+      expect(accommodationRatesService.getAccommodationRates).toHaveBeenCalledWith(EPCI_CODE, '2022')
+      expect(accommodationRatesService.getAccommodationRates.mock.calls.some(([, millesime]) => millesime === undefined)).toBe(false)
+    })
+  })
 })

@@ -19,16 +19,22 @@ interface ModifyRestructurationDisparitionRatesProps {
 interface TabChildrenProps {
   epci: string
   rates: TEpcisAccommodationRates
+  observedPeriodLabel: string
 }
 
-const TabChildren: FC<TabChildrenProps> = ({ epci, rates }) => {
+const getObservedRatesPeriodLabel = (millesime?: string): string => {
+  const year = Number(millesime)
+  return Number.isFinite(year) && year >= 2022 ? '2015 et 2022' : '2015 et 2021'
+}
+
+const TabChildren: FC<TabChildrenProps> = ({ epci, rates, observedPeriodLabel }) => {
   const epciRates = rates?.[epci]
   if (!epciRates) return null
 
   return (
     <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
       <span className="fr-text-mention--grey fr-mb-5v">
-        Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre 2015 et 2021.
+        Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre {observedPeriodLabel}.
       </span>
 
       <ModifyRestructurationDisparitionRatesInput epci={epci} />
@@ -40,13 +46,14 @@ export const ModifyRestructurationDisparitionRates: FC<ModifyRestructurationDisp
   const { simulationSettings } = useSimulationSettings()
   const rates = simulationSettings.epciScenarios
   const [ratesMode] = useQueryState('restructurationRates', parseAsString)
+  const observedPeriodLabel = getObservedRatesPeriodLabel(simulationSettings.millesime)
 
   if (!rates) return null
 
   const isAllMode = ratesMode === 'all'
 
   const tabs = epcis.map((epci) => ({
-    content: <TabChildren epci={epci.code} rates={rates} />,
+    content: <TabChildren epci={epci.code} rates={rates} observedPeriodLabel={observedPeriodLabel} />,
     iconId: 'ri-road-map-line' as RiIconClassName,
     label: epci.name,
   }))
