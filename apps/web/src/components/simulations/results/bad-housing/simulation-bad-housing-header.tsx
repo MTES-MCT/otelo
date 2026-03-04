@@ -16,14 +16,21 @@ const getCategoryLabel = (categoryName: string) => {
 
 type SimulationBadHousingDescriptionProps = {
   horizon: number
+  millesime: string
   totalStock: number
   maxValue: number
   maxValueName: string
 }
 
-export const SimulationBadHousingDescription = ({ horizon, totalStock, maxValue, maxValueName }: SimulationBadHousingDescriptionProps) => {
+export const SimulationBadHousingDescription = ({
+  horizon,
+  millesime,
+  totalStock,
+  maxValue,
+  maxValueName,
+}: SimulationBadHousingDescriptionProps) => {
   const [queryState] = useQueryState('mal-logement', parseAsString.withDefault('graphique'))
-  const baseYear = 2021
+  const baseYear = Number(millesime)
 
   return (
     <p className="fr-mt-2w">
