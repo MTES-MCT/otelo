@@ -5,10 +5,16 @@ import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/mod
 import { ModifyAllRestructurationDisparitionRatesInput } from '~/components/simulations/settings/restructuration-disparition-rates/modify-all-restructuration-disparition-rates-input'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 
+const getObservedRatesPeriodLabel = (millesime?: string): string => {
+  const year = Number(millesime)
+  return Number.isFinite(year) && year >= 2022 ? '2015 et 2022' : '2015 et 2021'
+}
+
 export const ModifyAllEpcisRestructurationRatesView: FC = () => {
   const { simulationSettings } = useSimulationSettings()
   const epciIds = Object.keys(simulationSettings.epciScenarios)
-  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
+  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
+  const observedPeriodLabel = getObservedRatesPeriodLabel(simulationSettings.millesime)
 
   // Calculate average rates across all EPCIs
   const averageRestructuringRate =
@@ -25,8 +31,8 @@ export const ModifyAllEpcisRestructurationRatesView: FC = () => {
     <div className="fr-p-4w shadow">
       <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
         <span className="fr-text-mention--grey fr-mb-3v">
-          Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre 2015 et 2021. Les taux moyens observés sur l'ensemble
-          du territoire sont de <strong>{(averageRestructuringRate * 100).toFixed(2)} %</strong> pour la restructuration et{' '}
+          Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre {observedPeriodLabel}. Les taux moyens observés sur
+          l'ensemble du territoire sont de <strong>{(averageRestructuringRate * 100).toFixed(2)} %</strong> pour la restructuration et{' '}
           <strong>{(averageDisappearanceRate * 100).toFixed(2)} %</strong> pour la disparition.
         </span>
         <ModifyAllRestructurationDisparitionRatesInput />
