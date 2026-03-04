@@ -45,7 +45,7 @@ export const DATA_SOURCES: SourceEntry[] = [
     etape: 'Taux annuel de restructuration et de disparition',
     etapeId: 'taux-restructuration-disparition',
     description:
-      "Valeurs de référence du taux annuel d'apparition de logements par restructuration et du taux annuel de disparition, calculées sur la base d'une mesure de ces taux sur les 5 dernières années, soit entre 2017 et 2022.",
+      "Valeurs de référence du taux annuel d'apparition de logements par restructuration et du taux annuel de disparition, calculées sur la base d'une mesure de ces taux entre 2015 et 2022.",
   },
 
   // --- Distinction vacance longue durée / courte durée ---
