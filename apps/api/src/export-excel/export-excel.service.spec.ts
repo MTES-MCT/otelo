@@ -807,7 +807,7 @@ describe('ExportExcelService', () => {
   })
 
   describe('exportScenario - millesime labels and rates (2022)', () => {
-    it('should use millesime year in labels and 2022 rates in urban renewal cells', async () => {
+    it('should use millesime year and 2022 short/long vacancy rates in Excel cells', async () => {
       const simulation = makeSimulationData()
       simulation.scenario.millesime = '2022'
 
@@ -816,8 +816,8 @@ describe('ExportExcelService', () => {
       accommodationRatesService.getAccommodationRates.mockResolvedValue({
         [EPCI_CODE]: {
           vacancyRate: 0.08,
-          longTermVacancyRate: 0.04,
-          shortTermVacancyRate: 0.04,
+          longTermVacancyRate: 0.03,
+          shortTermVacancyRate: 0.05,
           txRs: 0.06,
           urbanRenewal: PARCTOT,
           vacancy: { nbAccommodation: 5000, year: 2022 },
@@ -868,6 +868,9 @@ describe('ExportExcelService', () => {
       const epciSheet = result.workbook.worksheets[1]
 
       expect(epciSheet.getCell('A14').value).toBe('Situation en 2022')
+      expect(epciSheet.getCell('C14').value).toBe('8.00')
+      expect(epciSheet.getCell('C15').value).toBe('5.00')
+      expect(epciSheet.getCell('C16').value).toBe('3.00')
       expect(epciSheet.getCell('A29').value).toBe('Taux observés entre 2015 et 2022')
       expect(epciSheet.getCell('C29').value).toBe('1.80')
       expect(epciSheet.getCell('D29').value).toBe(Math.round(PARCTOT * 0.018))
