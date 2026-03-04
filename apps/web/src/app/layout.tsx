@@ -62,6 +62,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     termsLinkProps={{ href: '/mentions-legales', title: 'Mentions légales - Otelo' }}
                     bottomItems={[
                       headerFooterDisplayItem,
+                      <Link className={fr.cx('fr-footer__bottom-link')} href="/notes-de-version">
+                        Notes de version
+                      </Link>,
                       <Link className={fr.cx('fr-footer__bottom-link')} href="/donnees-personnelles">
                         Données personnelles
                       </Link>,
