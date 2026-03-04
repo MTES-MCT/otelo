@@ -35,7 +35,7 @@ const ModifyParcsComparisonCharts = ({
 }) => {
   const { defaultRates } = useEpcisRates()
   const { simulationSettings } = useSimulationSettings()
-  const baseYear = simulationSettings.millesime || '2021'
+  const baseYear = simulationSettings.millesime
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
 
   const defaultRatesByEpci = defaultRates[epci]

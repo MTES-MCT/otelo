@@ -7,6 +7,7 @@ import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
+import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { ModifyAllEpcisRatesView } from '~/components/simulations/settings/epcis-accommodation-rates/modify-all-epcis-rates-view'
 import ModifyParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/modify-parc-comparison-charts'
 import { RatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/rates-toggle-switch'
@@ -21,9 +22,10 @@ interface ModifyEpcisAccomodationRatesProps {
 interface TabChildrenProps {
   epci: string
   rates: TEpcisAccommodationRates
+  millesime: string
 }
 
-const TabChildren: FC<TabChildrenProps> = ({ epci, rates }) => {
+const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
   const epciRates = rates?.[epci]
   if (!epciRates) return null
 
@@ -34,8 +36,8 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates }) => {
           <div className="fr-flex fr-direction-column fr-flex-gap-2v">
             <span className="fr-text--medium">Vacance de longue durée</span>
             <p className="fr-mb-0">
-              Elle désigne les logements vacants depuis plus de deux ans. Elle représente un réservoir de logements mobilisables. Le taux en
-              2021 sur ce territoire est de <strong>{(Number(epciRates.longTermVacancyRate) * 100).toFixed(2)}%</strong>.
+              Elle désigne les logements vacants depuis plus de deux ans. Elle représente un réservoir de logements mobilisables. Le taux en{' '}
+              {millesime} sur ce territoire est de <strong>{(Number(epciRates.longTermVacancyRate) * 100).toFixed(2)}%</strong>.
             </p>
           </div>
           <ModifyVacancyAccommodationRatesInput epci={epci} epciRates={epciRates} />
@@ -46,7 +48,7 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates }) => {
             </div>
             <p>
               Elle regroupe les logements temporairement vacants (rotation locative, mise en vente, travaux), nécessaires au bon
-              fonctionnement du marché du logement. Otelo considère le taux de vacance courte durée observé en 2021 comme{' '}
+              fonctionnement du marché du logement. Otelo considère le taux de vacance courte durée observé en {millesime} comme{' '}
               <span className="fr-text--bold">stable</span> et ne propose pas de le modifier.
             </p>
           </div>
@@ -60,8 +62,9 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates }) => {
 }
 
 export const ModifyEpcisAccommodationRates: FC<ModifyEpcisAccomodationRatesProps> = ({ epcis }) => {
+  const { simulationSettings } = useSimulationSettings()
   const epcisCodes = epcis.map((epci) => epci.code)
-  const { data: rates } = useAccommodationRatesByEpci(epcisCodes)
+  const { data: rates } = useAccommodationRatesByEpci(epcisCodes, simulationSettings.millesime)
   const [ratesMode] = useQueryState('vacantRates', parseAsString)
 
   if (!rates) return null
@@ -69,7 +72,7 @@ export const ModifyEpcisAccommodationRates: FC<ModifyEpcisAccomodationRatesProps
   const isAllMode = ratesMode === 'all'
 
   const tabs = epcis.map((epci) => ({
-    content: <TabChildren epci={epci.code} rates={rates} />,
+    content: <TabChildren epci={epci.code} rates={rates} millesime={simulationSettings.millesime} />,
     iconId: 'ri-road-map-line' as RiIconClassName,
     label: epci.name,
   }))

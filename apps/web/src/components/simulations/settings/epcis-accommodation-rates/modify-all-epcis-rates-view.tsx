@@ -10,7 +10,7 @@ import { ModifyAggregatedParcsComparisonChart } from './modify-aggregated-parc-c
 export const ModifyAllEpcisRatesView: FC = () => {
   const { simulationSettings } = useSimulationSettings()
   const epciIds = Object.keys(simulationSettings.epciScenarios)
-  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
+  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
 
   // Calculate aggregated long-term vacancy rate: Part_VLD × Taux_FILOCOM_BH
   const totalLongTermVacant = originalRatesData
@@ -36,7 +36,8 @@ export const ModifyAllEpcisRatesView: FC = () => {
             <span className="fr-text--medium">Vacance de longue durée</span>
             <p className="fr-mb-0">
               Elle désigne les logements vacants depuis plus de deux ans. Elle représente un réservoir de logements mobilisables. Le taux
-              moyen en 2021 sur l'ensemble du territoire est de <strong>{(averageLongTermRate * 100).toFixed(2)}%</strong>.
+              moyen en {simulationSettings.millesime} sur l'ensemble du territoire est de{' '}
+              <strong>{(averageLongTermRate * 100).toFixed(2)}%</strong>.
             </p>
           </div>
           <ModifyAllEpcisAccommodationRange />
@@ -47,8 +48,8 @@ export const ModifyAllEpcisRatesView: FC = () => {
             </div>
             <p>
               Elle regroupe les logements temporairement vacants (rotation locative, mise en vente, travaux), nécessaires au bon
-              fonctionnement du marché du logement. Otelo considère le taux de vacance courte durée observé en 2021 comme{' '}
-              <span className="fr-text--bold">stable</span> et ne propose pas de le modifier.
+              fonctionnement du marché du logement. Otelo considère le taux de vacance courte durée observé en{' '}
+              {simulationSettings.millesime} comme <span className="fr-text--bold">stable</span> et ne propose pas de le modifier.
             </p>
           </div>
         </div>

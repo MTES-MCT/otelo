@@ -5,6 +5,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import Input from '@codegouvfr/react-dsfr/Input'
 import classNames from 'classnames'
+import { parseAsString, useQueryState } from 'nuqs'
 import { FC, useState } from 'react'
 import { tss } from 'tss-react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
@@ -16,8 +17,9 @@ type CreateRestructurationDisparitionRatesInputProps = {
 
 export const CreateRestructurationDisparitionRatesInput: FC<CreateRestructurationDisparitionRatesInputProps> = ({ epci }) => {
   const { classes } = useStyles()
+  const [millesime] = useQueryState('millesime', parseAsString)
   const { rates, updateRates } = useEpcisRates()
-  const { data: accommodationRates } = useAccommodationRatesByEpci([epci])
+  const { data: accommodationRates } = useAccommodationRatesByEpci([epci], millesime ?? undefined)
   const accommodationRate = accommodationRates?.[epci]
   const urbanRenewalAccommodations = accommodationRate?.urbanRenewal ?? 0
   const ratesByEpci = rates[epci]

@@ -9,7 +9,7 @@ import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci
 export const ModifyAllEpcisAccommodationRange: FC = () => {
   const { simulationSettings, updateAllRates } = useSimulationSettings()
   const epciIds = Object.keys(simulationSettings.epciScenarios)
-  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
+  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
   const [reductionPercent, setReductionPercent] = useState(15)
 
   const applyReductionToAllEpcis = (rangeValue: number) => {

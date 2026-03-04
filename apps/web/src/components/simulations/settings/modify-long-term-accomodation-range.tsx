@@ -9,7 +9,7 @@ interface ModifyLongTermAccomodationRangeProps {
 
 export const ModifyLongTermAccomodationRange: FC<ModifyLongTermAccomodationRangeProps> = ({ epci }) => {
   const { simulationSettings, updateRates } = useSimulationSettings()
-  const { data: originalRatesData } = useAccommodationRatesByEpci([epci])
+  const { data: originalRatesData } = useAccommodationRatesByEpci([epci], simulationSettings.millesime)
 
   const currentRates = simulationSettings.epciScenarios[epci]
   const originalLongTermVacancyRate = originalRatesData?.[epci]?.longTermVacancyRate || 0
