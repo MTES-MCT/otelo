@@ -28,12 +28,14 @@ const COLORS = {
 
 export const AggregatedSecondaryParcsComparisonChart = () => {
   const { rates, defaultRates } = useEpcisRates()
-  const [{ millesime, projection, parcEvolutionShown }, setQueryStates] = useQueryStates({
+  const [{ millesime, projection, peakYear, parcEvolutionShown }, setQueryStates] = useQueryStates({
     millesime: parseAsString,
     projection: parseAsInteger,
+    peakYear: parseAsString,
     parcEvolutionShown: parseAsBoolean.withDefault(false),
   })
   const baseYear = millesime
+  const targetYear = peakYear ?? projection
 
   const epciIds = Object.keys(defaultRates)
   if (epciIds.length === 0) return null
@@ -194,7 +196,7 @@ export const AggregatedSecondaryParcsComparisonChart = () => {
 
               {/* projection section */}
               <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">{`Le parc en ${projection} (moyenne du territoire)`}</span>
+                <span className="fr-text--medium">{`Le parc en ${targetYear} (moyenne du territoire)`}</span>
                 <CustomBar data={computedData} scale={unifiedScale} />
               </div>
             </div>

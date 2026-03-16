@@ -5,9 +5,10 @@ import { useScenario } from '~/hooks/use-scenario'
 
 interface SimulationSettingsFormContextWrapperProps {
   children: React.ReactNode
+  peakYears?: Record<string, number>
 }
 
-export const SimulationSettingsFormContextWrapper = ({ children }: SimulationSettingsFormContextWrapperProps) => {
+export const SimulationSettingsFormContextWrapper = ({ children, peakYears }: SimulationSettingsFormContextWrapperProps) => {
   const { data } = useScenario()
   if (!data) return null
   const { id, scenario } = data
@@ -15,6 +16,7 @@ export const SimulationSettingsFormContextWrapper = ({ children }: SimulationSet
   const initialSettings = {
     id: scenario.id,
     projection: scenario.projection,
+    peakYears,
     simulationId: id,
     b2_scenario: scenario.b2_scenario,
     millesime: scenario.millesime,
