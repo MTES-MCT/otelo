@@ -594,7 +594,7 @@ export class ExportExcelService {
         { cell: 'B24', value: `Résidences secondaires en ${simulation.scenario.millesime}`, style: 'standardBorder' },
         { cell: 'C24', value: this.toPercentage(rates[epciScenario.epciCode].txRs), style: 'standardBorder' },
         { cell: 'B25', value: 'Variation du taux', style: 'standardBorder' },
-        { cell: 'C25', value: this.toPercentage(rates[epciScenario.epciCode].txRs - epciScenario.b2_tx_rs), style: 'standardBorder' },
+        { cell: 'C25', value: this.toPercentage(epciScenario.b2_tx_rs - rates[epciScenario.epciCode].txRs), style: 'standardBorder' },
         { cell: 'B26', value: `Résidences secondaires en ${targetYear}`, style: 'standardBorder' },
         { cell: 'C26', value: this.toPercentage(epciScenario.b2_tx_rs), style: 'standardBorder' },
       ],
@@ -746,7 +746,7 @@ export class ExportExcelService {
     await this.populateMainResults(epciWorksheet, epciScenario, results)
     await this.populateFlowRequirementResults(epciWorksheet, epciScenario, results)
     await this.populateBadHousingResults(epciWorksheet, epciScenario, results, simulation)
-    await this.populateFilocomResults(epciWorksheet, epciScenario, simulation)
+    await this.populateFilocomResults(epciWorksheet, epciScenario, simulation, results)
   }
 
   private async createResultsHeaders(epciWorksheet: ExcelJS.Worksheet): Promise<void> {
@@ -934,6 +934,7 @@ export class ExportExcelService {
     epciWorksheet: ExcelJS.Worksheet,
     epciScenario: TEpciScenario,
     simulation: TSimulationWithEpciAndScenario,
+    results: TResults,
   ): Promise<void> {
     const millesime = simulation.scenario.millesime
     const filocomData = await this.prismaService.filocomFlux.findUnique({
@@ -1030,14 +1031,36 @@ export class ExportExcelService {
     const parctotProj = txRpProj > 0 ? rpProj / txRpProj : filocomData.parctot
 
     // Calculate number of logements for projection horizon (rows 19-21)
-    const d20Raw = parctotProj * epciScenario.b2_tx_vacance_courte
-    const d21Raw = parctotProj * epciScenario.b2_tx_vacance_longue
+    // Derive D20/D21 from millesime values (D15/D16) + flow besoin (G10/G11) to match site display
+    const epciFlowData = results.flowRequirement?.epcis.find((epci) => epci.code === epciScenario.epciCode)
+
+    const d15 = Math.round(filocomData.parctot * epciRates.shortTermVacancyRate)
+    const d16 = Math.round(filocomData.parctot * epciRates.longTermVacancyRate)
+
+    const shortTermBesoin = epciFlowData?.totals.shortTermVacantAccomodation ?? 0
+    const longTermBesoin = epciFlowData?.totals.longTermVacantAccomodation ?? 0
+
+    const d20 = d15 + shortTermBesoin
+    const d21 = d16 + longTermBesoin
+    const d19 = d20 + d21
 
     const configHorizon: SectionConfig = {
       data: [
-        { cell: 'D19', value: Math.round(d20Raw + d21Raw), style: 'standardBorder' },
-        { cell: 'D20', value: Math.round(d20Raw), style: 'standardBorder' },
-        { cell: 'D21', value: Math.round(d21Raw), style: 'standardBorder' },
+        {
+          cell: 'D19',
+          value: d19,
+          style: 'standardBorder',
+        },
+        {
+          cell: 'D20',
+          value: d20,
+          style: 'standardBorder',
+        },
+        {
+          cell: 'D21',
+          value: d21,
+          style: 'standardBorder',
+        },
       ],
     }
 
@@ -1047,9 +1070,21 @@ export class ExportExcelService {
 
     const configSecondaryResidences: SectionConfig = {
       data: [
-        { cell: 'D24', value: Math.round(d24Raw), style: 'standardBorder' },
-        { cell: 'D25', value: Math.round(d24Raw - d26Raw), style: 'standardBorder' },
-        { cell: 'D26', value: Math.round(d26Raw), style: 'standardBorder' },
+        {
+          cell: 'D24',
+          value: Math.round(filocomData.parctot * epciRates.txRs),
+          style: 'standardBorder',
+        },
+        {
+          cell: 'D25',
+          value: Math.round(parctotProj * epciScenario.b2_tx_rs) - Math.round(filocomData.parctot * epciRates.txRs),
+          style: 'standardBorder',
+        },
+        {
+          cell: 'D26',
+          value: Math.round(parctotProj * epciScenario.b2_tx_rs),
+          style: 'standardBorder',
+        },
       ],
     }
 
