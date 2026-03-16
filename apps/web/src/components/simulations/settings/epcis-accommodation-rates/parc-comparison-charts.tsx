@@ -2,7 +2,7 @@
 
 import Button from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
-import { parseAsBoolean, parseAsString, useQueryState } from 'nuqs'
+import { parseAsBoolean, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import styles from './parc-comparison-charts.module.css'
@@ -29,8 +29,11 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
   const { rates, defaultRates } = useEpcisRates()
   const ratesByEpci = rates[epci]
   const defaultRatesByEpci = defaultRates[epci]
-  const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
-  const [millesime] = useQueryState('millesime', parseAsString)
+  const [{ millesime, projection, parcEvolutionShown }, setQueryStates] = useQueryStates({
+    millesime: parseAsString,
+    projection: parseAsInteger,
+    parcEvolutionShown: parseAsBoolean.withDefault(false),
+  })
   const baseYear = millesime
 
   if (!ratesByEpci || !defaultRatesByEpci) return null
@@ -138,7 +141,7 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
   return (
     <div className="fr-border-top fr-p-3v fr-flex fr-direction-column fr-justify-content-space-between">
       <Button
-        onClick={() => setIsShown(!isShown)}
+        onClick={() => setQueryStates({ parcEvolutionShown: !parcEvolutionShown })}
         priority="tertiary no outline"
         className="fr-width-full fr-flex fr-justify-content-space-between"
       >
@@ -146,11 +149,11 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
         <span
           className={classNames(
             'fr-text-title--blue-france fr-text--medium',
-            isShown ? 'ri-arrow-drop-up-line' : 'ri-arrow-drop-down-line',
+            parcEvolutionShown ? 'ri-arrow-drop-up-line' : 'ri-arrow-drop-down-line',
           )}
         />
       </Button>
-      {isShown && (
+      {parcEvolutionShown && (
         <ChartDownloadWrapper className={styles.exportAsImageButton} fileName="comparaison-parc-epci">
           <div className={classNames(styles.chartContainer, 'fr-p-3w', 'fr-mt-3v')}>
             <div className="fr-flex fr-direction-column">
@@ -178,7 +181,7 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
 
               {/* projection section */}
               <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">Le parc en 2050</span>
+                <span className="fr-text--medium">{`Le parc en ${projection}`}</span>
                 <CustomBar data={computedData} />
               </div>
             </div>
