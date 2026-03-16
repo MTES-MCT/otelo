@@ -244,6 +244,7 @@ model Epci {
   simulations                       Simulation[]                        @relation("EpciToSimulation")
   neighborsFrom                     EPCINeighbor[]                      @relation("EPCINeighborFrom")
   neighborsTo                       EPCINeighbor[]                      @relation("EPCINeighborTo")
+  historicalDemographicSeries       HistoricalDemographicSeries[]
 
   @@map("epcis")
 }
@@ -838,6 +839,18 @@ enum MotifB17 {
 enum B15Surocc {
   Acc
   Mod
+}
+
+model HistoricalDemographicSeries {
+  epciCode String @map("epci_code")
+  year     Int
+  type     String
+  value    Float
+  epci     Epci   @relation(fields: [epciCode], references: [code])
+
+  @@id([epciCode, year, type])
+  @@index([type])
+  @@map("historical_demographic_series")
 }
 
 enum B11Etablissement {
