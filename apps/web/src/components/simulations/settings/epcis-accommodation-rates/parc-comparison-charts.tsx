@@ -29,12 +29,14 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
   const { rates, defaultRates } = useEpcisRates()
   const ratesByEpci = rates[epci]
   const defaultRatesByEpci = defaultRates[epci]
-  const [{ millesime, projection, parcEvolutionShown }, setQueryStates] = useQueryStates({
+  const [{ millesime, projection, peakYear, parcEvolutionShown }, setQueryStates] = useQueryStates({
     millesime: parseAsString,
     projection: parseAsInteger,
+    peakYear: parseAsString,
     parcEvolutionShown: parseAsBoolean.withDefault(false),
   })
   const baseYear = millesime
+  const targetYear = peakYear ?? projection
 
   if (!ratesByEpci || !defaultRatesByEpci) return null
 
@@ -181,7 +183,7 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
 
               {/* projection section */}
               <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">{`Le parc en ${projection}`}</span>
+                <span className="fr-text--medium">{`Le parc en ${targetYear}`}</span>
                 <CustomBar data={computedData} />
               </div>
             </div>

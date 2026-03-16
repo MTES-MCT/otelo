@@ -7,7 +7,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import classNames from 'classnames'
 import { parseAsArrayOf, parseAsString, useQueryState, useQueryStates } from 'nuqs'
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { NameType, Payload as TooltipPayload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { tss } from 'tss-react'
@@ -159,6 +159,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
     omphale: parseAsString,
     population: parseAsString,
     projection: parseAsString,
+    peakYear: parseAsString,
     epciChart: parseAsString.withDefault(''),
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
     demographicEvolutionOmphaleCustomIds: parseAsArrayOf(parseAsString).withDefault([]),
@@ -224,6 +225,20 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
   const popEvolutionValue = isUsingCustomData ? popEvolution?.custom : popEvolution?.[formattedOmphale as keyof typeof popEvolution]
   const evol = basePopulationValue && popEvolutionValue ? popEvolutionValue - basePopulationValue : 0
   const maxYear = findMaxValueYear(chartData, formattedOmphale)
+
+  const savePeakYear = useCallback(
+    (year: number | null) => {
+      const peakYearStr = year ? String(year) : null
+      if (peakYearStr !== queryStates.peakYear) {
+        setQueryStates({ peakYear: peakYearStr })
+      }
+    },
+    [queryStates.peakYear, setQueryStates],
+  )
+
+  useEffect(() => {
+    savePeakYear(maxYear)
+  }, [maxYear, savePeakYear])
 
   const onDeleteCustomData = async () => {
     if (!customDataEpci?.id) return
