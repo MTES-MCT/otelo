@@ -74,11 +74,11 @@ export const PopulationScenariosSelection: FC = () => {
         </Button>
         {knowMore && (
           <p className="fr-text--sm fr-text-mention--grey fr-mt-1v">
-            Les projections de nombre de ménages proposées par Otelo sont établies à partir du modèle Omphale, produit par l'Insee. Il
+            Les projections de population municipale proposées par Otelo sont établies à partir du modèle Omphale, produit par l'Insee. Il
             permet d'obtenir des projections de population sur la période 2018-2050 à partir de scénarios qui reposent sur différentes
             hypothèses de natalité, de mortalité et de migration. Ces projections de population sont ensuite transformées en projections de
-            nombre de ménages à l'aide d'une méthode conçue en partenariat par la DHUP, l'Insee et le SDES selon plusieurs scénarios de
-            décohabitation.
+            nombre de ménages à l'aide d'une méthode conçue par l'Insee et le SDES selon plusieurs scénarios de décohabitation. Les
+            projections sont recalées à la dernière valeur observée, issue du recensement de la population
           </p>
         )}
       </div>
