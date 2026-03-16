@@ -2,7 +2,7 @@
 
 import Button from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
-import { parseAsBoolean, parseAsString, useQueryState } from 'nuqs'
+import { parseAsBoolean, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import styles from './parc-comparison-charts.module.css'
@@ -28,8 +28,11 @@ const COLORS = {
 
 export const AggregatedSecondaryParcsComparisonChart = () => {
   const { rates, defaultRates } = useEpcisRates()
-  const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
-  const [millesime] = useQueryState('millesime', parseAsString)
+  const [{ millesime, projection, parcEvolutionShown }, setQueryStates] = useQueryStates({
+    millesime: parseAsString,
+    projection: parseAsInteger,
+    parcEvolutionShown: parseAsBoolean.withDefault(false),
+  })
   const baseYear = millesime
 
   const epciIds = Object.keys(defaultRates)
@@ -153,7 +156,7 @@ export const AggregatedSecondaryParcsComparisonChart = () => {
   return (
     <div className="fr-border-top fr-p-3v fr-flex fr-direction-column fr-justify-content-space-between">
       <Button
-        onClick={() => setIsShown(!isShown)}
+        onClick={() => setQueryStates({ parcEvolutionShown: !parcEvolutionShown })}
         priority="tertiary no outline"
         className="fr-width-full fr-flex fr-justify-content-space-between"
       >
@@ -161,11 +164,11 @@ export const AggregatedSecondaryParcsComparisonChart = () => {
         <span
           className={classNames(
             'fr-text-title--blue-france fr-text--medium',
-            isShown ? 'ri-arrow-drop-up-line' : 'ri-arrow-drop-down-line',
+            parcEvolutionShown ? 'ri-arrow-drop-up-line' : 'ri-arrow-drop-down-line',
           )}
         />
       </Button>
-      {isShown && (
+      {parcEvolutionShown && (
         <ChartDownloadWrapper fileName="comparaison-parc-residences-secondaires">
           <div className={classNames(styles.chartContainer, 'fr-p-3w', 'fr-mt-3v')}>
             <div className="fr-flex fr-direction-column">
@@ -191,7 +194,7 @@ export const AggregatedSecondaryParcsComparisonChart = () => {
 
               {/* projection section */}
               <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">Le parc en 2050 (moyenne du territoire)</span>
+                <span className="fr-text--medium">{`Le parc en ${projection} (moyenne du territoire)`}</span>
                 <CustomBar data={computedData} scale={unifiedScale} />
               </div>
             </div>

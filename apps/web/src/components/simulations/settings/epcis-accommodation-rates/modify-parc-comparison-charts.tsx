@@ -186,7 +186,7 @@ const ModifyParcsComparisonCharts = ({
 
               {/* projection section */}
               <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">Le parc en 2050</span>
+                <span className="fr-text--medium">{`Le parc en ${simulationSettings.projection}`}</span>
                 <CustomBar data={computedData} />
               </div>
             </div>
