@@ -382,9 +382,7 @@ describe('ExportExcelService', () => {
 
       it('should still use filocom parctot for D24 (RS 2021) and D25 = D26 - D24', () => {
         expect(epciSheet.getCell('D24').value).toBe(Math.round(PARCTOT * 0.06))
-        expect(epciSheet.getCell('D25').value).toBe(
-          Math.round(parctotProj * 0.05) - Math.round(PARCTOT * 0.06),
-        )
+        expect(epciSheet.getCell('D25').value).toBe(Math.round(parctotProj * 0.05) - Math.round(PARCTOT * 0.06))
       })
     })
 
