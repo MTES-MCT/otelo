@@ -36,6 +36,10 @@ export const ModifyAggregatedSecondaryParcsComparisonChart = () => {
 
   if (!originalRatesData || epciIds.length === 0) return null
 
+  const aggregatedPeakYear = simulationSettings.peakYears
+    ? Math.min(...epciIds.map((id) => simulationSettings.peakYears![id]).filter(Boolean))
+    : undefined
+
   // Calculate aggregated rates (average across all EPCIs)
   const aggregateRates = () => {
     let totalShortTerm = 0
@@ -189,7 +193,9 @@ export const ModifyAggregatedSecondaryParcsComparisonChart = () => {
                 <CustomBar data={dataBaseYear} scale={unifiedScale} />
               </div>
               <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">Le parc en {simulationSettings.projection} (moyenne du territoire)</span>
+                <span className="fr-text--medium">
+                  Le parc en {aggregatedPeakYear ?? simulationSettings.projection} (moyenne du territoire)
+                </span>
                 <CustomBar data={computedData} scale={unifiedScale} />
               </div>
             </div>
