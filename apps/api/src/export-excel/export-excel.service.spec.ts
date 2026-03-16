@@ -356,18 +356,17 @@ describe('ExportExcelService', () => {
       const txRpProj = 1 - 0.05 - 0.04 - 0.04 // 0.87
       const parctotProj = RP_PROJ / txRpProj
 
-      it('should derive D19 from D20 + D21', () => {
-        const d20Raw = parctotProj * 0.04
-        const d21Raw = parctotProj * 0.04
-        expect(epciSheet.getCell('D19').value).toBe(Math.round(d20Raw + d21Raw))
-      })
-
-      it('should use parctotProj for D20', () => {
-        expect(epciSheet.getCell('D20').value).toBe(Math.round(parctotProj * 0.04))
-      })
-
-      it('should use parctotProj for D21', () => {
-        expect(epciSheet.getCell('D21').value).toBe(Math.round(parctotProj * 0.04))
+      it('should compute D19-D21 from millesime values + flow besoin', () => {
+        // D15 = PARCTOT * shortTermVacancyRate = 100000 * 0.04 = 4000
+        // D16 = PARCTOT * longTermVacancyRate = 100000 * 0.04 = 4000
+        // G10 (shortTermBesoin) = 30, G11 (longTermBesoin) = 20
+        const d15 = Math.round(PARCTOT * 0.04)
+        const d16 = Math.round(PARCTOT * 0.04)
+        const d20 = d15 + flowEpci.totals.shortTermVacantAccomodation // 4000 + 30
+        const d21 = d16 + flowEpci.totals.longTermVacantAccomodation // 4000 + 20
+        expect(epciSheet.getCell('D20').value).toBe(d20)
+        expect(epciSheet.getCell('D21').value).toBe(d21)
+        expect(epciSheet.getCell('D19').value).toBe(d20 + d21)
       })
 
       it('should use parctotProj for D26 (secondary residences projection)', () => {
@@ -382,11 +381,11 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('D14').value).toBe(Math.round(d15Raw + d16Raw))
       })
 
-      it('should derive D25 from D24 - D26', () => {
-        const d24Raw = PARCTOT * 0.06
-        const d26Raw = parctotProj * 0.05
-        expect(epciSheet.getCell('D24').value).toBe(Math.round(d24Raw))
-        expect(epciSheet.getCell('D25').value).toBe(Math.round(d24Raw - d26Raw))
+      it('should still use filocom parctot for D24 (RS 2021) and D25 = D26 - D24', () => {
+        expect(epciSheet.getCell('D24').value).toBe(Math.round(PARCTOT * 0.06))
+        expect(epciSheet.getCell('D25').value).toBe(
+          Math.round(parctotProj * 0.05) - Math.round(PARCTOT * 0.06),
+        )
       })
     })
 
@@ -686,18 +685,17 @@ describe('ExportExcelService', () => {
       const txRpProj = 1 - csvEpciScenario.b2_tx_rs - csvEpciScenario.b2_tx_vacance_longue - csvEpciScenario.b2_tx_vacance_courte
       const parctotProj = CSV_RP_PROJ / txRpProj
 
-      it('should derive D19 from D20 + D21', () => {
-        const d20Raw = parctotProj * csvEpciScenario.b2_tx_vacance_courte
-        const d21Raw = parctotProj * csvEpciScenario.b2_tx_vacance_longue
-        expect(epciSheet.getCell('D19').value).toBe(Math.round(d20Raw + d21Raw))
-      })
-
-      it('should compute D20 with parctotProj', () => {
-        expect(epciSheet.getCell('D20').value).toBe(Math.round(parctotProj * csvEpciScenario.b2_tx_vacance_courte))
-      })
-
-      it('should compute D21 with parctotProj', () => {
-        expect(epciSheet.getCell('D21').value).toBe(Math.round(parctotProj * csvEpciScenario.b2_tx_vacance_longue))
+      it('should compute D19-D21 from millesime values + flow besoin', () => {
+        // D15 = CSV_PARCTOT * shortTermVacancyRate = 85000 * 0.05 = 4250
+        // D16 = CSV_PARCTOT * longTermVacancyRate = 85000 * 0.0358 = 3043
+        const d15 = Math.round(CSV_PARCTOT * 0.05)
+        const d16 = Math.round(CSV_PARCTOT * 0.0358)
+        const csvFlowEpci = results.flowRequirement.epcis[0]
+        const d20 = d15 + csvFlowEpci.totals.shortTermVacantAccomodation // 4250 + 60
+        const d21 = d16 + csvFlowEpci.totals.longTermVacantAccomodation // 3043 + 40
+        expect(epciSheet.getCell('D20').value).toBe(d20)
+        expect(epciSheet.getCell('D21').value).toBe(d21)
+        expect(epciSheet.getCell('D19').value).toBe(d20 + d21)
       })
 
       it('should compute D26 with parctotProj', () => {
