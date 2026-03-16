@@ -120,6 +120,31 @@ const createProjectionMenagesTableData = (
 export class DemographicEvolutionService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  private async getHistoricalSeries(
+    epciCodes: string[],
+    type: 'population' | 'menages',
+    beforeYear: number,
+  ): Promise<Map<string, Array<{ year: number; value: number }>>> {
+    const rows = await this.prismaService.$queryRaw<Array<{ epci_code: string; year: number; value: number }>>`
+      SELECT epci_code, year, value
+      FROM historical_demographic_series
+      WHERE epci_code IN (${Prisma.join(epciCodes)})
+        AND type = ${type}
+        AND year >= 2016
+        AND year < ${beforeYear}
+      ORDER BY epci_code, year ASC
+    `
+
+    const result = new Map<string, Array<{ year: number; value: number }>>()
+    for (const row of rows) {
+      if (!result.has(row.epci_code)) {
+        result.set(row.epci_code, [])
+      }
+      result.get(row.epci_code)!.push({ year: row.year, value: Number(row.value) })
+    }
+    return result
+  }
+
   async getDemographicEvolution(epciCodes: string, millesime: string, years?: number[]): Promise<TDemographicEvolutionMenagesByEpciRecord> {
     const epcisArray = epciCodes.split(',')
     const whereCond: Prisma.Sql = Prisma.sql`WHERE epci_code IN (${Prisma.join(epcisArray)})${years && years.length > 0 ? Prisma.sql` AND year IN (${Prisma.join(years)})` : Prisma.empty}${Prisma.sql` AND millesime = ${millesime}`}`
@@ -178,6 +203,41 @@ export class DemographicEvolutionService {
 
       return acc
     }, {} as TDemographicEvolutionMenagesByEpciRecord)
+
+    // Prepend historical data (before millesime year)
+    if (!years) {
+      const baseYear = Number(millesime)
+      const historicalMap = await this.getHistoricalSeries(epcisArray, 'menages', baseYear)
+
+      for (const [epciCode, historicalData] of historicalMap) {
+        if (!groupedByEpci[epciCode]) {
+          groupedByEpci[epciCode] = {
+            data: [],
+            metadata: { max: -Infinity, min: Infinity },
+          }
+        }
+
+        const historicalEntries = historicalData.map(({ year, value }) => ({
+          year,
+          centralB: value,
+          centralC: value,
+          centralH: value,
+          phB: value,
+          phC: value,
+          phH: value,
+          pbB: value,
+          pbC: value,
+          pbH: value,
+        }))
+
+        groupedByEpci[epciCode].data = [...historicalEntries, ...groupedByEpci[epciCode].data]
+
+        for (const { value } of historicalData) {
+          groupedByEpci[epciCode].metadata.min = Math.min(groupedByEpci[epciCode].metadata.min, value)
+          groupedByEpci[epciCode].metadata.max = Math.max(groupedByEpci[epciCode].metadata.max, value)
+        }
+      }
+    }
 
     // Compute 'all' key: sum values across all EPCIs for each year
     const allYearsMap = new Map<
@@ -287,6 +347,35 @@ export class DemographicEvolutionService {
 
       return acc
     }, {} as TDemographicEvolutionPopulationByEpciRecord)
+
+    // Prepend historical data (before millesime year)
+    if (!years) {
+      const baseYear = Number(millesime)
+      const historicalMap = await this.getHistoricalSeries(epcisArray, 'population', baseYear)
+
+      for (const [epciCode, historicalData] of historicalMap) {
+        if (!groupedByEpci[epciCode]) {
+          groupedByEpci[epciCode] = {
+            data: [],
+            metadata: { max: -Infinity, min: Infinity },
+          }
+        }
+
+        const historicalEntries = historicalData.map(({ year, value }) => ({
+          year,
+          central: value,
+          haute: value,
+          basse: value,
+        }))
+
+        groupedByEpci[epciCode].data = [...historicalEntries, ...groupedByEpci[epciCode].data]
+
+        for (const { value } of historicalData) {
+          groupedByEpci[epciCode].metadata.min = Math.min(groupedByEpci[epciCode].metadata.min, value)
+          groupedByEpci[epciCode].metadata.max = Math.max(groupedByEpci[epciCode].metadata.max, value)
+        }
+      }
+    }
 
     // Compute 'all' key: sum values across all EPCIs for each year
     const allYearsMap = new Map<number, { central: number; haute: number; basse: number }>()

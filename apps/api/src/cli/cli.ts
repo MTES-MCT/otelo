@@ -98,6 +98,7 @@ async function bootstrap() {
     .option('--millesime <value>', 'Millésime à injecter (ex: 2024). Créé automatiquement si inexistant.')
     .option('--execute', 'Exécuter le SQL directement en base (⚠ local uniquement !)')
     .option('--output <path>', 'Écrire le SQL dans un fichier au lieu de stdout')
+    .option('--type <value>', 'Valeur à injecter dans la colonne "type" (ex: population, menages). Optionnel.')
     .action(async (options) => {
       try {
         const command = app.get(ImportCsvCommand)
@@ -107,6 +108,7 @@ async function bootstrap() {
           millesime: options.millesime,
           execute: options.execute || false,
           output: options.output,
+          type: options.type,
         })
         await app.close()
         process.exit(0)

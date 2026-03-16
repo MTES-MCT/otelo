@@ -28,6 +28,7 @@ const ALLOWED_TABLES = [
   'household_sizes',
   'vacancy_accommodation',
   'data_pack_versions',
+  'historical_demographic_series',
 ] as const
 
 type AllowedTable = (typeof ALLOWED_TABLES)[number]
@@ -49,8 +50,15 @@ interface ParsedCsv {
 export class ImportCsvCommand {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(options: { table: string; csv: string | string[]; millesime?: string; execute?: boolean; output?: string }): Promise<void> {
-    const { table, csv: csvInput, millesime, execute = false, output } = options
+  async execute(options: {
+    table: string
+    csv: string | string[]
+    millesime?: string
+    execute?: boolean
+    output?: string
+    type?: string
+  }): Promise<void> {
+    const { table, csv: csvInput, millesime, execute = false, output, type } = options
     const csvPaths = Array.isArray(csvInput) ? csvInput : [csvInput]
 
     // 1. Validate table name
@@ -129,12 +137,22 @@ export class ImportCsvCommand {
       }
     }
 
+    // 4b. If type is provided and table has type column, validate
+    const hasTypeColumn = dbColumnNames.includes('type')
+    if (type && hasTypeColumn) {
+      console.log(`✓ Valeur "type" injectée : ${type}`)
+    } else if (type && !hasTypeColumn) {
+      console.error(`\n✗ Option --type fournie mais la table "${table}" n'a pas de colonne "type".`)
+      process.exit(1)
+    }
+
     // 5. Columns to exclude from mapping (auto-managed)
     const autoColumns = new Set(['created_at', 'updated_at'])
     const targetDbColumns = dbColumnNames.filter((c) => !autoColumns.has(c))
 
-    // If millesime provided, we inject it — don't expect it in CSV
-    const columnsToMapFromCsv = millesime && hasMillesimeColumn ? targetDbColumns.filter((c) => c !== 'millesime') : targetDbColumns
+    // If millesime/type provided, we inject them — don't expect them in CSV
+    let columnsToMapFromCsv = millesime && hasMillesimeColumn ? targetDbColumns.filter((c) => c !== 'millesime') : targetDbColumns
+    columnsToMapFromCsv = type && hasTypeColumn ? columnsToMapFromCsv.filter((c) => c !== 'type') : columnsToMapFromCsv
 
     // 6. Parse each CSV and build mappings
     const parsedCsvs: ParsedCsv[] = []
@@ -204,7 +222,9 @@ export class ImportCsvCommand {
       }
 
       // Filter PK columns that come from CSV (not injected millesime)
-      const pkFromCsv = pkColumnNames.filter((pk) => !(millesime && hasMillesimeColumn && pk === 'millesime'))
+      const pkFromCsv = pkColumnNames.filter(
+        (pk) => !(millesime && hasMillesimeColumn && pk === 'millesime') && !(type && hasTypeColumn && pk === 'type'),
+      )
       console.log(`\n🔑 Clé primaire : (${pkColumnNames.join(', ')})`)
       console.log(`   Fusion des ${parsedCsvs.length} CSV par : (${pkFromCsv.join(', ')})`)
 
@@ -310,6 +330,9 @@ export class ImportCsvCommand {
     if (millesime && hasMillesimeColumn) {
       finalDbColumns.push('millesime')
     }
+    if (type && hasTypeColumn) {
+      finalDbColumns.push('type')
+    }
 
     // Check for unmapped DB columns (multi-CSV: union of all CSVs must cover all DB columns)
     if (parsedCsvs.length > 1) {
@@ -346,6 +369,9 @@ export class ImportCsvCommand {
         })
         if (millesime && hasMillesimeColumn) {
           values.push(`'${this.escapeString(millesime)}'`)
+        }
+        if (type && hasTypeColumn) {
+          values.push(`'${this.escapeString(type)}'`)
         }
         const comma = idx < batch.length - 1 ? ',' : ''
 
