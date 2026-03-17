@@ -30,7 +30,7 @@
     "jsonwebtoken": "^9.0.3",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",
-    "next": "16.1.5",
+    "next": "16.1.7",
     "nuqs": "^2.8.6",
     "react": "^19",
     "react-dom": "^19",
