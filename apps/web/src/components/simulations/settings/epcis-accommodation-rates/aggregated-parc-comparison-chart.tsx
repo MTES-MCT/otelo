@@ -176,16 +176,18 @@ export const AggregatedParcsComparisonChart = () => {
                 </div>
               </div>
               {/* Base year Section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
                 <span className="fr-text--medium">{`Le parc en ${baseYear} (moyenne du territoire)`}</span>
                 <CustomBar data={dataBaseYear} scale={unifiedScale} />
               </div>
 
               {/* projection section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">{`Le parc en ${targetYear} (moyenne du territoire)`}</span>
-                <CustomBar data={computedData} scale={unifiedScale} />
-              </div>
+              {String(targetYear) !== baseYear && (
+                <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                  <span className="fr-text--medium">{`Le parc en ${targetYear} (moyenne du territoire)`}</span>
+                  <CustomBar data={computedData} scale={unifiedScale} />
+                </div>
+              )}
             </div>
           </div>
         </ChartDownloadWrapper>
