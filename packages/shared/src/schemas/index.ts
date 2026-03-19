@@ -21,3 +21,5 @@ export * from './entities/simulation.base'
 export * from './entities/user.base'
 // Rates
 export * from './rates/accommodations-rates'
+// Statistics
+export * from './statistics/template-statistics'
