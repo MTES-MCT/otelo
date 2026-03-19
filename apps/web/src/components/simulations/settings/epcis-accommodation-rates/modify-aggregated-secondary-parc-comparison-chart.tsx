@@ -188,16 +188,18 @@ export const ModifyAggregatedSecondaryParcsComparisonChart = () => {
                   <span className="fr-text--sm fr-mb-0">Résidences secondaires</span>
                 </div>
               </div>
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
                 <span className="fr-text--medium">{`Le parc en ${baseYear} (moyenne du territoire)`}</span>
                 <CustomBar data={dataBaseYear} scale={unifiedScale} />
               </div>
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">
-                  Le parc en {aggregatedPeakYear ?? simulationSettings.projection} (moyenne du territoire)
-                </span>
-                <CustomBar data={computedData} scale={unifiedScale} />
-              </div>
+              {String(aggregatedPeakYear ?? simulationSettings.projection) !== baseYear && (
+                <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                  <span className="fr-text--medium">
+                    Le parc en {aggregatedPeakYear ?? simulationSettings.projection} (moyenne du territoire)
+                  </span>
+                  <CustomBar data={computedData} scale={unifiedScale} />
+                </div>
+              )}
             </div>
           </div>
         </ChartDownloadWrapper>

@@ -14,7 +14,7 @@ export default async function TargetSecondaryResidencesRates({ params }: Simulat
 
   return (
     <>
-      <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
+      <div className="fr-flex fr-direction-column fr-background-default--grey">
         <ModifyEpcisSecondaryAccommodationRates epcis={simulation.epcis} />
       </div>
       <div className="fr-px-2w fr-pt-2w">

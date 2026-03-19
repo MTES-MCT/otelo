@@ -176,16 +176,18 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
                 )}
               </div>
               {/* 2021 Section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
                 <span className="fr-text--medium">{`Le parc en ${baseYear}`}</span>
                 <CustomBar data={dataBaseYear} />
               </div>
 
               {/* projection section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">{`Le parc en ${targetYear}`}</span>
-                <CustomBar data={computedData} />
-              </div>
+              {String(targetYear) !== baseYear && (
+                <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                  <span className="fr-text--medium">{`Le parc en ${targetYear}`}</span>
+                  <CustomBar data={computedData} />
+                </div>
+              )}
             </div>
           </div>
         </ChartDownloadWrapper>
