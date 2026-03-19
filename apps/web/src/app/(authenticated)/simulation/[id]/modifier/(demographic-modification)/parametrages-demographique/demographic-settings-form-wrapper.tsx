@@ -1,6 +1,6 @@
 'use client'
 
-import { parseAsString, useQueryState } from 'nuqs'
+import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { useEffect } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
@@ -29,9 +29,13 @@ export const DemographicSettingsFormWrapper = ({
   omphaleEvolution,
   scenarioId,
 }: DemographicSettingsFormWrapperProps) => {
-  const [epciChart, setEpciChart] = useQueryState('epciChart')
-  const [population, setPopulation] = useQueryState('population', parseAsString)
-  const [omphale, setOmphale] = useQueryState('omphale', parseAsString)
+  const [queryStates, setQueryStates] = useQueryStates({
+    epciChart: parseAsString,
+    population: parseAsString,
+    omphale: parseAsString,
+    millesime: parseAsInteger,
+    projection: parseAsString,
+  })
   const { simulationSettings, setSimulationSettings } = useSimulationSettings()
   const handleChange = (value: string) =>
     setSimulationSettings({
@@ -40,35 +44,45 @@ export const DemographicSettingsFormWrapper = ({
     })
 
   useEffect(() => {
-    if (!epciChart) {
-      setEpciChart(epcis[0])
+    if (!queryStates.epciChart) {
+      setQueryStates({ epciChart: epcis[0] })
     }
-  }, [epcis, epciChart, setEpciChart])
+  }, [epcis, queryStates.epciChart, setQueryStates])
 
   useEffect(() => {
+    const updates: Record<string, string | number | null> = {}
     if (simulationSettings.b2_scenario) {
-      if (!population) {
+      if (!queryStates.population) {
         const derivedPopulation = getPopulationFromScenario(simulationSettings.b2_scenario)
         if (derivedPopulation) {
-          setPopulation(derivedPopulation)
+          updates.population = derivedPopulation
         }
       }
-      if (!omphale) {
-        setOmphale(simulationSettings.b2_scenario)
+      if (!queryStates.omphale) {
+        updates.omphale = simulationSettings.b2_scenario
       }
+    }
+    if (!queryStates.millesime && simulationSettings.millesime) {
+      updates.millesime = Number(simulationSettings.millesime)
+    }
+    if (!queryStates.projection && simulationSettings.projection) {
+      updates.projection = String(simulationSettings.projection)
+    }
+    if (Object.keys(updates).length > 0) {
+      setQueryStates(updates)
     }
   }, [])
 
   useEffect(() => {
-    if (omphale && omphale !== simulationSettings.b2_scenario) {
+    if (queryStates.omphale && queryStates.omphale !== simulationSettings.b2_scenario) {
       setSimulationSettings({
         ...simulationSettings,
-        b2_scenario: omphale,
+        b2_scenario: queryStates.omphale,
       })
     }
-  }, [omphale])
+  }, [queryStates.omphale])
 
-  if (!epciChart) return null
+  if (!queryStates.epciChart) return null
 
   return (
     <DemographicSettingsHeader>

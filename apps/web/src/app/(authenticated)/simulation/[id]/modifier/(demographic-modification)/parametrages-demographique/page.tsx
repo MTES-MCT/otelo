@@ -57,7 +57,7 @@ export default async function ParametragesDemographiquePage({ params, searchPara
 
   return (
     <>
-      <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
+      <div className="fr-flex fr-direction-column fr-background-default--grey">
         <DemographicSettingsFormWrapper
           epcis={epcisCodes}
           omphaleEvolution={omphaleEvolution}

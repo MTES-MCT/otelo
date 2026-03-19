@@ -36,6 +36,7 @@ const ModifyParcsComparisonCharts = ({
   const { defaultRates } = useEpcisRates()
   const { simulationSettings } = useSimulationSettings()
   const baseYear = simulationSettings.millesime
+  const targetYear = simulationSettings.peakYears?.[epci] ?? simulationSettings.projection
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
 
   const defaultRatesByEpci = defaultRates[epci]
@@ -179,16 +180,18 @@ const ModifyParcsComparisonCharts = ({
                 )}
               </div>
               {/* 2021 Section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
                 <span className="fr-text--medium">{`Le parc en ${baseYear}`}</span>
                 <CustomBar data={dataBaseYear} />
               </div>
 
               {/* projection section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">{`Le parc en ${simulationSettings.peakYears?.[epci] ?? simulationSettings.projection}`}</span>
-                <CustomBar data={computedData} />
-              </div>
+              {String(targetYear) !== baseYear && (
+                <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                  <span className="fr-text--medium">{`Le parc en ${targetYear}`}</span>
+                  <CustomBar data={computedData} />
+                </div>
+              )}
             </div>
           </div>
         </ChartDownloadWrapper>
