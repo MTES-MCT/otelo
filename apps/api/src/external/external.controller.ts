@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { SkipThrottle } from '@nestjs/throttler'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 import { Consumer } from '~/common/decorators/api-consumer'
 import { ApiKeyGuard } from '~/common/guards/api-key.guard'
@@ -17,6 +18,7 @@ import { ExternalService } from './external.service'
 @ApiTags('Simulations - Résultats méthodo Otelo')
 @ApiBearerAuth()
 @Controller('external')
+@SkipThrottle()
 @AllowAnonymous()
 @UseGuards(ApiKeyGuard)
 export class ExternalController {

@@ -1,4 +1,5 @@
 import { AuthenticatedBreadcrumb } from '~/components/breadcrumbs/authenticated-breadcrumb'
+import { SimulationSSEProvider } from '~/components/collaboration/simulation-sse-provider'
 import { DemographicSettingsSimulationStepper } from '~/components/simulations/settings/demographic-settings-simulation-stepper'
 import { SimulationSettingsFormContextWrapper } from '~/components/simulations/settings/modification/simulation-settings-form-context-wrapper'
 import UpdateDemographicSettingsSimulationSideMenu from '~/components/simulations/settings/modification/update-demographic-settings-simulation-side-menu'
@@ -11,6 +12,7 @@ export default async function ModifySimulationLayout({ children, params }: Simul
 
   const { simulations: groupedSimulations } = await getGroupedSimulationWithResults(id)
   const simulation = groupedSimulations[id]
+  const hasCollaborators = !!simulation.hasCollaborators
 
   const epcis = simulation.scenario.epciScenarios.map((e) => e.epciCode)
 
@@ -24,23 +26,25 @@ export default async function ModifySimulationLayout({ children, params }: Simul
 
   return (
     <div className="fr-container">
-      <SimulationSettingsFormContextWrapper peakYears={peakYears}>
-        <SimulationFormRatesProviderContextWrapper epcis={epcis}>
-          <div className="fr-flex fr-flex-gap-12v">
-            <nav className="fr-col-md-3">
-              <AuthenticatedBreadcrumb />
-              <UpdateDemographicSettingsSimulationSideMenu id={id} />
-            </nav>
+      <SimulationSSEProvider simulationId={id} enabled={hasCollaborators}>
+        <SimulationSettingsFormContextWrapper peakYears={peakYears}>
+          <SimulationFormRatesProviderContextWrapper epcis={epcis}>
+            <div className="fr-flex fr-flex-gap-12v">
+              <nav className="fr-col-md-3">
+                <AuthenticatedBreadcrumb />
+                <UpdateDemographicSettingsSimulationSideMenu id={id} />
+              </nav>
 
-            <div className="fr-col-md-9">
-              <main className="fr-container">
-                <DemographicSettingsSimulationStepper />
-                {children}
-              </main>
+              <div className="fr-col-md-9">
+                <main className="fr-container">
+                  <DemographicSettingsSimulationStepper />
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
-        </SimulationFormRatesProviderContextWrapper>
-      </SimulationSettingsFormContextWrapper>
+          </SimulationFormRatesProviderContextWrapper>
+        </SimulationSettingsFormContextWrapper>
+      </SimulationSSEProvider>
     </div>
   )
 }

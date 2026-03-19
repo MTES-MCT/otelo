@@ -28,7 +28,10 @@ describe('ScenariosService', () => {
 
       expect(result).toBe(true)
       expect(mockPrismaService.scenario.findFirst).toHaveBeenCalledWith({
-        where: { id: 'scenario-1', userId: 'user-1' },
+        where: {
+          id: 'scenario-1',
+          OR: [{ userId: 'user-1' }, { simulations: { some: { collaborators: { some: { userId: 'user-1' } } } } }],
+        },
       })
     })
 
@@ -39,7 +42,10 @@ describe('ScenariosService', () => {
 
       expect(result).toBe(false)
       expect(mockPrismaService.scenario.findFirst).toHaveBeenCalledWith({
-        where: { id: 'scenario-1', userId: 'user-1' },
+        where: {
+          id: 'scenario-1',
+          OR: [{ userId: 'user-1' }, { simulations: { some: { collaborators: { some: { userId: 'user-1' } } } } }],
+        },
       })
     })
   })

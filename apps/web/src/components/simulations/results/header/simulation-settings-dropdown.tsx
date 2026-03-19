@@ -4,12 +4,27 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import { Tag } from '@codegouvfr/react-dsfr/Tag'
 import { TEpci } from '@shared'
 import { useState } from 'react'
+import { ActivityHistoryPanel } from '~/components/collaboration/activity-history-panel'
+import { ShareSimulationModal } from '~/components/collaboration/share-simulation-modal'
+import { useConnectedUsers } from '~/hooks/use-connected-users'
+import { useSession } from '~/lib/auth/client'
 import { TSimulationWithResults } from '~/schemas/simulation'
 import { formatDecohabitation, formatScenario } from '~/utils/omphale-label'
 import styles from './simulation-settings-dropdown.module.css'
 
-export const SimulationSettingsDropdown = ({ simulation, epci }: { simulation: TSimulationWithResults; epci?: TEpci }) => {
+export const SimulationSettingsDropdown = ({
+  simulation,
+  epci,
+  hasCollaborators = false,
+}: {
+  simulation: TSimulationWithResults
+  epci?: TEpci
+  hasCollaborators?: boolean
+}) => {
   const [showDropdown, setShowDropdown] = useState(false)
+  const { count: connectedCount, users: connectedUsers } = useConnectedUsers(simulation.id, { enabled: hasCollaborators })
+  const { data: session } = useSession()
+  const isOwner = session?.user?.id === simulation.userId
 
   const categories = [
     {
@@ -79,19 +94,41 @@ export const SimulationSettingsDropdown = ({ simulation, epci }: { simulation: T
   return (
     <>
       <div className="fr-flex fr-direction-column fr-flex-gap-4v">
-        <div className="fr-flex fr-flex-gap-2v">
-          <Button
-            priority="tertiary no outline"
-            iconPosition="right"
-            iconId={showDropdown ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}
-            onClick={() => setShowDropdown(!showDropdown)}
-            size="small"
-          >
-            Paramétrage
-          </Button>
-          <Button priority="secondary" size="small" linkProps={{ href: `/simulation/${simulation.id}/modifier/cadrage-temporel` }}>
-            Modifier
-          </Button>
+        <div className="fr-flex fr-flex-gap-2v fr-justify-content-space-between fr-align-items-center">
+          <div className="fr-flex fr-flex-gap-2v">
+            <Button
+              priority="tertiary no outline"
+              iconPosition="right"
+              iconId={showDropdown ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}
+              onClick={() => setShowDropdown(!showDropdown)}
+              size="small"
+            >
+              Paramétrage
+            </Button>
+            <Button priority="secondary" size="small" linkProps={{ href: `/simulation/${simulation.id}/modifier/cadrage-temporel` }}>
+              Modifier
+            </Button>
+            {isOwner && <ShareSimulationModal simulationId={simulation.id} simulationName={simulation.name ?? 'Simulation'} />}
+            {hasCollaborators && <ActivityHistoryPanel simulationId={simulation.id} />}
+          </div>
+          {connectedCount > 1 && (
+            <div
+              className="fr-flex fr-align-items-center fr-flex-gap-1v"
+              style={{ fontSize: '0.875rem', position: 'relative', cursor: 'default' }}
+              title={connectedUsers.map((u) => `${u.firstname} ${u.lastname}`).join('\n')}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: 'var(--background-flat-success)',
+                  display: 'inline-block',
+                }}
+              />
+              <strong>{connectedCount} utilisateurs connectés</strong>
+            </div>
+          )}
         </div>
         {/* we will reenable it sooner or later */}
         {/* <SimulationSettingsPresentationMode /> */}

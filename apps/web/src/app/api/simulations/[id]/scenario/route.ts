@@ -30,10 +30,14 @@ export async function PUT(request: Request, { params }: IdRouteParams) {
   }
 
   const body = await request.json()
+  const clientId = request.headers.get('x-client-id')
 
   const res = await authFetch(`/simulations/${id}/scenario`, {
     body: JSON.stringify(body),
     method: 'PUT',
+    headers: {
+      ...(clientId && { 'x-client-id': clientId }),
+    },
   })
 
   if (!res.ok) {

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth'
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { auth } from '~/auth/better-auth'
@@ -16,6 +17,7 @@ import { AdminModule } from './admin/admin.module'
 import { AuthModule } from './auth/auth.module'
 import { BadQualityModule } from './bad-quality/bad-quality.module'
 import { CalculationModule } from './calculation/calculation.module'
+import { CollaborationModule } from './collaboration/collaboration.module'
 import { ConsumersModule } from './consumers/consumers.module'
 import { DataPackVersionsModule } from './data-pack-versions/data-pack-versions.module'
 import { DataVisualisationModule } from './data-visualisation/data-visualisation.module'
@@ -52,6 +54,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     }),
     // Better Auth module - provides global AuthGuard with @AllowAnonymous() and @OptionalAuth() decorators
     BetterAuthModule.forRoot({ auth }),
+    ThrottlerModule.forRoot({ throttlers: [{ ttl: 60_000, limit: 100 }] }),
     PrismaModule,
     ScenariosModule,
     UsersModule,
@@ -60,6 +63,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     EpciNeighborsModule,
     EpciGroupsModule,
     SimulationsModule,
+    CollaborationModule,
     CalculationModule,
     ResultsModule,
     DemographicEvolutionModule,
@@ -94,6 +98,10 @@ import { VacancyModule } from './vacancy/vacancy.module'
     {
       provide: APP_GUARD,
       useExisting: AuthorizationGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
     {
       provide: APP_PIPE,

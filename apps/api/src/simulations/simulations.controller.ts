@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Headers, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Prisma, Role } from '~/generated/prisma/client'
@@ -59,8 +59,13 @@ export class SimulationsController {
   })
   @Put(':id/scenario')
   @HttpCode(HttpStatus.ACCEPTED)
-  async updateSimulation(@Param('id') id: string, @Body() data: TUpdateSimulationDto) {
-    return this.simulationsService.update(id, data)
+  async updateSimulation(
+    @Param('id') id: string,
+    @Body() data: TUpdateSimulationDto,
+    @User() user: TUser,
+    @Headers('x-client-id') clientId?: string,
+  ) {
+    return this.simulationsService.update(id, data, user.id, clientId)
   }
 
   @AccessControl({
@@ -70,8 +75,8 @@ export class SimulationsController {
   })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteSimulation(@Param('id') id: string, @User() { id: userId }: TUser) {
-    return this.simulationsService.delete(userId, id)
+  async deleteSimulation(@Param('id') id: string, @User() { id: userId }: TUser, @Headers('x-client-id') clientId?: string) {
+    return this.simulationsService.delete(userId, id, clientId)
   }
 
   @AccessControl({

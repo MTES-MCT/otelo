@@ -1,5 +1,6 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import { RiIconClassName } from '@codegouvfr/react-dsfr/fr/generatedFromCss/classNames'
+import { SimulationSSEProvider } from '~/components/collaboration/simulation-sse-provider'
 import { SimulationAnnualsNeedsSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs'
 import { SimulationBadHousing } from '~/components/simulations/results/bad-housing/simulation-bad-housing'
 import { SimulationDemographicBadHousingSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-summary'
@@ -24,6 +25,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
   const { id } = await params
   const { name, simulations: groupedSimulations } = await getGroupedSimulationWithResults(id)
   const simulation = groupedSimulations[id]
+  const hasCollaborators = !!simulation.hasCollaborators
 
   const results = {
     badQuality: simulation.results.badQuality.total,
@@ -82,7 +84,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
     return {
       content: (
         <div key={epci.code} className="fr-container fr-flex fr-direction-column fr-flex-gap-8v">
-          <SimulationSettingsDropdown simulation={simulation} epci={epci} />
+          <SimulationSettingsDropdown simulation={simulation} epci={epci} hasCollaborators={hasCollaborators} />
           <SimulationNeedsSummary projection={simulation.scenario.projection} results={epciResults} epci={epciData} />
           <SimulationDemographicBadHousingSummary
             simulationId={simulation.id}
@@ -110,7 +112,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
   const bassinTab = {
     content: (
       <div key="territory" className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
-        <SimulationSettingsDropdown simulation={simulation} />
+        <SimulationSettingsDropdown simulation={simulation} hasCollaborators={hasCollaborators} />
         <SimulationNeedsSummary projection={simulation.scenario.projection} results={results} epcis={simulation.epcis} />
 
         <SimulationDemographicBadHousingSummary
@@ -137,7 +139,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
   }))
 
   return (
-    <>
+    <SimulationSSEProvider simulationId={id} enabled={hasCollaborators}>
       <div className="fr-container fr-direction-column fr-flex fr-flex-gap-8v">
         <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
         <div className="fr-col-md-12 fr-flex fr-direction-column fr-direction-sm-row fr-align-items-center fr-mb-4w">
@@ -160,6 +162,6 @@ export default async function Resultats({ params }: SimulationPageProps) {
         </div>
       </div>
       <SimulationResultsTabs tabs={tabs} />
-    </>
+    </SimulationSSEProvider>
   )
 }
