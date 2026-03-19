@@ -11,6 +11,7 @@ export default async function ModifySimulationLayout({ children, params }: Simul
 
   const { simulations: groupedSimulations } = await getGroupedSimulationWithResults(id)
   const simulation = groupedSimulations[id]
+
   const epcis = simulation.scenario.epciScenarios.map((e) => e.epciCode)
 
   return (

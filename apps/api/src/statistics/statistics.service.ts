@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { TTemplateStatisticsRow } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
 
 @Injectable()
@@ -264,6 +265,70 @@ export class StatisticsService {
       LEFT JOIN user_export_resultat_epcis uer ON ua.id = uer.user_id
       LEFT JOIN user_export_powerpoint_epcis uep ON ua.id = uep.user_id
       ORDER BY ua.derniere_activite DESC;
+    `
+  }
+
+  async getTemplateStatistics(): Promise<TTemplateStatisticsRow[]> {
+    return this.prisma.$queryRaw<TTemplateStatisticsRow[]>`
+      WITH user_simulations AS (
+    SELECT
+      s.user_id,
+      MAX(GREATEST(s.created_at, s.updated_at)) AS last_estimation_at
+    FROM simulations s
+    WHERE s.deleted IS NULL
+    GROUP BY s.user_id
+  ),
+  user_epcis_estimes AS (
+    SELECT
+      s.user_id,
+      STRING_AGG(DISTINCT es.epci_code, ', ' ORDER BY es.epci_code) AS epcis_codes_estimes
+    FROM simulations s
+    JOIN scenarios sc ON sc.id = s.scenario_id
+    JOIN epci_scenarios es ON es.scenario_id = sc.id
+    WHERE s.deleted IS NULL
+    GROUP BY s.user_id
+  ),
+  user_exports AS (
+    SELECT
+      s.user_id,
+      MAX(ex.created_at) FILTER (WHERE ex.type = 'EXCEL') AS last_excel_export_at,
+      MAX(ex.created_at) FILTER (WHERE ex.type = 'POWERPOINT') AS last_ppt_export_at
+    FROM simulations s
+    JOIN exports ex ON ex.simulation_id = s.id
+    WHERE s.deleted IS NULL
+    GROUP BY s.user_id
+  ),
+  user_exports_epcis AS (
+    SELECT
+      s.user_id,
+      STRING_AGG(DISTINCT es.epci_code, ', ' ORDER BY es.epci_code)
+        FILTER (WHERE ex.type = 'EXCEL') AS epci_export_excel,
+      STRING_AGG(DISTINCT es.epci_code, ', ' ORDER BY es.epci_code)
+        FILTER (WHERE ex.type = 'POWERPOINT') AS epci_export_ppt
+    FROM simulations s
+    JOIN exports ex ON ex.simulation_id = s.id
+    JOIN scenarios sc ON sc.id = s.scenario_id
+    JOIN epci_scenarios es ON es.scenario_id = sc.id
+    WHERE s.deleted IS NULL
+    GROUP BY s.user_id
+  )
+  SELECT
+    u.firstname AS "Prénom",
+    u.lastname AS "Nom",
+    u.email AS "Email",
+    TO_CHAR(u.created_at, 'DD/MM/YYYY') AS "Date de création compte Otelo",
+    TO_CHAR(us.last_estimation_at, 'DD/MM/YYYY') AS "Date derniere estimation",
+    COALESCE(uee.epcis_codes_estimes, '') AS "EPCIs Code estimés",
+    TO_CHAR(ux.last_excel_export_at, 'DD/MM/YYYY') AS "Date dernier Export Résultats Excel",
+    COALESCE(uxe.epci_export_excel, '') AS "EPCI Export Résultats Excel",
+    TO_CHAR(ux.last_ppt_export_at, 'DD/MM/YYYY') AS "Date dernier Export PPT",
+    COALESCE(uxe.epci_export_ppt, '') AS "EPCI Export PPT"
+  FROM users u
+  LEFT JOIN user_simulations us ON us.user_id = u.id
+  LEFT JOIN user_epcis_estimes uee ON uee.user_id = u.id
+  LEFT JOIN user_exports ux ON ux.user_id = u.id
+  LEFT JOIN user_exports_epcis uxe ON uxe.user_id = u.id
+  ORDER BY u.lastname, u.firstname;
     `
   }
 

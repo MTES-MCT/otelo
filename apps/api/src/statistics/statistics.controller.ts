@@ -52,6 +52,25 @@ export class StatisticsController {
   }
 
   @AccessControl({ roles: [Role.ADMIN] })
+  @Get('/template')
+  @Header('Content-Type', 'text/csv')
+  async getTemplateStats(@Res() res: Response) {
+    const data = await this.statisticsService.getTemplateStatistics()
+
+    const dateStr = dayjs().format('DD-MM-YYYY')
+    const filename = `export-template-${dateStr}.csv`
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+
+    const csvData = Papa.unparse(data, {
+      header: true,
+      delimiter: ';',
+    })
+
+    res.send(csvData)
+  }
+
+  @AccessControl({ roles: [Role.ADMIN] })
   @Get('/results')
   @Header('Content-Type', 'text/csv')
   async getResultsStats(@Res() res: Response) {
