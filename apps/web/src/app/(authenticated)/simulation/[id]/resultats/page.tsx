@@ -1,5 +1,6 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import { RiIconClassName } from '@codegouvfr/react-dsfr/fr/generatedFromCss/classNames'
+import { SynthesisCnEvolutionChart } from '~/components/charts/synthesis-cn-evolution-chart'
 import { SimulationAnnualsNeedsSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs'
 import { SimulationBadHousing } from '~/components/simulations/results/bad-housing/simulation-bad-housing'
 import { SimulationDemographicBadHousingSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-summary'
@@ -90,7 +91,13 @@ export default async function Resultats({ params }: SimulationPageProps) {
             totalStock={epciResults.totalStock}
             epci={epciData}
           />
-          {hasNewHousingNeeds && <SimulationSecondaryVacantsAccommodationsSummary results={epciResults} epci={epciData} />}
+          {hasNewHousingNeeds && (
+            <SimulationSecondaryVacantsAccommodationsSummary
+              results={epciResults}
+              epci={epciData}
+              renewalNeeds={epciFlowRequirementData.totals.renewalNeeds}
+            />
+          )}
           <SimulationAnnualsNeedsSummary
             sitadelResults={sitadelResults}
             newConstructionsResults={epciFlowRequirementData}
@@ -107,6 +114,12 @@ export default async function Resultats({ params }: SimulationPageProps) {
       tabId: epci.code,
     }
   })
+  const epcisFlowData = simulation.epcis.map((epci) => ({
+    code: epci.code,
+    name: epci.name,
+    flowData: simulation.results.flowRequirement.epcis.find((e) => e.code === epci.code) as TFlowRequirementChartData,
+  }))
+
   const bassinTab = {
     content: (
       <div key="territory" className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
@@ -120,8 +133,15 @@ export default async function Resultats({ params }: SimulationPageProps) {
         />
 
         {results.totalFlux > 0 && (
-          <SimulationSecondaryVacantsAccommodationsSummary results={results} projection={simulation.scenario.projection} />
+          <SimulationSecondaryVacantsAccommodationsSummary
+            results={results}
+            projection={simulation.scenario.projection}
+            renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + e.totals.renewalNeeds, 0)}
+          />
         )}
+
+        {epcisFlowData.length > 1 && <SynthesisCnEvolutionChart epcisFlowData={epcisFlowData} horizon={simulation.scenario.projection} />}
+
         <SimulationEpcisDetails simulation={simulation} />
       </div>
     ),

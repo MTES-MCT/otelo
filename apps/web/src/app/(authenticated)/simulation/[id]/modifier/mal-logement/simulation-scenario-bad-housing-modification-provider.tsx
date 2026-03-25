@@ -5,6 +5,7 @@ export interface BadHousingSettings {
     confort: string
     occupation: string
     part: number
+    qualite: string
     source: string
   }
   heberges: {

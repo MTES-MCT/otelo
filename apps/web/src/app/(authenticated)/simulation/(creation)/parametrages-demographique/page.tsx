@@ -1,3 +1,4 @@
+import Alert from '@codegouvfr/react-dsfr/Alert'
 import type { Metadata } from 'next'
 import { SearchParams } from 'nuqs'
 import { searchParamsCache } from '~/app/(authenticated)/simulation/(creation)/searchParams'
@@ -8,6 +9,7 @@ import { DataSourceLink } from '~/components/simulations/settings/data-source-li
 import { DemographicSettingsHeader } from '~/components/simulations/settings/demographic-settings-header'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
+import { getEpcisWithoutInseeProjection } from '~/server-only/demographic-evolution/get-epcis-without-insee-projection'
 import { getOmphaleDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-omphale-evolution-by-epci'
 import { getPopulationDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-population-evolution-by-epci'
 
@@ -21,12 +23,25 @@ type PageProps = {
 
 export default async function DemographicSettingsPage({ searchParams }: PageProps) {
   const { epcis } = await searchParamsCache.parse(searchParams)
-  const omphaleEvolution = await getOmphaleDemographicEvolutionByEpci(epcis)
-  const populationEvolution = await getPopulationDemographicEvolutionByEpci(epcis)
+  const [omphaleEvolution, populationEvolution, epcisWithoutInseeProjection] = await Promise.all([
+    getOmphaleDemographicEvolutionByEpci(epcis),
+    getPopulationDemographicEvolutionByEpci(epcis),
+    getEpcisWithoutInseeProjection(epcis),
+  ])
   const href = `/simulation/taux-cibles-logements-vacants`
+  const hasEpcisWithoutInseeProjection = epcisWithoutInseeProjection.length > 0
 
   return (
     <>
+      {hasEpcisWithoutInseeProjection && (
+        <div className="fr-py-2w fr-pt-2w">
+          <Alert
+            severity="warning"
+            small
+            description="Les projections proposées ici sont issues d'un travail réalisé à l'échelle départementale faute de projections disponibles à l'échelle du bassin d'habitat."
+          />
+        </div>
+      )}
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <DemographicSettingsHeader>
           <ChartDownloadWrapper fileName="scenarios-population">

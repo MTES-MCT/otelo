@@ -5,6 +5,7 @@ import { SelectBadQualityPart } from '~/components/simulations/settings/modifica
 import { SelectBadQualitySource } from '~/components/simulations/settings/modification/mal-logement/bad-quality/select-bad-quality-source'
 import { SelectConfortSource } from '~/components/simulations/settings/modification/mal-logement/bad-quality/select-confort-source'
 import { SelectOccupationSource } from '~/components/simulations/settings/modification/mal-logement/bad-quality/select-occupation-source'
+import { SelectQualiteSource } from '~/components/simulations/settings/modification/mal-logement/bad-quality/select-qualite-source'
 import { UpdateBadHousingSimulationForm } from '~/components/simulations/settings/modification/mal-logement/update-bad-housing-simulation-form'
 import { NextStepLinkWithoutValidation } from '~/components/simulations/settings/next-step-link'
 import type { SimulationPageProps } from '~/types/simulation-page-props'
@@ -18,6 +19,7 @@ export default async function BadQualityPage({ params }: SimulationPageProps) {
     <div className={styles.container}>
       <h5>Choix de la source et des critères retenus</h5>
       <SelectBadQualitySource />
+      <SelectQualiteSource />
       <SelectConfortSource />
       <SelectOccupationSource />
       <Alert

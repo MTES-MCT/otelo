@@ -38,7 +38,7 @@ export const UpdateBadHousingSimulationForm: FC = () => {
         b13_taux_reallocation: badHousingSettings.inadequationFinanciere.part,
         b14_confort: badHousingSettings.badQuality.confort,
         b14_occupation: badHousingSettings.badQuality.occupation,
-        b14_qualite: '',
+        b14_qualite: badHousingSettings.badQuality.qualite,
         b14_taux_reallocation: badHousingSettings.badQuality.part,
         b15_loc_hors_hlm: badHousingSettings.suroccupation.plp,
         b15_proprietaire: badHousingSettings.suroccupation.proprietaire,

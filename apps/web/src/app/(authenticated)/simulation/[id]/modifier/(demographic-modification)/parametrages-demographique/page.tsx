@@ -1,8 +1,10 @@
+import Alert from '@codegouvfr/react-dsfr/Alert'
 import { redirect } from 'next/navigation'
 import { DemographicSettingsFormWrapper } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/parametrages-demographique/demographic-settings-form-wrapper'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { NextStepLinkWithoutValidation } from '~/components/simulations/settings/next-step-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
+import { getEpcisWithoutInseeProjection } from '~/server-only/demographic-evolution/get-epcis-without-insee-projection'
 import { getOmphaleDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-omphale-evolution-by-epci'
 import { getPopulationDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-population-evolution-by-epci'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
@@ -52,11 +54,24 @@ export default async function ParametragesDemographiquePage({ params, searchPara
   }
 
   const href = `/simulation/${id}/modifier/taux-cibles-logements-vacants`
-  const omphaleEvolution = await getOmphaleDemographicEvolutionByEpci(epcisCodes)
-  const populationEvolution = await getPopulationDemographicEvolutionByEpci(epcisCodes)
+  const [omphaleEvolution, populationEvolution, epcisWithoutInseeProjection] = await Promise.all([
+    getOmphaleDemographicEvolutionByEpci(epcisCodes),
+    getPopulationDemographicEvolutionByEpci(epcisCodes),
+    getEpcisWithoutInseeProjection(epcisCodes),
+  ])
+  const hasEpcisWithoutInseeProjection = epcisWithoutInseeProjection.length > 0
 
   return (
     <>
+      {hasEpcisWithoutInseeProjection && (
+        <div className="fr-py-2w fr-pt-2w">
+          <Alert
+            severity="warning"
+            small
+            description="Les projections proposées ici sont issues d'un travail réalisé à l'échelle départementale faute de projections disponibles à l'échelle du bassin d'habitat."
+          />
+        </div>
+      )}
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <DemographicSettingsFormWrapper
           epcis={epcisCodes}

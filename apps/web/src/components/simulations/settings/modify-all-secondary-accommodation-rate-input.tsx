@@ -70,6 +70,12 @@ export const ModifyAllSecondaryAccommodationRateInput: FC<ModifyAllSecondaryAcco
         />
       </div>
       <div className="fr-mt-2w">
+        {targetRate !== undefined && (
+          <p className="fr-text--sm fr-mb-1w fr-text--bold">
+            Le taux projeté à l'année {simulationSettings.projection} est de : {(averageTxRS * 100).toFixed(2)} % -{' '}
+            {((averageTxRS - targetRate) * 100).toFixed(2)} % = {(targetRate * 100).toFixed(2)} %
+          </p>
+        )}
         <p className="fr-text--sm fr-mb-1w">
           Ce taux cible de résidences secondaires correspond à{' '}
           {isNoVariation ? (

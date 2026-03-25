@@ -208,6 +208,7 @@ model Epci {
   simulations                       Simulation[]                        @relation("EpciToSimulation")
   neighborsFrom                     EPCINeighbor[]                      @relation("EPCINeighborFrom")
   neighborsTo                       EPCINeighbor[]                      @relation("EPCINeighborTo")
+  noInseeProjection                 Boolean                             @default(false) @map("no_insee_projection")
 
   @@map("epcis")
 }

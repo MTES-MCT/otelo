@@ -133,26 +133,39 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
           ))}
         </div>
       </div>
-      {queryStates.population && (
-        <CallOut
-          className="fr-py-2w fr-mb-0 fr-mt-4w"
-          title={
-            <Badge severity="new" noIcon small>
-              <span className={classNames(classes.badgeIcon, 'ri-lightbulb-line fr-mr-1v')} />
-              <span className="fr-text--uppercase">Clé de lecture</span>
-            </Badge>
-          }
-        >
-          <span className="fr-text--md">
-            <span>
-              Ce scénario anticipe une évolution de la population de <strong>{evol > 0 ? `+${evol}` : evol}</strong> habitant
-              {sPluriel(evol)} sur la période 2021 - {period}.
-            </span>
-            <br />
-            <span className="fr-text--sm fr-text-mention--grey fr-mb-0">Source des données : INSEE</span>
-          </span>
-        </CallOut>
-      )}
+      {queryStates.population &&
+        (() => {
+          const scenario = queryStates.population as keyof typeof popEvolution
+          const popAt2021 = basePopulation[scenario] as number
+          const popAtProjection = popEvolution[scenario] as number
+          const periodYears = Number(period) - 2021
+          const tcam = periodYears > 0 && popAt2021 > 0 ? (Math.pow(popAtProjection / popAt2021, 1 / periodYears) - 1) * 100 : 0
+
+          return (
+            <CallOut
+              className="fr-py-2w fr-mb-0 fr-mt-4w"
+              title={
+                <Badge severity="new" noIcon small>
+                  <span className={classNames(classes.badgeIcon, 'ri-lightbulb-line fr-mr-1v')} />
+                  <span className="fr-text--uppercase">Clé de lecture</span>
+                </Badge>
+              }
+            >
+              <span className="fr-text--md">
+                <span>
+                  Ce scénario anticipe une évolution de la population de <strong>{evol > 0 ? `+${evol}` : evol}</strong> habitant
+                  {sPluriel(evol)} sur la période 2021 - {period}.
+                </span>
+                <br />
+                <span>
+                  Soit un taux de croissance annuel moyen de <strong>{tcam.toFixed(2)} %</strong> sur la période 2021 - {period}.
+                </span>
+                <br />
+                <span className="fr-text--sm fr-text-mention--grey fr-mb-0">Source des données : INSEE</span>
+              </span>
+            </CallOut>
+          )
+        })()}
 
       <div className={classes.buttonContainer} data-chart-download-exclude>
         <Button disabled={!queryStates.population} onClick={() => setQueryStates({ scenario: 'menages' })} className="fr-mt-4w">

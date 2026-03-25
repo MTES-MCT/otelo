@@ -12,14 +12,17 @@ export const UpdateProjectionPeriod: FC = () => {
   const handleChange = (value: string) => setSimulationSettings({ ...simulationSettings, projection: Number(value) })
 
   return (
-    <Range
-      label="Faites glisser le curseur pour établir l'horizon de temps du scénario."
-      max={2050}
-      min={2021}
-      nativeInputProps={{
-        onChange: (e) => handleChange(e.target.value),
-        value: projection,
-      }}
-    />
+    <>
+      <Range
+        label="Faites glisser le curseur pour établir l'horizon de temps du scénario."
+        max={2050}
+        min={2021}
+        nativeInputProps={{
+          onChange: (e) => handleChange(e.target.value),
+          value: projection,
+        }}
+      />
+      <p className="fr-text--sm fr-mt-1w fr-text-mention--grey">Période de projection : 1er janvier 2021 au 1er janvier {projection}</p>
+    </>
   )
 }
