@@ -38,6 +38,32 @@ async function sendBrevoTemplatedEmail(templateId: string, params: Record<string
   }
 }
 
+type PrismaLike = {
+  userWhitelist: { findUnique: (args: { where: { email: string } }) => Promise<unknown> }
+  user: { update: (args: { where: { id: string }; data: Record<string, unknown> }) => Promise<unknown> }
+}
+
+export async function checkWhitelistBeforeCreate(db: PrismaLike, user: { email: string; [key: string]: unknown }) {
+  const whitelist = await db.userWhitelist.findUnique({
+    where: { email: user.email },
+  })
+  if (whitelist) {
+    return {
+      data: {
+        ...user,
+        hasAccess: true,
+      },
+    }
+  }
+}
+
+export async function updateLastLoginAt(db: PrismaLike, session: { userId: string; [key: string]: unknown }) {
+  await db.user.update({
+    where: { id: session.userId },
+    data: { lastLoginAt: new Date() },
+  })
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
@@ -160,10 +186,6 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60, // 1 hour
     updateAge: 60 * 15, // Refresh session after 15 minutes of activity
-    cookieCache: {
-      enabled: true,
-      maxAge: 60 * 5, // Cache session for 5 minutes
-    },
   },
   account: {
     accountLinking: {
@@ -174,27 +196,12 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        after: async (user) => {
-          const whitelist = await prisma.userWhitelist.findUnique({
-            where: { email: user.email },
-          })
-          if (whitelist) {
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { hasAccess: true },
-            })
-          }
-        },
+        before: (user) => checkWhitelistBeforeCreate(prisma, user),
       },
     },
     session: {
       create: {
-        after: async (session) => {
-          await prisma.user.update({
-            where: { id: session.userId },
-            data: { lastLoginAt: new Date() },
-          })
-        },
+        after: (session) => updateLastLoginAt(prisma, session),
       },
     },
   },

@@ -110,6 +110,52 @@ describe('AuthorizationGuard', () => {
     expect(result).toBe(false)
   })
 
+  it('should allow access when user hasAccess was recently granted (no stale cache)', async () => {
+    const context = createMock<ExecutionContext>()
+    // Simulates: admin granted hasAccess=true, getSession reads fresh DB value
+    mockGetSession.mockResolvedValueOnce({
+      user: { role: 'USER', hasAccess: true },
+      session: {},
+    })
+    mockReflector.getAllAndOverride.mockReturnValueOnce({ roles: ['USER'] })
+    authService.hasRole.mockReturnValue(true)
+
+    const result = await guard.canActivate(context)
+    expect(result).toBe(true)
+  })
+
+  it('should deny then allow access when hasAccess changes between requests', async () => {
+    const context = createMock<ExecutionContext>()
+    mockReflector.getAllAndOverride.mockReturnValue({ roles: ['USER'] })
+
+    // First request: user has no access yet
+    mockGetSession.mockResolvedValueOnce({
+      user: { role: 'USER', hasAccess: false },
+      session: {},
+    })
+    expect(await guard.canActivate(context)).toBe(false)
+
+    // Second request: admin/CRON granted access, getSession returns fresh data
+    mockGetSession.mockResolvedValueOnce({
+      user: { role: 'USER', hasAccess: true },
+      session: {},
+    })
+    authService.hasRole.mockReturnValue(true)
+    expect(await guard.canActivate(context)).toBe(true)
+  })
+
+  it('should allow admin access regardless of hasAccess value', async () => {
+    const context = createMock<ExecutionContext>()
+    mockGetSession.mockResolvedValueOnce({
+      user: { role: 'ADMIN', hasAccess: false },
+      session: {},
+    })
+    mockReflector.getAllAndOverride.mockReturnValueOnce({ roles: ['USER'] })
+
+    const result = await guard.canActivate(context)
+    expect(result).toBe(true)
+  })
+
   it('should check entity access when entity is defined in model access', async () => {
     const context = createMock<ExecutionContext>()
     mockGetSession.mockResolvedValueOnce({

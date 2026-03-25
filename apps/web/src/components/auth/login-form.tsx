@@ -41,12 +41,6 @@ export const LoginForm: FC = () => {
         password: data.password,
       })
 
-      const user = result.data?.user as { hasAccess?: boolean; role?: string } | undefined
-      if (user && !user.hasAccess && user.role !== 'ADMIN') {
-        router.push('/unauthorized')
-        return
-      }
-
       if (result.error) {
         const errorCode = result.error.code || result.error.message
         if (errorCode === 'USER_NOT_FOUND') {
@@ -65,8 +59,14 @@ export const LoginForm: FC = () => {
         return
       }
 
+      const user = result.data?.user as { hasAccess?: boolean; role?: string; type?: string } | undefined
+      if (user && !user.hasAccess && user.role !== 'ADMIN') {
+        router.push('/unauthorized')
+        return
+      }
+
       // Success - redirect to dashboard (with type selection if needed)
-      const userType = (result.data?.user as { type?: string } | undefined)?.type
+      const userType = user?.type
       router.push(userType ? '/tableaux-de-bord' : '/tableaux-de-bord?selectType')
     } catch (error) {
       console.error('Error signing in', error)
