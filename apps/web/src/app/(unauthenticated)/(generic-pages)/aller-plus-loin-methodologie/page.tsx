@@ -1,8 +1,6 @@
 import Card from '@codegouvfr/react-dsfr/Card'
 import type { Metadata } from 'next'
 
-const PLACEHOLDER_IMAGE = 'https://www.systeme-de-design.gouv.fr/v1.14/storybook/img/placeholder.16x9.png'
-
 export const metadata: Metadata = {
   title: 'Aller plus loin dans la méthodologie - Otelo',
 }
@@ -134,7 +132,7 @@ export default function AllerPlusLoinMethodologiePage() {
         />
       </div>
 
-      <h3 id="residences-secondaires">Les résidences secondaires</h3>
+      {/* <h3 id="residences-secondaires">Les résidences secondaires</h3>
       <div className="fr-pb-4w">
         <Card
           size="large"
@@ -166,7 +164,7 @@ export default function AllerPlusLoinMethodologiePage() {
           }}
           titleAs="h4"
         />
-      </div>
+      </div> */}
 
       <h2 id="utiliser-otelo-politiques">🏛️ Utiliser Otelo dans les politiques publiques</h2>
       <p>

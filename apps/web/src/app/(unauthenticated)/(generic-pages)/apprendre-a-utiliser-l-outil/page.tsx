@@ -1,8 +1,6 @@
 import Card from '@codegouvfr/react-dsfr/Card'
 import type { Metadata } from 'next'
 
-const PLACEHOLDER_IMAGE = 'https://www.systeme-de-design.gouv.fr/v1.14/storybook/img/placeholder.16x9.png'
-
 export const metadata: Metadata = {
   title: "Apprendre à utiliser l'outil pas à pas - Otelo",
 }
@@ -21,19 +19,16 @@ export default function ApprendreAUtiliserLOutilPage() {
       <p>Avant de paramétrer vos projections, il est important de comprendre comment créer et structurer un scénario.</p>
 
       <h3 id="creer-un-compte">Créer un compte Otelo</h3>
-      <p>
-        En tant que DDT, collectivité, SCoT, agences d'urbanisme, vous avez accès à Otelo gratuitement. Pour les bureaux d'études ou autres,
-        vous pouvez accéder à l'application sous mandat d'une collectivité ou territoire le temps de votre étude.
-      </p>
-      {/* <div>
+      <div className="fr-pb-4w">
         <Card
           size="large"
           border
           background
           enlargeLink
           title="Créer un compte Otelo"
-          desc="Découvrez comment créer votre compte et accéder à Otelo."
-          imageUrl={PLACEHOLDER_IMAGE}
+          desc="En tant que DDT, collectivité, SCoT, agences d'urbanisme, vous avez accès à Otelo gratuitement. Pour les bureaux d'études ou autres,
+        vous pouvez accéder à l'application sous mandat d'une collectivité ou territoire le temps de votre étude."
+          imageUrl="/assets/centre-d-aide/Otelo - Créer son compte Otelo.jpg"
           imageAlt="Tutoriel : Créer un compte Otelo"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/57627a48-016d-4613-80ec-832c43dbf7d8',
@@ -42,7 +37,7 @@ export default function ApprendreAUtiliserLOutilPage() {
           }}
           titleAs="h4"
         />
-      </div> */}
+      </div>
 
       <h3 id="debuter-elaboration-scenario">Débuter l'élaboration d'un scénario</h3>
       <div className="fr-pb-4w">
@@ -76,7 +71,7 @@ export default function ApprendreAUtiliserLOutilPage() {
           title="Élaborer un scénario de A à Z"
           desc="Construisez votre scénario dans Otelo pas à pas : définissez le territoire, l'horizon de projection, puis paramétrez les hypothèses
         clés (démographie, vacance, résidences secondaires, dynamique du parc) pour obtenir une première estimation complète."
-          imageUrl="/assets/centre-d-aide/Otelo - Elaborer un scénario de A à Z.jpeg"
+          imageUrl="/assets/centre-d-aide/Otelo - Elaborer un scénario de A à Z.jpg"
           imageAlt="Tutoriel : Élaborer un scénario de A à Z"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/b2dc0394-1fe4-4e99-83e5-d3c3461e483f',
@@ -173,7 +168,7 @@ export default function ApprendreAUtiliserLOutilPage() {
           title="Cibler le taux de logements vacants de longue durée"
           desc="Paramétrez vos taux de remobilisation des logements vacants de longue durée afin d'affiner vos estimations de besoins en logements
         et d'intégrer le potentiel existant de votre territoire."
-          imageUrl={PLACEHOLDER_IMAGE}
+          imageUrl="/assets/centre-d-aide/Otelo - Cibler la vacance de longue durée.jpg"
           imageAlt="Tutoriel : Cibler le taux de logements vacants de longue durée"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/8dc2edd6-a9b6-44e0-84fa-80f75bd76a54',
@@ -193,7 +188,7 @@ export default function ApprendreAUtiliserLOutilPage() {
           title="Cibler le taux de résidences secondaires"
           desc="Paramétrez vos hypothèses sur les résidences secondaires afin d'affiner vos estimations de besoins en logements et d'intégrer les
         spécificités d'usage de votre territoire."
-          imageUrl={PLACEHOLDER_IMAGE}
+          imageUrl="/assets/centre-d-aide/Otelo - Cibler le taux de résidences secondaires.jpg"
           imageAlt="Tutoriel : Cibler le taux de résidences secondaires"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/0de45f0f-ecf2-4dae-98da-bb9897d22375',
