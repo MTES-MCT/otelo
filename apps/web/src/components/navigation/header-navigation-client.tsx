@@ -42,7 +42,7 @@ const getMenuDisconnected = (pathname: string): MainNavigationProps.Item[] => [
   {
     isActive: pathname === '/guide',
     linkProps: { href: '/guide', target: '_self' },
-    text: "Guide d'utilisation",
+    text: 'Découvrir Otelo',
   },
   {
     isActive: pathname === '/ressources',
@@ -97,21 +97,57 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
       ]
     : []),
   {
-    isActive: ['/guide', '/ressources', '/retours-d-experience', '/faq', '/sources-de-donnees'].includes(pathname),
+    isActive: [
+      '/guide',
+      '/apprendre-a-utiliser-l-outil',
+      '/aller-plus-loin-methodologie',
+      '/tester-mes-connaissances',
+      '/participer-a-une-formation',
+      '/ressources',
+      '/retours-d-experience',
+      '/faq',
+      '/sources-de-donnees',
+    ].includes(pathname),
     menuLinks: [
       {
         isActive: pathname === '/guide',
         linkProps: {
           href: '/guide',
         },
-        text: "Guide d'utilisation",
+        text: 'Découvrir Otelo',
       },
       {
-        isActive: pathname === '/ressources',
+        isActive: pathname === '/apprendre-a-utiliser-l-outil',
         linkProps: {
-          href: '/ressources',
+          href: '/apprendre-a-utiliser-l-outil',
         },
-        text: 'Ressources de nos partenaires',
+        text: "Apprendre à utiliser l'outil pas à pas",
+      },
+      {
+        isActive: pathname === '/aller-plus-loin-methodologie',
+        linkProps: {
+          href: '/aller-plus-loin-methodologie',
+        },
+        text: 'Aller plus loin dans la méthodologie',
+      },
+      {
+        isActive: pathname === '/tester-mes-connaissances',
+        linkProps: {
+          href: '/tester-mes-connaissances',
+        },
+        text: 'Tester mes connaissances',
+      },
+      {
+        isActive: pathname === '/participer-a-une-formation',
+        linkProps: {
+          href: '/participer-a-une-formation',
+        },
+        text: 'Participer à une formation',
+      },
+      {
+        isActive: pathname === '/faq',
+        linkProps: { href: '/faq', target: '_self' },
+        text: 'Foire aux questions',
       },
       {
         isActive: pathname === '/sources-de-donnees',
@@ -120,13 +156,8 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
         },
         text: 'Sources de données',
       },
-      {
-        isActive: pathname === '/faq',
-        linkProps: { href: '/faq', target: '_self' },
-        text: 'FAQ',
-      },
     ],
-    text: 'Aides et ressources',
+    text: "Centre d'aide et ressources",
   },
   {
     isActive: ['/a-propos', '/statistiques'].includes(pathname),
