@@ -383,7 +383,6 @@ model HostedFiness {
 
 model HostedSne {
   particular Int
-  free       Int
   temporary  Int
   epciCode   String @id @map("epci_code")
   epci       Epci   @relation(fields: [epciCode], references: [code])
