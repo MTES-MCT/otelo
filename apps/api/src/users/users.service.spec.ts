@@ -95,6 +95,7 @@ describe('UsersService', () => {
           email: true,
           emailVerified: true,
           engaged: true,
+          referent: true,
           firstname: true,
           hasAccess: true,
           id: true,
@@ -123,6 +124,7 @@ describe('UsersService', () => {
           emailVerified: true,
           engaged: true,
           firstname: true,
+          referent: true,
           hasAccess: true,
           id: true,
           image: true,
@@ -223,6 +225,7 @@ describe('UsersService', () => {
         select: {
           createdAt: true,
           email: true,
+          referent: true,
           emailVerified: true,
           engaged: true,
           firstname: true,
@@ -268,6 +271,124 @@ describe('UsersService', () => {
       prismaService.user.create = jest.fn().mockResolvedValue(mockUser)
       const result = await service.create(mockUser)
       expect(result).toEqual(mockUser)
+    })
+  })
+
+  describe('importUsersFromCsv', () => {
+    const makeRow = (overrides?: Partial<{ email: string; referent: string; name: string; firstname: string; lastname: string }>) => ({
+      email: 'new@example.com',
+      name: 'Jean Dupont',
+      firstname: 'Jean',
+      lastname: 'Dupont',
+      referent: 'Réf. DDT 75',
+      ...overrides,
+    })
+
+    it('should create a new user with hasAccess true', async () => {
+      prismaService.user.findUnique = jest.fn().mockResolvedValue(null)
+      prismaService.user.create = jest.fn().mockResolvedValue({})
+
+      const result = await service.importUsersFromCsv([makeRow()])
+
+      expect(result).toEqual({ created: 1, skipped: 0 })
+      expect(prismaService.user.create).toHaveBeenCalledWith({
+        data: {
+          email: 'new@example.com',
+          name: 'Jean Dupont',
+          firstname: 'Jean',
+          lastname: 'Dupont',
+          referent: 'Réf. DDT 75',
+          hasAccess: true,
+        },
+      })
+    })
+
+    it('should skip existing users without modifying them', async () => {
+      prismaService.user.findUnique = jest.fn().mockResolvedValue({ id: 'existing-id' })
+
+      const result = await service.importUsersFromCsv([makeRow()])
+
+      expect(result).toEqual({ created: 0, skipped: 1 })
+      expect(prismaService.user.create).not.toHaveBeenCalled()
+    })
+
+    it('should handle mixed rows (some existing, some new)', async () => {
+      prismaService.user.findUnique = jest
+        .fn()
+        .mockResolvedValueOnce({ id: 'existing-id' })
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(null)
+      prismaService.user.create = jest.fn().mockResolvedValue({})
+
+      const result = await service.importUsersFromCsv([
+        makeRow({ email: 'existing@example.com' }),
+        makeRow({ email: 'new1@example.com' }),
+        makeRow({ email: 'new2@example.com' }),
+      ])
+
+      expect(result).toEqual({ created: 2, skipped: 1 })
+      expect(prismaService.user.create).toHaveBeenCalledTimes(2)
+    })
+
+    it('should normalize email to lowercase and trim whitespace', async () => {
+      prismaService.user.findUnique = jest.fn().mockResolvedValue(null)
+      prismaService.user.create = jest.fn().mockResolvedValue({})
+
+      await service.importUsersFromCsv([makeRow({ email: '  Admin@EXAMPLE.COM  ' })])
+
+      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'admin@example.com' },
+      })
+      expect(prismaService.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ email: 'admin@example.com' }),
+        }),
+      )
+    })
+
+    it('should set referent to null when empty or undefined', async () => {
+      prismaService.user.findUnique = jest.fn().mockResolvedValue(null)
+      prismaService.user.create = jest.fn().mockResolvedValue({})
+
+      await service.importUsersFromCsv([makeRow({ referent: '' })])
+
+      expect(prismaService.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ referent: null }),
+        }),
+      )
+    })
+
+    it('should always set hasAccess to true for imported users', async () => {
+      prismaService.user.findUnique = jest.fn().mockResolvedValue(null)
+      prismaService.user.create = jest.fn().mockResolvedValue({})
+
+      await service.importUsersFromCsv([makeRow(), makeRow({ email: 'other@example.com' })])
+
+      for (const call of (prismaService.user.create as jest.Mock).mock.calls) {
+        expect(call[0].data.hasAccess).toBe(true)
+      }
+    })
+
+    it('should return { created: 0, skipped: 0 } for empty input', async () => {
+      const result = await service.importUsersFromCsv([])
+
+      expect(result).toEqual({ created: 0, skipped: 0 })
+      expect(prismaService.user.findUnique).not.toHaveBeenCalled()
+      expect(prismaService.user.create).not.toHaveBeenCalled()
+    })
+
+    it('should not set role or other sensitive fields from input', async () => {
+      prismaService.user.findUnique = jest.fn().mockResolvedValue(null)
+      prismaService.user.create = jest.fn().mockResolvedValue({})
+
+      await service.importUsersFromCsv([makeRow()])
+
+      const createCall = (prismaService.user.create as jest.Mock).mock.calls[0][0]
+      expect(createCall.data).not.toHaveProperty('role')
+      expect(createCall.data).not.toHaveProperty('banned')
+      expect(createCall.data).not.toHaveProperty('id')
+      expect(createCall.data).not.toHaveProperty('emailVerified')
     })
   })
 })
