@@ -31,6 +31,7 @@ model User {
   hasAccess                         Boolean                             @default(false)
   engaged                           Boolean                             @default(false)
   type                              UserType?
+  referent                          String?
   // Relations
   accounts                          Account[]
   sessions                          Session[]

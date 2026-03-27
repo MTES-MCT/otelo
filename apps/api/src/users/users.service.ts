@@ -19,6 +19,7 @@ const fieldsWithoutPassword = {
   hasAccess: true,
   engaged: true,
   type: true,
+  referent: true,
 } satisfies Prisma.UserSelect
 
 const SORTABLE_FIELDS: Record<string, string> = {
@@ -150,5 +151,34 @@ export class UsersService {
       where: { id },
       select: fieldsWithoutPassword,
     })
+  }
+
+  async importUsersFromCsv(
+    rows: Array<{ email: string; referent?: string; name: string; firstname: string; lastname: string }>,
+  ): Promise<{ created: number; skipped: number }> {
+    let created = 0
+    let skipped = 0
+
+    for (const row of rows) {
+      const existing = await this.prisma.user.findUnique({ where: { email: row.email.toLowerCase().trim() } })
+      if (existing) {
+        skipped++
+        continue
+      }
+
+      await this.prisma.user.create({
+        data: {
+          email: row.email.toLowerCase().trim(),
+          name: row.name,
+          firstname: row.firstname,
+          lastname: row.lastname,
+          referent: row.referent || null,
+          hasAccess: true,
+        },
+      })
+      created++
+    }
+
+    return { created, skipped }
   }
 }
