@@ -1,6 +1,7 @@
 'use client'
 
-import { FC } from 'react'
+import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
+import { ComponentProps, FC, useState } from 'react'
 import { Bar, ComposedChart, Legend, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { dsfrRealColors, getChartColor } from '~/components/charts/data-visualisation/colors'
 import { TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
@@ -78,6 +79,8 @@ export const AccommodationContructionEvolutionChart: FC<AccommodationContruction
 }) => {
   const { data: sitadelData } = sitadelResults
   const { data: newConstructionsData } = newConstructionsResults
+  const [showAuthorizedHousing, setShowAuthorizedHousing] = useState(true)
+  const [showStartedHousing, setShowStartedHousing] = useState(true)
 
   const allYears = Array.from(
     new Set([
@@ -101,12 +104,31 @@ export const AccommodationContructionEvolutionChart: FC<AccommodationContruction
   const hasHousingNeeds = Object.values(newConstructionsData.housingNeeds).some((value) => value != null && value > 0)
   const hasSurplusHousing = Object.values(newConstructionsData.surplusHousing).some((value) => value != null && value > 0)
 
-  const maxValue = Math.max(
-    Math.max(...sitadelData.map((d) => d.authorizedHousingCount)),
-    Math.max(...sitadelData.map((d) => d.startedHousingCount)),
-    Math.max(...Object.values(newConstructionsData.housingNeeds)),
-    Math.max(...Object.values(newConstructionsData.surplusHousing)),
-  )
+  const visibleValues = [
+    ...(showAuthorizedHousing ? sitadelData.map((d) => d.authorizedHousingCount) : []),
+    ...(showStartedHousing ? sitadelData.map((d) => d.startedHousingCount) : []),
+    ...Object.values(newConstructionsData.housingNeeds),
+    ...Object.values(newConstructionsData.surplusHousing),
+  ].filter((value): value is number => value != null)
+
+  const maxValue = Math.max(...visibleValues, 0)
+
+  const sitadelOptions: ComponentProps<typeof Checkbox>['options'] = [
+    {
+      label: 'Permis de construire autorisés (Sit@del2)',
+      nativeInputProps: {
+        checked: showAuthorizedHousing,
+        onChange: (event) => setShowAuthorizedHousing(event.target.checked),
+      },
+    },
+    {
+      label: 'Logements commencés (Sit@del2)',
+      nativeInputProps: {
+        checked: showStartedHousing,
+        onChange: (event) => setShowStartedHousing(event.target.checked),
+      },
+    },
+  ]
 
   return (
     <div id="besoin-annualise">
@@ -114,9 +136,12 @@ export const AccommodationContructionEvolutionChart: FC<AccommodationContruction
       <div className="fr-col-10">
         <p className="fr-mb-0">
           Ce graphique présente l'évolution des besoins annuels en construction neuve sur le territoire de {epciName}, en les comparant avec
-          les permis de construire autorisés sur les années récentes.
+          les permis de construire autorisés et les logements commencés sur les années récentes.
         </p>
         <p className="fr-mt-2w fr-text--xs fr-text-mention--grey">Source des données : Sit@del2</p>
+      </div>
+      <div className={styles.filters}>
+        <Checkbox legend="" options={sitadelOptions} orientation="horizontal" />
       </div>
       <div className={styles.chartContainer}>
         <ResponsiveContainer width="100%" height="100%">
@@ -135,13 +160,17 @@ export const AccommodationContructionEvolutionChart: FC<AccommodationContruction
                 offset: 10,
               }}
             />
-            <Bar
-              name="Permis de construire autorisés (Sit@del2)"
-              dataKey="authorizedHousing"
-              fill={getChartColor('authorizedHousing')}
-              barSize={8}
-            />
-            <Bar name="Logements commencés (Sit@del2)" dataKey="startedHousing" fill={getChartColor('startedHousing')} barSize={8} />
+            {showAuthorizedHousing && (
+              <Bar
+                name="Permis de construire autorisés (Sit@del2)"
+                dataKey="authorizedHousing"
+                fill={getChartColor('authorizedHousing')}
+                barSize={8}
+              />
+            )}
+            {showStartedHousing && (
+              <Bar name="Logements commencés (Sit@del2)" dataKey="startedHousing" fill={getChartColor('startedHousing')} barSize={8} />
+            )}
             {hasHousingNeeds && <Bar name="Besoins en logements" dataKey="housingNeeds" fill={getChartColor('housingNeeds')} barSize={8} />}
             {hasSurplusHousing && (
               <Bar name="Logements excédentaires" dataKey="surplusHousing" fill={getChartColor('surplusHousing')} barSize={8} />
