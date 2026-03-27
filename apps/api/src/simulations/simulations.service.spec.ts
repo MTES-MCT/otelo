@@ -5,7 +5,7 @@ import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
 import { ScenariosService } from '~/scenarios/scenarios.service'
 import { TCloneSimulationDto } from '~/schemas/simulations/simulation'
-import { SimulationEventsService } from './simulation-events.service'
+import { SimulationEventsService } from './simulation-events/simulation-events.service'
 import { SimulationsService } from './simulations.service'
 
 describe('SimulationsService', () => {

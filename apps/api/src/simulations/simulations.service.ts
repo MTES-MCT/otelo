@@ -9,7 +9,7 @@ import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
 import { TCloneSimulationDto, TSimulationWithEpci, TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'
 import { computeScenarioDiff } from './scenario-diff'
-import { SimulationEventsService } from './simulation-events.service'
+import { SimulationEventsService } from './simulation-events/simulation-events.service'
 @Injectable()
 export class SimulationsService {
   constructor(

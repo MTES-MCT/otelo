@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '~/db/prisma.service'
-import { SimulationEventsService } from '~/simulations/simulation-events.service'
+import { SimulationEventsService } from '~/simulations/simulation-events/simulation-events.service'
 import { SimulationsService } from '~/simulations/simulations.service'
 import { UsersService } from '~/users/users.service'
 

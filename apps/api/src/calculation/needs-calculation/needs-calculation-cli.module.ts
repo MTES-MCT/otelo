@@ -33,8 +33,12 @@ import { VacancyModule } from '~/vacancy/vacancy.module'
     {
       provide: 'CalculationContext',
       useFactory: async (dataPackVersionsService: DataPackVersionsService) => {
-        const activeVersion = await dataPackVersionsService.getActive()
-        return { coefficient: 1, baseYear: Number(activeVersion.millesime), millesime: activeVersion.millesime }
+        try {
+          const activeVersion = await dataPackVersionsService.getActive()
+          return { coefficient: 1, baseYear: Number(activeVersion.millesime), millesime: activeVersion.millesime }
+        } catch {
+          return { coefficient: 1, baseYear: 2021, millesime: '2021' }
+        }
       },
       inject: [DataPackVersionsService],
     },
