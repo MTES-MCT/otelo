@@ -1,10 +1,11 @@
 'use client'
 
+import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
 import { parseAsBoolean, useQueryState } from 'nuqs'
-import { FC } from 'react'
+import { ComponentProps, FC, useState } from 'react'
 import { Bar, ComposedChart, Legend, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { dsfrHighlightColors, dsfrRealColors, getChartColor } from '~/components/charts/data-visualisation/colors'
-import { TFlowRequirementChartData } from '~/schemas/results'
+import { TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
 import styles from './synthesis-cn-evolution-chart.module.css'
 
 interface EpciFlowData {
@@ -16,6 +17,7 @@ interface EpciFlowData {
 interface SynthesisCnEvolutionChartProps {
   epcisFlowData: EpciFlowData[]
   horizon: number
+  sitadelEpcis: TSitadelData[]
 }
 
 interface TooltipPayloadItem {
@@ -73,15 +75,30 @@ const CustomLegend: FC<CustomLegendProps> = ({ payload }) => {
   )
 }
 
-export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ epcisFlowData, horizon }) => {
+export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ epcisFlowData, horizon, sitadelEpcis }) => {
   const [showDetail, setShowDetail] = useQueryState('details', parseAsBoolean.withDefault(false))
+  const [showAuthorizedHousing, setShowAuthorizedHousing] = useState(true)
+  const [showStartedHousing, setShowStartedHousing] = useState(true)
 
-  // Collect all years across all EPCIs
-  const allYears = Array.from(new Set(epcisFlowData.flatMap((epci) => Object.keys(epci.flowData.data.housingNeeds).map(Number)))).sort(
-    (a, b) => a - b,
-  )
+  // Aggregate Sitadel data across all EPCIs by year
+  const aggregatedSitadel = sitadelEpcis
+    .flatMap((epci) => epci.data)
+    .reduce<Record<number, { authorizedHousing: number; startedHousing: number }>>((acc, entry) => {
+      if (!acc[entry.year]) acc[entry.year] = { authorizedHousing: 0, startedHousing: 0 }
+      acc[entry.year].authorizedHousing += entry.authorizedHousingCount
+      acc[entry.year].startedHousing += entry.startedHousingCount
+      return acc
+    }, {})
 
-  // Build merged data: one entry per year with a key per EPCI + total
+  // Collect all years across all EPCIs and Sitadel
+  const allYears = Array.from(
+    new Set([
+      ...epcisFlowData.flatMap((epci) => Object.keys(epci.flowData.data.housingNeeds).map(Number)),
+      ...Object.keys(aggregatedSitadel).map(Number),
+    ]),
+  ).sort((a, b) => a - b)
+
+  // Build merged data: one entry per year with a key per EPCI + total + Sitadel
   const mergedData = allYears.map((year) => {
     const entry: Record<string, number | null> = { year }
     let total = 0
@@ -91,16 +108,44 @@ export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ 
       total += Math.max(val, 0)
     })
     entry.total = total
+    entry.authorizedHousing = aggregatedSitadel[year]?.authorizedHousing ?? null
+    entry.startedHousing = aggregatedSitadel[year]?.startedHousing ?? null
     return entry
   })
 
-  // Compute max value for Y axis
-  const maxValue = showDetail
+  // Compute max value for Y axis (including visible Sitadel series)
+  const sitadelValues = [
+    ...(showAuthorizedHousing ? Object.values(aggregatedSitadel).map((d) => d.authorizedHousing) : []),
+    ...(showStartedHousing ? Object.values(aggregatedSitadel).map((d) => d.startedHousing) : []),
+  ]
+  const needsMax = showDetail
     ? Math.max(
         ...allYears.map((year) => epcisFlowData.reduce((sum, epci) => sum + Math.max(epci.flowData.data.housingNeeds[year] ?? 0, 0), 0)),
         0,
       )
     : Math.max(...mergedData.map((d) => d.total ?? 0), 0)
+  const maxValue = Math.max(needsMax, ...sitadelValues, 0)
+
+  // Filter out Sitadel colors from EPCI palette to avoid confusion
+  const sitadelColors = new Set([getChartColor('authorizedHousing'), getChartColor('startedHousing')])
+  const epciColors = dsfrHighlightColors.filter((color) => !sitadelColors.has(color))
+
+  const sitadelOptions: ComponentProps<typeof Checkbox>['options'] = [
+    {
+      label: 'Permis de construire autorisés (Sit@del2)',
+      nativeInputProps: {
+        checked: showAuthorizedHousing,
+        onChange: (event) => setShowAuthorizedHousing(event.target.checked),
+      },
+    },
+    {
+      label: 'Logements commencés (Sit@del2)',
+      nativeInputProps: {
+        checked: showStartedHousing,
+        onChange: (event) => setShowStartedHousing(event.target.checked),
+      },
+    },
+  ]
 
   return (
     <div className="fr-background-default--grey shadow" id="demographie-parc">
@@ -113,9 +158,12 @@ export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ 
         </div>
         <p className="fr-text--sm fr-text-mention--grey fr-mt-1w">
           {showDetail
-            ? "Ce graphique présente l'évolution des besoins annuels en construction neuve pour chaque EPCI du territoire. Les barres verticales indiquent l'année du pic de besoins pour chaque EPCI."
-            : "Ce graphique présente l'évolution des besoins annuels en construction neuve sur le territoire."}
+            ? "Ce graphique présente l'évolution des besoins annuels en construction neuve pour chaque EPCI du territoire, en les comparant avec les permis de construire autorisés et les logements commencés sur les années récentes. Les barres verticales indiquent l'année du pic de besoins pour chaque EPCI."
+            : "Ce graphique présente l'évolution des besoins annuels en construction neuve sur le territoire, en les comparant avec les permis de construire autorisés et les logements commencés sur les années récentes."}
         </p>
+        <div className={styles.filters}>
+          <Checkbox legend="" options={sitadelOptions} orientation="horizontal" />
+        </div>
         <div className={styles.chartContainer}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={mergedData}>
@@ -135,6 +183,18 @@ export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ 
                 }}
               />
 
+              {showAuthorizedHousing && (
+                <Bar
+                  name="Permis de construire autorisés (Sit@del2)"
+                  dataKey="authorizedHousing"
+                  fill={getChartColor('authorizedHousing')}
+                  barSize={8}
+                />
+              )}
+              {showStartedHousing && (
+                <Bar name="Logements commencés (Sit@del2)" dataKey="startedHousing" fill={getChartColor('startedHousing')} barSize={8} />
+              )}
+
               {showDetail ? (
                 <>
                   {epcisFlowData.map((epci, index) => (
@@ -143,7 +203,7 @@ export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ 
                       name={epci.name}
                       dataKey={epci.code}
                       stackId="cn"
-                      fill={dsfrHighlightColors[index % dsfrHighlightColors.length]}
+                      fill={epciColors[index % epciColors.length]}
                       barSize={8}
                     />
                   ))}

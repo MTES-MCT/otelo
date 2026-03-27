@@ -140,7 +140,13 @@ export default async function Resultats({ params }: SimulationPageProps) {
           />
         )}
 
-        {epcisFlowData.length > 1 && <SynthesisCnEvolutionChart epcisFlowData={epcisFlowData} horizon={simulation.scenario.projection} />}
+        {epcisFlowData.length > 1 && (
+          <SynthesisCnEvolutionChart
+            epcisFlowData={epcisFlowData}
+            horizon={simulation.scenario.projection}
+            sitadelEpcis={simulation.results.sitadel.epcis}
+          />
+        )}
 
         <SimulationEpcisDetails simulation={simulation} />
       </div>

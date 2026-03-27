@@ -144,7 +144,7 @@ export default function ApprendreAUtiliserLOutilPage() {
           imageUrl="/assets/centre-d-aide/Otelo - Importer des données à façon.jpg"
           imageAlt="Tutoriel : Importer des données à façon"
           linkProps={{
-            href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/aedef053d189',
+            href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/3209b8d8-7151-4f73-9de2-aedef053d189',
             target: '_blank',
             rel: 'noopener noreferrer',
           }}
@@ -274,7 +274,7 @@ export default function ApprendreAUtiliserLOutilPage() {
           imageUrl="/assets/centre-d-aide/Otelo - Générer une présentation ppt éditable.jpg"
           imageAlt="Tutoriel : Générer une présentation PowerPoint éditable"
           linkProps={{
-            href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/bfaba25f960b',
+            href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/2a5f88ef-85c7-4118-8875-bfaba25f960b',
             target: '_blank',
             rel: 'noopener noreferrer',
           }}

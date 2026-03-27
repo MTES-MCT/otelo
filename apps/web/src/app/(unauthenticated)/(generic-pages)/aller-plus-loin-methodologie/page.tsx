@@ -38,10 +38,10 @@ export default function AllerPlusLoinMethodologiePage() {
           enlargeLink
           title="Otelo – Méthodologie et données"
           desc="Découvrez la méthodologie d'Otelo de A à Z pour une estimation des besoins en logements."
-          imageUrl="/assets/centre-d-aide/Otelo - Méthodologie & données.pptx.jpg"
+          imageUrl="/assets/centre-d-aide/Otelo - Méthodologie & données.jpg"
           imageAlt="Fiche : Otelo – Méthodologie et données"
           linkProps={{
-            href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/714-81dd-cd04022502a8',
+            href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/0bfeb39d-4fbf-4714-81dd-cd04022502a8',
             target: '_blank',
             rel: 'noopener noreferrer',
           }}
