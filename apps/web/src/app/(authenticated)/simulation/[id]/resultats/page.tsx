@@ -92,11 +92,16 @@ export default async function Resultats({ params }: SimulationPageProps) {
             epci={epciData}
           />
           {hasNewHousingNeeds && (
-            <SimulationSecondaryVacantsAccommodationsSummary
-              results={epciResults}
-              epci={epciData}
-              renewalNeeds={epciFlowRequirementData.totals.renewalNeeds}
-            />
+            <>
+              <p className="fr-text--lg fr-text--bold fr-mb-0">
+                Le parc actuel pourrait répondre à une partie de la demande en nouveaux logements :
+              </p>
+              <SimulationSecondaryVacantsAccommodationsSummary
+                results={epciResults}
+                epci={epciData}
+                renewalNeeds={epciFlowRequirementData.totals.renewalNeeds}
+              />
+            </>
           )}
           <SimulationAnnualsNeedsSummary
             sitadelResults={sitadelResults}
@@ -133,11 +138,16 @@ export default async function Resultats({ params }: SimulationPageProps) {
         />
 
         {results.totalFlux > 0 && (
-          <SimulationSecondaryVacantsAccommodationsSummary
-            results={results}
-            projection={simulation.scenario.projection}
-            renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + e.totals.renewalNeeds, 0)}
-          />
+          <>
+            <p className="fr-text--lg fr-text--bold fr-mb-0">
+              Le parc actuel pourrait répondre à une partie de la demande en nouveaux logements :
+            </p>
+            <SimulationSecondaryVacantsAccommodationsSummary
+              results={results}
+              projection={simulation.scenario.projection}
+              renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + e.totals.renewalNeeds, 0)}
+            />
+          </>
         )}
 
         {epcisFlowData.length > 1 && (

@@ -68,7 +68,16 @@ export default async function ParametragesDemographiquePage({ params, searchPara
           <Alert
             severity="warning"
             small
-            description="Les projections proposées ici sont issues d'un travail réalisé à l'échelle départementale faute de projections disponibles à l'échelle du bassin d'habitat."
+            description={
+              <>
+                Pour ce territoire, l'INSEE ne propose pas de projections démographiques robustes. Les projections affichées ont été
+                recalculées en ventilant les projections départementales — ménages ou population — au prorata du poids de l'EPCI dans le
+                département.{' '}
+                <a href="/guide#elaboration-projections" target="_blank" rel="noopener noreferrer">
+                  En savoir plus
+                </a>
+              </>
+            }
           />
         </div>
       )}

@@ -697,7 +697,7 @@ export class ExportExcelService {
         row: 41,
         label: `Logements suroccupés - ${getSource(simulation.scenario.source_b15, false)}`,
         percentage: `${100 - simulation.scenario.b15_taux_reallocation} %`,
-        value: `${getBadHousingCategoryLabel(simulation.scenario.b15_proprietaire, simulation.scenario.b15_loc_hors_hlm)} - Niveau : ${getSurroccLabel(simulation.scenario.b15_surocc)}`,
+        value: `${getBadHousingCategoryLabel(simulation.scenario.b15_loc_hors_hlm, simulation.scenario.b15_proprietaire)} - Niveau : ${getSurroccLabel(simulation.scenario.b15_surocc)}`,
       },
     ]
 

@@ -38,7 +38,7 @@ export default function AllerPlusLoinMethodologiePage() {
           enlargeLink
           title="Otelo – Méthodologie et données"
           desc="Découvrez la méthodologie d'Otelo de A à Z pour une estimation des besoins en logements."
-          imageUrl="/assets/centre-d-aide/Otelo - Méthodologie & données.jpg"
+          imageUrl="/assets/centre-d-aide/otelo-methodologie-et-donnees.jpg"
           imageAlt="Fiche : Otelo – Méthodologie et données"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/0bfeb39d-4fbf-4714-81dd-cd04022502a8',
@@ -58,7 +58,7 @@ export default function AllerPlusLoinMethodologiePage() {
           enlargeLink
           title="Comment sont calculées les projections démographiques ?"
           desc="Découvrez la méthode de calcul Omphale pour estimer les projections démographiques de votre territoire."
-          imageUrl="/assets/centre-d-aide/Otelo - Comment sont calculées les projections démographiques .jpg"
+          imageUrl="/assets/centre-d-aide/otelo-comment-sont-calculees-les-projections-demographiques.jpg"
           imageAlt="Fiche : Comment sont calculées les projections démographiques ?"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/afd9538b-e016-4b34-b2f0-2566e54e5059',
@@ -78,7 +78,7 @@ export default function AllerPlusLoinMethodologiePage() {
           enlargeLink
           title="Comment sont calculées les projections en ménages ?"
           desc="Découvrez comment passer des projections démographiques aux projections en nombre de ménages sur votre territoire."
-          imageUrl="/assets/centre-d-aide/Otelo - Comment sont calculées les projections en ménage .jpg"
+          imageUrl="/assets/centre-d-aide/otelo-comment-sont-calculees-les-projections-en-menage.jpg"
           imageAlt="Fiche : Comment sont calculées les projections en ménages ?"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/e16d3c8b-ecd5-4ebd-9873-9e13e8f5c916',
@@ -121,7 +121,7 @@ export default function AllerPlusLoinMethodologiePage() {
           enlargeLink
           title="La vacance de longue durée"
           desc="En agissant sur la vacance de longue durée, le besoin de constructions neuves se réduit au profit de la mobilisation du parc existant."
-          imageUrl="/assets/centre-d-aide/Otelo - Comment est calculée la résorption de la vacance .jpg"
+          imageUrl="/assets/centre-d-aide/otelo-comment-est-calculee-la-resorption-de-la-vacance.jpg"
           imageAlt="Fiche : La vacance de longue durée"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/bc40c642-54c6-42a4-b332-05e29921823b',
@@ -181,7 +181,7 @@ export default function AllerPlusLoinMethodologiePage() {
           enlargeLink
           title="Que répondre aux élus ?"
           desc="Au-delà de son utilisation en tant qu'outil, Otelo se veut être un outil de dialogue et de pédagogie pour favoriser la mise en place de politiques durables de l'habitat."
-          imageUrl="/assets/centre-d-aide/Otelo - Que répondre aux élus.jpg"
+          imageUrl="/assets/centre-d-aide/otelo-que-repondre-aux-elus.jpg"
           imageAlt="Fiche : Que répondre aux élus ?"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/2f086e9d-548d-488d-b147-6b057a2d5bbf',
@@ -201,7 +201,7 @@ export default function AllerPlusLoinMethodologiePage() {
           enlargeLink
           title="Je suis une DDT"
           desc="En tant que DDT, découvrez cette fiche dédiée pour accompagner l'utilisation d'Otelo."
-          imageUrl="/assets/centre-d-aide/Otelo - Je suis un DDT.jpg"
+          imageUrl="/assets/centre-d-aide/otelo-je-suis-un-ddt.jpg"
           imageAlt="Fiche : Je suis une DDT"
           linkProps={{
             href: 'https://fichiers.numerique.gouv.fr/explorer/items/files/aa49f245-f95b-408e-8db9-1d682f6e3491',
