@@ -55,16 +55,19 @@ export const SimulationSecondaryVacantsAccommodationsSummary = ({
           </span>
         </div>
       </div>
-      {renewalNeeds !== undefined && (
+      {!!renewalNeeds && (
         <div className="shadow fr-width-full fr-py-8w fr-px-5w fr-background-default--grey fr-justify-content-space-between fr-align-items-center">
           <div className="fr-flex fr-direction-column fr-justify-content-space-between fr-width-full">
             <span className="fr-text-default--grey">
               D'ici <strong>{epci ? epci.peakYear : projection}</strong>, le renouvellement urbain{' '}
-              {renewalNeeds > 0 ? 'génère un besoin de' : 'contribue à hauteur de'}
+              {renewalNeeds > 0 ? 'pourrait permettre de créer' : 'génère un besoin de'}
             </span>
             <span className="fr-text--bold fr-mt-2w fr-h3 fr-mb-0">
               {formatNumber(absRenewalNeeds)} logement{sPluriel(absRenewalNeeds)}
             </span>
+            {renewalNeeds > 0 && (
+              <span className="fr-text-default--grey fr-mt-2w">dans le tissu existant (transformation, division, reconstruction)</span>
+            )}
           </div>
         </div>
       )}

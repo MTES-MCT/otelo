@@ -10,12 +10,12 @@ export default function SummarySlot() {
           },
           text: '🚀 Débuter sur Otelo',
           items: [
-            {
-              linkProps: {
-                href: '#creer-un-compte',
-              },
-              text: 'Créer un compte Otelo',
-            },
+            // {
+            //   linkProps: {
+            //     href: '#creer-un-compte',
+            //   },
+            //   text: 'Créer un compte Otelo',
+            // },
             {
               linkProps: {
                 href: '#debuter-elaboration-scenario',
@@ -42,30 +42,30 @@ export default function SummarySlot() {
           },
           text: '⚙️ Paramétrer son scénario',
           items: [
-            {
-              linkProps: {
-                href: '#parametrer-projections-demo',
-              },
-              text: 'Paramétrer les projections démographiques',
-            },
+            // {
+            //   linkProps: {
+            //     href: '#parametrer-projections-demo',
+            //   },
+            //   text: 'Paramétrer les projections démographiques',
+            // },
             {
               linkProps: {
                 href: '#importer-donnees-facon',
               },
               text: 'Importer des données à façon',
             },
-            {
-              linkProps: {
-                href: '#cibler-vacants',
-              },
-              text: 'Cibler le taux de logements vacants de longue durée',
-            },
-            {
-              linkProps: {
-                href: '#cibler-residences-secondaires',
-              },
-              text: 'Cibler le taux de résidences secondaires',
-            },
+            // {
+            //   linkProps: {
+            //     href: '#cibler-vacants',
+            //   },
+            //   text: 'Cibler le taux de logements vacants de longue durée',
+            // },
+            // {
+            //   linkProps: {
+            //     href: '#cibler-residences-secondaires',
+            //   },
+            //   text: 'Cibler le taux de résidences secondaires',
+            // },
             {
               linkProps: {
                 href: '#parametrer-renouvellement',

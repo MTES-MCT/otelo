@@ -18,7 +18,7 @@ export default function ApprendreAUtiliserLOutilPage() {
       <h2 id="debuter-sur-otelo">🚀 Débuter sur Otelo</h2>
       <p>Avant de paramétrer vos projections, il est important de comprendre comment créer et structurer un scénario.</p>
 
-      <h3 id="creer-un-compte">Créer un compte Otelo</h3>
+      {/* <h3 id="creer-un-compte">Créer un compte Otelo</h3>
       <div className="fr-pb-4w">
         <Card
           size="large"
@@ -37,7 +37,7 @@ export default function ApprendreAUtiliserLOutilPage() {
           }}
           titleAs="h4"
         />
-      </div>
+      </div> */}
 
       <h3 id="debuter-elaboration-scenario">Débuter l'élaboration d'un scénario</h3>
       <div className="fr-pb-4w">
@@ -109,7 +109,7 @@ export default function ApprendreAUtiliserLOutilPage() {
         paramètres du modèle.
       </p>
 
-      <h3 id="parametrer-projections-demo">Paramétrer les projections démographiques</h3>
+      {/* <h3 id="parametrer-projections-demo">Paramétrer les projections démographiques</h3>
 
       <div className="fr-pb-4w">
         <Card
@@ -129,7 +129,7 @@ export default function ApprendreAUtiliserLOutilPage() {
           }}
           titleAs="h4"
         />
-      </div>
+      </div> */}
       <h3 id="importer-donnees-facon">Importer des données à façon</h3>
 
       <div className="fr-pb-4w">
@@ -158,7 +158,7 @@ export default function ApprendreAUtiliserLOutilPage() {
         </a>
       </p>
 
-      <h3 id="cibler-vacants">Cibler le taux de logements vacants de longue durée</h3>
+      {/* <h3 id="cibler-vacants">Cibler le taux de logements vacants de longue durée</h3>
       <div className="fr-pb-4w">
         <Card
           size="large"
@@ -197,8 +197,8 @@ export default function ApprendreAUtiliserLOutilPage() {
           }}
           titleAs="h4"
         />
-      </div>
-      <h3 id="parametrer-renouvellement">Paramétrer les dynamiques de renouvellement urbain</h3>
+      </div> */}
+      {/* <h3 id="parametrer-renouvellement">Paramétrer les dynamiques de renouvellement urbain</h3>
 
       <div className="fr-pb-4w">
         <Card
@@ -218,7 +218,7 @@ export default function ApprendreAUtiliserLOutilPage() {
           }}
           titleAs="h4"
         />
-      </div>
+      </div> */}
 
       <h3 id="parametrer-mal-logement">Paramétrer le mal-logement</h3>
       <div className="fr-pb-4w">

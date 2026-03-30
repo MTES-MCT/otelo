@@ -49,7 +49,7 @@ export default function AllerPlusLoinMethodologiePage() {
         />
       </div>
 
-      <h3 id="projections-demographiques">Comment sont calculées les projections démographiques ?</h3>
+      {/* <h3 id="projections-demographiques">Comment sont calculées les projections démographiques ?</h3>
       <div className="fr-pb-4w">
         <Card
           size="large"
@@ -87,7 +87,7 @@ export default function AllerPlusLoinMethodologiePage() {
           }}
           titleAs="h4"
         />
-      </div>
+      </div> */}
 
       {/* <h3 id="mal-logement-integration">Comment sont intégrées les situations de mal-logement ?</h3>
       <div className="fr-pb-4w">
@@ -106,7 +106,7 @@ export default function AllerPlusLoinMethodologiePage() {
         />
       </div> */}
 
-      <h2 id="comprendre-parametres-parc">⚙️ Comprendre les paramètres qui influent sur le parc existant</h2>
+      {/* <h2 id="comprendre-parametres-parc">⚙️ Comprendre les paramètres qui influent sur le parc existant</h2>
       <p>
         Les besoins en logement dépendent de nombreux facteurs liés au fonctionnement du parc de logements et aux situations d'habitat. Ces
         fiches détaillent les principaux paramètres.
@@ -130,7 +130,7 @@ export default function AllerPlusLoinMethodologiePage() {
           }}
           titleAs="h4"
         />
-      </div>
+      </div> */}
 
       {/* <h3 id="residences-secondaires">Les résidences secondaires</h3>
       <div className="fr-pb-4w">
@@ -166,7 +166,7 @@ export default function AllerPlusLoinMethodologiePage() {
         />
       </div> */}
 
-      <h2 id="utiliser-otelo-politiques">🏛️ Utiliser Otelo dans les politiques publiques</h2>
+      {/* <h2 id="utiliser-otelo-politiques">🏛️ Utiliser Otelo dans les politiques publiques</h2>
       <p>
         Les résultats produits par Otelo sont mobilisés pour éclairer les politiques locales de l'habitat et les documents d'urbanisme. Ces
         fiches apportent des clés pour expliquer et utiliser les résultats dans un contexte opérationnel.
@@ -210,7 +210,7 @@ export default function AllerPlusLoinMethodologiePage() {
           }}
           titleAs="h4"
         />
-      </div>
+      </div> */}
     </>
   )
 }
