@@ -38,10 +38,6 @@ export const SimulationDemographicBadHousingSummary = ({
   // Right chevron: center of bad housing section, but min 52% (stays under right card)
   const rightChevronPosition = Math.max(demographyPercent + badHousingPercent / 2, 52)
 
-  if (totalFlux === 0) {
-    return null
-  }
-
   return (
     <div className="fr-background-default--grey fr-flex fr-direction-column fr-py-8w fr-px-5w shadow">
       <h3 className="fr-h4">À quels besoins répondront ces logements ?</h3>
