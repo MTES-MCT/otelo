@@ -21,6 +21,7 @@ export const ZSimulationWithRelations = ZSimulation.pick({
   epciGroupId: true,
   id: true,
   updatedAt: true,
+  userId: true,
 }).extend({
   epcis: z.array(ZEpci),
   scenario: ZScenario.pick({ b2_scenario: true, projection: true, millesime: true }),
