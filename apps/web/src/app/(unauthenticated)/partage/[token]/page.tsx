@@ -1,29 +1,35 @@
-import Button from '@codegouvfr/react-dsfr/Button'
 import { RiIconClassName } from '@codegouvfr/react-dsfr/fr/generatedFromCss/classNames'
+import { notFound } from 'next/navigation'
 import { SimulationAnnualsNeedsSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs'
 import { SimulationBadHousing } from '~/components/simulations/results/bad-housing/simulation-bad-housing'
 import { SimulationDemographicBadHousingSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-summary'
 import { SimulationDemographicParcEvolution } from '~/components/simulations/results/demographic-parc-evolution/simulation-demographic-parc-evolution'
-import { ExportExcelSimulationButton } from '~/components/simulations/results/export-simulation-settings-button'
-import { SimulationHeaderSegmentedControls } from '~/components/simulations/results/header/simulation-header-segmented-controls'
 import { SimulationHeaderTitle } from '~/components/simulations/results/header/simulation-header-title'
-import { SimulationSettingsDropdown } from '~/components/simulations/results/header/simulation-settings-dropdown'
 import { SimulationSecondaryVacantsAccommodationsSummary } from '~/components/simulations/results/secondary-vacants-accommodation/simulation-secondary-vacants-accommodations-summary'
 import { SimulationEpcisDetails } from '~/components/simulations/results/simulation-epcis-details'
 import { SimulationResultsTabs } from '~/components/simulations/results/simulation-results-tabs'
 import { SimulationNeedsSummary } from '~/components/simulations/results/summary/simulation-needs-summary'
 import { TEpciCalculationResult, TEpciTotalCalculationResult, TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
-import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
-import type { SimulationPageProps } from '~/types/simulation-page-props'
+import { TGroupedSimulationWithResults } from '~/schemas/simulation'
 import { calculateFlowResultsForEpci } from '~/utils/calculation-helpers'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function Resultats({ params }: SimulationPageProps) {
-  const { id } = await params
-  const { name, simulations: groupedSimulations } = await getGroupedSimulationWithResults(id)
-  const simulation = groupedSimulations[id]
+const API_URL = `${process.env.NEXT_PUBLIC_AUTH_API_URL}/api` || 'http://localhost:4200/api'
+
+async function getSharedResults(token: string): Promise<TGroupedSimulationWithResults> {
+  const res = await fetch(`${API_URL}/share/${token}`, { cache: 'no-store' })
+  if (!res.ok) notFound()
+  return res.json()
+}
+
+export default async function SharedResultsPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params
+  const { name, simulations: groupedSimulations } = await getSharedResults(token)
+
+  const simulationIds = Object.keys(groupedSimulations)
+  const simulation = groupedSimulations[simulationIds[0]]
 
   const results = {
     badQuality: simulation.results.badQuality.total,
@@ -82,13 +88,13 @@ export default async function Resultats({ params }: SimulationPageProps) {
     return {
       content: (
         <div key={epci.code} className="fr-container fr-flex fr-direction-column fr-flex-gap-8v">
-          <SimulationSettingsDropdown simulation={simulation} epci={epci} />
           <SimulationNeedsSummary projection={simulation.scenario.projection} results={epciResults} epci={epciData} />
           <SimulationDemographicBadHousingSummary
             simulationId={simulation.id}
             totalFlux={epciResults.totalFlux}
             totalStock={epciResults.totalStock}
             epci={epciData}
+            readonly
           />
           {hasNewHousingNeeds && <SimulationSecondaryVacantsAccommodationsSummary results={epciResults} epci={epciData} />}
           <SimulationAnnualsNeedsSummary
@@ -107,16 +113,17 @@ export default async function Resultats({ params }: SimulationPageProps) {
       tabId: epci.code,
     }
   })
+
   const bassinTab = {
     content: (
       <div key="territory" className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
-        <SimulationSettingsDropdown simulation={simulation} />
         <SimulationNeedsSummary projection={simulation.scenario.projection} results={results} epcis={simulation.epcis} />
 
         <SimulationDemographicBadHousingSummary
           simulationId={simulation.id}
           totalFlux={results.totalFlux}
           totalStock={results.totalStock}
+          readonly
         />
 
         {results.totalFlux > 0 && (
@@ -131,33 +138,10 @@ export default async function Resultats({ params }: SimulationPageProps) {
   }
   const tabs = [bassinTab, ...epciTabs]
 
-  const segments = Object.values(groupedSimulations).map((simulation) => ({
-    id: simulation.id,
-    name: simulation.name,
-  }))
-
   return (
     <>
-      <div className="fr-container fr-direction-column fr-flex fr-flex-gap-8v">
+      <div className="fr-container fr-direction-column fr-flex fr-flex-gap-8v fr-mb-4w">
         <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
-        <div className="fr-col-md-12 fr-flex fr-direction-column fr-direction-sm-row fr-align-items-center fr-mb-4w">
-          <div className="fr-col-md-8 fr-mb-2w fr-mb-md-0">
-            <SimulationHeaderSegmentedControls segments={segments} activeId={id} />
-          </div>
-          <div className="fr-col-md-4">
-            <div className="fr-flex fr-flex-gap-4v fr-align-items-center">
-              <Button
-                priority="secondary"
-                linkProps={{
-                  href: `/simulation/parametrages-demographique?epciGroupId=${simulation.epciGroupId}&epcis=${simulation.epcis.map((epci) => epci.code).join(',')}&projection=${simulation.scenario.projection}`,
-                }}
-              >
-                Élaborer un autre scénario
-              </Button>
-              <ExportExcelSimulationButton id={id} />
-            </div>
-          </div>
-        </div>
       </div>
       <SimulationResultsTabs tabs={tabs} />
     </>

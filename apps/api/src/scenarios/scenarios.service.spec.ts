@@ -30,7 +30,7 @@ describe('ScenariosService', () => {
       expect(mockPrismaService.scenario.findFirst).toHaveBeenCalledWith({
         where: {
           id: 'scenario-1',
-          OR: [{ userId: 'user-1' }, { simulations: { some: { collaborators: { some: { userId: 'user-1' } } } } }],
+          userId: 'user-1',
         },
       })
     })
@@ -44,7 +44,7 @@ describe('ScenariosService', () => {
       expect(mockPrismaService.scenario.findFirst).toHaveBeenCalledWith({
         where: {
           id: 'scenario-1',
-          OR: [{ userId: 'user-1' }, { simulations: { some: { collaborators: { some: { userId: 'user-1' } } } } }],
+          userId: 'user-1',
         },
       })
     })

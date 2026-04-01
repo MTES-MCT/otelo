@@ -8,10 +8,7 @@ export class ScenariosService {
 
   async hasUserAccessTo(id: string, userId: string): Promise<boolean> {
     return !!(await this.prisma.scenario.findFirst({
-      where: {
-        id,
-        OR: [{ userId }, { simulations: { some: { collaborators: { some: { userId } } } } }],
-      },
+      where: { id, userId },
     }))
   }
 

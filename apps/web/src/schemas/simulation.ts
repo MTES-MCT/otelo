@@ -25,8 +25,6 @@ export const ZSimulationWithRelations = ZSimulation.pick({
 }).extend({
   epcis: z.array(ZEpci),
   scenario: ZScenario.pick({ b2_scenario: true, projection: true, millesime: true }),
-  isShared: z.boolean().optional(),
-  hasCollaborators: z.boolean().optional(),
 })
 
 export type TSimulationWithRelations = z.infer<typeof ZSimulationWithRelations>

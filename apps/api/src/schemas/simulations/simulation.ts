@@ -32,8 +32,6 @@ export const ZSimulationWithEpci = ZSimulation.pick({
       name: z.string(),
     })
     .optional(),
-  isShared: z.boolean().optional(),
-  hasCollaborators: z.boolean().optional(),
 })
 
 export type TSimulationWithEpci = z.infer<typeof ZSimulationWithEpci>

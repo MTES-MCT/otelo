@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import LayoutWrapper from '~/app/(authenticated)/layout-wrapper'
+import LayoutWrapper from '~/app/layout-wrapper'
 import { UserTypeSelectionModal } from '~/components/auth/user-type-selection-modal'
 import { FeedbackBanner } from '~/components/feedback/feedback-banner'
 import { ImpersonationBanner } from '~/components/impersonation-banner'

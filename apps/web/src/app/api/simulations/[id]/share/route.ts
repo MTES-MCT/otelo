@@ -8,36 +8,28 @@ export async function GET(_: Request, { params }: IdRouteParams) {
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const res = await authFetch(`/simulations/${id}/scenario`, {
-    headers: {
-      'Cache-Control': 'no-store',
-    },
-  })
+
+  const res = await authFetch(`/simulations/${id}/share`)
 
   if (!res.ok) {
-    return NextResponse.json({ error: 'Failed to fetch simulation scenario' }, { status: res.status })
+    return NextResponse.json({ error: 'Failed to fetch share status' }, { status: res.status })
   }
 
   const data = await res.json()
   return NextResponse.json(data)
 }
 
-export async function PUT(request: Request, { params }: IdRouteParams) {
+export async function POST(_: Request, { params }: IdRouteParams) {
   const { id } = await params
   const session = await getSession()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body = await request.json()
-
-  const res = await authFetch(`/simulations/${id}/scenario`, {
-    body: JSON.stringify(body),
-    method: 'PUT',
-  })
+  const res = await authFetch(`/simulations/${id}/share/toggle`, { method: 'POST' })
 
   if (!res.ok) {
-    return NextResponse.json({ error: 'Failed to update simulation scenario' }, { status: res.status })
+    return NextResponse.json({ error: 'Failed to toggle share' }, { status: res.status })
   }
 
   const data = await res.json()

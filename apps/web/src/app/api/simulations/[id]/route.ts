@@ -48,13 +48,8 @@ export async function DELETE(request: Request, { params }: IdRouteParams) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const clientId = request.headers.get('x-client-id')
-
   const res = await authFetch(`/simulations/${id}`, {
     method: 'DELETE',
-    headers: {
-      ...(clientId && { 'x-client-id': clientId }),
-    },
   })
 
   if (!res.ok) {

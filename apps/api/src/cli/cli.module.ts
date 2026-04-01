@@ -8,7 +8,6 @@ import { PrismaModule } from '~/db/prisma.module'
 import { EpciGroupsModule } from '~/epci-groups/epci-groups.module'
 import { ResultsService } from '~/results/results.service'
 import { ScenariosModule } from '~/scenarios/scenarios.module'
-import { SimulationEventsModule } from '~/simulations/simulation-events/simulation-events.module'
 import { SimulationsService } from '~/simulations/simulations.service'
 import { ImportBackupCommand } from './commands/import-backup.command'
 import { ImportCsvCommand } from './commands/import-csv.command'
@@ -28,7 +27,6 @@ import { ScalingoBackupService } from './services/scalingo-backup.service'
     ScenariosModule,
     EpciGroupsModule,
     AccommodationRatesModule,
-    SimulationEventsModule,
   ],
   providers: [ScalingoBackupService, ImportBackupCommand, ImportCsvCommand, RecalculateResultsCommand, ResultsService, SimulationsService],
   exports: [ImportBackupCommand, ImportCsvCommand, RecalculateResultsCommand],

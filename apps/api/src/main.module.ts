@@ -17,7 +17,6 @@ import { AdminModule } from './admin/admin.module'
 import { AuthModule } from './auth/auth.module'
 import { BadQualityModule } from './bad-quality/bad-quality.module'
 import { CalculationModule } from './calculation/calculation.module'
-import { CollaborationModule } from './collaboration/collaboration.module'
 import { ConsumersModule } from './consumers/consumers.module'
 import { DataPackVersionsModule } from './data-pack-versions/data-pack-versions.module'
 import { DataVisualisationModule } from './data-visualisation/data-visualisation.module'
@@ -39,6 +38,7 @@ import { NoAccommodationModule } from './no-accommodation/no-accommodation.modul
 import { PhysicalInadequationModule } from './physical-inadequation/physical-inadequation.module'
 import { RpInseeModule } from './rp-insee/rp-insee.module'
 import { ScenariosModule } from './scenarios/scenarios.module'
+import { ShareLinksModule } from './share-links/share-links.module'
 import { SimulationsModule } from './simulations/simulations.module'
 import { SitadelModule } from './sitadel/sitadel.module'
 import { StatisticsModule } from './statistics/statistics.module'
@@ -63,7 +63,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     EpciNeighborsModule,
     EpciGroupsModule,
     SimulationsModule,
-    CollaborationModule,
+    ShareLinksModule,
     CalculationModule,
     ResultsModule,
     DemographicEvolutionModule,

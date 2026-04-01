@@ -8,8 +8,6 @@ import { ScenariosService } from '~/scenarios/scenarios.service'
 import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
 import { TCloneSimulationDto, TSimulationWithEpci, TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'
-import { computeScenarioDiff } from './scenario-diff'
-import { SimulationEventsService } from './simulation-events/simulation-events.service'
 @Injectable()
 export class SimulationsService {
   constructor(
@@ -17,24 +15,17 @@ export class SimulationsService {
     private readonly scenariosService: ScenariosService,
     private readonly epciGroupsService: EpciGroupsService,
     private readonly accommodationRatesService: AccommodationRatesService,
-    private readonly simulationEventsService: SimulationEventsService,
   ) {}
 
   async hasUserAccessTo(id: string, userId: string): Promise<boolean> {
     return !!(await this.prismaService.simulation.findFirst({
-      where: {
-        id,
-        OR: [{ userId }, { collaborators: { some: { userId } } }],
-      },
+      where: { id, userId },
     }))
   }
 
   async hasUserAccessToAll(ids: string[], userId: string): Promise<boolean> {
     const count = await this.prismaService.simulation.count({
-      where: {
-        id: { in: ids },
-        OR: [{ userId }, { collaborators: { some: { userId } } }],
-      },
+      where: { id: { in: ids }, userId },
     })
     return count === ids.length
   }
@@ -53,7 +44,7 @@ export class SimulationsService {
       },
       where: {
         deleted: null,
-        OR: [{ userId }, { collaborators: { some: { userId } } }],
+        userId,
       },
       orderBy: { updatedAt: 'desc' },
     })
@@ -61,7 +52,6 @@ export class SimulationsService {
     return simulations.map((simulation) => ({
       ...simulation,
       epciGroup: simulation.epciGroup || undefined,
-      isShared: simulation.userId !== userId,
     }))
   }
 
@@ -70,7 +60,6 @@ export class SimulationsService {
       include: {
         epcis: { select: { code: true, name: true, bassinName: true } },
         scenario: { include: { demographicEvolutionOmphaleCustom: true } },
-        _count: { select: { collaborators: true } },
       },
       where: { id, deleted: null },
     })
@@ -92,7 +81,6 @@ export class SimulationsService {
       id: simulation.id,
       scenario: scenario as TSimulationWithEpciAndScenario['scenario'],
       updatedAt: simulation.updatedAt,
-      hasCollaborators: simulation._count.collaborators > 0,
     }
   }
 
@@ -101,15 +89,11 @@ export class SimulationsService {
       include: {
         epcis: { select: { code: true, name: true, bassinName: true } },
         scenario: { include: { epciScenarios: true, demographicEvolutionOmphaleCustom: true } },
-        _count: { select: { collaborators: true } },
       },
       where: { id: { in: ids }, deleted: null },
     })
 
-    return simulations.map((simulation) => ({
-      ...(simulation as unknown as TSimulationWithEpciAndScenario),
-      hasCollaborators: simulation._count.collaborators > 0,
-    }))
+    return simulations as unknown as TSimulationWithEpciAndScenario[]
   }
 
   async getScenario(id: string) {
@@ -147,56 +131,20 @@ export class SimulationsService {
     })
   }
 
-  async logActivity(simulationId: string, userId: string, action: string, details?: string): Promise<void> {
-    await this.prismaService.simulationActivity.create({
-      data: { simulationId, userId, action, details },
-    })
-  }
-
-  async update(id: string, data: TUpdateSimulationDto, userId?: string, clientId?: string): Promise<TSimulationWithEpciAndScenario> {
+  async update(id: string, data: TUpdateSimulationDto): Promise<TSimulationWithEpciAndScenario> {
     const simulation = await this.prismaService.simulation.findUniqueOrThrow({
       where: { id },
       select: { scenarioId: true },
     })
 
-    // Fetch old scenario BEFORE update for diff computation
-    const oldScenario = userId ? await this.scenariosService.get(simulation.scenarioId) : null
-
     await this.scenariosService.update(simulation.scenarioId, data)
-    const result = await this.get(id)
-
-    if (userId) {
-      const diff = computeScenarioDiff(oldScenario as unknown as Record<string, unknown>, data as unknown as Record<string, unknown>)
-      const details = diff ? JSON.stringify(diff) : 'Scénario mis à jour'
-      await this.logActivity(id, userId, 'scenario_updated', details)
-    }
-
-    this.simulationEventsService.emit({
-      type: 'scenario_updated',
-      simulationId: id,
-      userId: userId ?? '',
-      clientId: clientId ?? '',
-      timestamp: Date.now(),
-    })
-
-    return result
+    return this.get(id)
   }
 
-  async delete(userId: string, id: string, clientId?: string): Promise<Simulation> {
-    // Only the owner can delete a simulation
+  async delete(userId: string, id: string): Promise<Simulation> {
     const simulation = await this.prismaService.simulation.update({
       where: { id, userId },
       data: { deleted: new Date() },
-    })
-
-    await this.logActivity(id, userId, 'simulation_deleted', 'Simulation supprimée')
-
-    this.simulationEventsService.emit({
-      type: 'simulation_deleted',
-      simulationId: id,
-      userId,
-      clientId: clientId ?? '',
-      timestamp: Date.now(),
     })
 
     if (simulation.epciGroupId) {

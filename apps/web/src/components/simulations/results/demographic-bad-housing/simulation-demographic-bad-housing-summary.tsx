@@ -11,6 +11,7 @@ type SimulationDemographicBadHousingSummaryProps = {
   simulationId: string
   totalFlux: number
   totalStock: number
+  readonly?: boolean
   epci?: {
     name: string
     peakYear: number
@@ -24,6 +25,7 @@ export const SimulationDemographicBadHousingSummary = ({
   totalFlux,
   epci,
   totalStock,
+  readonly = false,
 }: SimulationDemographicBadHousingSummaryProps) => {
   const hasNewHousingNeeds = totalFlux > 0
   const { prepeakTotalStock } = epci ?? {}
@@ -67,9 +69,11 @@ export const SimulationDemographicBadHousingSummary = ({
               </SimulationResultPresentationHighlight>
             </div>
             <div className="fr-flex fr-direction-column fr-direction-sm-row fr-flex-gap-2v fr-justify-content-space-between fr-align-items-center">
-              <Button priority="secondary" linkProps={{ href: `/simulation/${simulationId}/modifier/cadrage-temporel` }} size="small">
-                Modifier les hypothèses
-              </Button>
+              {!readonly && (
+                <Button priority="secondary" linkProps={{ href: `/simulation/${simulationId}/modifier/cadrage-temporel` }} size="small">
+                  Modifier les hypothèses
+                </Button>
+              )}
               <div>
                 <Link className="fr-link" href="#demographie-parc">
                   Voir le détail
@@ -91,13 +95,15 @@ export const SimulationDemographicBadHousingSummary = ({
             </SimulationResultPresentationHighlight>
           </div>
           <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-direction-sm-row fr-justify-content-space-between fr-align-items-center">
-            <Button
-              priority="secondary"
-              linkProps={{ href: `/simulation/${simulationId}/modifier/mal-logement/horizon-de-resorption` }}
-              size="small"
-            >
-              Affiner le mal-logement
-            </Button>
+            {!readonly && (
+              <Button
+                priority="secondary"
+                linkProps={{ href: `/simulation/${simulationId}/modifier/mal-logement/horizon-de-resorption` }}
+                size="small"
+              >
+                Affiner le mal-logement
+              </Button>
+            )}
             <div>
               <Link className="fr-link" href="#mal-logement">
                 Voir le détail
