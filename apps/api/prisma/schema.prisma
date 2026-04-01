@@ -267,10 +267,23 @@ model Simulation {
   user                     User?                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   apiConsumer              ApiConsumer?               @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
   epcis                    Epci[]                     @relation("EpciToSimulation")
+  shareLink                SimulationShareLink?
 
   deleted DateTime?
 
   @@map("simulations")
+}
+
+model SimulationShareLink {
+  id           String   @id @default(uuid())
+  token        String   @unique @default(uuid())
+  simulationId String   @unique @map("simulation_id")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  simulation Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  @@map("simulation_share_links")
 }
 
 model DemographicEvolutionOmphale {
