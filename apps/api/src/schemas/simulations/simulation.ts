@@ -19,6 +19,7 @@ export const ZSimulationWithEpci = ZSimulation.pick({
   id: true,
   name: true,
   updatedAt: true,
+  userId: true,
 }).extend({
   epcis: z.array(ZEpci.omit({ region: true })),
   scenario: ZScenario.pick({

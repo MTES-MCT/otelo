@@ -39,6 +39,7 @@ export class SimulationsService {
         scenario: { select: { b2_scenario: true, projection: true, millesime: true } },
         id: true,
         updatedAt: true,
+        userId: true,
         epciGroup: { select: { id: true, name: true } },
       },
       where: { userId, deleted: null },
@@ -75,6 +76,7 @@ export class SimulationsService {
       createdAt: simulation.createdAt,
       epcis: sortedEpcis,
       id: simulation.id,
+      userId: simulation.userId,
       scenario: scenario as TSimulationWithEpciAndScenario['scenario'],
       updatedAt: simulation.updatedAt,
     }
