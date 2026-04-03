@@ -105,7 +105,12 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
             epciName={epci.name}
           />
           {hasNewHousingNeeds && <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} />}
-          <SimulationBadHousing horizon={simulation.scenario.projection} millesime={simulation.scenario.millesime} results={stockResults} />
+          <SimulationBadHousing
+            simulationId={simulation.id}
+            horizon={simulation.scenario.projection}
+            millesime={simulation.scenario.millesime}
+            results={stockResults}
+          />
         </div>
       ),
       iconId: 'ri-road-map-line' as RiIconClassName,
