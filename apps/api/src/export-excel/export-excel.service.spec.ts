@@ -281,7 +281,7 @@ describe('ExportExcelService', () => {
         expect(row.getCell(3).value).toBe(epciTotals.totalFlux)
         // peakYear (2035) > 2021 → uses prepeakTotalStock
         expect(row.getCell(4).value).toBe(epciTotals.prepeakTotalStock)
-        expect(row.getCell(5).value).toBe(epciTotals.total)
+        expect(row.getCell(5).value).toBe(epciTotals.totalFlux + epciTotals.prepeakTotalStock)
         expect(row.getCell(6).value).toBe(epciTotals.vacantAccomodation)
         // projection (2041) > peakYear (2035) → display peakYear
         expect(row.getCell(7).value).toBe(flowEpci.data.peakYear)
@@ -292,7 +292,7 @@ describe('ExportExcelService', () => {
         expect(totalRow.getCell(1).value).toBe('Ensemble des EPCI')
         expect(totalRow.getCell(3).value).toBe(epciTotals.totalFlux)
         expect(totalRow.getCell(4).value).toBe(epciTotals.prepeakTotalStock)
-        expect(totalRow.getCell(5).value).toBe(epciTotals.total)
+        expect(totalRow.getCell(5).value).toBe(epciTotals.totalFlux + epciTotals.prepeakTotalStock)
         expect(totalRow.getCell(6).value).toBe(epciTotals.vacantAccomodation)
       })
     })
