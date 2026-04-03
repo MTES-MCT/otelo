@@ -22,7 +22,8 @@ export const SelectProjectionPeriod: FC = () => {
       <Range
         label="Faites glisser le curseur pour établir l'horizon de temps du scénario."
         max={2050}
-min={minYear}        nativeInputProps={{ onChange: (e) => setProjection(e.target.value), value: projectionValue }}
+        min={minYear}
+        nativeInputProps={{ onChange: (e) => setProjection(e.target.value), value: projectionValue }}
       />
       <p className="fr-text--sm fr-mt-1w fr-text-mention--grey">
         Période de projection : 1er janvier {millesime} au 1er janvier {projectionValue}
