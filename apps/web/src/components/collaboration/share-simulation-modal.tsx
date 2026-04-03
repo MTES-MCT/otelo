@@ -58,7 +58,7 @@ export function ShareSimulationModal({ simulationId, simulationName }: ShareSimu
 
             {shareStatus?.active && shareStatus.token && (
               <div className={fr.cx('fr-mt-2w')}>
-                <div className="fr-flex fr-flex-gap-2v fr-align-items-end">
+                <div className="fr-flex fr-flex-gap-2v fr-align-items-end fr-justify-content-end">
                   <div className="fr-flex-grow-1">
                     <Input
                       label="Lien de partage"
@@ -68,8 +68,8 @@ export function ShareSimulationModal({ simulationId, simulationName }: ShareSimu
                       }}
                     />
                   </div>
-                  <div className={fr.cx('fr-mb-4v')}>
-                    <Button iconId="ri-clipboard-line" size="small" onClick={handleCopyLink}>
+                  <div>
+                    <Button iconId="ri-clipboard-line" onClick={handleCopyLink}>
                       Copier le lien
                     </Button>
                   </div>
