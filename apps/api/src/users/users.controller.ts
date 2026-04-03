@@ -1,7 +1,25 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Param, Patch, Query, Res } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import dayjs from 'dayjs'
 import { Response } from 'express'
 import * as Papa from 'papaparse'
+import { z } from 'zod'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Role } from '~/generated/prisma/enums'
@@ -57,6 +75,7 @@ export class UsersController {
       'Date de création': user.createdAt ? dayjs(user.createdAt).format('DD/MM/YYYY') : '',
       'Dernière connexion': user.lastLoginAt ? dayjs(user.lastLoginAt).format('DD/MM/YYYY') : '',
       Accès: user.hasAccess ? 'Oui' : 'Non',
+      Référent: user.referent ?? '',
       'Démarches simplifiées': user.engaged ? 'Oui' : 'Non',
     }))
 
@@ -71,6 +90,65 @@ export class UsersController {
     })
 
     res.send(csvData)
+  }
+
+  @AccessControl({
+    roles: [Role.ADMIN],
+  })
+  @Post('import/csv')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
+  @HttpCode(HttpStatus.OK)
+  async importCsv(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded')
+    }
+
+    if (!['text/csv', 'application/csv', 'application/vnd.ms-excel'].includes(file.mimetype)) {
+      throw new BadRequestException('File must be a CSV')
+    }
+
+    const parseResult = Papa.parse<Record<string, string>>(file.buffer.toString('utf-8'), {
+      header: true,
+      skipEmptyLines: true,
+      delimiter: ';',
+    })
+
+    if (parseResult.errors.length > 0) {
+      throw new BadRequestException(`CSV parsing errors: ${parseResult.errors.map((e) => e.message).join(', ')}`)
+    }
+
+    const ZCsvRow = z.object({
+      email: z.string().email(),
+      nom: z.string().min(1),
+      prenom: z.string().min(1),
+      referent: z.string().optional(),
+    })
+
+    const validatedRows: Array<{ email: string; referent?: string; name: string; firstname: string; lastname: string }> = []
+    const validationErrors: Array<{ row: number; error: string }> = []
+
+    for (let i = 0; i < parseResult.data.length; i++) {
+      const result = ZCsvRow.safeParse(parseResult.data[i])
+      if (result.success) {
+        validatedRows.push({
+          email: result.data.email,
+          name: `${result.data.prenom} ${result.data.nom}`,
+          firstname: result.data.prenom,
+          lastname: result.data.nom,
+          referent: result.data.referent,
+        })
+      } else {
+        validationErrors.push({ row: i + 2, error: result.error.issues.map((e) => e.message).join(', ') })
+      }
+    }
+
+    const importResult = await this.usersService.importUsersFromCsv(validatedRows)
+
+    return {
+      ...importResult,
+      validationErrors,
+      totalRows: parseResult.data.length,
+    }
   }
 
   @AccessControl({

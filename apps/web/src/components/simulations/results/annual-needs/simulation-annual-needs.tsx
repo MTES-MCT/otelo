@@ -9,6 +9,7 @@ type SimulationAnnualsNeedsSummaryProps = {
   horizon: number
   hasSurplusHousing: boolean
   epciName: string
+  peakYear?: number
 }
 
 export const SimulationAnnualsNeedsSummary = ({
@@ -17,7 +18,11 @@ export const SimulationAnnualsNeedsSummary = ({
   horizon,
   hasSurplusHousing,
   epciName,
+  peakYear,
 }: SimulationAnnualsNeedsSummaryProps) => {
+  if (peakYear === 2021) {
+    return null
+  }
   return (
     <div className="fr-background-default--grey shadow">
       <div className="fr-py-8w fr-px-5w">

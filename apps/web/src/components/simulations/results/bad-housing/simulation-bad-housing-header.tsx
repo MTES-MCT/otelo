@@ -23,12 +23,12 @@ type SimulationBadHousingDescriptionProps = {
 
 export const SimulationBadHousingDescription = ({ horizon, totalStock, maxValue, maxValueName }: SimulationBadHousingDescriptionProps) => {
   const [queryState] = useQueryState('mal-logement', parseAsString.withDefault('graphique'))
-  const currentYear = new Date().getFullYear()
+  const baseYear = 2021
 
   return (
     <p className="fr-mt-2w">
       La résorption du besoin en stock sur la période&nbsp;
-      {currentYear} à {horizon} ans (soit {horizon - currentYear} ans) implique&nbsp;
+      {baseYear} à {horizon} (soit {horizon - baseYear} ans) implique&nbsp;
       <span className="fr-text--bold">{formatNumber(totalStock)}</span> logements à produire. Le {queryState} ci-dessous précise la
       ventilation de ce besoin par type de mal-logement. Par exemple, <span className="fr-text--bold">{formatNumber(maxValue)}</span>
       &nbsp;logements devront être créés pour répondre aux besoins des {getCategoryLabel(maxValueName)}.

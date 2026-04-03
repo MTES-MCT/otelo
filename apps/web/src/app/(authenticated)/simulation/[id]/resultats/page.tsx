@@ -1,5 +1,6 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import { RiIconClassName } from '@codegouvfr/react-dsfr/fr/generatedFromCss/classNames'
+import { SynthesisCnEvolutionChart } from '~/components/charts/synthesis-cn-evolution-chart'
 import { SimulationAnnualsNeedsSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs'
 import { SimulationBadHousing } from '~/components/simulations/results/bad-housing/simulation-bad-housing'
 import { SimulationDemographicBadHousingSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-summary'
@@ -70,7 +71,6 @@ export default async function Resultats({ params }: SimulationPageProps) {
     )
 
     const sitadelResults = simulation.results.sitadel.epcis.find((e) => e.code === epci.code) as TSitadelData
-    const hasNewHousingNeeds = epciResults.totalFlux > 0
     const hasSurplusHousing = Object.values(epciFlowRequirementData.data.surplusHousing).some((value) => value !== 0)
     const epciData = {
       name: epci.name,
@@ -90,16 +90,22 @@ export default async function Resultats({ params }: SimulationPageProps) {
             totalStock={epciResults.totalStock}
             epci={epciData}
           />
-          {hasNewHousingNeeds && <SimulationSecondaryVacantsAccommodationsSummary results={epciResults} epci={epciData} />}
+
+          <SimulationSecondaryVacantsAccommodationsSummary
+            results={epciResults}
+            epci={epciData}
+            renewalNeeds={epciFlowRequirementData.totals.renewalNeeds}
+          />
           <SimulationAnnualsNeedsSummary
             sitadelResults={sitadelResults}
             newConstructionsResults={epciFlowRequirementData}
             horizon={simulation.scenario.projection}
             hasSurplusHousing={hasSurplusHousing}
             epciName={epci.name}
+            peakYear={epciData.peakYear}
           />
-          {hasNewHousingNeeds && <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} />}
-          <SimulationBadHousing horizon={simulation.scenario.projection} results={stockResults} />
+          <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} peakYear={epciData.peakYear} />
+          <SimulationBadHousing simulationId={simulation.id} horizon={simulation.scenario.projection} results={stockResults} />
         </div>
       ),
       iconId: 'ri-road-map-line' as RiIconClassName,
@@ -107,21 +113,38 @@ export default async function Resultats({ params }: SimulationPageProps) {
       tabId: epci.code,
     }
   })
+  const epcisFlowData = simulation.epcis.map((epci) => ({
+    code: epci.code,
+    name: epci.name,
+    flowData: simulation.results.flowRequirement.epcis.find((e) => e.code === epci.code) as TFlowRequirementChartData,
+  }))
+
   const bassinTab = {
     content: (
       <div key="territory" className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
         <SimulationSettingsDropdown simulation={simulation} />
         <SimulationNeedsSummary projection={simulation.scenario.projection} results={results} epcis={simulation.epcis} />
 
-        <SimulationDemographicBadHousingSummary
+        {/* <SimulationDemographicBadHousingSummary
           simulationId={simulation.id}
           totalFlux={results.totalFlux}
           totalStock={results.totalStock}
+        /> */}
+
+        <SimulationSecondaryVacantsAccommodationsSummary
+          results={results}
+          projection={simulation.scenario.projection}
+          renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + Math.min(0, e.totals.renewalNeeds), 0)}
         />
 
-        {results.totalFlux > 0 && (
-          <SimulationSecondaryVacantsAccommodationsSummary results={results} projection={simulation.scenario.projection} />
+        {epcisFlowData.length > 1 && (
+          <SynthesisCnEvolutionChart
+            epcisFlowData={epcisFlowData}
+            horizon={simulation.scenario.projection}
+            sitadelEpcis={simulation.results.sitadel.epcis}
+          />
         )}
+
         <SimulationEpcisDetails simulation={simulation} />
       </div>
     ),

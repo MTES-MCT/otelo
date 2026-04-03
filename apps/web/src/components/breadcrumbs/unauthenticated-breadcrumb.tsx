@@ -19,6 +19,11 @@ export const UnauthenticatedBreadcrumb = () => {
     'donnees-personnelles': 'Données personnelles',
     'retours-d-experience': "Retours d'expériences",
     'sources-de-donnees': 'Sources de données',
+    'apprendre-a-utiliser-l-outil': "Apprendre à utiliser l'outil pas à pas",
+    'aller-plus-loin-methodologie': 'Aller plus loin dans la méthodologie',
+    'tester-mes-connaissances': 'Tester mes connaissances',
+    'participer-a-une-formation': 'Participer à une formation',
+    'notes-de-version': 'Notes de version',
     cgv: "Conditions générales d'utilisation et Gestion des cookies",
   }
 

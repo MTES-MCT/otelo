@@ -194,6 +194,7 @@ export const chartKeyColors = {
   remobilisationResidencesSecondaires: '#2E8B6A',
   remobilisationVacants: '#5ABD88',
   renouvellementUrbain: '#18666B',
+  renouvellementUrbainBesoin: '#3A86C8',
   logementsSupplementaires: '#E8E8E8',
 } as const
 

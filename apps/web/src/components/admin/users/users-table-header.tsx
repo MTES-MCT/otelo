@@ -4,9 +4,10 @@ import { fr } from '@codegouvfr/react-dsfr'
 import Button from '@codegouvfr/react-dsfr/Button'
 import Input from '@codegouvfr/react-dsfr/Input'
 import { useQueryClient } from '@tanstack/react-query'
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { tss } from 'tss-react'
 import { useExportCsvUsers } from '~/hooks/use-export-csv-users'
+import { useImportCsvUsers } from '~/hooks/use-import-csv-users'
 import { useSynchroDs } from '~/hooks/use-synchro-ds'
 
 interface UsersTableHeaderProps {
@@ -20,6 +21,8 @@ export const UsersTableHeader: FC<UsersTableHeaderProps> = ({ userCount, searchQ
   const [inputValue, setInputValue] = useState(searchQuery ?? '')
   const { mutate, isPending } = useSynchroDs()
   const { mutateAsync: exportCsv, isPending: isExporting } = useExportCsvUsers()
+  const { mutateAsync: importCsv, isPending: isImporting } = useImportCsvUsers()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { classes, cx } = useStyles()
 
@@ -45,6 +48,17 @@ export const UsersTableHeader: FC<UsersTableHeaderProps> = ({ userCount, searchQ
     setInputValue(e.target.value)
   }, [])
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    await importCsv(file)
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   return (
     <div className={classes.container}>
       <div className={classes.searchContainer}>
@@ -66,6 +80,13 @@ export const UsersTableHeader: FC<UsersTableHeaderProps> = ({ userCount, searchQ
         </div>
       </div>
       <div className={classes.actionsContainer}>
+        <a href="/assets/csv/template_import_utilisateurs.csv" download className={classes.templateLink}>
+          Template CSV
+        </a>
+        <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} style={{ display: 'none' }} />
+        <Button priority="secondary" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+          {isImporting ? 'Import en cours...' : 'Importer CSV'}
+        </Button>
         <Button priority="secondary" onClick={() => exportCsv()} disabled={isExporting}>
           {isExporting ? 'Export en cours...' : 'Exporter CSV'}
         </Button>
@@ -82,6 +103,10 @@ const useStyles = tss.create({
     alignItems: 'center',
     display: 'flex',
     gap: '1rem',
+  },
+  templateLink: {
+    color: fr.colors.decisions.text.actionHigh.blueFrance.default,
+    fontSize: '0.875rem',
   },
   container: {
     alignItems: 'center',

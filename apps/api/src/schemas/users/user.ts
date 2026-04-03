@@ -10,6 +10,7 @@ export const ZUser = ZUserBase.extend({
   lastLoginAt: z.date(),
   engaged: z.boolean().optional(),
   type: z.enum(UserTypeValues).nullable().optional(),
+  referent: z.string().nullable().optional(),
 })
 
 export type TUser = z.infer<typeof ZUser>

@@ -173,6 +173,17 @@ export const FlowRequirementsChart: FC<FlowRequirementsChartProps> = ({ results,
         </>
       ),
     },
+    {
+      name: 'Renouvellement urbain',
+      value: Math.max(0, renewalNeeds),
+      color: getChartColor('renouvellementUrbainBesoin'),
+      description: (val: string) => (
+        <>
+          Le renouvellement urbain contribuera pour <strong>{val} logements</strong> au besoin en logements, les disparitions de logements
+          excédant les restructurations.
+        </>
+      ),
+    },
   ].filter((item) => item.value > 0)
 
   const supplyData: DonutDataItem[] = [

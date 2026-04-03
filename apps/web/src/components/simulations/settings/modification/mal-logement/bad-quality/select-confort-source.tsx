@@ -12,42 +12,42 @@ export const SelectConfortSource = () => {
   const rpOptions = [
     {
       label: 'Absence sanitaire',
-      value: 'abs_sani',
+      value: 'RP_abs_sani',
     },
     {
       label: 'Absence sanitaire et chauffage',
-      value: 'abs_sani_chauff',
+      value: 'RP_abs_sani_chfl',
     },
   ]
 
   const ffOptions = [
     {
       label: 'Absence WC',
-      value: 'abs_wc',
+      value: 'FF_abs_wc',
     },
     {
       label: 'Absence Chauffage central',
-      value: 'abs_chauf',
+      value: 'FF_abs_chauf',
     },
     {
       label: 'Absence Salle de bain',
-      value: 'abs_sani',
+      value: 'FF_abs_sani',
     },
     {
       label: 'Absence WC et Chauffage central',
-      value: 'abs_wc_chauf',
+      value: 'FF_abs_wc_chauf',
     },
     {
       label: 'Absence WC et Salle de bain',
-      value: 'abs_wc_sani',
+      value: 'FF_abs_wc_sani',
     },
     {
       label: 'Absence Salle de bain et Chauffage central',
-      value: 'abs_sani_chauf',
+      value: 'FF_abs_sani_chauf',
     },
     {
       label: 'Absence WC, Salle de bain et Chauffage central',
-      value: 'abs_wc_sani_chauf',
+      value: 'FF_abs_wc_sani_chauf',
     },
   ]
 

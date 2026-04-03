@@ -65,7 +65,14 @@ const UserRowActions: FC<UserRowActionsProps> = ({ user, onDelete, onImpersonate
           <Button priority="secondary" onClick={modalActions.close}>
             Annuler
           </Button>
-          <Button className={styles.deleteCta} iconId="ri-delete-bin-5-fill" onClick={() => onDelete(user.id)}>
+          <Button
+            className={styles.deleteCta}
+            iconId="ri-delete-bin-5-fill"
+            onClick={() => {
+              onDelete(user.id)
+              modalActions.close()
+            }}
+          >
             Supprimer
           </Button>
         </div>
@@ -277,7 +284,7 @@ export const UsersTable: FC<UsersTableProps> = ({
   onSortChange,
 }) => {
   const { mutate: updateUserAccess, isPending } = useUpdateUserAccess()
-  const { mutate: deleteUser } = useDeleteUser()
+  const { mutateAsync: deleteUser } = useDeleteUser()
   const { startImpersonation } = useStartImpersonation()
 
   const sorting: SortingState = sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : []

@@ -31,6 +31,7 @@ model User {
   hasAccess                         Boolean                             @default(false)
   engaged                           Boolean                             @default(false)
   type                              UserType?
+  referent                          String?
   // Relations
   accounts                          Account[]
   sessions                          Session[]
@@ -208,6 +209,7 @@ model Epci {
   simulations                       Simulation[]                        @relation("EpciToSimulation")
   neighborsFrom                     EPCINeighbor[]                      @relation("EPCINeighborFrom")
   neighborsTo                       EPCINeighbor[]                      @relation("EPCINeighborTo")
+  noInseeProjection                 Boolean                             @default(false) @map("no_insee_projection")
 
   @@map("epcis")
 }
@@ -382,7 +384,6 @@ model HostedFiness {
 
 model HostedSne {
   particular Int
-  free       Int
   temporary  Int
   epciCode   String @id @map("epci_code")
   epci       Epci   @relation(fields: [epciCode], references: [code])

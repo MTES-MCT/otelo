@@ -23,4 +23,12 @@ export class DemographicEvolutionController {
   async getPopulationDemographicEvolution(@Query() { epciCodes }: TGetDemographicEvolutionByEpciQuery) {
     return this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCodes)
   }
+
+  @AccessControl({
+    roles: [Role.ADMIN, Role.USER],
+  })
+  @Get('/no-insee-projection')
+  async getEpcisWithoutInseeProjection(@Query() { epciCodes }: TGetDemographicEvolutionByEpciQuery) {
+    return this.demographicEvolutionService.getEpcisWithoutInseeProjection(epciCodes)
+  }
 }

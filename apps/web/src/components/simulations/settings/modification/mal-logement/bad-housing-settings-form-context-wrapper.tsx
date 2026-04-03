@@ -21,6 +21,7 @@ export const BadHousingSettingsFormContextWrapper = ({ children }: BadHousingSet
       confort: scenario.b14_confort,
       occupation: scenario.b14_occupation,
       part: scenario.b14_taux_reallocation,
+      qualite: scenario.b14_qualite ?? '',
       source: scenario.source_b14,
     },
     heberges: {

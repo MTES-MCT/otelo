@@ -782,8 +782,10 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('B39').value).toBe('Locataires du parc privé - Taux effort 30 %')
       })
 
-      it('should show Acc suroccupation level in B41', () => {
+      it('should show Loc suroccupation level in B41', () => {
+        // getBadHousingCategoryLabel(b15_loc_hors_hlm=true, b15_proprietaire=false) → 'Locataires du parc privé'
         const b41 = epciSheet.getCell('B41').value as string
+        expect(b41).toContain('Locataires du parc privé')
         expect(b41).toContain('Suroccupation accentuée')
       })
     })

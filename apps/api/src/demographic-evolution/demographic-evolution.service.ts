@@ -478,4 +478,16 @@ export class DemographicEvolutionService {
       maxYears,
     }
   }
+
+  async getEpcisWithoutInseeProjection(epciCodes: string): Promise<string[]> {
+    const epcisArray = epciCodes.split(',')
+    const epcis = await this.prismaService.epci.findMany({
+      where: {
+        code: { in: epcisArray },
+        noInseeProjection: true,
+      },
+      select: { code: true },
+    })
+    return epcis.map((e) => e.code)
+  }
 }

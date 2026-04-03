@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 export const useDeleteUser = () => {
   const queryClient = useQueryClient()
@@ -11,14 +12,17 @@ export const useDeleteUser = () => {
     if (!response.ok) {
       throw new Error('Failed to delete user')
     }
-
-    return response.json()
   }
 
   return useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: ['search-users'] })
+      toast.success('Utilisateur supprimé')
+    },
+    onError: () => {
+      toast.error("Erreur lors de la suppression de l'utilisateur")
     },
   })
 }

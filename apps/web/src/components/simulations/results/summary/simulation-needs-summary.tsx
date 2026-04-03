@@ -81,7 +81,8 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis 
           {!hasNewHousingNeeds && (
             <div className="fr-flex fr-direction-column">
               <span className="fr-text-default--grey fr-text--lg">
-                Les évolutions démographiques ne génèrent pas de besoins en constructions neuves sur {noNewHousingNeedsTitle}.
+                Les évolutions démographiques, conjuguées aux hypothèses d'évolution du parc de logements, ne génèrent pas de besoin en
+                construction neuve sur {noNewHousingNeedsTitle}.
               </span>
             </div>
           )}

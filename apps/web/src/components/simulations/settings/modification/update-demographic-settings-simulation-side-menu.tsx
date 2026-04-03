@@ -2,7 +2,6 @@
 
 import Button from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
-import { usePathname } from 'next/navigation'
 import React, { useState } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { DemographicTargetTag } from '~/components/simulations/creation-guide/demographic-settings-creation-guide-tag'
@@ -21,7 +20,6 @@ type UpdateDemographicSettingsSimulationSideMenuProps = {
 
 export default function UpdateDemographicSettingsSimulationSideMenu({ id }: UpdateDemographicSettingsSimulationSideMenuProps) {
   const { simulationSettings } = useSimulationSettings()
-  const pathname = usePathname()
 
   // States for "Voir plus" buttons
   const [showAllVacancy, setShowAllVacancy] = useState(false)
@@ -41,19 +39,6 @@ export default function UpdateDemographicSettingsSimulationSideMenu({ id }: Upda
     code,
     name: [...(epcisList || []), ...(bassinEpcis || [])]?.find((epci) => epci.code === code)?.name || code,
   }))
-
-  // Determine current step index based on pathname
-  const getCurrentStepIndex = () => {
-    if (pathname.includes('cadrage-temporel')) return 0
-    if (pathname.includes('parametrages-demographique')) return 1
-    if (pathname.includes('taux-cibles-logements-vacants')) return 2
-    if (pathname.includes('taux-cibles-residences-secondaires')) return 3
-    if (pathname.includes('taux-restructuration-disparition')) return 4
-    if (pathname.includes('resultats')) return 5 // After all steps
-    return -1
-  }
-
-  const currentStepIndex = getCurrentStepIndex()
 
   const demographicSteps = [
     {
@@ -104,7 +89,7 @@ export default function UpdateDemographicSettingsSimulationSideMenu({ id }: Upda
               <div className={styles.badgeContainer}>
                 <UpdateDemographicSettingsGuideTag step={step} />
                 {/* Étape 2: Logements vacants longue durée - Afficher si on est après cette étape */}
-                {index === 2 && currentStepIndex > 2 && epcis && epcis.length > 0 && rates && (
+                {index === 2 && epcis.length > 0 && (
                   <>
                     {(showAllVacancy ? epcis : epcis.slice(0, MAX_EPCIS_DISPLAYED)).map((epci) => {
                       const epciRates = rates[epci.code]
@@ -133,7 +118,7 @@ export default function UpdateDemographicSettingsSimulationSideMenu({ id }: Upda
                   </>
                 )}
                 {/* Étape 3: Résidences secondaires - Afficher si on est après cette étape */}
-                {index === 3 && currentStepIndex > 3 && epcis && epcis.length > 0 && rates && (
+                {index === 3 && epcis.length > 0 && (
                   <>
                     {(showAllSecondary ? epcis : epcis.slice(0, MAX_EPCIS_DISPLAYED)).map((epci) => {
                       const epciRates = rates[epci.code]
@@ -162,7 +147,7 @@ export default function UpdateDemographicSettingsSimulationSideMenu({ id }: Upda
                   </>
                 )}
                 {/* Étape 4: Renouvellement urbain - Afficher si on est après cette étape */}
-                {index === 4 && currentStepIndex > 4 && epcis && epcis.length > 0 && rates && (
+                {index === 4 && epcis.length > 0 && (
                   <>
                     {(showAllRestructuration ? epcis : epcis.slice(0, MAX_EPCIS_DISPLAYED)).map((epci) => {
                       const epciRates = rates[epci.code]

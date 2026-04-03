@@ -41,16 +41,26 @@ export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRange
     })
   }
 
+  const reductionPercent = getCurrentRangeValue()
+  const projectedRate = defaultEpciRates.longTermVacancyRate * (1 - reductionPercent / 100)
+
   return (
-    <Range
-      label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${projection} ?`}
-      suffix="%"
-      max={100}
-      min={0}
-      nativeInputProps={{
-        onChange: handleChange,
-        value: getCurrentRangeValue(),
-      }}
-    />
+    <>
+      <Range
+        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${projection} ?`}
+        suffix="%"
+        max={100}
+        min={0}
+        nativeInputProps={{
+          onChange: handleChange,
+          value: reductionPercent,
+        }}
+      />
+      <p className="fr-text--sm fr-mt-1w fr-mb-0">
+        Le taux projeté à l'année {projection} est de : {(defaultEpciRates.longTermVacancyRate * 100).toFixed(2)} % -{' '}
+        {((reductionPercent / 100) * defaultEpciRates.longTermVacancyRate * 100).toFixed(2)} % ={' '}
+        <strong>{(projectedRate * 100).toFixed(2)} %</strong>
+      </p>
+    </>
   )
 }
