@@ -90,23 +90,27 @@ export default async function Resultats({ params }: SimulationPageProps) {
             totalStock={epciResults.totalStock}
             epci={epciData}
           />
-          <p className="fr-text--lg fr-text--bold fr-mb-0">
-            Le parc actuel pourrait répondre à une partie de la demande en nouveaux logements :
-          </p>
-          <SimulationSecondaryVacantsAccommodationsSummary
-            results={epciResults}
-            epci={epciData}
-            renewalNeeds={epciFlowRequirementData.totals.renewalNeeds}
-          />
-          <SimulationAnnualsNeedsSummary
-            sitadelResults={sitadelResults}
-            newConstructionsResults={epciFlowRequirementData}
-            horizon={simulation.scenario.projection}
-            hasSurplusHousing={hasSurplusHousing}
-            epciName={epci.name}
-          />
-          <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} />
-          <SimulationBadHousing horizon={simulation.scenario.projection} results={stockResults} />
+          {epciResults.totalFlux > 0 && (
+            <>
+              <p className="fr-text--lg fr-text--bold fr-mb-0">
+                Le parc actuel pourrait répondre à une partie de la demande en nouveaux logements :
+              </p>
+              <SimulationSecondaryVacantsAccommodationsSummary
+                results={epciResults}
+                epci={epciData}
+                renewalNeeds={epciFlowRequirementData.totals.renewalNeeds}
+              />
+              <SimulationAnnualsNeedsSummary
+                sitadelResults={sitadelResults}
+                newConstructionsResults={epciFlowRequirementData}
+                horizon={simulation.scenario.projection}
+                hasSurplusHousing={hasSurplusHousing}
+                epciName={epci.name}
+              />
+              <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} />
+            </>
+          )}
+          <SimulationBadHousing simulationId={simulation.id} horizon={simulation.scenario.projection} results={stockResults} />
         </div>
       ),
       iconId: 'ri-road-map-line' as RiIconClassName,
@@ -126,20 +130,24 @@ export default async function Resultats({ params }: SimulationPageProps) {
         <SimulationSettingsDropdown simulation={simulation} />
         <SimulationNeedsSummary projection={simulation.scenario.projection} results={results} epcis={simulation.epcis} />
 
-        <SimulationDemographicBadHousingSummary
+        {/* <SimulationDemographicBadHousingSummary
           simulationId={simulation.id}
           totalFlux={results.totalFlux}
           totalStock={results.totalStock}
-        />
+        /> */}
 
-        <p className="fr-text--lg fr-text--bold fr-mb-0">
-          Le parc actuel pourrait répondre à une partie de la demande en nouveaux logements :
-        </p>
-        <SimulationSecondaryVacantsAccommodationsSummary
-          results={results}
-          projection={simulation.scenario.projection}
-          renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + e.totals.renewalNeeds, 0)}
-        />
+        {results.totalFlux > 0 && (
+          <>
+            <p className="fr-text--lg fr-text--bold fr-mb-0">
+              Le parc actuel pourrait répondre à une partie de la demande en nouveaux logements :
+            </p>
+            <SimulationSecondaryVacantsAccommodationsSummary
+              results={results}
+              projection={simulation.scenario.projection}
+              renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + e.totals.renewalNeeds, 0)}
+            />
+          </>
+        )}
 
         {epcisFlowData.length > 1 && (
           <SynthesisCnEvolutionChart

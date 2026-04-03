@@ -1,8 +1,10 @@
+import Button from '@codegouvfr/react-dsfr/Button'
 import { SimulationBadHousingDataWrapper } from '~/components/simulations/results/bad-housing/simulation-bad-housing-data-wrapper'
 import { SimulationBadHousingDescription } from '~/components/simulations/results/bad-housing/simulation-bad-housing-header'
 import { SimulationChartTableSwitch } from '~/components/simulations/results/simulation-chart-table-switch'
 
 type SimulationAnnualsNeedsProps = {
+  simulationId: string
   horizon: number
   results: {
     badQuality: number
@@ -14,7 +16,7 @@ type SimulationAnnualsNeedsProps = {
   }
 }
 
-export const SimulationBadHousing = ({ horizon, results }: SimulationAnnualsNeedsProps) => {
+export const SimulationBadHousing = ({ simulationId, horizon, results }: SimulationAnnualsNeedsProps) => {
   const { badQuality, financialInadequation, hosted, noAccomodation, physicalInadequation, totalStock } = results
   const chartData = [
     { name: 'Hébergés', value: hosted },
@@ -30,9 +32,19 @@ export const SimulationBadHousing = ({ horizon, results }: SimulationAnnualsNeed
   return (
     <div className="fr-background-default--grey shadow" id="mal-logement">
       <div className="fr-py-8w fr-px-5w">
-        <div id="demographique-parc-evolution" className="fr-flex fr-justify-content-space-between fr-align-items-center">
+        <div id="bad-housing-evolution" className="fr-flex fr-justify-content-space-between fr-align-items-center">
           <h3 className="fr-h4 fr-mb-0">Situations de mal logement</h3>
-          <SimulationChartTableSwitch queryState="mal-logement" />
+          <div className="fr-flex fr-flex-gap-4v fr-align-items-center">
+            <Button
+              priority="secondary"
+              linkProps={{ href: `/simulation/${simulationId}/modifier/mal-logement/horizon-de-resorption` }}
+              size="small"
+            >
+              Affiner le mal-logement
+            </Button>
+            <span className="fr-text--grey fr-text--sm fr-mb-0">|</span>
+            <SimulationChartTableSwitch queryState="mal-logement" />
+          </div>
         </div>
         <SimulationBadHousingDescription horizon={horizon} totalStock={totalStock} maxValue={maxValue} maxValueName={maxValueName} />
         <SimulationBadHousingDataWrapper chartData={chartData} results={results} horizon={horizon} />
