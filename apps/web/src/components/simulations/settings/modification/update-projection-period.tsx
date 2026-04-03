@@ -23,7 +23,9 @@ export const UpdateProjectionPeriod: FC = () => {
           value: projection,
         }}
       />
-      <p className="fr-text--sm fr-mt-1w fr-text-mention--grey">Période de projection : 1er janvier {millesime} au 1er janvier {projection}</p>
+      <p className="fr-text--sm fr-mt-1w fr-text-mention--grey">
+        Période de projection : 1er janvier {millesime} au 1er janvier {projection}
+      </p>
     </>
   )
 }

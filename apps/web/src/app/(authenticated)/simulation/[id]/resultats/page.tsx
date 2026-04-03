@@ -104,8 +104,19 @@ export default async function Resultats({ params }: SimulationPageProps) {
             epciName={epci.name}
             peakYear={epciData.peakYear}
           />
-          {hasNewHousingNeeds && <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} peakYear={epciData.peakYear} />}
-          <SimulationBadHousing simulationId={simulation.id} horizon={simulation.scenario.projection} results={stockResults} millesime={simulation.scenario.millesime} />
+          {hasNewHousingNeeds && (
+            <SimulationDemographicParcEvolution
+              results={flowResults}
+              horizon={simulation.scenario.projection}
+              peakYear={epciData.peakYear}
+            />
+          )}
+          <SimulationBadHousing
+            simulationId={simulation.id}
+            horizon={simulation.scenario.projection}
+            results={stockResults}
+            millesime={simulation.scenario.millesime}
+          />
         </div>
       ),
       iconId: 'ri-road-map-line' as RiIconClassName,

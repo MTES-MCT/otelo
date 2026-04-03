@@ -137,7 +137,6 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
         </div>
       </div>
 
-
       {queryStates.population &&
         (() => {
           const scenario = queryStates.population as keyof typeof popEvolution
@@ -163,7 +162,8 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
                 </span>
                 <br />
                 <span>
-                  Soit un taux de croissance annuel moyen de <strong>{tcam.toFixed(2)} %</strong> sur la période {queryStates.millesime} - {period}.
+                  Soit un taux de croissance annuel moyen de <strong>{tcam.toFixed(2)} %</strong> sur la période {queryStates.millesime} -{' '}
+                  {period}.
                 </span>
                 <br />
                 <span className="fr-text--sm fr-text-mention--grey fr-mb-0">Source des données : INSEE</span>
