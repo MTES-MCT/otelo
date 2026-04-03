@@ -1064,10 +1064,6 @@ export class ExportExcelService {
       ],
     }
 
-    // Calculate number of logements for secondary residences (rows 24-26)
-    const d24Raw = filocomData.parctot * epciRates.txRs
-    const d26Raw = parctotProj * epciScenario.b2_tx_rs
-
     const configSecondaryResidences: SectionConfig = {
       data: [
         {

@@ -104,13 +104,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
             epciName={epci.name}
             peakYear={epciData.peakYear}
           />
-          {hasNewHousingNeeds && (
-            <SimulationDemographicParcEvolution
-              results={flowResults}
-              horizon={simulation.scenario.projection}
-              peakYear={epciData.peakYear}
-            />
-          )}
+          <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} peakYear={epciData.peakYear} />
           <SimulationBadHousing
             simulationId={simulation.id}
             horizon={simulation.scenario.projection}
