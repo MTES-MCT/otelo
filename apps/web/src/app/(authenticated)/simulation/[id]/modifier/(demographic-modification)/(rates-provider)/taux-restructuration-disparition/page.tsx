@@ -10,7 +10,7 @@ export default async function RestructurationDisparitionRatesPage({ params }: Si
   const simulation = groupedSimulations[id]
   return (
     <>
-      <div className="fr-flex fr-direction-column fr-background-default--grey">
+      <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <ModifyRestructurationDisparitionRates epcis={simulation.epcis} />
       </div>
       <div className="fr-px-2w fr-pt-2w">

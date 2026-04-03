@@ -13,7 +13,7 @@ export default async function TauxCiblesLogementsPage({ params }: SimulationPage
 
   return (
     <>
-      <div className="fr-flex fr-direction-column fr-background-default--grey">
+      <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <ModifyEpcisAccommodationRates epcis={simulation.epcis} />
       </div>
       <div className="fr-px-2w fr-pt-2w">
