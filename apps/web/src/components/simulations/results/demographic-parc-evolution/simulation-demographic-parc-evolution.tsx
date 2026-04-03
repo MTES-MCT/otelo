@@ -12,9 +12,13 @@ export type SimulationDemographicParcEvolutionProps = {
     longTermVacantAccomodation: number
   }
   horizon: number
+  peakYear?: number
 }
 
-export const SimulationDemographicParcEvolution = ({ results, horizon }: SimulationDemographicParcEvolutionProps) => {
+export const SimulationDemographicParcEvolution = ({ results, horizon, peakYear }: SimulationDemographicParcEvolutionProps) => {
+  if (peakYear === 2021) {
+    return null
+  }
   return (
     <div className="fr-background-default--grey shadow" id="demographie-parc">
       <div className="fr-py-8w fr-px-5w">

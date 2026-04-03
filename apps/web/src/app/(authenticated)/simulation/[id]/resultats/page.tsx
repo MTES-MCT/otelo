@@ -90,26 +90,21 @@ export default async function Resultats({ params }: SimulationPageProps) {
             totalStock={epciResults.totalStock}
             epci={epciData}
           />
-          {epciResults.totalFlux > 0 && (
-            <>
-              <p className="fr-text--lg fr-text--bold fr-mb-0">
-                Le parc actuel pourrait répondre à une partie de la demande en nouveaux logements :
-              </p>
-              <SimulationSecondaryVacantsAccommodationsSummary
-                results={epciResults}
-                epci={epciData}
-                renewalNeeds={epciFlowRequirementData.totals.renewalNeeds}
-              />
-              <SimulationAnnualsNeedsSummary
-                sitadelResults={sitadelResults}
-                newConstructionsResults={epciFlowRequirementData}
-                horizon={simulation.scenario.projection}
-                hasSurplusHousing={hasSurplusHousing}
-                epciName={epci.name}
-              />
-              <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} />
-            </>
-          )}
+
+          <SimulationSecondaryVacantsAccommodationsSummary
+            results={epciResults}
+            epci={epciData}
+            renewalNeeds={epciFlowRequirementData.totals.renewalNeeds}
+          />
+          <SimulationAnnualsNeedsSummary
+            sitadelResults={sitadelResults}
+            newConstructionsResults={epciFlowRequirementData}
+            horizon={simulation.scenario.projection}
+            hasSurplusHousing={hasSurplusHousing}
+            epciName={epci.name}
+            peakYear={epciData.peakYear}
+          />
+          <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} peakYear={epciData.peakYear} />
           <SimulationBadHousing simulationId={simulation.id} horizon={simulation.scenario.projection} results={stockResults} />
         </div>
       ),
@@ -136,18 +131,11 @@ export default async function Resultats({ params }: SimulationPageProps) {
           totalStock={results.totalStock}
         /> */}
 
-        {results.totalFlux > 0 && (
-          <>
-            <p className="fr-text--lg fr-text--bold fr-mb-0">
-              Le parc actuel pourrait répondre à une partie de la demande en nouveaux logements :
-            </p>
-            <SimulationSecondaryVacantsAccommodationsSummary
-              results={results}
-              projection={simulation.scenario.projection}
-              renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + e.totals.renewalNeeds, 0)}
-            />
-          </>
-        )}
+        <SimulationSecondaryVacantsAccommodationsSummary
+          results={results}
+          projection={simulation.scenario.projection}
+          renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + e.totals.renewalNeeds, 0)}
+        />
 
         {epcisFlowData.length > 1 && (
           <SynthesisCnEvolutionChart
