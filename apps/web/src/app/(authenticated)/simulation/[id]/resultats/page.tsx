@@ -134,7 +134,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
         <SimulationSecondaryVacantsAccommodationsSummary
           results={results}
           projection={simulation.scenario.projection}
-          renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + e.totals.renewalNeeds, 0)}
+          renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + Math.min(0, e.totals.renewalNeeds), 0)}
         />
 
         {epcisFlowData.length > 1 && (
