@@ -1,3 +1,5 @@
+jest.unmock('~/auth/better-auth')
+
 import { checkWhitelistBeforeCreate, updateLastLoginAt } from './better-auth'
 
 jest.mock('better-auth', () => ({

@@ -15,6 +15,7 @@ const ZEnvSchema = z.object({
   CLIENT_BASE_URL: z.string(),
   BREVO_EMAIL_VERIFICATION_TEMPLATE_ID: z.string(),
   BREVO_PASSWORD_RESET_TEMPLATE_ID: z.string(),
+  BREVO_IMPORT_USER_TEMPLATE_ID: z.string(),
   OAUTH_PROCONNECT_CLIENT_ID: z.string(),
   OAUTH_PROCONNECT_CLIENT_SECRET: z.string(),
   OAUTH_PROCONNECT_ISSUER: z.string(),

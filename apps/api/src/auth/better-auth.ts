@@ -17,7 +17,7 @@ const prisma = new PrismaClient({ adapter })
 
 const PROCONNECT_ISSUER = process.env.OAUTH_PROCONNECT_ISSUER || ''
 
-async function sendBrevoTemplatedEmail(templateId: string, params: Record<string, string>, to: string, subject: string) {
+export async function sendBrevoTemplatedEmail(templateId: string, params: Record<string, string>, to: string, subject: string) {
   const response = await fetch(process.env.BREVO_API_URL!, {
     method: 'POST',
     headers: {
@@ -80,12 +80,26 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     minPasswordLength: 8,
     sendResetPassword: async ({ user, url }) => {
-      await sendBrevoTemplatedEmail(
-        process.env.BREVO_PASSWORD_RESET_TEMPLATE_ID!,
-        { resetUrl: url },
-        user.email,
-        'Réinitialisation de votre mot de passe Otelo',
-      )
+      const account = await prisma.account.findFirst({
+        where: { userId: user.id, providerId: 'credential' },
+      })
+
+      if (!account) {
+        const urlWithEmail = `${url}&email=${encodeURIComponent(user.email)}`
+        await sendBrevoTemplatedEmail(
+          process.env.BREVO_IMPORT_USER_TEMPLATE_ID!,
+          { resetUrl: urlWithEmail, email: user.email },
+          user.email,
+          'Bienvenue sur Otelo - Créez votre mot de passe',
+        )
+      } else {
+        await sendBrevoTemplatedEmail(
+          process.env.BREVO_PASSWORD_RESET_TEMPLATE_ID!,
+          { resetUrl: url },
+          user.email,
+          'Réinitialisation de votre mot de passe Otelo',
+        )
+      }
     },
   },
 

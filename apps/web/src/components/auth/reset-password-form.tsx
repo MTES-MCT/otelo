@@ -11,9 +11,10 @@ import { TResetPassword, ZResetPassword } from '~/schemas/password'
 
 interface ResetPasswordFormProps {
   token: string | undefined
+  email?: string
 }
 
-export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+export function ResetPasswordForm({ token, email }: ResetPasswordFormProps) {
   const { resetPassword, isPending } = useResetPassword()
 
   const {
@@ -49,10 +50,21 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   return (
     <div className="fr-card fr-p-6w">
-      <h1 className="fr-h3 fr-mb-3w">Réinitialisation du mot de passe</h1>
+      <h1 className="fr-h3 fr-mb-3w">{email ? 'Création de votre mot de passe' : 'Réinitialisation du mot de passe'}</h1>
       <p className="fr-text--sm fr-mb-4w">Saisissez votre nouveau mot de passe.</p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        {email && (
+          <Input
+            label="Adresse email"
+            disabled
+            nativeInputProps={{
+              value: email,
+              type: 'email',
+            }}
+          />
+        )}
+
         <Input
           label={
             <div className="fr-flex fr-direction-row fr-align-items-center fr-flex-gap-2v">
