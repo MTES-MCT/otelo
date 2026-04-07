@@ -299,6 +299,7 @@ describe('UsersService', () => {
           lastname: 'Dupont',
           referent: 'Réf. DDT 75',
           hasAccess: true,
+          emailVerified: true,
         },
       })
     })
@@ -388,7 +389,7 @@ describe('UsersService', () => {
       expect(createCall.data).not.toHaveProperty('role')
       expect(createCall.data).not.toHaveProperty('banned')
       expect(createCall.data).not.toHaveProperty('id')
-      expect(createCall.data).not.toHaveProperty('emailVerified')
+      expect(createCall.data).toHaveProperty('emailVerified', true)
     })
   })
 })

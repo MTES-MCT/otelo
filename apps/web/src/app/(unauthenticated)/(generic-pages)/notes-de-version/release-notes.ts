@@ -3,7 +3,18 @@ export type ReleaseNotes = Record<number, ReleaseNotesByMonth>
 
 export const RELEASE_NOTES: ReleaseNotes = {
   2026: {
+    avril: [
+      "Ajout d'un lien de partage en lecture seule pour consulter plus facilement une simulation.",
+      'Amélioration de la présentation des résultats et de plusieurs libellés pour rendre la lecture plus claire.',
+      'Correction du calcul de certains besoins liés au renouvellement urbain pour fiabiliser les résultats.',
+    ],
     mars: [
+      "Ajout du centre d'aide pour mieux accompagner la prise en main de l'outil.",
+      "Ajout d'options Sitadel complémentaires dans les besoins, avec amélioration des illustrations et contenus associés.",
+      "Ajout de nouveaux éléments dans l'export de résultats pour faciliter l'analyse et le partage.",
+      "Ajout d'indicateurs liés au renouvellement urbain dans le calcul des besoins.",
+      'Amélioration de plusieurs libellés, visuels et exports Excel pour une restitution plus claire.',
+      'Correction de plusieurs millésimes et descriptions utilisés dans les résultats pour améliorer la cohérence des données.',
       'Correction du calcul de certaines situations de mal-logement pour améliorer la fiabilité des résultats.',
       "Amélioration de la prise de contact depuis la page dédiée, pour limiter les erreurs lors de l'envoi.",
     ],

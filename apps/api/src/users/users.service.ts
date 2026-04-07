@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
+import { auth } from '~/auth/better-auth'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'
 import { TUpdateUserType } from '~/schemas/users/update-user'
@@ -32,6 +33,8 @@ const SORTABLE_FIELDS: Record<string, string> = {
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name)
+
   constructor(private readonly prisma: PrismaService) {}
 
   async hasUserAccessTo(email: string): Promise<boolean> {
@@ -174,8 +177,21 @@ export class UsersService {
           lastname: row.lastname,
           referent: row.referent || null,
           hasAccess: true,
+          emailVerified: true,
         },
       })
+
+      try {
+        await auth.api.requestPasswordReset({
+          body: {
+            email: row.email.toLowerCase().trim(),
+            redirectTo: `${process.env.CLIENT_BASE_URL}/modification-mot-de-passe`,
+          },
+        })
+      } catch (error) {
+        this.logger.error(`Failed to send import email to ${row.email}`, error)
+      }
+
       created++
     }
 
