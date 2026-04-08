@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Res } from '@nestjs/common'
+import { Controller, Get, Header, Query, Res } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { Response } from 'express'
 import * as Papa from 'papaparse'
@@ -97,6 +97,29 @@ export class StatisticsController {
 
     const dateStr = dayjs().format('DD-MM-YYYY')
     const filename = `export-scenarios-${dateStr}.csv`
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+
+    const csvData = Papa.unparse(data, {
+      header: true,
+      delimiter: ';',
+    })
+
+    res.send(csvData)
+  }
+
+  @Get('/pilotage')
+  async getPilotageData(@Query('region') region?: string, @Query('department') department?: string) {
+    return this.statisticsService.getPilotageData(region, department)
+  }
+
+  @Get('/pilotage/export')
+  @Header('Content-Type', 'text/csv')
+  async getPilotageCsv(@Res() res: Response, @Query('region') region?: string, @Query('department') department?: string) {
+    const data = await this.statisticsService.getPilotageCsvData(region, department)
+
+    const dateStr = dayjs().format('DD-MM-YYYY')
+    const filename = `export-pilotage-${dateStr}.csv`
 
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
 

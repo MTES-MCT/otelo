@@ -140,7 +140,7 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
     text: "Centre d'aide et ressources",
   },
   {
-    isActive: ['/a-propos', '/statistiques'].includes(pathname),
+    isActive: ['/a-propos', '/statistiques', '/pilotage'].includes(pathname),
     menuLinks: [
       {
         isActive: pathname === '/a-propos',
@@ -153,6 +153,11 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
         isActive: pathname === '/statistiques',
         linkProps: { href: '/statistiques', target: '_self' },
         text: 'Statistiques',
+      },
+      {
+        isActive: pathname === '/pilotage',
+        linkProps: { href: '/pilotage', target: '_self' },
+        text: 'Pilotage',
       },
     ],
     text: "À propos d'Otelo",
