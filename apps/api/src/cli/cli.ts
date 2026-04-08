@@ -3,6 +3,7 @@
 import { NestFactory } from '@nestjs/core'
 import { Command } from 'commander'
 import { CliModule } from './cli.module'
+import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
 import { ImportBackupCommand } from './commands/import-backup.command'
 import { ImportCsvCommand } from './commands/import-csv.command'
 import { RecalculateResultsCommand } from './commands/recalculate-results.command'
@@ -106,6 +107,34 @@ async function bootstrap() {
           execute: options.execute || false,
           output: options.output,
         })
+        await app.close()
+        process.exit(0)
+      } catch (error) {
+        console.error('✗ Erreur fatale:', error instanceof Error ? error.message : error)
+        await app.close()
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('backfill-epcis-geo')
+    .description(
+      [
+        "Récupère les codes et noms de départements depuis l'API Geo pour chaque EPCI.",
+        '',
+        'Par défaut, fonctionne en dry-run (aucune écriture en base).',
+        'Utiliser --write pour persister les résultats en base.',
+        '',
+        'Exemples :',
+        '  pnpm -F api cli backfill-epcis-geo              # dry-run',
+        '  pnpm -F api cli backfill-epcis-geo --write       # écriture en base',
+      ].join('\n'),
+    )
+    .option('--write', 'Persister les résultats en base (sans ce flag = dry-run)')
+    .action(async (options) => {
+      try {
+        const command = app.get(BackfillEpcisGeoCommand)
+        await command.execute({ dryRun: !options.write })
         await app.close()
         process.exit(0)
       } catch (error) {

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { TTemplateStatisticsRow } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
+import { Prisma } from '~/generated/prisma/client'
 
 @Injectable()
 export class StatisticsService {
@@ -444,6 +445,175 @@ export class StatisticsService {
     LEFT JOIN base_epci_per_simulation beps ON s.id = beps.simulation_id
     LEFT JOIN simulation_count_per_base_epci scpbe ON u.id = scpbe.user_id AND beps.base_epci_code = scpbe.base_epci_code
     ORDER BY u.lastname, u.firstname, s.created_at DESC;
+    `
+  }
+
+  async getPilotageData(region?: string, department?: string) {
+    const regionFilter = region ? Prisma.sql`AND COALESCE(e.region_name, e.region) = ${region}` : Prisma.sql``
+    const departmentFilter = department ? Prisma.sql`AND e.department_name = ${department}` : Prisma.sql``
+    const locationFilter = Prisma.sql`${regionFilter} ${departmentFilter}`
+
+    const actorsByRegion = await this.prisma.$queryRaw<
+      Array<{
+        region: string
+        actor_type: string
+        nb_users: number
+        nb_scenarios: number
+        nb_epcis: number
+        last_activity: Date | null
+      }>
+    >`
+      SELECT
+        COALESCE(e.region_name, e.region) AS region,
+        u.type AS actor_type,
+        COUNT(DISTINCT u.id)::int AS nb_users,
+        COUNT(DISTINCT sc.id)::int AS nb_scenarios,
+        COUNT(DISTINCT e.code)::int AS nb_epcis,
+        MAX(GREATEST(u.last_login_at, s.updated_at)) AS last_activity
+      FROM users u
+      INNER JOIN simulations s ON u.id = s.user_id AND s.deleted IS NULL
+      INNER JOIN scenarios sc ON s.scenario_id = sc.id
+      INNER JOIN epci_scenarios es ON sc.id = es.scenario_id
+      INNER JOIN epcis e ON es.epci_code = e.code
+      WHERE u.type IS NOT NULL
+      ${locationFilter}
+      GROUP BY COALESCE(e.region_name, e.region), u.type
+      ORDER BY COALESCE(e.region_name, e.region), u.type
+    `
+
+    const housingByRegion = await this.prisma.$queryRaw<
+      Array<{
+        region: string
+        total_flux: number
+        total_stock: number
+        total_vacant: number
+        total_housing_needs: number
+      }>
+    >`
+      SELECT
+        COALESCE(e.region_name, e.region) AS region,
+        COALESCE(SUM(sr."totalFlux"), 0)::int AS total_flux,
+        COALESCE(SUM(sr."totalStock"), 0)::int AS total_stock,
+        COALESCE(SUM(sr."vacantAccomodation"), 0)::int AS total_vacant,
+        COALESCE(SUM(sr."totalFlux" + sr."totalStock"), 0)::int AS total_housing_needs
+      FROM simulation_results sr
+      INNER JOIN simulations s ON sr.simulation_id = s.id AND s.deleted IS NULL
+      INNER JOIN epcis e ON sr.epci_code = e.code
+      WHERE 1=1
+      ${locationFilter}
+      GROUP BY COALESCE(e.region_name, e.region)
+      ORDER BY COALESCE(e.region_name, e.region)
+    `
+
+    const coverage = await this.prisma.$queryRaw<
+      Array<{
+        region: string
+        total_epcis: number
+        active_epcis: number
+      }>
+    >`
+      SELECT
+        COALESCE(all_e.region_name, all_e.region) AS region,
+        COUNT(DISTINCT all_e.code)::int AS total_epcis,
+        COUNT(DISTINCT active_e.code)::int AS active_epcis
+      FROM epcis all_e
+      LEFT JOIN (
+        SELECT DISTINCT e.code
+        FROM epcis e
+        INNER JOIN epci_scenarios es ON e.code = es.epci_code
+        INNER JOIN scenarios sc ON es.scenario_id = sc.id
+        INNER JOIN simulations s ON s.scenario_id = sc.id AND s.deleted IS NULL
+      ) active_e ON all_e.code = active_e.code
+      WHERE 1=1
+      ${region ? Prisma.sql`AND COALESCE(all_e.region_name, all_e.region) = ${region}` : Prisma.sql``}
+      ${department ? Prisma.sql`AND all_e.department_name = ${department}` : Prisma.sql``}
+      GROUP BY COALESCE(all_e.region_name, all_e.region)
+      ORDER BY COALESCE(all_e.region_name, all_e.region)
+    `
+
+    // Always fetch all regions and departments (unfiltered) for the dropdowns
+    const allRegions = await this.prisma.$queryRaw<Array<{ region: string }>>`
+      SELECT DISTINCT COALESCE(e.region_name, e.region) AS region
+      FROM epcis e
+      INNER JOIN epci_scenarios es ON e.code = es.epci_code
+      INNER JOIN scenarios sc ON es.scenario_id = sc.id
+      INNER JOIN simulations s ON s.scenario_id = sc.id AND s.deleted IS NULL
+      ORDER BY region
+    `
+
+    const allDepartments = await this.prisma.$queryRaw<Array<{ department: string; region: string }>>`
+      SELECT DISTINCT e.department_name AS department, COALESCE(e.region_name, e.region) AS region
+      FROM epcis e
+      INNER JOIN epci_scenarios es ON e.code = es.epci_code
+      INNER JOIN scenarios sc ON es.scenario_id = sc.id
+      INNER JOIN simulations s ON s.scenario_id = sc.id AND s.deleted IS NULL
+      WHERE e.department_name IS NOT NULL
+      ORDER BY department
+    `
+
+    const totalActiveRegions = new Set(actorsByRegion.map((r) => r.region)).size
+    const totalActiveActors = actorsByRegion.reduce((sum, r) => sum + r.nb_users, 0)
+    const totalEpcis = coverage.reduce((sum, r) => sum + r.total_epcis, 0)
+    const totalActiveEpcis = coverage.reduce((sum, r) => sum + r.active_epcis, 0)
+    const coverageRate = totalEpcis > 0 ? Math.round((totalActiveEpcis / totalEpcis) * 10000) / 100 : 0
+
+    return {
+      kpis: {
+        totalActiveRegions,
+        totalActiveActors,
+        coverageRate,
+      },
+      regions: allRegions.map((r) => r.region),
+      departments: allDepartments.map((d) => ({ name: d.department, region: d.region })),
+      actorsByRegion: actorsByRegion.map((r) => ({
+        region: r.region,
+        actorType: r.actor_type,
+        nbUsers: r.nb_users,
+        nbScenarios: r.nb_scenarios,
+        nbEpcis: r.nb_epcis,
+        lastActivity: r.last_activity,
+      })),
+      housingByRegion: housingByRegion.map((r) => ({
+        region: r.region,
+        totalFlux: r.total_flux,
+        totalStock: r.total_stock,
+        totalVacant: r.total_vacant,
+        totalHousingNeeds: r.total_housing_needs,
+      })),
+    }
+  }
+
+  async getPilotageCsvData(region?: string, department?: string) {
+    const regionFilter = region ? Prisma.sql`AND COALESCE(e.region_name, e.region) = ${region}` : Prisma.sql``
+    const departmentFilter = department ? Prisma.sql`AND e.department_name = ${department}` : Prisma.sql``
+    const locationFilter = Prisma.sql`${regionFilter} ${departmentFilter}`
+
+    return this.prisma.$queryRaw<
+      Array<{
+        Region: string
+        'Type acteur': string
+        'Nb utilisateurs': number
+        'Nb scenarios': number
+        'Nb EPCI couverts': number
+        'Derniere activite': Date | null
+      }>
+    >`
+      SELECT
+        COALESCE(e.region_name, e.region) AS "Region",
+        u.type AS "Type acteur",
+        COUNT(DISTINCT u.id)::int AS "Nb utilisateurs",
+        COUNT(DISTINCT sc.id)::int AS "Nb scenarios",
+        COUNT(DISTINCT e.code)::int AS "Nb EPCI couverts",
+        MAX(GREATEST(u.last_login_at, s.updated_at)) AS "Derniere activite"
+      FROM users u
+      INNER JOIN simulations s ON u.id = s.user_id AND s.deleted IS NULL
+      INNER JOIN scenarios sc ON s.scenario_id = sc.id
+      INNER JOIN epci_scenarios es ON sc.id = es.scenario_id
+      INNER JOIN epcis e ON es.epci_code = e.code
+      WHERE u.type IS NOT NULL
+      ${locationFilter}
+      GROUP BY COALESCE(e.region_name, e.region), u.type
+      ORDER BY COALESCE(e.region_name, e.region), u.type
     `
   }
 }

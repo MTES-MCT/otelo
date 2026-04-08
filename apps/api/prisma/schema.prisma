@@ -214,6 +214,9 @@ model Epci {
   code                              String                              @id
   name                              String
   region                            String
+  regionName                        String?                             @map("region_name")
+  departmentCode                    String?                             @map("department_code")
+  departmentName                    String?                             @map("department_name")
   bassinName                        String?                             @map("bassin_name")
   badQualityFilocom                 BadQuality_Filocom[]
   badQualityFonciers                BadQuality_Fonciers[]
