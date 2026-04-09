@@ -90,17 +90,19 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis 
             <div className="fr-mb-2w">
               {peakYear === 2021 ? (
                 <p className="fr-text--sm">
-                  Dans le scénario démographique choisi, le territoire atteint son pic de ménages dès{' '}
-                  <span className="fr-text--bold">{peakYear}</span> : il n’y a donc plus de besoins en logements supplémentaires liés à la
-                  démographie ou à l’évolution du parc. Les besoins restant concernent la résorption des situations de mal-logement, qui
-                  implique de produire (construction neuve ou transformation du parc existant) des logements spécifiquement pour les ménages
-                  concernés.
+                  Le scénario démographique choisi conduit le territoire à atteindre son pic de ménages dès
+                  <span className="fr-text--bold">{peakYear}</span>. La production d’une offre de logements neufs à partir de cette date
+                  n’est donc plus indispensable, à condition que les besoins résiduels liés au mal-logement trouvent une réponse via la
+                  mobilisation du parc existant.
                 </p>
               ) : (
                 <p className="fr-text--sm fr-mb-0">
-                  Une fois la croissance démographique stabilisée en <span className="fr-text--bold">{peakYear}</span>, le territoire n’a
-                  plus besoin de construire davantage, mais doit encore agir pour améliorer les conditions de logement des ménages les plus
-                  fragiles.
+                  Le scénario démographique choisi conduit le territoire à atteindre son pic de ménages en
+                  <span className="fr-text--bold">{peakYear}</span>. Au regard des hypothèses retenues, ni les évolutions du parc et de son
+                  occupation, ni la résorption des situations de mal-logement (
+                  <span className="fr-text--bold">{formatNumber(postpeakTotalStock!)}</span> situations à résoudre) ne rendent indispensable
+                  la production d’une offre de logements neufs, à la condition que les besoins associés à ces situations trouvent une
+                  réponse via la mobilisation du parc existant.
                 </p>
               )}
               <span className="fr-text--sm">
