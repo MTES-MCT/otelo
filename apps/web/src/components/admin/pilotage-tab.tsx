@@ -5,19 +5,11 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import { Card } from '@codegouvfr/react-dsfr/Card'
 import { Select } from '@codegouvfr/react-dsfr/Select'
 import { Table } from '@codegouvfr/react-dsfr/Table'
+import { USER_TYPE_LABELS } from '@shared'
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 import { useExportPilotageStatistics } from '~/hooks/use-export-pilotage-statistics'
 import { usePilotageStatistics } from '~/hooks/use-pilotage-statistics'
-
-const ACTOR_TYPE_LABELS: Record<string, string> = {
-  DDT: 'DDT',
-  DREAL: 'DREAL',
-  Collectivite: 'Collectivité',
-  AgenceUrbanisme: "Agence d'urbanisme",
-  BureauEtudes: "Bureau d'études",
-  Autre: 'Autre',
-}
 
 export default function PilotageTab() {
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>(undefined)
@@ -153,7 +145,7 @@ export default function PilotageTab() {
           headers={['Région', "Type d'acteur", 'Nb utilisateurs', 'Nb scénarios', 'Nb EPCI couverts', 'Dernière activité']}
           data={data.actorsByRegion.map((row) => [
             row.region,
-            ACTOR_TYPE_LABELS[row.actorType] ?? row.actorType,
+            USER_TYPE_LABELS[row.actorType as keyof typeof USER_TYPE_LABELS] ?? row.actorType,
             row.nbUsers,
             row.nbScenarios,
             row.nbEpcis,

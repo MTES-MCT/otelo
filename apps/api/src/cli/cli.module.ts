@@ -13,6 +13,7 @@ import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
 import { ImportBackupCommand } from './commands/import-backup.command'
 import { ImportCsvCommand } from './commands/import-csv.command'
 import { RecalculateResultsCommand } from './commands/recalculate-results.command'
+import { UpdateUserTypesCommand } from './commands/update-user-types.command'
 import { ScalingoBackupService } from './services/scalingo-backup.service'
 
 @Module({
@@ -35,9 +36,10 @@ import { ScalingoBackupService } from './services/scalingo-backup.service'
     ImportBackupCommand,
     ImportCsvCommand,
     RecalculateResultsCommand,
+    UpdateUserTypesCommand,
     ResultsService,
     SimulationsService,
   ],
-  exports: [BackfillEpcisGeoCommand, ImportBackupCommand, ImportCsvCommand, RecalculateResultsCommand],
+  exports: [BackfillEpcisGeoCommand, ImportBackupCommand, ImportCsvCommand, RecalculateResultsCommand, UpdateUserTypesCommand],
 })
 export class CliModule {}
