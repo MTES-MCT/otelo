@@ -426,7 +426,96 @@ export default function GuidePage() {
         <br />
         La <strong>même logique s'applique aux projections de population</strong>.
       </p>
-      <h3 id="donnees-parc-logement">📊 Les données sur le parc de logement</h3>
+      <h3 id="donnees-parc-logement">📊 Les données sur le parc de logements</h3>
+      <p>
+        À population donnée, plusieurs leviers peuvent être mobilisés pour répondre aux besoins en logements. Il est par exemple possible de
+        loger des ménages supplémentaires en remobilisant une partie des logements vacants de longue durée ou en réduisant la part des
+        résidences secondaires. À l'inverse, certaines évolutions du parc augmentent le besoin en logements neufs, comme les démolitions ou
+        les changements d'usage qui font disparaître des logements.
+      </p>
+      <p>
+        Otelo permet ainsi de formuler des hypothèses sur quatre composantes du parc : le <strong>taux de vacance de longue durée</strong>,
+        le <strong>taux de résidences secondaires</strong>, le <strong>taux annuel de restructuration</strong> et le{' '}
+        <strong>taux annuel de disparition</strong>. Ces paramètres ont un effet direct sur le besoin final en logements. Pour les définir,
+        il est utile de consulter les dernières valeurs observées sur le territoire, visibles dans l'onglet <strong>Infographie</strong>.
+      </p>
+      <h4 id="precisions-variables-parc">Précisions sur les variables à paramétrer</h4>
+      <h5 id="vacance-courte-longue-duree">La vacance : courte durée et longue durée</h5>
+      <p>
+        Les données de cadrage sont obtenues à partir de la valeur observée selon le millésime le plus récent des données fiscales
+        retraitées par le CGDD/SDES pour la vacance globale. Dans sa version actuelle, Otelo distingue la{' '}
+        <strong>vacance de courte durée</strong> (moins de 2 ans) de la <strong>vacance de longue durée</strong> (2 ans ou plus). Les taux
+        correspondants sont estimés à partir de la structure de vacance observée dans les fichiers fonciers, en appliquant au taux de
+        vacance global la part respective des logements vacants depuis moins de deux ans et de ceux vacants depuis deux ans ou plus.
+      </p>
+      <h5 id="vacance-courte-duree">Les logements vacants depuis moins de 2 ans</h5>
+      <p>
+        La vacance de courte durée correspond à une <strong>vacance de rotation</strong>, nécessaire au bon fonctionnement du parc de
+        logements. Elle permet notamment les déménagements, les ventes, les mises en location ou les travaux entre deux occupations. Dans
+        Otelo, cette composante n'est pas paramétrable. Elle est supposée évoluer au fil du temps au prorata du nombre de résidences
+        principales, selon le taux observé sur le territoire à l'année de référence.
+      </p>
+      <h5 id="vacance-longue-duree-parametrage">Les logements vacants depuis plus de 2 ans</h5>
+      <p>
+        La vacance de longue durée peut, en partie, constituer un gisement de logements remobilisables. Otelo propose donc de paramétrer une
+        évolution du taux de vacance de longue durée à l'horizon de projection. Par défaut, l'outil retient une réduction de{' '}
+        <strong>15 %</strong> de la part des logements vacants de longue durée à l'horizon de projection.
+      </p>
+      <p>
+        Une baisse du taux de vacance de longue durée ne signifie pas nécessairement une baisse du nombre de logements vacants en valeur
+        absolue. Si le parc total augmente fortement au cours de la période, le nombre de logements vacants de longue durée peut rester
+        stable, voire augmenter, tout en représentant une part plus faible du parc.
+      </p>
+      <p>
+        Enfin, la vitesse d'évolution dépend directement de l'horizon de projection retenu, ou de l'année du pic de ménages quand elle lui
+        est antérieure. Une baisse de 15 % du taux de logements vacants de longue durée à horizon 2035 implique un rythme de diminution plus
+        rapide qu'à horizon 2050, puisque la même évolution est répartie sur une période plus courte.
+      </p>
+      <h5 id="residences-secondaires-parametrage">L'évolution du taux de résidences secondaires</h5>
+      <p>
+        Par défaut, le taux cible de résidences secondaires correspond à la dernière valeur observée dans les données fiscales retraitées
+        par le CGDD/SDES.
+      </p>
+      <p>
+        Fixer un taux cible inférieur à la valeur de départ revient à faire l'hypothèse qu'une partie des résidences secondaires pourra être
+        mobilisée pour accueillir des ménages à titre de résidence principale. Cela diminue le besoin final en logements neufs. À l'inverse,
+        retenir un taux cible plus élevé revient à considérer qu'une part plus importante du parc sera consacrée aux résidences secondaires.
+        Cela augmente donc le besoin final en logements.
+      </p>
+      <p>
+        Comme pour la vacance, il faut distinguer l'évolution du <strong>taux</strong> et celle du <strong>volume</strong>. Un taux en
+        baisse ne signifie pas automatiquement une baisse du nombre de résidences secondaires en valeur absolue si, dans le même temps, le
+        parc total de logements progresse.
+      </p>
+      <h5 id="taux-restructuration">L'évolution du taux annuel de restructuration</h5>
+      <p>
+        Les restructurations correspondent aux créations de nouveaux logements au sein du parc existant, par exemple à travers la division
+        de logements ou des changements d'usage transformant des locaux non résidentiels en logements. Le taux de restructuration correspond
+        au volume de logements créés par ces phénomènes, rapporté à l'ensemble du parc.
+      </p>
+      <p>
+        Par défaut, Otelo propose de reconduire le taux annuel mesuré entre <strong>2015 et 2022</strong>. Plus ce taux est élevé, moins le
+        besoin en nouveaux logements sera important.
+      </p>
+      <p>
+        À l'inverse, des logements peuvent disparaître à travers des fusions ou des changements d'usage ; ces phénomènes sont pris en compte
+        dans le paramétrage du taux de disparition.
+      </p>
+      <h5 id="taux-disparition">L'évolution du taux annuel de disparition</h5>
+      <p>
+        Le taux annuel de disparition correspond à la proportion du parc de logements qui disparaît au cours d'une année. Cela peut
+        correspondre à des logements démolis, mais aussi à des logements retirés du parc du fait de fusions ou de changements d'usage comme
+        la transformation d'un logement en local d'activité.
+      </p>
+      <p>
+        Par défaut, Otelo propose de reconduire le taux annuel mesuré entre <strong>2013 et 2019</strong>. Plus ce taux est élevé, plus le
+        besoin en nouveaux logements sera important.
+      </p>
+      <p>
+        Ce paramétrage mérite une attention particulière sur les territoires ayant connu des opérations de rénovation urbaine avec des
+        démolitions importantes, notamment dans le parc social. Dans ce type de situation, la reconduction mécanique du taux observé peut
+        être inadaptée et mérite d'être discutée.
+      </p>
       <h3 id="situations-mal-logement">🎯 Les situations de mal-logement et de hors-logement</h3>
       <p>
         Otelo vous permet d'estimer un volume de situations de mal-logement et de hors logement, qui sont susceptibles de conclure à un
