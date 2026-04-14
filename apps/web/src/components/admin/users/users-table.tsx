@@ -4,6 +4,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
 import { Pagination } from '@codegouvfr/react-dsfr/Pagination'
 import Select from '@codegouvfr/react-dsfr/Select'
+import { SELECTABLE_USER_TYPES, USER_TYPE_LABELS } from '@shared'
 import {
   type Column,
   type ColumnDef,
@@ -109,6 +110,33 @@ function getColumns(
       cell: ({ row }) => {
         const user = row.original
         return <div className={classNames('fr-badge', user.role === 'ADMIN' ? styles.adminBadge : styles.userBadge)}>{user.role}</div>
+      },
+    },
+    {
+      accessorKey: 'type',
+      header: 'Typologie',
+      enableSorting: false,
+      filterFn: (row, columnId, filterValue) => {
+        if (filterValue === '') return true
+        return (row.getValue<string | undefined>(columnId) ?? '') === filterValue
+      },
+      meta: {
+        filterType: 'select',
+        options: [
+          { label: 'Toutes', value: '' },
+          ...SELECTABLE_USER_TYPES.map((type) => ({
+            label: USER_TYPE_LABELS[type],
+            value: type,
+          })),
+        ],
+      },
+      cell: ({ getValue }) => {
+        const type = getValue<TUser['type']>()
+        if (!type) {
+          return '-'
+        }
+
+        return USER_TYPE_LABELS[type] ?? type
       },
     },
     {
