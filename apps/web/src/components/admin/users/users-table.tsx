@@ -136,7 +136,7 @@ function getColumns(
           return '-'
         }
 
-        return USER_TYPE_LABELS[type] ?? type
+        return USER_TYPE_LABELS[type as keyof typeof USER_TYPE_LABELS] ?? type
       },
     },
     {
