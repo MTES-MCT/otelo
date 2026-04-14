@@ -119,7 +119,7 @@ export default function SummarySlot() {
               linkProps: {
                 href: '#donnees-parc-logement',
               },
-              text: '📊 Les données sur le parc de logement',
+              text: '📊 Les données sur le parc de logements',
             },
             {
               linkProps: {
