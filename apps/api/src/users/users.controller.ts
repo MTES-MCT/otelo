@@ -25,6 +25,7 @@ import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Role } from '~/generated/prisma/enums'
 import { TUpdateUserType } from '~/schemas/users/update-user'
 import { TUser } from '~/schemas/users/user'
+import { resolveUserTypeLabel } from '~/users/user-type.utils'
 import { UsersService } from '~/users/users.service'
 
 @Controller('users')
@@ -111,6 +112,7 @@ export class UsersController {
       header: true,
       skipEmptyLines: true,
       delimiter: ';',
+      transformHeader: (header) => this.normalizeImportHeader(header),
     })
 
     if (parseResult.errors.length > 0) {
@@ -122,20 +124,36 @@ export class UsersController {
       nom: z.string().min(1),
       prenom: z.string().min(1),
       referent: z.string().optional(),
+      typologie: z.string().optional(),
     })
 
-    const validatedRows: Array<{ email: string; referent?: string; name: string; firstname: string; lastname: string }> = []
+    const validatedRows: Array<{
+      email: string
+      referent?: string
+      name: string
+      firstname: string
+      lastname: string
+      type?: TUpdateUserType['type']
+    }> = []
     const validationErrors: Array<{ row: number; error: string }> = []
 
     for (let i = 0; i < parseResult.data.length; i++) {
       const result = ZCsvRow.safeParse(parseResult.data[i])
       if (result.success) {
+        const resolvedType = result.data.typologie ? resolveUserTypeLabel(result.data.typologie) : null
+
+        if (result.data.typologie && !resolvedType) {
+          validationErrors.push({ row: i + 2, error: `Typologie invalide: ${result.data.typologie}` })
+          continue
+        }
+
         validatedRows.push({
           email: result.data.email,
           name: `${result.data.prenom} ${result.data.nom}`,
           firstname: result.data.prenom,
           lastname: result.data.nom,
           referent: result.data.referent,
+          type: resolvedType ?? undefined,
         })
       } else {
         validationErrors.push({ row: i + 2, error: result.error.issues.map((e) => e.message).join(', ') })
@@ -167,5 +185,15 @@ export class UsersController {
   @Patch(':id')
   async updateType(@User() user: TUser, @Body() userType: TUpdateUserType) {
     return this.usersService.updateType(user.id, userType)
+  }
+
+  private normalizeImportHeader(header: string): string {
+    const normalizedHeader = header.trim().toLowerCase()
+
+    if (normalizedHeader.startsWith('typologie')) {
+      return 'typologie'
+    }
+
+    return normalizedHeader
   }
 }

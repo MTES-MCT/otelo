@@ -822,6 +822,13 @@ enum UserType {
   DREAL
   BureauEtudes
   Autre
+  Admin
+  AgenceDepartementale
+  BailleurSocialAgencePrivee
+  Commune
+  EPCI
+  OperateurRayonnementRegional
+  SCOTPETR
 }
 
 enum ExportType {

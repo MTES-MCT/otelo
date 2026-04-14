@@ -7,6 +7,7 @@ import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
 import { ImportBackupCommand } from './commands/import-backup.command'
 import { ImportCsvCommand } from './commands/import-csv.command'
 import { RecalculateResultsCommand } from './commands/recalculate-results.command'
+import { UpdateUserTypesCommand } from './commands/update-user-types.command'
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(CliModule, {
@@ -106,6 +107,45 @@ async function bootstrap() {
           millesime: options.millesime,
           execute: options.execute || false,
           output: options.output,
+        })
+        await app.close()
+        process.exit(0)
+      } catch (error) {
+        console.error('✗ Erreur fatale:', error instanceof Error ? error.message : error)
+        await app.close()
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('update-user-types')
+    .description(
+      [
+        'Met à jour en masse la typologie des utilisateurs à partir d’un fichier CSV ou Excel.',
+        '',
+        'Colonnes attendues : email, typologie',
+        'Formats supportés : .csv, .xlsx',
+        '',
+        'Par défaut, fonctionne en dry-run (aucune écriture en base).',
+        'Utiliser --write pour persister les résultats en base.',
+        'Utiliser --verbose pour afficher le détail ligne par ligne.',
+        '',
+        'Exemples :',
+        '  pnpm -F api cli update-user-types --file ./users.csv',
+        '  pnpm -F api cli update-user-types --file ./users.xlsx --verbose',
+        '  pnpm -F api cli update-user-types --file ./users.csv --write',
+      ].join('\n'),
+    )
+    .requiredOption('--file <path>', 'Chemin du fichier CSV ou Excel')
+    .option('--write', 'Persister les résultats en base (sans ce flag = dry-run)')
+    .option('--verbose', 'Afficher le détail ligne par ligne')
+    .action(async (options) => {
+      try {
+        const command = app.get(UpdateUserTypesCommand)
+        await command.execute({
+          file: options.file,
+          dryRun: !options.write,
+          verbose: options.verbose || false,
         })
         await app.close()
         process.exit(0)

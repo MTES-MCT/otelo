@@ -1,4 +1,4 @@
-import { UserType, ZUserBase } from '@shared'
+import { SELECTABLE_USER_TYPES, UserType, ZUserBase } from '@shared'
 import { z } from 'zod'
 
 export { UserType }
@@ -29,7 +29,7 @@ export const ZSignUp = z
 export type TSignUp = z.infer<typeof ZSignUp>
 
 export const ZUpdateUserType = z.object({
-  type: z.enum(Object.values(UserType) as [string, ...string[]]),
+  type: z.enum(SELECTABLE_USER_TYPES),
   userId: z.string(),
 })
 
