@@ -22,7 +22,7 @@ export const EpciGroupSelect: FC<EpciGroupSelectProps> = ({ selectedGroupId, onU
     epciGroupName: parseAsString,
     epciGroupId: parseAsString,
   })
-  const { data: groups, isLoading, error } = useEpciGroups()
+  const { data: groups, isLoading, error } = useEpciGroups({ withActiveSimulations: true })
 
   const onSelect = (group: TEpciGroupWithEpcis) => {
     setQueryStates({

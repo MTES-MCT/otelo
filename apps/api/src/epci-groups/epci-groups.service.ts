@@ -6,9 +6,15 @@ import { TCreateEpciGroupDto, TEpciGroupWithEpcis } from '~/schemas/epci-group'
 export class EpciGroupsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(userId: string): Promise<TEpciGroupWithEpcis[]> {
+  async findAll(userId: string, withActiveSimulations?: boolean): Promise<TEpciGroupWithEpcis[]> {
     return this.prisma.epciGroup.findMany({
-      where: { userId, deleted: null },
+      where: {
+        userId,
+        deleted: null,
+        ...(withActiveSimulations && {
+          simulations: { some: { deleted: null } },
+        }),
+      },
       include: {
         epciGroupEpcis: {
           include: {
