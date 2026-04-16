@@ -24,7 +24,7 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
     epciGroupId: parseAsString,
     epciChart: parseAsString,
   })
-  const { data: groups } = useEpciGroups()
+  const { data: groups } = useEpciGroups({ withActiveSimulations: true })
   const [selectedMethod, setSelectedMethod] = useState<SelectionMethod>(() => {
     if (epciGroupId) return 'existing-group'
     if (epcis.length > 0) return 'custom-selection'

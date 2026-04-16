@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common'
+import { Controller, Get, Query } from '@nestjs/common'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Role } from '~/generated/prisma/enums'
@@ -14,7 +14,7 @@ export class EpciGroupsController {
     roles: [Role.USER, Role.ADMIN],
   })
   @Get()
-  async findAll(@User() user: TUser): Promise<TEpciGroupWithEpcis[]> {
-    return this.epciGroupsService.findAll(user.id)
+  async findAll(@User() user: TUser, @Query('withActiveSimulations') withActiveSimulations?: string): Promise<TEpciGroupWithEpcis[]> {
+    return this.epciGroupsService.findAll(user.id, withActiveSimulations === 'true')
   }
 }

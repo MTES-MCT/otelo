@@ -97,7 +97,7 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis 
                 </p>
               ) : (
                 <p className="fr-text--sm fr-mb-0">
-                  Le scénario démographique choisi conduit le territoire à atteindre son pic de ménages en
+                  Le scénario démographique choisi conduit le territoire à atteindre son pic de ménages en&nbsp;
                   <span className="fr-text--bold">{peakYear}</span>. Au regard des hypothèses retenues, ni les évolutions du parc et de son
                   occupation, ni la résorption des situations de mal-logement (
                   <span className="fr-text--bold">{formatNumber(postpeakTotalStock!)}</span> situations à résoudre) ne rendent indispensable
