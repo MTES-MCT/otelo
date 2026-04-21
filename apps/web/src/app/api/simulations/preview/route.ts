@@ -9,8 +9,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const simulationId = typeof body?.simulationId === 'string' ? body.simulationId : null
-  const endpoint = simulationId ? `/simulations/${encodeURIComponent(simulationId)}/preview` : '/simulations/preview'
+  const endpoint = body.simulationId ? `/simulations/${encodeURIComponent(body.simulationId)}/preview` : '/simulations/preview'
 
   const response = await authFetch(endpoint, {
     body: JSON.stringify(body),
