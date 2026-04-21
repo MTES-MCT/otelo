@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { ForbiddenException, Injectable } from '@nestjs/common'
 import { TEpci } from '@shared'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { PrismaService } from '~/db/prisma.service'
@@ -104,9 +104,16 @@ export class SimulationsService {
   }
 
   async create(userId: string, data: TInitSimulation): Promise<Simulation> {
-    const scenario = await this.scenariosService.create(userId, data.scenario, data.millesime)
-
     let epciGroupId = data.epciGroupId
+
+    if (epciGroupId) {
+      const hasAccess = await this.epciGroupsService.hasUserAccessTo(epciGroupId, userId)
+      if (!hasAccess) {
+        throw new ForbiddenException()
+      }
+    }
+
+    const scenario = await this.scenariosService.create(userId, data.scenario, data.millesime)
 
     if (data.epciGroupName && !epciGroupId) {
       const epciGroup = await this.epciGroupsService.create(userId, {
