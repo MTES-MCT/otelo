@@ -1,4 +1,5 @@
 import { AuthenticatedBreadcrumb } from '~/components/breadcrumbs/authenticated-breadcrumb'
+import { CreationPreview } from '~/components/simulations/preview/creation-preview'
 import DemographicSettingsSimulationSideMenu from '~/components/simulations/settings/demographic-settings-simulation-side-menu'
 import { DemographicSettingsSimulationStepper } from '~/components/simulations/settings/demographic-settings-simulation-stepper'
 import { SelectMillesimeModal } from '~/components/simulations/settings/select-millesime-modal'
@@ -23,6 +24,7 @@ export default function CreateSimulationLayout({ children }: PageProps) {
               <SelectMillesimeModal />
               <DemographicSettingsSimulationStepper />
               {children}
+              <CreationPreview />
             </main>
           </div>
         </div>
