@@ -35,8 +35,8 @@ export class ResultsService {
         where: { epciGroupId, deleted: null },
         select: { id: true },
       })
-      const groupName = await this.prisma.epciGroup.findUnique({
-        where: { id: epciGroupId },
+      const groupName = await this.prisma.epciGroup.findFirst({
+        where: { id: epciGroupId, deleted: null },
         select: { name: true },
       })
       simulationIds = simulations.map((sim) => sim.id)
