@@ -10,6 +10,7 @@ import envRessources from '~/config/environment'
 import { CronModule } from '~/cron/cron.module'
 import { PrismaModule } from '~/db/prisma.module'
 import { ExportExcelModule } from '~/export-excel/export-excel.module'
+import { PreviewModule } from '~/preview/preview.module'
 import { ResultsModule } from '~/results/results.module'
 import { AccommodationRatesModule } from './accommodation-rates/accommodation-rates.module'
 import { AdminModule } from './admin/admin.module'
@@ -64,6 +65,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     ShareLinksModule,
     CalculationModule,
     ResultsModule,
+    PreviewModule,
     DemographicEvolutionModule,
     DemographicEvolutionCustomModule,
     AccommodationRatesModule,

@@ -1,7 +1,7 @@
 import { ZCommonDateFields, ZEpci } from '@shared'
 import { z } from 'zod'
 import { ZResults } from '~/schemas/results/results'
-import { ZScenario } from '~/schemas/scenarios/scenario'
+import { ZEpciScenario, ZScenario } from '~/schemas/scenarios/scenario'
 
 export const ZSimulation = ZCommonDateFields.extend({
   datasourceId: z.string(),
@@ -67,3 +67,36 @@ export const ZGroupedSimulationWithResults = z.object({
   simulations: z.record(z.string(), ZSimulationWithResults),
 })
 export type TGroupedSimulationWithResults = z.infer<typeof ZGroupedSimulationWithResults>
+
+// Lenient scenario schema for preview endpoint — numeric fields may arrive as strings (e.g. via URL query state).
+const ZPreviewScenario = ZScenario.partial().extend({
+  b1_horizon_resorption: z.coerce.number().optional(),
+  b11_part_etablissement: z.coerce.number().optional(),
+  b12_cohab_interg_subie: z.coerce.number().optional(),
+  b13_taux_effort: z.coerce.number().optional(),
+  b13_taux_reallocation: z.coerce.number().optional(),
+  b14_taux_reallocation: z.coerce.number().optional(),
+  b15_taux_reallocation: z.coerce.number().optional(),
+  projection: z.coerce.number().optional(),
+})
+
+const ZPreviewEpciScenario = ZEpciScenario.partial().extend({
+  b2_tx_disparition: z.coerce.number().optional(),
+  b2_tx_restructuration: z.coerce.number().optional(),
+  b2_tx_rs: z.coerce.number().optional(),
+  b2_tx_vacance: z.coerce.number().optional(),
+  b2_tx_vacance_courte: z.coerce.number().optional(),
+  b2_tx_vacance_longue: z.coerce.number().optional(),
+})
+
+export const ZPreviewSimulationDto = z
+  .object({
+    simulationId: z.string().optional(),
+    epcis: z.array(z.string()).optional(),
+    scenario: ZPreviewScenario.optional(),
+    epciScenarios: z.record(z.string(), ZPreviewEpciScenario).optional(),
+  })
+  .refine((d) => d.simulationId || (d.epcis && d.epcis.length > 0), {
+    message: 'simulationId ou au moins un EPCI doit être fourni',
+  })
+export type TPreviewSimulationDto = z.infer<typeof ZPreviewSimulationDto>

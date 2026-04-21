@@ -39,7 +39,7 @@ export class SimulationsController {
   })
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getSimulation(@User() user: TUser, @Param('id') id: string) {
+  async getSimulation(@Param('id') id: string) {
     return this.simulationsService.get(id)
   }
 
