@@ -38,8 +38,9 @@ export const ZSimulationWithEpci = ZSimulation.pick({
 export type TSimulationWithEpci = z.infer<typeof ZSimulationWithEpci>
 
 export const ZSimulationDashboardSummary = z.object({
-  constructionsNeuves: z.number(),
-  logementsRemobilises: z.number(),
+  total: z.number(),
+  vacantAccomodation: z.number(),
+  secondaryAccommodation: z.number(),
   renewalNeeds: z.number(),
   populationAtProjection: z.number(),
   householdsAtProjection: z.number(),

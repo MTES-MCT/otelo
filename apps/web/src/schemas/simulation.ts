@@ -30,8 +30,9 @@ export const ZSimulationWithRelations = ZSimulation.pick({
 export type TSimulationWithRelations = z.infer<typeof ZSimulationWithRelations>
 
 export const ZSimulationDashboardSummary = z.object({
-  constructionsNeuves: z.number(),
-  logementsRemobilises: z.number(),
+  total: z.number(),
+  vacantAccomodation: z.number(),
+  secondaryAccommodation: z.number(),
   renewalNeeds: z.number(),
   populationAtProjection: z.number(),
   householdsAtProjection: z.number(),
@@ -41,7 +42,7 @@ export const ZSimulationDashboardSummary = z.object({
 export type TSimulationDashboardSummary = z.infer<typeof ZSimulationDashboardSummary>
 
 export const ZSimulationDashboardItem = ZSimulationWithRelations.extend({
-  scenario: ZScenario.pick({ b2_scenario: true, projection: true, millesime: true }).extend({
+  scenario: ZScenario.pick({ b2_scenario: true, projection: true, millesime: true, b1_horizon_resorption: true }).extend({
     epciScenarios: z.array(ZEpciScenario.pick({ epciCode: true, b2_tx_rs: true, b2_tx_vacance: true })),
   }),
   summary: ZSimulationDashboardSummary.nullable(),

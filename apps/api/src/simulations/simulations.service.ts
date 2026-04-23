@@ -1,6 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common'
 import { TEpci } from '@shared'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
+import {
+  omphaleMap,
+  populationMap,
+} from '~/calculation/needs-calculation/besoins-flux/evolution-demographique-b21/demographic-evolution.service'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
 import { Simulation } from '~/generated/prisma/client'
@@ -14,27 +18,6 @@ import {
   TSimulationWithEpci,
   TSimulationWithEpciAndScenario,
 } from '~/schemas/simulations/simulation'
-
-type OmphaleColumn = 'centralB' | 'centralC' | 'centralH' | 'pbB' | 'pbC' | 'pbH' | 'phB' | 'phC' | 'phH'
-type PopulationColumn = 'central' | 'haute' | 'basse'
-
-const B2_TO_OMPHALE_COLUMN: Record<string, OmphaleColumn> = {
-  Central_B: 'centralB',
-  Central_C: 'centralC',
-  Central_H: 'centralH',
-  PB_B: 'pbB',
-  PB_C: 'pbC',
-  PB_H: 'pbH',
-  PH_B: 'phB',
-  PH_C: 'phC',
-  PH_H: 'phH',
-}
-
-const B2_POP_PART_TO_POP_COLUMN: Record<string, PopulationColumn> = {
-  Central: 'central',
-  PB: 'basse',
-  PH: 'haute',
-}
 
 interface CachedSimulationResultRow {
   simulationId: string
@@ -216,23 +199,27 @@ export class SimulationsService {
       where: { id: originalId, userId },
     })
 
-    const { userId: _, id, ...scenarioData } = originalSimulation.scenario
+    const { userId: _, id, millesime: originalMillesime, ...scenarioData } = originalSimulation.scenario
 
-    const clonedScenario = await this.scenariosService.create(userId, {
-      ...scenarioData,
-      epcis: originalSimulation.scenario.epciScenarios.reduce((acc, epciScenario) => {
-        acc[epciScenario.epciCode] = {
-          b2_tx_rs: epciScenario.b2_tx_rs,
-          b2_tx_vacance: epciScenario.b2_tx_vacance,
-          b2_tx_vacance_longue: epciScenario.b2_tx_vacance_longue,
-          b2_tx_vacance_courte: epciScenario.b2_tx_vacance_courte,
-          b2_tx_disparition: epciScenario.b2_tx_disparition,
-          b2_tx_restructuration: epciScenario.b2_tx_restructuration,
-          baseEpci: epciScenario.baseEpci,
-        }
-        return acc
-      }, {}),
-    })
+    const clonedScenario = await this.scenariosService.create(
+      userId,
+      {
+        ...scenarioData,
+        epcis: originalSimulation.scenario.epciScenarios.reduce((acc, epciScenario) => {
+          acc[epciScenario.epciCode] = {
+            b2_tx_rs: epciScenario.b2_tx_rs,
+            b2_tx_vacance: epciScenario.b2_tx_vacance,
+            b2_tx_vacance_longue: epciScenario.b2_tx_vacance_longue,
+            b2_tx_vacance_courte: epciScenario.b2_tx_vacance_courte,
+            b2_tx_disparition: epciScenario.b2_tx_disparition,
+            b2_tx_restructuration: epciScenario.b2_tx_restructuration,
+            baseEpci: epciScenario.baseEpci,
+          }
+          return acc
+        }, {}),
+      },
+      originalMillesime,
+    )
 
     return this.prismaService.simulation.create({
       data: {
@@ -330,6 +317,7 @@ export class SimulationsService {
             b2_scenario: true,
             projection: true,
             millesime: true,
+            b1_horizon_resorption: true,
             epciScenarios: {
               select: { epciCode: true, b2_tx_rs: true, b2_tx_vacance: true },
             },
@@ -517,21 +505,23 @@ export class SimulationsService {
   ): TSimulationDashboardSummary | null {
     if (!sim.scenario || resultsForSim.length === 0) return null
 
-    let constructionsNeuves = 0
-    let vacantSigned = 0
-    let secondarySigned = 0
-    let renewalSigned = 0
+    let total = 0
+    let vacantAccomodation = 0
+    let secondaryAccommodationSigned = 0
+    let renewalNeeds = 0
     let peakYearMax: number | null = null
 
     for (const row of resultsForSim) {
       if (row.total > 0) {
-        constructionsNeuves += row.total
-        vacantSigned += row.vacantAccomodation
-        secondarySigned += row.secondaryAccommodation
+        total += row.total
+        // Cache stores vacantAccomodation already display-ready (|v| if v<0 else 0, see results.service.ts:69).
+        vacantAccomodation += row.vacantAccomodation
+        // Cache stores secondaryAccommodation signed — aggregate signed, clamp once after the loop.
+        secondaryAccommodationSigned += row.secondaryAccommodation
       }
       const flowTotals = row.flowTotals as { renewalNeeds?: number } | null
       if (typeof flowTotals?.renewalNeeds === 'number') {
-        renewalSigned += Math.min(0, flowTotals.renewalNeeds)
+        renewalNeeds += Math.min(0, flowTotals.renewalNeeds)
       }
       const flowData = row.flowDataByYear as { peakYear?: number } | null
       if (typeof flowData?.peakYear === 'number') {
@@ -539,17 +529,16 @@ export class SimulationsService {
       }
     }
 
-    const vacants = vacantSigned < 0 ? Math.abs(vacantSigned) : 0
-    const secondaires = secondarySigned < 0 ? Math.abs(secondarySigned) : 0
-    const renewMobilized = Math.abs(renewalSigned)
+    // Mirror results page: show |sum| if sum is negative, else 0.
+    const secondaryAccommodation = secondaryAccommodationSigned < 0 ? Math.abs(secondaryAccommodationSigned) : 0
 
     const key = `${sim.scenario.millesime}__${sim.scenario.projection}`
     const omphaleByEpci = omphaleLookup.get(key) ?? {}
     const populationByEpci = populationLookup.get(key) ?? {}
 
     const b2 = sim.scenario.b2_scenario
-    const omphaleColumn = B2_TO_OMPHALE_COLUMN[b2]
-    const popColumn = B2_POP_PART_TO_POP_COLUMN[b2.split('_')[0]]
+    const omphaleColumn = omphaleMap[b2.toLowerCase() as keyof typeof omphaleMap]
+    const popColumn = populationMap[b2.split('_')[0].toLowerCase() as keyof typeof populationMap]
 
     let populationAtProjection = 0
     let householdsAtProjection = 0
@@ -559,9 +548,10 @@ export class SimulationsService {
     }
 
     return {
-      constructionsNeuves,
-      logementsRemobilises: vacants + secondaires + renewMobilized,
-      renewalNeeds: renewalSigned,
+      total,
+      vacantAccomodation,
+      secondaryAccommodation,
+      renewalNeeds,
       populationAtProjection,
       householdsAtProjection,
       peakYear: peakYearMax,

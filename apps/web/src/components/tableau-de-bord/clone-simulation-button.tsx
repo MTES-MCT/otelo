@@ -61,6 +61,14 @@ export function CloneSimulationButton({ simulation }: CloneSimulationButtonProps
     [simulation.name, sourceMillesime],
   )
 
+  const warmResultsCache = async (clonedId: string) => {
+    try {
+      await fetch(`/api/simulations/${clonedId}/results`, { method: 'GET' })
+    } catch {
+      // Cache-warming is best effort: dashboard values will show "—" until the user opens the scenario
+    }
+  }
+
   const handleCloneSimulation = () => {
     if (!cloneName.trim()) {
       toast.error('Le nom est requis')
@@ -75,7 +83,8 @@ export function CloneSimulationButton({ simulation }: CloneSimulationButtonProps
           data: { millesime: selectedMillesime, name: cloneName.trim() },
         },
         {
-          onSuccess: () => {
+          onSuccess: async (cloned: { id: string }) => {
+            await warmResultsCache(cloned.id)
             modalActions.close()
             toast.success('Scénario actualisé avec succès.', {
               description: `Le scénario "${cloneName}" a été créé avec le millésime ${selectedMillesime}.`,
@@ -98,7 +107,8 @@ export function CloneSimulationButton({ simulation }: CloneSimulationButtonProps
           data: { name: cloneName.trim() },
         },
         {
-          onSuccess: () => {
+          onSuccess: async (cloned: { id: string }) => {
+            await warmResultsCache(cloned.id)
             modalActions.close()
             toast.success('Scénario cloné avec succès.', {
               description: `Le scénario "${cloneName}" a été créé à partir de "${simulation.name}".`,

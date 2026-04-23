@@ -22,6 +22,12 @@ export const omphaleMap = {
   ph_h: EOmphale.PH_H,
 }
 
+export const populationMap = {
+  central: 'central',
+  pb: 'basse',
+  ph: 'haute',
+} as const
+
 @Injectable()
 export class DemographicEvolutionService {
   constructor(

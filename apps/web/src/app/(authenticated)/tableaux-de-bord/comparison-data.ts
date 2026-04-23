@@ -47,11 +47,11 @@ export function buildComparisonRows(
   }
 
   const constructionsNeuvesValue: ComparisonValue = summary
-    ? { kind: 'text', text: `${formatNumber(summary.constructionsNeuves)} logements neufs` }
+    ? { kind: 'text', text: `${formatNumber(summary.total)} logements neufs` }
     : dash
 
   const logementsRemobilisesValue: ComparisonValue = summary
-    ? { kind: 'text', text: `${formatNumber(summary.logementsRemobilises)} logements` }
+    ? { kind: 'text', text: `${formatNumber(summary.vacantAccomodation + summary.secondaryAccommodation)} logements` }
     : dash
 
   const populationValue: ComparisonValue = summary
@@ -74,9 +74,14 @@ export function buildComparisonRows(
     return { kind: 'text', text: `${formatNumber(Math.abs(n))} logements` }
   })()
 
+  const resorptionValue: ComparisonValue = scenario.b1_horizon_resorption
+    ? { kind: 'text', text: String(scenario.b1_horizon_resorption) }
+    : dash
+
   return [
     { label: 'Constructions neuves', value: constructionsNeuvesValue, variant: 'light' },
     { label: 'Logements existants remobilisés', value: logementsRemobilisesValue, variant: 'light' },
+    { label: 'Renouvellement urbain', value: renewalValue, variant: 'light' },
     {
       label: 'Projection de population',
       badge: getPopulationBadge(scenario.b2_scenario),
@@ -99,7 +104,7 @@ export function buildComparisonRows(
       value: buildRateValue((e) => e.b2_tx_rs, rsValues),
       variant: 'default',
     },
-    { label: 'Renouvellement urbain', value: renewalValue, variant: 'default' },
+    { label: 'Résorption mal-logement', value: resorptionValue, variant: 'default' },
     { label: 'Pic de ménages', value: peakYearValue, variant: 'default' },
   ]
 }
