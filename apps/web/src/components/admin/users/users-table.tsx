@@ -50,14 +50,12 @@ const UserRowActions: FC<UserRowActionsProps> = ({ user, onDelete, onImpersonate
   return (
     <>
       <div className={styles.actions}>
-        {user.role === 'USER' && (
-          <i
-            style={{ cursor: 'pointer' }}
-            onClick={() => onImpersonate(user.id)}
-            className="ri-user-follow-line"
-            title="Usurper cet utilisateur"
-          />
-        )}
+        <i
+          style={{ cursor: 'pointer' }}
+          onClick={() => onImpersonate(user.id)}
+          className="ri-user-follow-line"
+          title="Usurper cet utilisateur"
+        />
         <i style={{ cursor: 'pointer' }} onClick={modalActions.open} className="ri-delete-bin-5-fill" />
       </div>
       <modalActions.Component title="Êtes vous sûr de vouloir supprimer cet utilisateur ?">
