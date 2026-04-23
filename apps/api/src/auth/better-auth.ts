@@ -18,6 +18,13 @@ const prisma = new PrismaClient({ adapter })
 const PROCONNECT_ISSUER = process.env.OAUTH_PROCONNECT_ISSUER || ''
 
 export async function sendBrevoTemplatedEmail(templateId: string, params: Record<string, string>, to: string, subject: string) {
+  // Guard: never send real emails outside production unless explicitly opted in.
+  // Set EMAIL_ENABLED=true to force real sending in dev (e.g. to test a template).
+  if (process.env.NODE_ENV !== 'production' && process.env.EMAIL_ENABLED !== 'true') {
+    console.log(`[Brevo:skipped] templateId=${templateId} to=${to} subject="${subject}" params=${JSON.stringify(params)}`)
+    return
+  }
+
   const response = await fetch(process.env.BREVO_API_URL!, {
     method: 'POST',
     headers: {
