@@ -54,6 +54,7 @@ export class RecalculateResultsCommand {
           simulation.scenario.projection,
         )
         this.calculationContext.coefficient = coefficient
+        this.calculationContext.baseYear = Number(simulation.scenario.millesime)
         this.calculationContext.millesime = simulation.scenario.millesime
 
         const results = await this.needsCalculationService.calculate(simulation)
