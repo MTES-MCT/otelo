@@ -1,4 +1,3 @@
-import Button from '@codegouvfr/react-dsfr/Button'
 import { Tooltip } from '@codegouvfr/react-dsfr/Tooltip'
 import classNames from 'classnames'
 import dayjs from 'dayjs'
@@ -6,6 +5,7 @@ import Link from 'next/link'
 import { TSimulationWithRelations } from '~/schemas/simulation'
 import { CloneSimulationButton } from './clone-simulation-button'
 import { DeleteSimulationButton } from './delete-simulation-button'
+import { RenameSimulationButton } from './rename-simulation-button'
 import styles from './scenario-card.module.css'
 
 interface ScenarioCardProps {
@@ -25,13 +25,7 @@ export function ScenarioCard({ simulation, isExpanded }: ScenarioCardProps) {
           </Tooltip>
         </div>
         <div className={styles.actions}>
-          <Button
-            iconId="ri-pencil-line"
-            priority="tertiary no outline"
-            title="Modifier ce scénario"
-            size="small"
-            linkProps={{ href: resultsHref }}
-          />
+          <RenameSimulationButton simulation={simulation} />
           <CloneSimulationButton simulation={simulation} />
           <DeleteSimulationButton simulation={simulation} />
         </div>

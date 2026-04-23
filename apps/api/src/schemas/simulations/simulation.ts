@@ -37,6 +37,26 @@ export const ZSimulationWithEpci = ZSimulation.pick({
 
 export type TSimulationWithEpci = z.infer<typeof ZSimulationWithEpci>
 
+export const ZSimulationDashboardSummary = z.object({
+  constructionsNeuves: z.number(),
+  logementsRemobilises: z.number(),
+  renewalNeeds: z.number(),
+  populationAtProjection: z.number(),
+  householdsAtProjection: z.number(),
+  peakYear: z.number().nullable(),
+})
+
+export type TSimulationDashboardSummary = z.infer<typeof ZSimulationDashboardSummary>
+
+export const ZSimulationDashboardItem = ZSimulationWithEpci.extend({
+  scenario: ZScenario.pick({ b2_scenario: true, projection: true, millesime: true }).extend({
+    epciScenarios: z.array(ZEpciScenario.pick({ epciCode: true, b2_tx_rs: true, b2_tx_vacance: true })),
+  }),
+  summary: ZSimulationDashboardSummary.nullable(),
+})
+
+export type TSimulationDashboardItem = z.infer<typeof ZSimulationDashboardItem>
+
 export const ZSimulationWithEpciAndScenario = ZSimulationWithEpci.extend({
   scenario: ZScenario,
 })
@@ -61,6 +81,12 @@ export const ZActualizeSimulationDto = z.object({
 })
 
 export type TActualizeSimulationDto = z.infer<typeof ZActualizeSimulationDto>
+
+export const ZRenameSimulationDto = z.object({
+  name: z.string().min(1, 'Le nom est requis').max(100, 'Le nom ne doit pas dépasser 100 caractères'),
+})
+
+export type TRenameSimulationDto = z.infer<typeof ZRenameSimulationDto>
 
 export const ZGroupedSimulationWithResults = z.object({
   name: z.string(),
