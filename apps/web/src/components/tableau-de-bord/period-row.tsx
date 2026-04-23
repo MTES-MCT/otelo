@@ -3,22 +3,23 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
 import React, { useState } from 'react'
-import { COMPARISON_ROWS } from '~/app/(authenticated)/tableaux-de-bord/comparison-data'
-import { TSimulationWithRelations } from '~/schemas/simulation'
+import { buildComparisonRows, ComparisonRow } from '~/app/(authenticated)/tableaux-de-bord/comparison-data'
+import { TSimulationDashboardItem } from '~/schemas/simulation'
 import styles from './period-row.module.css'
+import { RateByEpciSelect } from './rate-by-epci-select'
 import { ScenarioCard } from './scenario-card'
 
 interface PeriodRowProps {
   millesime: string
   projection: number
-  simulations: TSimulationWithRelations[]
+  simulations: TSimulationDashboardItem[]
   epciGroupId: string
   epcis: { code: string; name: string }[]
 }
 
 const ITEMS_PER_PAGE = 3
 
-type Slot = { kind: 'sim'; sim: TSimulationWithRelations } | { kind: 'add' } | { kind: 'empty' }
+type Slot = { kind: 'sim'; sim: TSimulationDashboardItem; simIndex: number } | { kind: 'add' } | { kind: 'empty' }
 
 export function PeriodRow({ millesime, projection, simulations, epciGroupId, epcis }: PeriodRowProps) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -26,7 +27,10 @@ export function PeriodRow({ millesime, projection, simulations, epciGroupId, epc
 
   const addHref = `/simulation/parametrages-demographique?epciGroupId=${epciGroupId}&epcis=${epcis.map((e) => e.code).join(',')}&projection=${projection}`
 
-  const items: Slot[] = [...simulations.map((sim) => ({ kind: 'sim' as const, sim })), { kind: 'add' as const }]
+  const rowsPerSim: ComparisonRow[][] = simulations.map((sim) => buildComparisonRows(sim, { projection, epcis }))
+  const rowCount = rowsPerSim[0]?.length ?? 0
+
+  const items: Slot[] = [...simulations.map((sim, simIndex) => ({ kind: 'sim' as const, sim, simIndex })), { kind: 'add' as const }]
   const totalPages = Math.max(1, items.length - ITEMS_PER_PAGE + 1)
   const pageStart = currentPage
   const windowItems = items.slice(pageStart, pageStart + ITEMS_PER_PAGE)
@@ -77,25 +81,31 @@ export function PeriodRow({ millesime, projection, simulations, epciGroupId, epc
 
       {isExpanded && (
         <>
-          {COMPARISON_ROWS.map((row, rowIndex) => {
-            const variantClass = row.variant === 'light' ? styles.comparisonValueLight : styles.comparisonValueDefault
+          {Array.from({ length: rowCount }).map((_, rowIndex) => {
+            const firstRow = rowsPerSim.find((rows) => rows[rowIndex])?.[rowIndex]
+            if (!firstRow) return null
+            const variantClass = firstRow.variant === 'light' ? styles.comparisonValueLight : styles.comparisonValueDefault
             return (
               <React.Fragment key={`row-${rowIndex}`}>
                 <div className={styles.comparisonLabel}>
-                  <span className="fr-text--sm fr-mb-0 fr-text--medium">{row.label}</span>
+                  <span className="fr-text--sm fr-mb-0 fr-text--medium">{firstRow.label}</span>
                 </div>
                 <div className={styles.valuesGrid}>
                   {visibleSlots.map((slot, colIndex) => {
                     const isSim = slot.kind === 'sim'
+                    const row = isSim ? rowsPerSim[slot.simIndex]?.[rowIndex] : null
                     return (
                       <div
                         key={`val-${rowIndex}-${colIndex}`}
                         className={classNames(styles.comparisonValue, isSim && variantClass, isSim && styles.comparisonValueFilled)}
                       >
-                        {isSim && (
+                        {isSim && row && (
                           <>
                             {row.badge && <span className={styles.comparisonBadge}>{row.badge}</span>}
-                            <span className={classNames(!row.badge && 'fr-text--bold', 'fr-text--sm fr-mb-0')}>{row.value}</span>
+                            {row.value.kind === 'text' && (
+                              <span className={classNames(!row.badge && 'fr-text--bold', 'fr-text--sm fr-mb-0')}>{row.value.text}</span>
+                            )}
+                            {row.value.kind === 'byEpci' && <RateByEpciSelect entries={row.value.entries} />}
                           </>
                         )}
                       </div>

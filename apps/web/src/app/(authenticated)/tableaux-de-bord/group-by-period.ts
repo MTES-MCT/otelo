@@ -1,13 +1,13 @@
-import { TSimulationWithRelations } from '~/schemas/simulation'
+import { TSimulationDashboardItem } from '~/schemas/simulation'
 
 export interface PeriodGroup {
   periodKey: string
   millesime: string
   projection: number
-  simulations: TSimulationWithRelations[]
+  simulations: TSimulationDashboardItem[]
 }
 
-export function groupByPeriod(simulations: TSimulationWithRelations[]): PeriodGroup[] {
+export function groupByPeriod(simulations: TSimulationDashboardItem[]): PeriodGroup[] {
   const map = new Map<string, PeriodGroup>()
 
   for (const simulation of simulations) {

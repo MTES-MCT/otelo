@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Prisma, Role } from '~/generated/prisma/client'
 import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
-import { TActualizeSimulationDto, TCloneSimulationDto } from '~/schemas/simulations/simulation'
+import { TActualizeSimulationDto, TCloneSimulationDto, TRenameSimulationDto } from '~/schemas/simulations/simulation'
 import { TUser } from '~/schemas/users/user'
 import { SimulationsService } from '~/simulations/simulations.service'
 
@@ -61,6 +61,17 @@ export class SimulationsController {
   @HttpCode(HttpStatus.ACCEPTED)
   async updateSimulation(@Param('id') id: string, @Body() data: TUpdateSimulationDto) {
     return this.simulationsService.update(id, data)
+  }
+
+  @AccessControl({
+    entity: Prisma.ModelName.Simulation,
+    paramName: 'id',
+    roles: [Role.ADMIN, Role.USER],
+  })
+  @Patch(':id/name')
+  @HttpCode(HttpStatus.OK)
+  async renameSimulation(@Param('id') id: string, @Body() data: TRenameSimulationDto, @User() { id: userId }: TUser) {
+    return this.simulationsService.rename(userId, id, data.name)
   }
 
   @AccessControl({
