@@ -7,6 +7,8 @@ import { groupByPeriod } from './group-by-period'
 import { NoResults } from './no-results'
 import styles from './tableaux-de-bord.module.css'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Vos études Otelo',
 }
