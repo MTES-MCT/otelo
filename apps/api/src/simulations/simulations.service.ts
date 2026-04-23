@@ -1,13 +1,33 @@
 import { ForbiddenException, Injectable } from '@nestjs/common'
 import { TEpci } from '@shared'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
+import {
+  omphaleMap,
+  populationMap,
+} from '~/calculation/needs-calculation/besoins-flux/evolution-demographique-b21/demographic-evolution.service'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
 import { Simulation } from '~/generated/prisma/client'
 import { ScenariosService } from '~/scenarios/scenarios.service'
 import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
-import { TCloneSimulationDto, TSimulationWithEpci, TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'
+import {
+  TCloneSimulationDto,
+  TSimulationDashboardItem,
+  TSimulationDashboardSummary,
+  TSimulationWithEpci,
+  TSimulationWithEpciAndScenario,
+} from '~/schemas/simulations/simulation'
+
+interface CachedSimulationResultRow {
+  simulationId: string
+  epciCode: string
+  total: number
+  vacantAccomodation: number
+  secondaryAccommodation: number
+  flowTotals: unknown
+  flowDataByYear: unknown
+}
 @Injectable()
 export class SimulationsService {
   constructor(
@@ -141,6 +161,13 @@ export class SimulationsService {
     return this.get(id)
   }
 
+  async rename(userId: string, id: string, name: string): Promise<Simulation> {
+    return this.prismaService.simulation.update({
+      where: { id, userId },
+      data: { name },
+    })
+  }
+
   async delete(userId: string, id: string): Promise<Simulation> {
     const simulation = await this.prismaService.simulation.update({
       where: { id, userId },
@@ -172,23 +199,27 @@ export class SimulationsService {
       where: { id: originalId, userId },
     })
 
-    const { userId: _, id, ...scenarioData } = originalSimulation.scenario
+    const { userId: _, id, millesime: originalMillesime, ...scenarioData } = originalSimulation.scenario
 
-    const clonedScenario = await this.scenariosService.create(userId, {
-      ...scenarioData,
-      epcis: originalSimulation.scenario.epciScenarios.reduce((acc, epciScenario) => {
-        acc[epciScenario.epciCode] = {
-          b2_tx_rs: epciScenario.b2_tx_rs,
-          b2_tx_vacance: epciScenario.b2_tx_vacance,
-          b2_tx_vacance_longue: epciScenario.b2_tx_vacance_longue,
-          b2_tx_vacance_courte: epciScenario.b2_tx_vacance_courte,
-          b2_tx_disparition: epciScenario.b2_tx_disparition,
-          b2_tx_restructuration: epciScenario.b2_tx_restructuration,
-          baseEpci: epciScenario.baseEpci,
-        }
-        return acc
-      }, {}),
-    })
+    const clonedScenario = await this.scenariosService.create(
+      userId,
+      {
+        ...scenarioData,
+        epcis: originalSimulation.scenario.epciScenarios.reduce((acc, epciScenario) => {
+          acc[epciScenario.epciCode] = {
+            b2_tx_rs: epciScenario.b2_tx_rs,
+            b2_tx_vacance: epciScenario.b2_tx_vacance,
+            b2_tx_vacance_longue: epciScenario.b2_tx_vacance_longue,
+            b2_tx_vacance_courte: epciScenario.b2_tx_vacance_courte,
+            b2_tx_disparition: epciScenario.b2_tx_disparition,
+            b2_tx_restructuration: epciScenario.b2_tx_restructuration,
+            baseEpci: epciScenario.baseEpci,
+          }
+          return acc
+        }, {}),
+      },
+      originalMillesime,
+    )
 
     return this.prismaService.simulation.create({
       data: {
@@ -264,53 +295,267 @@ export class SimulationsService {
 
   /**
    * Gets the list of simulations for a user and groups them by their epciGroup ID.
+   * Each simulation is enriched with a dashboard summary (constructions neuves,
+   * logements remobilisés, population/ménages à projection, pic des ménages) read
+   * from the cached SimulationResults rows populated by the Synthèse des besoins page.
    */
-  async getDashboardList(userId: string) {
-    const simulations = await this.list(userId)
+  async getDashboardList(userId: string): Promise<
+    Array<{
+      id: string
+      name: string
+      simulations: TSimulationDashboardItem[]
+      epcis: Omit<TEpci, 'region'>[]
+    }>
+  > {
+    const rawSimulations = await this.prismaService.simulation.findMany({
+      select: {
+        createdAt: true,
+        name: true,
+        epcis: { select: { code: true, name: true, bassinName: true } },
+        scenario: {
+          select: {
+            b2_scenario: true,
+            projection: true,
+            millesime: true,
+            b1_horizon_resorption: true,
+            epciScenarios: {
+              select: { epciCode: true, b2_tx_rs: true, b2_tx_vacance: true },
+            },
+          },
+        },
+        id: true,
+        updatedAt: true,
+        userId: true,
+        epciGroup: { select: { id: true, name: true } },
+      },
+      where: { userId, deleted: null },
+      orderBy: { updatedAt: 'desc' },
+    })
 
-    // Group simulations by their epciGroup ID
+    const simulationIds = rawSimulations.map((s) => s.id)
+
+    const [cachedResults, omphaleLookup, populationLookup] = await Promise.all([
+      this.loadCachedSimulationResults(simulationIds),
+      this.loadOmphaleByProjection(rawSimulations),
+      this.loadPopulationByProjection(rawSimulations),
+    ])
+
+    const enrichedSimulations: TSimulationDashboardItem[] = rawSimulations.map((sim) => {
+      const resultsForSim = cachedResults.get(sim.id) ?? []
+      const summary = this.buildDashboardSummary(sim, resultsForSim, omphaleLookup, populationLookup)
+      return {
+        createdAt: sim.createdAt,
+        id: sim.id,
+        name: sim.name,
+        updatedAt: sim.updatedAt,
+        userId: sim.userId,
+        epcis: sim.epcis,
+        scenario: sim.scenario,
+        epciGroup: sim.epciGroup || undefined,
+        summary,
+      }
+    })
+
     const groupedSimulations: Array<{
       id: string
       name: string
-      simulations: TSimulationWithEpci[]
+      simulations: TSimulationDashboardItem[]
       epcis: Omit<TEpci, 'region'>[]
     }> = []
 
-    // First, group by epciGroup ID or 'autres' for ungrouped
-    const simulationsByGroupId: Record<string, TSimulationWithEpci[]> = {}
+    const simulationsByGroupId: Record<string, TSimulationDashboardItem[]> = {}
 
-    simulations.forEach((simulation) => {
+    enrichedSimulations.forEach((simulation) => {
       const groupId = simulation.epciGroup?.id || 'autres'
       simulationsByGroupId[groupId] = simulationsByGroupId[groupId] || []
       simulationsByGroupId[groupId].push(simulation)
     })
 
-    // Convert to array format with proper structure
     Object.entries(simulationsByGroupId).forEach(([groupId, sims]) => {
-      // Collect all EPCI codes from all simulations in this group and deduplicate
       const allEpcis = sims.flatMap((sim) => sim.epcis)
       const uniqueEpcis = Array.from(new Map(allEpcis.map((epci) => [epci.code, epci])).values())
 
       if (groupId === 'autres') {
-        groupedSimulations.push({
-          id: 'autres',
-          name: 'Autres',
-          simulations: sims,
-          epcis: uniqueEpcis,
-        })
+        groupedSimulations.push({ id: 'autres', name: 'Autres', simulations: sims, epcis: uniqueEpcis })
       } else {
-        // Get the group name from any simulation in this group
         const groupName = sims[0].epciGroup?.name || 'Unknown'
-        groupedSimulations.push({
-          id: groupId,
-          name: groupName,
-          simulations: sims,
-          epcis: uniqueEpcis,
-        })
+        groupedSimulations.push({ id: groupId, name: groupName, simulations: sims, epcis: uniqueEpcis })
       }
     })
 
     return groupedSimulations
+  }
+
+  private async loadCachedSimulationResults(simulationIds: string[]) {
+    if (simulationIds.length === 0) return new Map<string, Array<CachedSimulationResultRow>>()
+
+    const rows = await this.prismaService.simulationResults.findMany({
+      where: { simulationId: { in: simulationIds } },
+      select: {
+        simulationId: true,
+        epciCode: true,
+        total: true,
+        vacantAccomodation: true,
+        secondaryAccommodation: true,
+        flowTotals: true,
+        flowDataByYear: true,
+      },
+    })
+
+    const map = new Map<string, Array<CachedSimulationResultRow>>()
+    for (const row of rows) {
+      const list = map.get(row.simulationId) ?? []
+      list.push(row as CachedSimulationResultRow)
+      map.set(row.simulationId, list)
+    }
+    return map
+  }
+
+  private async loadOmphaleByProjection(
+    simulations: Array<{ scenario: { millesime: string; projection: number } | null; epcis: Array<{ code: string }> }>,
+  ): Promise<Map<string, Record<string, Record<string, number>>>> {
+    const grouped = this.groupEpcisByProjectionKey(simulations)
+    const result = new Map<string, Record<string, Record<string, number>>>()
+
+    await Promise.all(
+      Array.from(grouped.entries()).map(async ([key, { millesime, year, epciCodes }]) => {
+        if (epciCodes.length === 0) {
+          result.set(key, {})
+          return
+        }
+        const rows = await this.prismaService.demographicEvolutionOmphale.findMany({
+          where: { epciCode: { in: epciCodes }, year, millesime },
+          select: {
+            epciCode: true,
+            centralB: true,
+            centralC: true,
+            centralH: true,
+            pbB: true,
+            pbC: true,
+            pbH: true,
+            phB: true,
+            phC: true,
+            phH: true,
+          },
+        })
+        const byEpci: Record<string, Record<string, number>> = {}
+        for (const r of rows) {
+          const { epciCode, ...values } = r
+          byEpci[epciCode] = values
+        }
+        result.set(key, byEpci)
+      }),
+    )
+
+    return result
+  }
+
+  private async loadPopulationByProjection(
+    simulations: Array<{ scenario: { millesime: string; projection: number } | null; epcis: Array<{ code: string }> }>,
+  ): Promise<Map<string, Record<string, { central: number; haute: number; basse: number }>>> {
+    const grouped = this.groupEpcisByProjectionKey(simulations)
+    const result = new Map<string, Record<string, { central: number; haute: number; basse: number }>>()
+
+    await Promise.all(
+      Array.from(grouped.entries()).map(async ([key, { millesime, year, epciCodes }]) => {
+        if (epciCodes.length === 0) {
+          result.set(key, {})
+          return
+        }
+        const rows = await this.prismaService.demographicEvolutionPopulation.findMany({
+          where: { epciCode: { in: epciCodes }, year, millesime },
+          select: { epciCode: true, central: true, haute: true, basse: true },
+        })
+        const byEpci: Record<string, { central: number; haute: number; basse: number }> = {}
+        for (const r of rows) {
+          byEpci[r.epciCode] = { central: r.central, haute: r.haute, basse: r.basse }
+        }
+        result.set(key, byEpci)
+      }),
+    )
+
+    return result
+  }
+
+  private groupEpcisByProjectionKey(
+    simulations: Array<{ scenario: { millesime: string; projection: number } | null; epcis: Array<{ code: string }> }>,
+  ) {
+    const grouped = new Map<string, { millesime: string; year: number; epciCodes: string[] }>()
+    for (const sim of simulations) {
+      if (!sim.scenario) continue
+      const { millesime, projection } = sim.scenario
+      const key = `${millesime}__${projection}`
+      const existing = grouped.get(key) ?? { millesime, year: projection, epciCodes: [] }
+      for (const epci of sim.epcis) {
+        if (!existing.epciCodes.includes(epci.code)) existing.epciCodes.push(epci.code)
+      }
+      grouped.set(key, existing)
+    }
+    return grouped
+  }
+
+  private buildDashboardSummary(
+    sim: {
+      scenario: { b2_scenario: string; millesime: string; projection: number } | null
+      epcis: Array<{ code: string }>
+    },
+    resultsForSim: Array<CachedSimulationResultRow>,
+    omphaleLookup: Map<string, Record<string, Record<string, number>>>,
+    populationLookup: Map<string, Record<string, { central: number; haute: number; basse: number }>>,
+  ): TSimulationDashboardSummary | null {
+    if (!sim.scenario || resultsForSim.length === 0) return null
+
+    let total = 0
+    let vacantAccomodation = 0
+    let secondaryAccommodationSigned = 0
+    let renewalNeeds = 0
+    let peakYearMax: number | null = null
+
+    for (const row of resultsForSim) {
+      if (row.total > 0) {
+        total += row.total
+        // Cache stores vacantAccomodation already display-ready (|v| if v<0 else 0, see results.service.ts:69).
+        vacantAccomodation += row.vacantAccomodation
+        // Cache stores secondaryAccommodation signed — aggregate signed, clamp once after the loop.
+        secondaryAccommodationSigned += row.secondaryAccommodation
+      }
+      const flowTotals = row.flowTotals as { renewalNeeds?: number } | null
+      if (typeof flowTotals?.renewalNeeds === 'number') {
+        renewalNeeds += Math.min(0, flowTotals.renewalNeeds)
+      }
+      const flowData = row.flowDataByYear as { peakYear?: number } | null
+      if (typeof flowData?.peakYear === 'number') {
+        peakYearMax = peakYearMax === null ? flowData.peakYear : Math.max(peakYearMax, flowData.peakYear)
+      }
+    }
+
+    // Mirror results page: show |sum| if sum is negative, else 0.
+    const secondaryAccommodation = secondaryAccommodationSigned < 0 ? Math.abs(secondaryAccommodationSigned) : 0
+
+    const key = `${sim.scenario.millesime}__${sim.scenario.projection}`
+    const omphaleByEpci = omphaleLookup.get(key) ?? {}
+    const populationByEpci = populationLookup.get(key) ?? {}
+
+    const b2 = sim.scenario.b2_scenario
+    const omphaleColumn = omphaleMap[b2.toLowerCase() as keyof typeof omphaleMap]
+    const popColumn = populationMap[b2.split('_')[0].toLowerCase() as keyof typeof populationMap]
+
+    let populationAtProjection = 0
+    let householdsAtProjection = 0
+    for (const epci of sim.epcis) {
+      if (popColumn) populationAtProjection += Math.round(populationByEpci[epci.code]?.[popColumn] ?? 0)
+      if (omphaleColumn) householdsAtProjection += Math.round(omphaleByEpci[epci.code]?.[omphaleColumn] ?? 0)
+    }
+
+    return {
+      total,
+      vacantAccomodation,
+      secondaryAccommodation,
+      renewalNeeds,
+      populationAtProjection,
+      householdsAtProjection,
+      peakYear: peakYearMax,
+    }
   }
 
   async markAsExported(simulationIds: string[], privilegedSimulationId?: string): Promise<void> {

@@ -1,0 +1,65 @@
+.card {
+  background: var(--background-default-grey);
+  padding: 0rem 1rem;
+  min-height: 108px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 18, 0.08);
+}
+
+.cardExpanded {
+  justify-content: flex-start;
+  gap: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scenarioNameWrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.scenarioName {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.dateText {
+  font-size: 0.75rem;
+  color: var(--text-mention-grey);
+  margin: 0;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.viewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--text-label-blue-france);
+}
+
+.arrowIcon::before {
+  --icon-size: 1rem;
+}
