@@ -50,6 +50,7 @@ describe('SimulationsService', () => {
         projection: 2030,
         b1_horizon_resorption: 10,
         b11_part_etablissement: 0.5,
+        millesime: '2022',
         epciScenarios: [
           {
             epciCode: 'EPCI001',
@@ -110,6 +111,7 @@ describe('SimulationsService', () => {
           b1_horizon_resorption: mockOriginalSimulation.scenario.b1_horizon_resorption,
           epcis: expect.any(Object),
         }),
+        mockOriginalSimulation.scenario.millesime,
       )
       expect(mockPrismaService.simulation.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -152,6 +154,7 @@ describe('SimulationsService', () => {
         expect.objectContaining({
           epcis: {},
         }),
+        mockOriginalSimulation.scenario.millesime,
       )
     })
 
