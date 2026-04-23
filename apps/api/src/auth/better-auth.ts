@@ -120,6 +120,7 @@ export const auth = betterAuth({
       impersonationSessionDuration: 60 * 60, // 1 hour
       defaultRole: 'USER',
       adminRoles: ['ADMIN'],
+      allowImpersonatingAdmins: true,
       roles: {
         ADMIN: adminAc,
         USER: userAc,
