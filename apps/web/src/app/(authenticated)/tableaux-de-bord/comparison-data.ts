@@ -2,18 +2,30 @@ import { TSimulationDashboardItem } from '~/schemas/simulation'
 import { formatNumber } from '~/utils/format-numbers'
 import { getDecohabitationBadge, getPopulationBadge } from '~/utils/omphale-label'
 
+export type RateEvolution = { points: number; label: string }
+export type EvolutionDirection = 'lower-is-better' | 'higher-is-better'
+
 export type ComparisonValue =
-  | { kind: 'text'; text: string }
-  | { kind: 'byEpci'; entries: Array<{ epciCode: string; epciName: string; label: string }> }
+  | { kind: 'text'; text: string; evolution?: RateEvolution }
+  | { kind: 'byEpci'; entries: Array<{ epciCode: string; epciName: string; label: string; evolution?: RateEvolution }> }
 
 export interface ComparisonRow {
   label: string
   badge?: string
   value: ComparisonValue
   variant: 'light' | 'default'
+  evolutionDirection?: EvolutionDirection
 }
 
 const formatRate = (decimal: number): string => `${(decimal * 100).toFixed(1).replace('.', ',')} %`
+
+const formatEvolution = (points: number): RateEvolution => {
+  const rounded = Math.round(points * 10) / 10
+  if (Math.abs(rounded) < 0.05) return { points: 0, label: '0 pt' }
+  const sign = rounded > 0 ? '+' : '-'
+  const abs = Math.abs(rounded).toFixed(1).replace('.', ',')
+  return { points: rounded, label: `${sign}${abs} pts` }
+}
 
 const allEqual = (values: number[], tolerance = 1e-6): boolean =>
   values.length <= 1 || values.every((v) => Math.abs(v - values[0]) < tolerance)
@@ -33,15 +45,36 @@ export function buildComparisonRows(
   const vacancyValues = scenarioEpcis.map((e) => e.b2_tx_vacance)
   const rsValues = scenarioEpcis.map((e) => e.b2_tx_rs)
 
-  const buildRateValue = (pick: (e: { b2_tx_vacance: number; b2_tx_rs: number }) => number, values: number[]): ComparisonValue => {
+  type RateField = 'b2_tx_vacance' | 'b2_tx_rs'
+  type BaselineField = 'vacancyRate' | 'txRs'
+
+  const buildRateValue = (rateField: RateField, baselineField: BaselineField, values: number[]): ComparisonValue => {
     if (scenarioEpcis.length === 0) return dash
-    if (allEqual(values)) return { kind: 'text', text: formatRate(values[0]) }
+
+    const evolutions = scenarioEpcis.map((e) => {
+      const baseline = e.baseline?.[baselineField]
+      if (typeof baseline !== 'number') return undefined
+      return formatEvolution((e[rateField] - baseline) * 100)
+    })
+
+    const allBaselinesPresent = evolutions.every((evo) => evo !== undefined)
+    const evolutionsEqual = allBaselinesPresent && allEqual(evolutions.map((evo) => (evo as RateEvolution).points))
+
+    if (allEqual(values) && evolutionsEqual) {
+      return {
+        kind: 'text',
+        text: formatRate(values[0]),
+        evolution: evolutions[0],
+      }
+    }
+
     return {
       kind: 'byEpci',
-      entries: scenarioEpcis.map((e) => ({
+      entries: scenarioEpcis.map((e, i) => ({
         epciCode: e.epciCode,
         epciName: epciNameByCode.get(e.epciCode) ?? e.epciCode,
-        label: formatRate(pick(e)),
+        label: formatRate(e[rateField]),
+        evolution: evolutions[i],
       })),
     }
   }
@@ -89,20 +122,22 @@ export function buildComparisonRows(
       variant: 'default',
     },
     {
-      label: 'Desserrement des ménages',
+      label: 'Projection du nombre de résidences principales',
       badge: getDecohabitationBadge(scenario.b2_scenario),
       value: householdsValue,
       variant: 'default',
     },
     {
       label: 'Taux de logements vacants',
-      value: buildRateValue((e) => e.b2_tx_vacance, vacancyValues),
+      value: buildRateValue('b2_tx_vacance', 'vacancyRate', vacancyValues),
       variant: 'default',
+      evolutionDirection: 'lower-is-better',
     },
     {
       label: 'Taux de résidences secondaires',
-      value: buildRateValue((e) => e.b2_tx_rs, rsValues),
+      value: buildRateValue('b2_tx_rs', 'txRs', rsValues),
       variant: 'default',
+      evolutionDirection: 'lower-is-better',
     },
     { label: 'Résorption mal-logement', value: resorptionValue, variant: 'default' },
     { label: 'Pic de ménages', value: peakYearValue, variant: 'default' },

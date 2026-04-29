@@ -5,6 +5,7 @@ import classNames from 'classnames'
 import React, { useState } from 'react'
 import { buildComparisonRows, ComparisonRow } from '~/app/(authenticated)/tableaux-de-bord/comparison-data'
 import { TSimulationDashboardItem } from '~/schemas/simulation'
+import { EvolutionBadge } from './evolution-badge'
 import styles from './period-row.module.css'
 import { RateByEpciSelect } from './rate-by-epci-select'
 import { ScenarioCard } from './scenario-card'
@@ -103,9 +104,16 @@ export function PeriodRow({ millesime, projection, simulations, epciGroupId, epc
                           <>
                             {row.badge && <span className={styles.comparisonBadge}>{row.badge}</span>}
                             {row.value.kind === 'text' && (
-                              <span className={classNames(!row.badge && 'fr-text--bold', 'fr-text--sm fr-mb-0')}>{row.value.text}</span>
+                              <span className={classNames(!row.badge && 'fr-text--bold', 'fr-text--sm fr-mb-0')}>
+                                {row.value.text}
+                                {row.value.evolution && (
+                                  <EvolutionBadge evolution={row.value.evolution} direction={row.evolutionDirection} />
+                                )}
+                              </span>
                             )}
-                            {row.value.kind === 'byEpci' && <RateByEpciSelect entries={row.value.entries} />}
+                            {row.value.kind === 'byEpci' && (
+                              <RateByEpciSelect entries={row.value.entries} evolutionDirection={row.evolutionDirection} />
+                            )}
                           </>
                         )}
                       </div>
