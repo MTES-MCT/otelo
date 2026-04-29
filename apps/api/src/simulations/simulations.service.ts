@@ -334,15 +334,26 @@ export class SimulationsService {
 
     const simulationIds = rawSimulations.map((s) => s.id)
 
-    const [cachedResults, omphaleLookup, populationLookup] = await Promise.all([
+    const [cachedResults, omphaleLookup, populationLookup, baselineRatesLookup] = await Promise.all([
       this.loadCachedSimulationResults(simulationIds),
       this.loadOmphaleByProjection(rawSimulations),
       this.loadPopulationByProjection(rawSimulations),
+      this.loadBaselineRatesByMillesime(rawSimulations),
     ])
 
     const enrichedSimulations: TSimulationDashboardItem[] = rawSimulations.map((sim) => {
       const resultsForSim = cachedResults.get(sim.id) ?? []
       const summary = this.buildDashboardSummary(sim, resultsForSim, omphaleLookup, populationLookup)
+      const baselineByEpci = sim.scenario ? (baselineRatesLookup.get(sim.scenario.millesime) ?? {}) : {}
+      const enrichedScenario = sim.scenario
+        ? {
+            ...sim.scenario,
+            epciScenarios: sim.scenario.epciScenarios.map((es) => {
+              const baseline = baselineByEpci[es.epciCode]
+              return baseline ? { ...es, baseline } : es
+            }),
+          }
+        : sim.scenario
       return {
         createdAt: sim.createdAt,
         id: sim.id,
@@ -350,7 +361,7 @@ export class SimulationsService {
         updatedAt: sim.updatedAt,
         userId: sim.userId,
         epcis: sim.epcis,
-        scenario: sim.scenario,
+        scenario: enrichedScenario,
         epciGroup: sim.epciGroup || undefined,
         summary,
       }
@@ -471,6 +482,37 @@ export class SimulationsService {
           byEpci[r.epciCode] = { central: r.central, haute: r.haute, basse: r.basse }
         }
         result.set(key, byEpci)
+      }),
+    )
+
+    return result
+  }
+
+  private async loadBaselineRatesByMillesime(
+    simulations: Array<{ scenario: { millesime: string } | null; epcis: Array<{ code: string }> }>,
+  ): Promise<Map<string, Record<string, { vacancyRate: number; txRs: number }>>> {
+    const grouped = new Map<string, Set<string>>()
+    for (const sim of simulations) {
+      if (!sim.scenario) continue
+      const set = grouped.get(sim.scenario.millesime) ?? new Set<string>()
+      for (const epci of sim.epcis) set.add(epci.code)
+      grouped.set(sim.scenario.millesime, set)
+    }
+
+    const result = new Map<string, Record<string, { vacancyRate: number; txRs: number }>>()
+    await Promise.all(
+      Array.from(grouped.entries()).map(async ([millesime, epciSet]) => {
+        const epciCodes = Array.from(epciSet)
+        if (epciCodes.length === 0) {
+          result.set(millesime, {})
+          return
+        }
+        const rates = await this.accommodationRatesService.getAccommodationRates(epciCodes.join(','), millesime)
+        const byEpci: Record<string, { vacancyRate: number; txRs: number }> = {}
+        for (const [epciCode, r] of Object.entries(rates)) {
+          byEpci[epciCode] = { vacancyRate: r.vacancyRate, txRs: r.txRs }
+        }
+        result.set(millesime, byEpci)
       }),
     )
 
