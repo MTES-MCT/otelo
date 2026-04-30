@@ -122,7 +122,7 @@ export function buildComparisonRows(
       variant: 'default',
     },
     {
-      label: 'Projection du nombre de résidences principales',
+      label: 'Projection des résidences principales',
       badge: getDecohabitationBadge(scenario.b2_scenario),
       value: householdsValue,
       variant: 'default',
