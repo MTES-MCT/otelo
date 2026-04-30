@@ -1,6 +1,7 @@
 'use client'
 
 import Button from '@codegouvfr/react-dsfr/Button'
+import ToggleSwitch from '@codegouvfr/react-dsfr/ToggleSwitch'
 import classNames from 'classnames'
 import React, { useState } from 'react'
 import { buildComparisonRows, ComparisonRow } from '~/app/(authenticated)/tableaux-de-bord/comparison-data'
@@ -49,16 +50,15 @@ export function PeriodRow({ millesime, projection, simulations, epciGroupId, epc
           <span className="fr-text--lg fr-text-title--blue-france fr-text--bold fr-mb-0">
             {millesime} &rarr; {projection}
           </span>
-          <button type="button" className={styles.toggleButton} onClick={() => setIsExpanded(!isExpanded)}>
-            <span className="fr-text--sm fr-text-title--blue-france fr-text--medium fr-mb-0">
-              Comparer les {simulations.length > 1 ? `${simulations.length} scénarios` : 'scénarios'}
-            </span>
-            <span
-              className={classNames('ri-arrow-down-s-line fr-text-title--blue-france', styles.toggleIcon, {
-                [styles.toggleIconOpen]: isExpanded,
-              })}
-            />
-          </button>
+          <ToggleSwitch
+            classes={{ root: styles.compareToggle }}
+            label={<span className="fr-text--sm fr-text-title--blue-france fr-text--medium fr-mb-0">Vue comparative</span>}
+            inputTitle="comparative-view"
+            labelPosition="left"
+            checked={isExpanded}
+            onChange={(checked) => setIsExpanded(checked)}
+            showCheckedHint={false}
+          />
         </div>
       </div>
 
