@@ -41,6 +41,16 @@ export class StockRequirementsService {
     }, 0)
   }
 
+  calculateNoAccommodationByEpci(epciCode: string, data: TStockRequirementsResults) {
+    const { noAccomodation, hosted } = data
+    const categories = [noAccomodation, hosted]
+
+    return categories.reduce((total, category) => {
+      const epciResult = category.epcis.find((e) => e.epciCode === epciCode)
+      return total + (epciResult?.value ?? 0)
+    }, 0)
+  }
+
   calculateProrataStockByEpci(
     simulation: TSimulationWithEpciAndScenario,
     epciCode: string,

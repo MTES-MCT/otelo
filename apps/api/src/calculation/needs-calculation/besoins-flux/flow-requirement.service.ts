@@ -107,12 +107,35 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
     omphale: EOmphale,
     vacantAccomodationEvolution: Record<number, number>,
     secondaryResidenceAccomodationEvolution: Record<number, number>,
+    noAccommodationResorptionByYear: Record<number, number>,
   ): Record<number, number> {
     const result: Record<number, number> = {}
     menagesEvolution.forEach(({ year, [omphale]: value }) => {
       const denominator = 1 - vacantAccomodationEvolution[year] - secondaryResidenceAccomodationEvolution[year]
-      result[year] = Math.round(Number(value) / denominator)
+      const noAccommodation = noAccommodationResorptionByYear[year] ?? 0
+      result[year] = Math.round((Number(value) + noAccommodation) / denominator)
     })
+
+    return result
+  }
+
+  calculateNoAccommodationResorptionByYear(
+    noAccommodationByEpci: number,
+    periodProjection: number,
+    horizon: number,
+  ): Record<number, number> {
+    const { baseYear } = this.context
+    const horizonDelta = horizon - baseYear
+    const result: Record<number, number> = {}
+
+    for (let year = baseYear; year <= periodProjection; year++) {
+      if (horizonDelta <= 0) {
+        result[year] = year > baseYear ? noAccommodationByEpci : 0
+        continue
+      }
+      const yearsResorbed = Math.min(Math.max(year - baseYear, 0), horizonDelta)
+      result[year] = (noAccommodationByEpci * yearsResorbed) / horizonDelta
+    }
 
     return result
   }
@@ -375,6 +398,12 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
     const { scenario } = simulation
     const totalParc = await this.renewalHousingStock.getFilocomFlux(epciCode)
     const stockByEpci = this.stockRequirementsService.calculateStockByEpci(epciCode, stockRequirementsNeeds)
+    const noAccommodationByEpci = this.stockRequirementsService.calculateNoAccommodationByEpci(epciCode, stockRequirementsNeeds)
+    const noAccommodationResorptionByYear = this.calculateNoAccommodationResorptionByYear(
+      noAccommodationByEpci,
+      scenario.projection,
+      scenario.b1_horizon_resorption,
+    )
 
     const omphale = omphaleMap[scenario.b2_scenario.toLowerCase()]
 
@@ -430,6 +459,7 @@ export class FlowRequirementService extends BaseCalculator<[TStockRequirementsRe
       omphale,
       vacantAccomodationEvolution,
       secondaryResidenceAccomodationEvolution,
+      noAccommodationResorptionByYear,
     )
     const vacantAccommodationVariation = this.calculateVacantAccommodationVariationByYear(
       accommodationVariationEvolution,
