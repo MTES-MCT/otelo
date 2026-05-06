@@ -90,7 +90,7 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis 
             <div className="fr-mb-2w">
               {peakYear === 2021 ? (
                 <p className="fr-text--sm">
-                  Le scénario démographique choisi conduit le territoire à atteindre son pic de ménages dès
+                  Le scénario démographique choisi conduit le territoire à atteindre son pic de ménages dès&nbsp;
                   <span className="fr-text--bold">{peakYear}</span>. La production d’une offre de logements neufs à partir de cette date
                   n’est donc plus indispensable, à condition que les besoins résiduels liés au mal-logement trouvent une réponse via la
                   mobilisation du parc existant.
