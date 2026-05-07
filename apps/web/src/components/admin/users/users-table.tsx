@@ -21,6 +21,7 @@ import { FC, useMemo, useState } from 'react'
 import { useDeleteUser } from '~/hooks/use-delete-user'
 import { useStartImpersonation } from '~/hooks/use-impersonation'
 import { useUpdateUserAccess } from '~/hooks/use-update-user-access'
+import { useUpdateUserRegion } from '~/hooks/use-update-user-region'
 import { TUser } from '~/schemas/user'
 import styles from './users-table.module.css'
 
@@ -80,8 +81,30 @@ const UserRowActions: FC<UserRowActionsProps> = ({ user, onDelete, onImpersonate
   )
 }
 
+const FRENCH_REGIONS = [
+  'Auvergne-Rhône-Alpes',
+  'Bourgogne-Franche-Comté',
+  'Bretagne',
+  'Centre-Val de Loire',
+  'Corse',
+  'Grand Est',
+  'Guadeloupe',
+  'Guyane',
+  'Hauts-de-France',
+  'Île-de-France',
+  'La Réunion',
+  'Martinique',
+  'Mayotte',
+  'Normandie',
+  'Nouvelle-Aquitaine',
+  'Occitanie',
+  'Pays de la Loire',
+  "Provence-Alpes-Côte d'Azur",
+]
+
 function getColumns(
   updateUserAccess: (params: { userId: string; hasAccess: boolean }) => void,
+  updateUserRegion: (params: { userId: string; region: string | null }) => void,
   deleteUser: (userId: string) => void,
   startImpersonation: (params: { userId: string }) => void,
   isPending: boolean,
@@ -186,6 +209,33 @@ function getColumns(
             <option value="authorized">✅</option>
             <option value="unauthorized">❌</option>
           </Select>
+        )
+      },
+    },
+    {
+      id: 'region',
+      header: 'Région',
+      size: 140,
+      maxSize: 140,
+      enableSorting: false,
+      enableColumnFilter: false,
+      cell: ({ row }) => {
+        const user = row.original
+        if (user.type !== 'DREAL') return <span style={{ color: '#999' }}>—</span>
+        return (
+          <select
+            className="fr-select"
+            value={user.region ?? ''}
+            onChange={(e) => updateUserRegion({ userId: user.id, region: e.target.value || null })}
+            style={{ width: '130px', padding: '4px 6px', fontSize: '11px' }}
+          >
+            <option value="">— Aucune —</option>
+            {FRENCH_REGIONS.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
         )
       },
     },
@@ -310,6 +360,7 @@ export const UsersTable: FC<UsersTableProps> = ({
   onSortChange,
 }) => {
   const { mutate: updateUserAccess, isPending } = useUpdateUserAccess()
+  const { mutate: updateUserRegion } = useUpdateUserRegion()
   const { mutateAsync: deleteUser } = useDeleteUser()
   const { startImpersonation } = useStartImpersonation()
 
@@ -317,8 +368,8 @@ export const UsersTable: FC<UsersTableProps> = ({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const columns = useMemo(
-    () => getColumns(updateUserAccess, deleteUser, startImpersonation, isPending),
-    [updateUserAccess, deleteUser, startImpersonation, isPending],
+    () => getColumns(updateUserAccess, updateUserRegion, deleteUser, startImpersonation, isPending),
+    [updateUserAccess, updateUserRegion, deleteUser, startImpersonation, isPending],
   )
 
   const table = useReactTable({

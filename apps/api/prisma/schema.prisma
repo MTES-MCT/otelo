@@ -50,6 +50,7 @@ model User {
   engaged                           Boolean                             @default(false)
   type                              UserType?
   referent                          String?
+  region                            String?
   // Relations
   accounts                          Account[]
   sessions                          Session[]

@@ -21,6 +21,7 @@ const fieldsWithoutPassword = {
   engaged: true,
   type: true,
   referent: true,
+  region: true,
 } satisfies Prisma.UserSelect
 
 const SORTABLE_FIELDS: Record<string, string> = {
@@ -85,6 +86,14 @@ export class UsersService {
     }
     return this.prisma.user.update({
       data: { hasAccess },
+      where: { id },
+      select: fieldsWithoutPassword,
+    })
+  }
+
+  async updateRegion(id: string, region: string | null): Promise<TUser> {
+    return this.prisma.user.update({
+      data: { region },
       where: { id },
       select: fieldsWithoutPassword,
     })

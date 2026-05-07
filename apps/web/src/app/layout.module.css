@@ -9,4 +9,5 @@
   flex-direction: column;
   flex: auto;
   background-color: var(--background-alt-blue-france);
+  justify-content: center;
 }
