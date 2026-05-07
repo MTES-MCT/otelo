@@ -1,0 +1,14 @@
+.epciBadge {
+  display: inline-block;
+  background: #e3e3fd;
+  color: var(--blue-france-sun-113-625, #000091);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.exportsCell {
+  font-size: 11px;
+}

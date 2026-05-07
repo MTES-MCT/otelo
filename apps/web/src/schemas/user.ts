@@ -9,6 +9,7 @@ export const ZUser = ZUserBase.extend({
   type: z.enum(Object.values(UserType) as [string, ...string[]]).optional(),
   sub: z.string(),
   engaged: z.boolean(),
+  region: z.string().nullable().optional(),
 })
 
 export type TUser = z.infer<typeof ZUser>

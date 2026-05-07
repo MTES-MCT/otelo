@@ -15,4 +15,13 @@ export class AdminController {
   async update(@Param('id') id: string, @Body() body: { hasAccess: boolean }) {
     return this.usersService.updateAccess(id, body.hasAccess)
   }
+
+  @AccessControl({
+    roles: [Role.ADMIN],
+  })
+  @HttpCode(HttpStatus.OK)
+  @Patch('/users/:id/region')
+  async updateRegion(@Param('id') id: string, @Body() body: { region: string | null }) {
+    return this.usersService.updateRegion(id, body.region)
+  }
 }

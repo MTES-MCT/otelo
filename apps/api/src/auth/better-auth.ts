@@ -200,6 +200,11 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      region: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
     },
     changeEmail: {
       enabled: false,
