@@ -1,0 +1,264 @@
+/* ── KPI tiles ─────────────────────────────────────────────── */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+@media (max-width: 1024px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpiTile {
+  background: white;
+  border: 1px solid var(--border-default-grey);
+  border-bottom: 4px solid var(--blue-france-sun-113-625, #000091);
+  padding: 16px 18px;
+}
+
+.kpiTileLabel {
+  font-size: 12px;
+  color: #3a3a3a;
+  font-weight: 500;
+}
+
+.kpiTileIcon {
+  font-size: 20px;
+  color: var(--blue-france-sun-113-625, #000091);
+}
+
+.kpiTileNum {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--blue-france-sun-113-625, #000091);
+  line-height: 1.1;
+  margin: 6px 0 4px;
+}
+
+.kpiTileSub {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.3;
+}
+
+/* ── Filters bar ─────────────────────────────────────────── */
+.filtersBar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: flex-end;
+  background: white;
+  border: 1px solid var(--border-default-grey);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 768px) {
+  .filtersBar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Section box ─────────────────────────────────────────── */
+.sectionBox {
+  background: white;
+  border: 1px solid var(--border-default-grey);
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.sectionBoxTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #161616;
+  margin: 0;
+}
+
+/* ── Map section layout ──────────────────────────────────── */
+.mapLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .mapLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mapWrapper {
+  height: 500px;
+  overflow: hidden;
+  border: 1px solid var(--border-default-grey);
+}
+
+/* ── Legend ─────────────────────────────────────────────── */
+.legendSwatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.legendSwatchCovered {
+  background: #000091;
+}
+.legendSwatchMedium {
+  background: #7373ff;
+}
+.legendSwatchLow {
+  background: #c4c4f1;
+}
+.legendSwatchUncovered {
+  background: #cccccc;
+}
+.legendHint {
+  font-style: italic;
+}
+
+/* ── Right panel (classement + légende) ─────────────────── */
+.rankingCard {
+  background: white;
+  border: 1px solid var(--border-default-grey);
+  padding: 14px 16px;
+}
+
+.rankingTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #161616;
+  margin: 0 0 12px;
+}
+
+.rankingRow {
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-default-grey);
+  font-size: 13px;
+}
+
+.rankingRow:last-child {
+  border-bottom: none;
+}
+
+.rankingBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: var(--blue-france-sun-113-625, #000091);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rankingRegion {
+  flex: 1;
+  color: #161616;
+}
+
+.rankingScore {
+  font-weight: 700;
+  color: var(--blue-france-sun-113-625, #000091);
+  font-size: 13px;
+}
+
+.legendCard {
+  background: white;
+  border: 1px solid var(--border-default-grey);
+  padding: 14px 16px;
+  font-size: 12px;
+}
+
+.legendTitle {
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #3a3a3a;
+  margin-bottom: 8px;
+}
+
+/* ── Below-map row (typology chart + ...) ────────────────── */
+.belowMapRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .belowMapRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Typology bar chart ─────────────────────────────────── */
+.typologyRow {
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.typologyLabel {
+  width: 160px;
+  flex-shrink: 0;
+  color: #3a3a3a;
+  font-size: 12px;
+}
+
+.typologyBarTrack {
+  flex: 1;
+  background: #e8e8e8;
+  height: 10px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.typologyBarFill {
+  height: 100%;
+  background: var(--blue-france-sun-113-625, #000091);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.typologyPct {
+  width: 42px;
+  text-align: right;
+  font-weight: 700;
+  font-size: 13px;
+  color: #161616;
+}
+
+/* ── Coverage mini-rows ─────────────────────────────────── */
+.coverageRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+/* ── KPI large number variant ────────────────────────────── */
+.kpiTileNumLarge {
+  font-size: 40px;
+}
+
+.kpiTileNumUnit {
+  font-size: 24px;
+}

@@ -5,6 +5,8 @@ export interface PilotageStatistics {
     totalActiveRegions: number
     totalActiveActors: number
     coverageRate: number
+    totalScenarios: number
+    totalExports: number
   }
   regions: string[]
   departments: Array<{ name: string; region: string }>

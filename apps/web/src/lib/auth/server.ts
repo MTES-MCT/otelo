@@ -44,6 +44,7 @@ interface SessionUser {
   hasAccess: boolean
   type?: UserType | null
   lastLoginAt?: string
+  region?: string | null
 }
 
 export interface Session {

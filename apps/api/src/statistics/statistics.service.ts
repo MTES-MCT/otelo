@@ -557,11 +557,29 @@ export class StatisticsService {
     const totalActiveEpcis = coverage.reduce((sum, r) => sum + r.active_epcis, 0)
     const coverageRate = totalEpcis > 0 ? Math.round((totalActiveEpcis / totalEpcis) * 10000) / 100 : 0
 
+    const [[totalScenariosRow], [totalExportsRow]] = await Promise.all([
+      this.prisma.$queryRaw<Array<{ count: number }>>`
+        SELECT COUNT(DISTINCT s.id)::int AS count
+        FROM simulations s
+        WHERE s.deleted IS NULL
+      `,
+      this.prisma.$queryRaw<Array<{ count: number }>>`
+        SELECT COUNT(ex.id)::int AS count
+        FROM exports ex
+        INNER JOIN simulations s ON s.id = ex.simulation_id
+        WHERE s.deleted IS NULL
+      `,
+    ])
+    const totalScenarios = Number(totalScenariosRow?.count ?? 0)
+    const totalExports = Number(totalExportsRow?.count ?? 0)
+
     return {
       kpis: {
         totalActiveRegions,
         totalActiveActors,
         coverageRate,
+        totalScenarios,
+        totalExports,
       },
       regions: allRegions.map((r) => r.region),
       departments: allDepartments.map((d) => ({ name: d.department, region: d.region })),
@@ -581,6 +599,126 @@ export class StatisticsService {
         totalHousingNeeds: r.total_housing_needs,
       })),
     }
+  }
+
+  async getEpcisCoverage(
+    region?: string,
+    department?: string,
+    typology?: string,
+  ): Promise<
+    Array<{
+      epciCode: string
+      epciName: string
+      hasScenario: boolean
+      nbScenarios: number
+      totalFlux: number
+      totalStock: number
+      totalHousingNeeds: number
+    }>
+  > {
+    const regionFilter = region ? Prisma.sql`AND COALESCE(e.region_name, e.region) = ${region}` : Prisma.sql``
+    const departmentFilter = department ? Prisma.sql`AND e.department_name = ${department}` : Prisma.sql``
+    // Filtre typology dans le JOIN pour ne compter que les simulations de ce type d'acteur
+    const typologyJoin = typology ? Prisma.sql`AND sim.user_id IN (SELECT id FROM users WHERE type = ${typology})` : Prisma.sql``
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        epci_code: string
+        epci_name: string
+        has_scenario: boolean
+        nb_scenarios: number
+        total_flux: number
+        total_stock: number
+        total_housing_needs: number
+      }>
+    >`
+      SELECT
+        e.code AS epci_code,
+        e.name AS epci_name,
+        CASE WHEN COUNT(DISTINCT sim.id) > 0 THEN true ELSE false END AS has_scenario,
+        COUNT(DISTINCT sim.id)::int AS nb_scenarios,
+        COALESCE(AVG(sr."totalFlux"), 0)::int AS total_flux,
+        COALESCE(AVG(sr."totalStock"), 0)::int AS total_stock,
+        COALESCE(AVG(sr."totalFlux" + sr."totalStock"), 0)::int AS total_housing_needs
+      FROM epcis e
+      LEFT JOIN epci_scenarios es ON e.code = es.epci_code
+      LEFT JOIN scenarios sc ON es.scenario_id = sc.id
+      LEFT JOIN simulations sim ON sim.scenario_id = sc.id AND sim.deleted IS NULL ${typologyJoin}
+      LEFT JOIN simulation_results sr ON sr.epci_code = e.code AND sr.simulation_id = sim.id
+      WHERE 1=1
+      ${regionFilter}
+      ${departmentFilter}
+      GROUP BY e.code, e.name
+    `
+    return rows.map((r) => ({
+      epciCode: r.epci_code,
+      epciName: r.epci_name,
+      hasScenario: r.has_scenario,
+      nbScenarios: r.nb_scenarios,
+      totalFlux: r.total_flux,
+      totalStock: r.total_stock,
+      totalHousingNeeds: r.total_housing_needs,
+    }))
+  }
+
+  async getPilotageScenariosList(
+    userId?: string,
+    territoire?: string,
+    typology?: string,
+  ): Promise<
+    Array<{
+      simulationId: string
+      simulationName: string
+      epcis: string
+      userTypology: string | null
+      lastActivity: Date
+      hasExportExcel: boolean
+      hasExportPpt: boolean
+    }>
+  > {
+    const userFilter = userId ? Prisma.sql`AND sim.user_id = ${userId}` : Prisma.sql``
+    const typologyFilter = typology ? Prisma.sql`AND u.type = ${typology}` : Prisma.sql``
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        simulation_id: string
+        simulation_name: string
+        epcis: string | null
+        user_typology: string | null
+        last_activity: Date
+        has_export_excel: boolean
+        has_export_ppt: boolean
+      }>
+    >`
+      SELECT
+        sim.id AS simulation_id,
+        sim.name AS simulation_name,
+        STRING_AGG(DISTINCT es.epci_code, ', ' ORDER BY es.epci_code) AS epcis,
+        u.type AS user_typology,
+        GREATEST(sim.created_at, sim.updated_at) AS last_activity,
+        CASE WHEN COUNT(CASE WHEN ex.type = 'EXCEL' THEN 1 END) > 0 THEN true ELSE false END AS has_export_excel,
+        CASE WHEN COUNT(CASE WHEN ex.type = 'POWERPOINT' THEN 1 END) > 0 THEN true ELSE false END AS has_export_ppt
+      FROM simulations sim
+      JOIN users u ON u.id = sim.user_id
+      JOIN scenarios sc ON sc.id = sim.scenario_id
+      LEFT JOIN epci_scenarios es ON es.scenario_id = sc.id
+      LEFT JOIN exports ex ON ex.simulation_id = sim.id
+      WHERE sim.deleted IS NULL
+      ${userFilter}
+      ${typologyFilter}
+      GROUP BY sim.id, sim.name, u.type, sim.created_at, sim.updated_at
+      ${territoire ? Prisma.sql`HAVING STRING_AGG(DISTINCT es.epci_code, ', ' ORDER BY es.epci_code) ILIKE ${`%${territoire}%`}` : Prisma.sql``}
+      ORDER BY GREATEST(sim.created_at, sim.updated_at) DESC
+    `
+    return rows.map((r) => ({
+      simulationId: r.simulation_id,
+      simulationName: r.simulation_name,
+      epcis: r.epcis ?? '',
+      userTypology: r.user_typology,
+      lastActivity: r.last_activity,
+      hasExportExcel: r.has_export_excel,
+      hasExportPpt: r.has_export_ppt,
+    }))
   }
 
   async getPilotageCsvData(region?: string, department?: string) {
