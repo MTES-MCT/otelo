@@ -32,12 +32,11 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
   const { data: previewData, isLoading } = useSimulationPreview(payload, { enabled })
   const epciRates = rates?.[epci]
 
-  const peakYearValues = previewData?.flowRequirement?.epcis?.map((e) => e.data.peakYear).filter(Boolean) ?? []
-  const minPeakYear = peakYearValues.length > 0 ? Math.min(...peakYearValues) : null
-  const projectionNum = payload.scenario?.projection ?? null
-  const isPeakBeforeProjection = minPeakYear !== null && projectionNum !== null && minPeakYear < projectionNum
-  const isLockedByMillesime = isPeakBeforeProjection && minPeakYear! <= Number(millesime)
-  const targetYear = isPeakBeforeProjection ? minPeakYear : projectionNum
+  const epciPeakYear = previewData?.flowRequirement?.epcis?.find((e) => e.code === epci)?.data.peakYear ?? null
+  const projectionNum = (payload.scenario?.projection as number | null | undefined) ?? null
+  const isPeakBeforeProjection = epciPeakYear !== null && projectionNum !== null && epciPeakYear < projectionNum
+  const isLockedByMillesime = isPeakBeforeProjection && epciPeakYear! <= Number(millesime)
+  const targetYear = isPeakBeforeProjection ? epciPeakYear : projectionNum
 
   if (!epciRates) return null
   if (isLoading) return <LoadingSpinner />

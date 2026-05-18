@@ -14,12 +14,11 @@ export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRange
   const { payload, enabled } = useCreationPreviewPayload()
   const { data } = useSimulationPreview(payload, { enabled })
 
-  const peakYearValues = data?.flowRequirement?.epcis?.map((e) => e.data.peakYear).filter(Boolean) ?? []
-  const minPeakYear = peakYearValues.length > 0 ? Math.min(...peakYearValues) : null
+  const epciPeakYear = data?.flowRequirement?.epcis?.find((e) => e.code === epci)?.data.peakYear ?? null
   const millesimeNum = millesime ? Number(millesime) : null
-  const isPeakBeforeProjection = minPeakYear !== null && projection !== null && minPeakYear < projection
-  const isLockedByMillesime = isPeakBeforeProjection && millesimeNum !== null && minPeakYear! <= millesimeNum
-  const targetYear = isPeakBeforeProjection ? minPeakYear : projection
+  const isPeakBeforeProjection = epciPeakYear !== null && projection !== null && epciPeakYear < projection
+  const isLockedByMillesime = isPeakBeforeProjection && millesimeNum !== null && epciPeakYear! <= millesimeNum
+  const targetYear = isPeakBeforeProjection ? epciPeakYear : projection
 
   const { defaultRates, rates, updateRates } = useEpcisRates()
   const currentRates = rates[epci]
