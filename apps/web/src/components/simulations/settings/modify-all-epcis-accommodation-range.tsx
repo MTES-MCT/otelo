@@ -11,6 +11,9 @@ export const ModifyAllEpcisAccommodationRange: FC = () => {
   const epciIds = Object.keys(simulationSettings.epciScenarios)
   const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
   const [reductionPercent, setReductionPercent] = useState(15)
+  const peakYears = simulationSettings.peakYears ? Object.values(simulationSettings.peakYears) : []
+  const minPeakYear = peakYears.length > 0 ? Math.min(...peakYears) : null
+  const targetYear = minPeakYear && minPeakYear < simulationSettings.projection ? minPeakYear : simulationSettings.projection
 
   const applyReductionToAllEpcis = (rangeValue: number) => {
     if (!originalRatesData) return
@@ -34,7 +37,7 @@ export const ModifyAllEpcisAccommodationRange: FC = () => {
   return (
     <div className="fr-col-8">
       <Range
-        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${simulationSettings.projection} ?`}
+        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${targetYear} ?`}
         suffix="%"
         max={100}
         min={0}

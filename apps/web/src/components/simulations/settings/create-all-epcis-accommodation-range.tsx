@@ -7,6 +7,8 @@ import { RateSettings, useEpcisRates } from '~/app/(authenticated)/simulation/(c
 
 export const CreateAllEpcisAccommodationRange: FC = () => {
   const [projection] = useQueryState('projection')
+  const [peakYear] = useQueryState('peakYear')
+  const targetYear = peakYear && Number(peakYear) < Number(projection) ? peakYear : projection
   const { defaultRates, updateAllRates } = useEpcisRates()
   const [reductionPercent, setReductionPercent] = useState(15)
 
@@ -36,7 +38,7 @@ export const CreateAllEpcisAccommodationRange: FC = () => {
   return (
     <div className="fr-col-8">
       <Range
-        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${projection} ?`}
+        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${targetYear} ?`}
         suffix="%"
         max={100}
         min={0}

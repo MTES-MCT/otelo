@@ -34,7 +34,7 @@ export const AggregatedParcsComparisonChart = () => {
     parcEvolutionShown: parseAsBoolean.withDefault(false),
   })
   const baseYear = millesime
-  const targetYear = peakYear ?? projection
+  const targetYear = peakYear && Number(peakYear) > Number(millesime) ? peakYear : projection
 
   const epciIds = Object.keys(defaultRates)
   if (epciIds.length === 0) return null

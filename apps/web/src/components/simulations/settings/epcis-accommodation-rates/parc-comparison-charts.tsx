@@ -36,7 +36,7 @@ const ParcsComparisonCharts = ({ epci, withSecondaryAccommodation = true }: { ep
     parcEvolutionShown: parseAsBoolean.withDefault(false),
   })
   const baseYear = millesime
-  const targetYear = peakYear ?? projection
+  const targetYear = peakYear && Number(peakYear) > Number(millesime) ? peakYear : projection
 
   if (!ratesByEpci || !defaultRatesByEpci) return null
 

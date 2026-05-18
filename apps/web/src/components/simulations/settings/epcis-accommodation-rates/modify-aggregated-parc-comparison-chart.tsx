@@ -35,9 +35,11 @@ export const ModifyAggregatedParcsComparisonChart = () => {
 
   if (!originalRatesData || epciIds.length === 0) return null
 
-  const aggregatedPeakYear = simulationSettings.peakYears
+  const rawAggregatedPeakYear = simulationSettings.peakYears
     ? Math.min(...epciIds.map((id) => simulationSettings.peakYears![id]).filter(Boolean))
     : undefined
+  const aggregatedPeakYear =
+    rawAggregatedPeakYear && rawAggregatedPeakYear > Number(simulationSettings.millesime) ? rawAggregatedPeakYear : undefined
 
   // Calculate aggregated rates (average across all EPCIs)
   const aggregateRates = () => {

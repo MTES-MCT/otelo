@@ -27,7 +27,7 @@ export function PeriodRow({ millesime, projection, simulations, epciGroupId, epc
   const [isExpanded, setIsExpanded] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
 
-  const addHref = `/simulation/parametrages-demographique?epciGroupId=${epciGroupId}&epcis=${epcis.map((e) => e.code).join(',')}&projection=${projection}`
+  const addHref = `/simulation/parametrages-demographique?epciGroupId=${epciGroupId}&epcis=${epcis.map((e) => e.code).join(',')}&projection=${projection}&millesime=${millesime}`
 
   const rowsPerSim: ComparisonRow[][] = simulations.map((sim) => buildComparisonRows(sim, { projection, epcis }))
   const rowCount = rowsPerSim[0]?.length ?? 0

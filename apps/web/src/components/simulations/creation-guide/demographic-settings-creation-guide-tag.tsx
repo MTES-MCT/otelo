@@ -43,6 +43,7 @@ export const DemographicTargetTag: FC<CreationGuideTargetTagProps> = ({ step }) 
 export const DemographicSettingsGuideTag: FC<CreationGuideTagProps> = ({ step }) => {
   const { data, disabled = false, path, queryKeys, iconId = 'fr-icon-checkbox-circle-line' } = step
   const [value] = useQueryState(queryKeys[0])
+  const [millesime] = useQueryState('millesime')
 
   const { classes } = useStyles({ disabled, value, queryKeys })
   const searchParams = useSearchParams()
@@ -53,7 +54,7 @@ export const DemographicSettingsGuideTag: FC<CreationGuideTagProps> = ({ step })
   if (path === '/simulation/cadrage-temporel' && value) {
     return (
       <Tag className={classes.tag} iconId="ri-time-line" linkProps={{ href }}>
-        2021 - {value}
+        {millesime || '2021'} - {value}
       </Tag>
     )
   }

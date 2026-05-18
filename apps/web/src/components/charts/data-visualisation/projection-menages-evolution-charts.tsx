@@ -41,13 +41,13 @@ const SCENARIOS = [
   {
     dataKey: 'centralC',
     id: 'central',
-    name: 'Ménages - Tendanciel',
+    name: 'Ménages - Central',
     stroke: getChartColor('centralC'),
   },
   {
     dataKey: 'pbC',
     id: 'basse',
-    name: 'Ménages - Tendanciel',
+    name: 'Ménages - Central',
     stroke: getChartColor('pbC'),
   },
   {
@@ -71,7 +71,7 @@ const SCENARIOS = [
   {
     dataKey: 'phC',
     id: 'haute',
-    name: 'Ménages - Tendanciel',
+    name: 'Ménages - Central',
     stroke: getChartColor('phC'),
   },
 ]
@@ -299,7 +299,7 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
                 }}
               />
               <Bar dataKey="haute" name="Décohabitation haute" fill={getChartColor('haute')} />
-              <Bar dataKey="central" name="Décohabitation tendanciel" fill={getChartColor('central')} />
+              <Bar dataKey="central" name="Décohabitation centrale" fill={getChartColor('central')} />
               <Bar dataKey="basse" name="Décohabitation basse" fill={getChartColor('basse')} />
             </BarChart>
           </ResponsiveContainer>
@@ -311,7 +311,7 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
             </div>
             <div className={classes.legendItem}>
               <span className={classes.legendColorBox} style={{ backgroundColor: getChartColor('central') }} />
-              <span className={classes.legendLabel}>Décohabitation tendanciel</span>
+              <span className={classes.legendLabel}>Décohabitation centrale</span>
             </div>
             <div className={classes.legendItem}>
               <span className={classes.legendColorBox} style={{ backgroundColor: getChartColor('basse') }} />

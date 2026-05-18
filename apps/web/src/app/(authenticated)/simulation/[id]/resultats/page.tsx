@@ -177,7 +177,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
               <Button
                 priority="secondary"
                 linkProps={{
-                  href: `/simulation/parametrages-demographique?epciGroupId=${simulation.epciGroupId}&epcis=${simulation.epcis.map((epci) => epci.code).join(',')}&projection=${simulation.scenario.projection}`,
+                  href: `/simulation/parametrages-demographique?epciGroupId=${simulation.epciGroupId}&epcis=${simulation.epcis.map((epci) => epci.code).join(',')}&projection=${simulation.scenario.projection}&millesime=${simulation.scenario.millesime}`,
                 }}
               >
                 Élaborer un autre scénario

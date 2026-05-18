@@ -13,6 +13,8 @@ export const ModifyLongTermAccomodationRange: FC<ModifyLongTermAccomodationRange
 
   const currentRates = simulationSettings.epciScenarios[epci]
   const originalLongTermVacancyRate = originalRatesData?.[epci]?.longTermVacancyRate || 0
+  const epciPeakYear = simulationSettings.peakYears?.[epci]
+  const targetYear = epciPeakYear && epciPeakYear < simulationSettings.projection ? epciPeakYear : simulationSettings.projection
 
   const getCurrentRangeValue = (): number => {
     if (currentRates?.longTermVacancyRate === undefined || !originalLongTermVacancyRate) return 0
@@ -37,7 +39,7 @@ export const ModifyLongTermAccomodationRange: FC<ModifyLongTermAccomodationRange
   return (
     <>
       <Range
-        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${simulationSettings.projection} ?`}
+        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${targetYear} ?`}
         max={100}
         min={0}
         nativeInputProps={{
@@ -46,7 +48,7 @@ export const ModifyLongTermAccomodationRange: FC<ModifyLongTermAccomodationRange
         }}
       />
       <p className="fr-text--sm fr-mt-1w fr-mb-0">
-        Le taux projeté à l'année {simulationSettings.projection} est de : {(originalLongTermVacancyRate * 100).toFixed(2)} % -{' '}
+        Le taux projeté à l'année {targetYear} est de : {(originalLongTermVacancyRate * 100).toFixed(2)} % -{' '}
         {((reductionPercent / 100) * originalLongTermVacancyRate * 100).toFixed(2)} % ={' '}
         <strong>{(projectedRate * 100).toFixed(2)} %</strong>
       </p>
