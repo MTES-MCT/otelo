@@ -4,6 +4,7 @@ import Badge from '@codegouvfr/react-dsfr/Badge'
 import { FC } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { ModifyAllEpcisAccommodationRange } from '~/components/simulations/settings/modify-all-epcis-accommodation-range'
+import { ModifyPeakYearHorizonAlert } from '~/components/simulations/settings/modify-peak-year-horizon-alert'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 import { ModifyAggregatedParcsComparisonChart } from './modify-aggregated-parc-comparison-chart'
 
@@ -32,6 +33,7 @@ export const ModifyAllEpcisRatesView: FC = () => {
     <div className="fr-p-4w shadow">
       <div className="fr-mb-2w">
         <div className="fr-flex fr-direction-column fr-flex-gap-8v">
+          <ModifyPeakYearHorizonAlert />
           <div className="fr-flex fr-direction-column fr-flex-gap-2v">
             <span className="fr-text--medium">Vacance de longue durée</span>
             <p className="fr-mb-0">

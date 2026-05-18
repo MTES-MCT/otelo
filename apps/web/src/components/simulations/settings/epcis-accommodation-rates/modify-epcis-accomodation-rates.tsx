@@ -11,8 +11,12 @@ import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/mod
 import { ModifyAllEpcisRatesView } from '~/components/simulations/settings/epcis-accommodation-rates/modify-all-epcis-rates-view'
 import ModifyParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/modify-parc-comparison-charts'
 import { RatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/rates-toggle-switch'
+import { ModifyPeakYearHorizonAlert } from '~/components/simulations/settings/modify-peak-year-horizon-alert'
 import { ModifyVacancyAccommodationRatesInput } from '~/components/simulations/settings/modify-vacancy-accommodation-rates-input'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
+import { useModifyPreviewPayload } from '~/hooks/use-modify-preview-payload'
+import { useSimulationPreview } from '~/hooks/use-simulation-preview'
 import styles from './epcis-accommodation-rates.module.css'
 
 interface ModifyEpcisAccomodationRatesProps {
@@ -26,37 +30,53 @@ interface TabChildrenProps {
 }
 
 const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
+  const { simulationSettings } = useSimulationSettings()
+  const payload = useModifyPreviewPayload()
+  const { data: previewData, isLoading } = useSimulationPreview(payload)
   const epciRates = rates?.[epci]
+  const epciPreviewData = previewData?.flowRequirement?.epcis?.find((e) => e.code === epci)
+  const epciPeakYear = epciPreviewData?.data.peakYear ?? simulationSettings.peakYears?.[epci]
+  const isPeakBeforeProjection = epciPeakYear !== undefined && epciPeakYear < simulationSettings.projection
+  const isLockedByMillesime = isPeakBeforeProjection && epciPeakYear! <= Number(simulationSettings.millesime)
+
   if (!epciRates) return null
+  if (isLoading) return <LoadingSpinner />
 
   return (
     <>
       <div className="fr-mb-2w">
         <div className="fr-flex fr-direction-column fr-flex-gap-8v">
-          <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-            <span className="fr-text--medium">Vacance de longue durée</span>
-            <p className="fr-mb-0">
-              Elle désigne les logements vacants depuis plus de deux ans. Elle représente un réservoir de logements mobilisables. Le taux en{' '}
-              {millesime} sur ce territoire est de <strong>{(Number(epciRates.longTermVacancyRate) * 100).toFixed(2)}%</strong>.
-            </p>
-          </div>
-          <ModifyVacancyAccommodationRatesInput epci={epci} epciRates={epciRates} />
-          <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-            <div className="fr-flex fr-flex-gap-2v">
-              <span className="fr-text--medium">Vacance de courte durée</span>
-              <Badge>Non modifiable</Badge>
-            </div>
-            <p>
-              Elle regroupe les logements temporairement vacants (rotation locative, mise en vente, travaux), nécessaires au bon
-              fonctionnement du marché du logement. Otelo considère le taux de vacance courte durée observé en {millesime} comme{' '}
-              <span className="fr-text--bold">stable</span> et ne propose pas de le modifier.
-            </p>
-          </div>
+          <ModifyPeakYearHorizonAlert />
+          {!isLockedByMillesime && (
+            <>
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                <span className="fr-text--medium">Vacance de longue durée</span>
+                <p className="fr-mb-0">
+                  Elle désigne les logements vacants depuis plus de deux ans. Elle représente un réservoir de logements mobilisables. Le
+                  taux en {millesime} sur ce territoire est de <strong>{(Number(epciRates.longTermVacancyRate) * 100).toFixed(2)}%</strong>.
+                </p>
+              </div>
+              <ModifyVacancyAccommodationRatesInput epci={epci} epciRates={epciRates} />
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                <div className="fr-flex fr-flex-gap-2v">
+                  <span className="fr-text--medium">Vacance de courte durée</span>
+                  <Badge>Non modifiable</Badge>
+                </div>
+                <p>
+                  Elle regroupe les logements temporairement vacants (rotation locative, mise en vente, travaux), nécessaires au bon
+                  fonctionnement du marché du logement. Otelo considère le taux de vacance courte durée observé en {millesime} comme{' '}
+                  <span className="fr-text--bold">stable</span> et ne propose pas de le modifier.
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
-      <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
-        <ModifyParcsComparisonCharts epci={epci} withSecondaryAccommodation={false} />
-      </div>
+      {!isLockedByMillesime && (
+        <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
+          <ModifyParcsComparisonCharts epci={epci} withSecondaryAccommodation={false} />
+        </div>
+      )}
     </>
   )
 }

@@ -1,6 +1,7 @@
 import Alert from '@codegouvfr/react-dsfr/Alert'
 import { redirect } from 'next/navigation'
 import { DemographicSettingsFormWrapper } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/parametrages-demographique/demographic-settings-form-wrapper'
+import { PrefetchModifySimulationPreview } from '~/components/simulations/preview/prefetch-modify-simulation-preview'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { NextStepLinkWithoutValidation } from '~/components/simulations/settings/next-step-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
@@ -63,6 +64,7 @@ export default async function ParametragesDemographiquePage({ params, searchPara
 
   return (
     <>
+      <PrefetchModifySimulationPreview />
       {hasEpcisWithoutInseeProjection && (
         <div className="fr-py-2w fr-pt-2w">
           <Alert

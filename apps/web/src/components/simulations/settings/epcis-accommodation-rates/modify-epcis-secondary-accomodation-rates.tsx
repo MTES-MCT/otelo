@@ -11,7 +11,11 @@ import { ModifyAllEpcisSecondaryRatesView } from '~/components/simulations/setti
 import ModifyParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/modify-parc-comparison-charts'
 import { SecondaryRatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/secondary-rates-toggle-switch'
 import { ModifySecondaryAccommodationRateInput } from '~/components/simulations/settings/modify-accommodation-rate-input'
+import { ModifyPeakYearHorizonAlert } from '~/components/simulations/settings/modify-peak-year-horizon-alert'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
+import { useModifyPreviewPayload } from '~/hooks/use-modify-preview-payload'
+import { useSimulationPreview } from '~/hooks/use-simulation-preview'
 import styles from './epcis-accommodation-rates.module.css'
 
 interface ModifyEpcisSecondaryAccomodationRatesProps {
@@ -25,22 +29,37 @@ interface TabChildrenProps {
 
 const TabChildren: FC<TabChildrenProps> = ({ epci, rates }) => {
   const { simulationSettings } = useSimulationSettings()
+  const payload = useModifyPreviewPayload()
+  const { data: previewData, isLoading } = useSimulationPreview(payload)
   const epciRates = rates?.[epci]
+
+  const epciPreviewData = previewData?.flowRequirement?.epcis?.find((e) => e.code === epci)
+  const epciPeakYear = epciPreviewData?.data.peakYear ?? simulationSettings.peakYears?.[epci]
+  const isPeakBeforeProjection = epciPeakYear !== undefined && epciPeakYear < simulationSettings.projection
+  const isLockedByMillesime = isPeakBeforeProjection && epciPeakYear! <= Number(simulationSettings.millesime)
+  const targetYear = isPeakBeforeProjection ? epciPeakYear : simulationSettings.projection
+
   if (!epciRates) return null
+  if (isLoading) return <LoadingSpinner />
 
   return (
     <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-      <span className="fr-text-mention--grey">
-        Le taux observé en {epciRates.vacancy.year} s'élève à <strong>{Number(epciRates.txRs * 100).toFixed(2)} %</strong>.
-      </span>
-      <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
-        <ModifySecondaryAccommodationRateInput
-          txKey="txRs"
-          epci={epci}
-          label={`Quel objectif de taux souhaitez-vous fixer pour l'horizon ${simulationSettings.projection} ?`}
-        />
-        <ModifyParcsComparisonCharts epci={epci} />
-      </div>
+      <ModifyPeakYearHorizonAlert />
+      {!isLockedByMillesime && (
+        <>
+          <span className="fr-text-mention--grey">
+            Le taux observé en {epciRates.vacancy.year} s'élève à <strong>{Number(epciRates.txRs * 100).toFixed(2)} %</strong>.
+          </span>
+          <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
+            <ModifySecondaryAccommodationRateInput
+              txKey="txRs"
+              epci={epci}
+              label={`Quel objectif de taux souhaitez-vous fixer pour l'horizon ${targetYear} ?`}
+            />
+            <ModifyParcsComparisonCharts epci={epci} />
+          </div>
+        </>
+      )}
     </div>
   )
 }

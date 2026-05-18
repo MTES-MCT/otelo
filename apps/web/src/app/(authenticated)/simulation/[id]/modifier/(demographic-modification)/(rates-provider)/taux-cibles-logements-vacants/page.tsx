@@ -1,6 +1,5 @@
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { ModifyEpcisAccommodationRates } from '~/components/simulations/settings/epcis-accommodation-rates/modify-epcis-accomodation-rates'
-import { ModifyPeakYearHorizonAlert } from '~/components/simulations/settings/modify-peak-year-horizon-alert'
 import { NextStepLinkWithoutValidation } from '~/components/simulations/settings/next-step-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
@@ -14,7 +13,6 @@ export default async function TauxCiblesLogementsPage({ params }: SimulationPage
 
   return (
     <>
-      <ModifyPeakYearHorizonAlert />
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <ModifyEpcisAccommodationRates epcis={simulation.epcis} />
       </div>

@@ -1,15 +1,25 @@
 import { Range } from '@codegouvfr/react-dsfr/Range'
-import { useQueryState } from 'nuqs'
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs'
 import { FC, useEffect } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
+import { useCreationPreviewPayload } from '~/hooks/use-creation-preview-payload'
+import { useSimulationPreview } from '~/hooks/use-simulation-preview'
 
 interface CreateLongTermAccomodationRangeProps {
   epci: string
 }
 export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRangeProps> = ({ epci }) => {
-  const [projection] = useQueryState('projection')
-  const [peakYear] = useQueryState('peakYear')
-  const targetYear = peakYear && Number(peakYear) < Number(projection) ? peakYear : projection
+  const [projection] = useQueryState('projection', parseAsInteger)
+  const [millesime] = useQueryState('millesime', parseAsString)
+  const { payload, enabled } = useCreationPreviewPayload()
+  const { data } = useSimulationPreview(payload, { enabled })
+
+  const peakYearValues = data?.flowRequirement?.epcis?.map((e) => e.data.peakYear).filter(Boolean) ?? []
+  const minPeakYear = peakYearValues.length > 0 ? Math.min(...peakYearValues) : null
+  const millesimeNum = millesime ? Number(millesime) : null
+  const isPeakBeforeProjection = minPeakYear !== null && projection !== null && minPeakYear < projection
+  const isLockedByMillesime = isPeakBeforeProjection && millesimeNum !== null && minPeakYear! <= millesimeNum
+  const targetYear = isPeakBeforeProjection ? minPeakYear : projection
 
   const { defaultRates, rates, updateRates } = useEpcisRates()
   const currentRates = rates[epci]
@@ -56,6 +66,7 @@ export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRange
         nativeInputProps={{
           onChange: handleChange,
           value: reductionPercent,
+          disabled: isLockedByMillesime,
         }}
       />
       <p className="fr-text--sm fr-mt-1w fr-mb-0">

@@ -2,6 +2,8 @@ import { Range } from '@codegouvfr/react-dsfr/Range'
 import { FC } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
+import { useModifyPreviewPayload } from '~/hooks/use-modify-preview-payload'
+import { useSimulationPreview } from '~/hooks/use-simulation-preview'
 
 interface ModifyLongTermAccomodationRangeProps {
   epci: string
@@ -10,11 +12,18 @@ interface ModifyLongTermAccomodationRangeProps {
 export const ModifyLongTermAccomodationRange: FC<ModifyLongTermAccomodationRangeProps> = ({ epci }) => {
   const { simulationSettings, updateRates } = useSimulationSettings()
   const { data: originalRatesData } = useAccommodationRatesByEpci([epci], simulationSettings.millesime)
+  const payload = useModifyPreviewPayload()
+  const { data: previewData } = useSimulationPreview(payload)
 
   const currentRates = simulationSettings.epciScenarios[epci]
   const originalLongTermVacancyRate = originalRatesData?.[epci]?.longTermVacancyRate || 0
-  const epciPeakYear = simulationSettings.peakYears?.[epci]
-  const targetYear = epciPeakYear && epciPeakYear < simulationSettings.projection ? epciPeakYear : simulationSettings.projection
+
+  const epciPreviewData = previewData?.flowRequirement?.epcis?.find((e) => e.code === epci)
+  const epciPeakYear = epciPreviewData?.data.peakYear ?? simulationSettings.peakYears?.[epci]
+  const millesimeNum = Number(simulationSettings.millesime)
+  const isPeakBeforeProjection = epciPeakYear !== undefined && epciPeakYear < simulationSettings.projection
+  const isLockedByMillesime = isPeakBeforeProjection && epciPeakYear! <= millesimeNum
+  const targetYear = isPeakBeforeProjection ? epciPeakYear : simulationSettings.projection
 
   const getCurrentRangeValue = (): number => {
     if (currentRates?.longTermVacancyRate === undefined || !originalLongTermVacancyRate) return 0
@@ -45,6 +54,7 @@ export const ModifyLongTermAccomodationRange: FC<ModifyLongTermAccomodationRange
         nativeInputProps={{
           onChange: handleChange,
           value: reductionPercent,
+          disabled: isLockedByMillesime,
         }}
       />
       <p className="fr-text--sm fr-mt-1w fr-mb-0">

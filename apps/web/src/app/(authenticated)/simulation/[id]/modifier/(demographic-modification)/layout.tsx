@@ -1,5 +1,4 @@
 import { AuthenticatedBreadcrumb } from '~/components/breadcrumbs/authenticated-breadcrumb'
-import { DemographicPreview } from '~/components/simulations/preview/demographic-preview'
 import { DemographicSettingsSimulationStepper } from '~/components/simulations/settings/demographic-settings-simulation-stepper'
 import { SimulationSettingsFormContextWrapper } from '~/components/simulations/settings/modification/simulation-settings-form-context-wrapper'
 import UpdateDemographicSettingsSimulationSideMenu from '~/components/simulations/settings/modification/update-demographic-settings-simulation-side-menu'
@@ -37,7 +36,7 @@ export default async function ModifySimulationLayout({ children, params }: Simul
               <main className="fr-container">
                 <DemographicSettingsSimulationStepper />
                 {children}
-                <DemographicPreview />
+                {/*<DemographicPreview />*/}
               </main>
             </div>
           </div>

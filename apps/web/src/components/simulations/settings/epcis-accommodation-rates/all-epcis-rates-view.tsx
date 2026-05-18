@@ -5,6 +5,7 @@ import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { CreateAllEpcisAccommodationRange } from '~/components/simulations/settings/create-all-epcis-accommodation-range'
+import { CreatePeakYearHorizonAlert } from '~/components/simulations/settings/create-peak-year-horizon-alert'
 import { AggregatedParcsComparisonChart } from './aggregated-parc-comparison-chart'
 
 export const AllEpcisRatesView: FC = () => {
@@ -27,6 +28,7 @@ export const AllEpcisRatesView: FC = () => {
     <div className="fr-p-4w shadow">
       <div className="fr-mb-2w">
         <div className="fr-flex fr-direction-column fr-flex-gap-8v">
+          <CreatePeakYearHorizonAlert />
           <div className="fr-flex fr-direction-column fr-flex-gap-2v">
             <span className="fr-text--medium">Vacance de longue durée</span>
             <p className="fr-mb-0">

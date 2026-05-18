@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { SearchParams } from 'nuqs'
 import { searchParamsCache } from '~/app/(authenticated)/simulation/(creation)/searchParams'
-import { CreatePeakYearHorizonAlert } from '~/components/simulations/settings/create-peak-year-horizon-alert'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { CreateEpcisAccommodationRates } from '~/components/simulations/settings/epcis-accommodation-rates/create-epcis-accomodation-rates'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
@@ -23,7 +22,6 @@ export default async function TargetRatesHousing({ searchParams }: PageProps) {
 
   return (
     <>
-      <CreatePeakYearHorizonAlert />
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <CreateEpcisAccommodationRates epcis={simulationsEpcis} />
       </div>

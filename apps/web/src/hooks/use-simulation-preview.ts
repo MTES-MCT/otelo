@@ -10,7 +10,7 @@ export interface SimulationPreviewPayload {
   epciScenarios?: Record<string, Record<string, unknown>>
 }
 
-const postPreview = async (payload: SimulationPreviewPayload): Promise<TResults> => {
+export const postPreview = async (payload: SimulationPreviewPayload): Promise<TResults> => {
   const response = await fetch('/api/simulations/preview', {
     body: JSON.stringify(payload),
     headers: { 'Content-Type': 'application/json' },
