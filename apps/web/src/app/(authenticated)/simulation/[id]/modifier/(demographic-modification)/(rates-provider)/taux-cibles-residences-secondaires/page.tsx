@@ -1,5 +1,6 @@
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { ModifyEpcisSecondaryAccommodationRates } from '~/components/simulations/settings/epcis-accommodation-rates/modify-epcis-secondary-accomodation-rates'
+import { ModifyPeakYearHorizonAlert } from '~/components/simulations/settings/modify-peak-year-horizon-alert'
 import { NextStepLinkWithoutValidation } from '~/components/simulations/settings/next-step-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
@@ -14,6 +15,7 @@ export default async function TargetSecondaryResidencesRates({ params }: Simulat
 
   return (
     <>
+      <ModifyPeakYearHorizonAlert />
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <ModifyEpcisSecondaryAccommodationRates epcis={simulation.epcis} />
       </div>

@@ -39,13 +39,13 @@ const SCENARIOS = [
   {
     dataKey: 'centralC',
     id: 'central',
-    name: 'Taille ménages - Tendanciel',
+    name: 'Taille ménages - Central',
     stroke: getChartColor('centralC'),
   },
   {
     dataKey: 'pbC',
     id: 'basse',
-    name: 'Taille ménages - Tendanciel',
+    name: 'Taille ménages - Central',
     stroke: getChartColor('pbC'),
   },
   {
@@ -69,7 +69,7 @@ const SCENARIOS = [
   {
     dataKey: 'phC',
     id: 'haute',
-    name: 'Taille ménages - Tendanciel',
+    name: 'Taille ménages - Central',
     stroke: getChartColor('phC'),
   },
 ]

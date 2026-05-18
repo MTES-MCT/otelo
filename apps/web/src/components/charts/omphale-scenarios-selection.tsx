@@ -33,7 +33,7 @@ export const OmphaleScenariosSelection: FC = () => {
     },
     {
       id: 'central',
-      label: 'Tendanciel',
+      label: 'Central',
       value: 'Central_C',
     },
     {
@@ -48,7 +48,7 @@ export const OmphaleScenariosSelection: FC = () => {
     },
     {
       id: 'basse',
-      label: 'Tendanciel',
+      label: 'Central',
       value: 'PB_C',
     },
     {
@@ -63,7 +63,7 @@ export const OmphaleScenariosSelection: FC = () => {
     },
     {
       id: 'haute',
-      label: 'Tendanciel',
+      label: 'Central',
       value: 'PH_C',
     },
     {
@@ -114,7 +114,7 @@ export const OmphaleScenariosSelection: FC = () => {
           onClick={() => setKnowMore(!knowMore)}
           size="small"
         >
-          En savoir plus sur les hypothèses d'influence
+          En savoir plus sur les hypothèses
         </Button>
         {knowMore && (
           <p className="fr-text--sm fr-text-mention--grey fr-mt-1v">

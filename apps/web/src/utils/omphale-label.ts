@@ -20,7 +20,7 @@ export const formatDecohabitation = (decohabitation: string, lowercase = false):
   } else if (decohabitation === 'B') {
     formatted = 'Basse'
   } else if (decohabitation === 'C') {
-    formatted = 'Tendanciel'
+    formatted = 'Central'
   }
 
   return lowercase ? formatted.toLowerCase() : formatted
@@ -38,7 +38,7 @@ export const getOmphaleLabel = (value: string | null): string | null => {
   return `${formattedScenario} - ${formattedDecohabitation}`
 }
 
-type PopulationBadge = 'BASSE' | 'TENDANCIEL' | 'HAUTE'
+type PopulationBadge = 'BASSE' | 'CENTRAL' | 'HAUTE'
 
 export const getPopulationBadge = (b2Scenario: string): PopulationBadge => {
   const [population] = b2Scenario.split('_')
@@ -49,7 +49,7 @@ export const getPopulationBadge = (b2Scenario: string): PopulationBadge => {
       return 'HAUTE'
     case 'Central':
     default:
-      return 'TENDANCIEL'
+      return 'CENTRAL'
   }
 }
 
@@ -62,6 +62,6 @@ export const getDecohabitationBadge = (b2Scenario: string): PopulationBadge => {
       return 'HAUTE'
     case 'C':
     default:
-      return 'TENDANCIEL'
+      return 'CENTRAL'
   }
 }

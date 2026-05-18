@@ -33,7 +33,7 @@ export const SelectOmphale = ({ onChange }: SelectOmphaleProps) => {
     },
     {
       id: 'central',
-      label: 'Scénario de Décohabitation: Tendanciel',
+      label: 'Scénario de Décohabitation: Central',
       value: 'Central_C',
     },
     {
@@ -48,7 +48,7 @@ export const SelectOmphale = ({ onChange }: SelectOmphaleProps) => {
     },
     {
       id: 'basse',
-      label: 'Scénario de Décohabitation: Tendanciel',
+      label: 'Scénario de Décohabitation: Central',
       value: 'PB_C',
     },
     {
@@ -63,7 +63,7 @@ export const SelectOmphale = ({ onChange }: SelectOmphaleProps) => {
     },
     {
       id: 'haute',
-      label: 'Scénario de Décohabitation: Tendanciel',
+      label: 'Scénario de Décohabitation: Central',
       value: 'PH_C',
     },
     {

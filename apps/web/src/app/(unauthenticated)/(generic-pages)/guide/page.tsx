@@ -327,7 +327,7 @@ export default function GuidePage() {
         caption="Scénarios de décohabitation"
         headers={['Scénario', 'Hypothèse principale']}
         data={[
-          ['🟢 Tendanciel', "Prolonge les évolutions récentes jusqu'en 2030, puis ralentit jusqu'en 2050"],
+          ['🟢 Central', "Prolonge les évolutions récentes jusqu'en 2030, puis ralentit jusqu'en 2050"],
           [
             '🔺 Accélération',
             'Décohabitation plus rapide (plus de jeunes seuls, moins de vie en couple, départ plus tardif en structure collective)',

@@ -8,6 +8,8 @@ interface CreateLongTermAccomodationRangeProps {
 }
 export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRangeProps> = ({ epci }) => {
   const [projection] = useQueryState('projection')
+  const [peakYear] = useQueryState('peakYear')
+  const targetYear = peakYear && Number(peakYear) < Number(projection) ? peakYear : projection
 
   const { defaultRates, rates, updateRates } = useEpcisRates()
   const currentRates = rates[epci]
@@ -47,7 +49,7 @@ export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRange
   return (
     <>
       <Range
-        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${projection} ?`}
+        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${targetYear} ?`}
         suffix="%"
         max={100}
         min={0}
@@ -57,7 +59,7 @@ export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRange
         }}
       />
       <p className="fr-text--sm fr-mt-1w fr-mb-0">
-        Le taux projeté à l'année {projection} est de : {(defaultEpciRates.longTermVacancyRate * 100).toFixed(2)} % -{' '}
+        Le taux projeté à l'année {targetYear} est de : {(defaultEpciRates.longTermVacancyRate * 100).toFixed(2)} % -{' '}
         {((reductionPercent / 100) * defaultEpciRates.longTermVacancyRate * 100).toFixed(2)} % ={' '}
         <strong>{(projectedRate * 100).toFixed(2)} %</strong>
       </p>

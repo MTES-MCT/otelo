@@ -54,14 +54,14 @@ const SCENARIOS = [
   {
     dataKey: 'centralC',
     id: 'central',
-    name: 'Ménages - Tendanciel',
+    name: 'Ménages - Central',
     queryValue: 'Central_C',
     stroke: getChartColor('centralC'),
   },
   {
     dataKey: 'pbC',
     id: 'basse',
-    name: 'Ménages - Tendanciel',
+    name: 'Ménages - Central',
     queryValue: 'PB_C',
     stroke: getChartColor('pbC'),
   },
@@ -89,7 +89,7 @@ const SCENARIOS = [
   {
     dataKey: 'phC',
     id: 'haute',
-    name: 'Ménages - Tendanciel',
+    name: 'Ménages - Central',
     queryValue: 'PH_C',
     stroke: getChartColor('phC'),
   },
@@ -218,7 +218,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
     )
   }
 
-  const basePopulation = chartData.find((item) => item.year === 2021)
+  const basePopulation = chartData.find((item) => item.year === Number(millesime || '2021'))
   const popEvolution = chartData.find((item) => item.year === Number(period))
   const formattedOmphale = queryStates.omphale?.replace('Central_', 'central').replace('PB_', 'pb').replace('PH_', 'ph')
   const basePopulationValue = isUsingCustomData ? basePopulation?.custom : basePopulation?.[formattedOmphale as keyof typeof basePopulation]
@@ -237,8 +237,9 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
   )
 
   useEffect(() => {
-    savePeakYear(maxYear)
-  }, [maxYear, savePeakYear])
+    const validPeakYear = maxYear && maxYear > Number(millesime || '2021') ? maxYear : null
+    savePeakYear(validPeakYear)
+  }, [maxYear, millesime, savePeakYear])
 
   const onDeleteCustomData = async () => {
     if (!customDataEpci?.id) return
@@ -326,7 +327,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
           ))}
         </div>
       </div>
-      {queryStates.omphale && maxYear && (
+      {queryStates.omphale && maxYear && maxYear > Number(millesime || '2021') && (
         <CallOut
           className="fr-py-2w fr-mb-0 fr-mt-4w"
           title={
@@ -338,8 +339,8 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
         >
           <span className="fr-text--md">
             <span>
-              Ce scénario anticipe une évolution du nombre de ménages de <strong>{evol > 0 ? `+${evol}` : evol}</strong> sur la période 2021
-              - {period}.
+              Ce scénario anticipe une évolution du nombre de ménages de <strong>{evol > 0 ? `+${evol}` : evol}</strong> sur la période{' '}
+              {millesime || '2021'} - {period}.
             </span>
             <br />
             <span>
