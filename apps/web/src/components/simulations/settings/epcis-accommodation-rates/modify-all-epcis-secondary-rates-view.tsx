@@ -3,7 +3,9 @@
 import { FC } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { ModifyAllSecondaryAccommodationRateInput } from '~/components/simulations/settings/modify-all-secondary-accommodation-rate-input'
+import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-year-horizon-alert'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
+import { useModifyPeakYears } from '~/hooks/use-simulation-peak-years'
 import { ModifyAggregatedSecondaryParcsComparisonChart } from './modify-aggregated-secondary-parc-comparison-chart'
 
 interface ModifyAllEpcisSecondaryRatesViewProps {
@@ -14,6 +16,13 @@ export const ModifyAllEpcisSecondaryRatesView: FC<ModifyAllEpcisSecondaryRatesVi
   const { simulationSettings } = useSimulationSettings()
   const epciIds = Object.keys(simulationSettings.epciScenarios)
   const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
+  const { minPeakYear } = useModifyPeakYears()
+
+  const millesimeNum = Number(simulationSettings.millesime)
+  const projection = simulationSettings.projection
+  const isPeakBeforeProjection = minPeakYear !== null && minPeakYear < projection
+  const isLockedByMillesime = isPeakBeforeProjection && minPeakYear <= millesimeNum
+  const targetYear = isPeakBeforeProjection ? minPeakYear : projection
 
   // Calculate weighted average secondary accommodation rate across all EPCIs
   const totalParc = originalRatesData ? epciIds.reduce((sum, epciId) => sum + (originalRatesData[epciId]?.urbanRenewal || 0), 0) : 0
@@ -26,13 +35,18 @@ export const ModifyAllEpcisSecondaryRatesView: FC<ModifyAllEpcisSecondaryRatesVi
   return (
     <div className="fr-p-4w shadow">
       <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-        <span className="fr-text-mention--grey">
-          Le taux moyen observé sur l'ensemble du territoire s'élève à <strong>{(averageTxRS * 100).toFixed(2)} %</strong>.
-        </span>
-        <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
-          <ModifyAllSecondaryAccommodationRateInput epcis={epcis} />
-          <ModifyAggregatedSecondaryParcsComparisonChart />
-        </div>
+        <PeakYearHorizonAlert peakYear={minPeakYear} projection={projection} millesime={millesimeNum} />
+        {!isLockedByMillesime && (
+          <>
+            <span className="fr-text-mention--grey">
+              Le taux moyen observé sur l'ensemble du territoire s'élève à <strong>{(averageTxRS * 100).toFixed(2)} %</strong>.
+            </span>
+            <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
+              <ModifyAllSecondaryAccommodationRateInput epcis={epcis} />
+              <ModifyAggregatedSecondaryParcsComparisonChart targetYear={targetYear} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

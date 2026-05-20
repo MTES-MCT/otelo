@@ -28,16 +28,16 @@ const COLORS = {
 
 const ModifyParcsComparisonCharts = ({
   epci,
+  targetYear,
   withSecondaryAccommodation = true,
 }: {
   epci: string
+  targetYear: number | null
   withSecondaryAccommodation?: boolean
 }) => {
   const { defaultRates } = useEpcisRates()
   const { simulationSettings } = useSimulationSettings()
   const baseYear = simulationSettings.millesime
-  const epciPeakYear = simulationSettings.peakYears?.[epci]
-  const targetYear = epciPeakYear && epciPeakYear > Number(simulationSettings.millesime) ? epciPeakYear : simulationSettings.projection
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
 
   const defaultRatesByEpci = defaultRates[epci]

@@ -7,15 +7,14 @@ import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
-import { CreatePeakYearHorizonAlert } from '~/components/simulations/settings/create-peak-year-horizon-alert'
 import { CreateVacancyAccommodationRatesInput } from '~/components/simulations/settings/create-vacancy-accommodation-rates-input'
 import { AllEpcisRatesView } from '~/components/simulations/settings/epcis-accommodation-rates/all-epcis-rates-view'
 import ParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/parc-comparison-charts'
 import { RatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/rates-toggle-switch'
+import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-year-horizon-alert'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
-import { useCreationPreviewPayload } from '~/hooks/use-creation-preview-payload'
-import { useSimulationPreview } from '~/hooks/use-simulation-preview'
+import { useCreationPeakYears } from '~/hooks/use-simulation-peak-years'
 import styles from './epcis-accommodation-rates.module.css'
 
 interface CreateEpcisAccomodationRatesProps {
@@ -29,13 +28,12 @@ interface TabChildrenProps {
 }
 
 const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
-  const { payload, enabled } = useCreationPreviewPayload()
-  const { data: previewData, isLoading } = useSimulationPreview(payload, { enabled })
+  const { peakYears, projection, isLoading } = useCreationPeakYears()
   const epciRates = rates?.[epci]
-  const epciPeakYear = previewData?.flowRequirement?.epcis?.find((e) => e.code === epci)?.data.peakYear ?? null
-  const projection = (payload.scenario?.projection as number | null | undefined) ?? null
+  const epciPeakYear = peakYears[epci] ?? null
   const isPeakBeforeProjection = epciPeakYear !== null && projection !== null && epciPeakYear < projection
   const isLockedByMillesime = isPeakBeforeProjection && millesime !== null && epciPeakYear! <= Number(millesime)
+  const targetYear = isPeakBeforeProjection ? epciPeakYear : projection
 
   if (!epciRates) return null
   if (isLoading) return <LoadingSpinner />
@@ -44,7 +42,7 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
     <>
       <div className="fr-mb-2w">
         <div className="fr-flex fr-direction-column fr-flex-gap-8v">
-          <CreatePeakYearHorizonAlert />
+          <PeakYearHorizonAlert peakYear={epciPeakYear ?? null} projection={projection} millesime={millesime ? Number(millesime) : null} />
           {!isLockedByMillesime && (
             <>
               <div className="fr-flex fr-direction-column fr-flex-gap-2v">
@@ -72,7 +70,7 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
       </div>
       {!isLockedByMillesime && (
         <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
-          <ParcsComparisonCharts epci={epci} withSecondaryAccommodation={false} />
+          <ParcsComparisonCharts epci={epci} targetYear={targetYear} withSecondaryAccommodation={false} />
         </div>
       )}
     </>
@@ -84,10 +82,13 @@ export const CreateEpcisAccommodationRates: FC<CreateEpcisAccomodationRatesProps
   const [millesime] = useQueryState('millesime', parseAsString)
   const { data: rates } = useAccommodationRatesByEpci(epcisCodes, millesime ?? undefined)
   const [ratesMode] = useQueryState('vacantRates', parseAsString)
+  const { minPeakYear, projection } = useCreationPeakYears()
+
+  const isPeakBeforeProjection = minPeakYear !== null && projection !== null && minPeakYear < projection
 
   if (!rates) return null
 
-  const isAllMode = ratesMode === 'all'
+  const isAllMode = ratesMode === 'all' && !isPeakBeforeProjection
 
   const tabs = epcis.map((epci) => ({
     content: <TabChildren epci={epci.code} rates={rates} millesime={millesime!} />,
@@ -98,7 +99,7 @@ export const CreateEpcisAccommodationRates: FC<CreateEpcisAccomodationRatesProps
   return (
     <>
       <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
-        <RatesToggleSwitch />
+        <RatesToggleSwitch disabled={isPeakBeforeProjection} />
       </div>
       {isAllMode ? <AllEpcisRatesView /> : <Tabs classes={{ panel: 'fr-background-default--grey' }} tabs={tabs} />}
     </>

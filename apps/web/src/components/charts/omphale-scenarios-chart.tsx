@@ -54,14 +54,14 @@ const SCENARIOS = [
   {
     dataKey: 'centralC',
     id: 'central',
-    name: 'Ménages - Central',
+    name: 'Ménages - Tendanciel',
     queryValue: 'Central_C',
     stroke: getChartColor('centralC'),
   },
   {
     dataKey: 'pbC',
     id: 'basse',
-    name: 'Ménages - Central',
+    name: 'Ménages - Tendanciel',
     queryValue: 'PB_C',
     stroke: getChartColor('pbC'),
   },
@@ -89,7 +89,7 @@ const SCENARIOS = [
   {
     dataKey: 'phC',
     id: 'haute',
-    name: 'Ménages - Central',
+    name: 'Ménages - Tendanciel',
     queryValue: 'PH_C',
     stroke: getChartColor('phC'),
   },
@@ -327,7 +327,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
           ))}
         </div>
       </div>
-      {queryStates.omphale && maxYear && maxYear > Number(millesime || '2021') && (
+      {queryStates.omphale && (
         <CallOut
           className="fr-py-2w fr-mb-0 fr-mt-4w"
           title={
@@ -342,10 +342,14 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
               Ce scénario anticipe une évolution du nombre de ménages de <strong>{evol > 0 ? `+${evol}` : evol}</strong> sur la période{' '}
               {millesime || '2021'} - {period}.
             </span>
-            <br />
-            <span>
-              Le pic de ménages sera atteint <strong>{maxYear < 2050 ? `en ${maxYear}` : `après ${maxYear}`}</strong>.
-            </span>
+            {maxYear && maxYear > Number(millesime || '2021') && (
+              <>
+                <br />
+                <span>
+                  Le pic de ménages sera atteint <strong>{maxYear < 2050 ? `en ${maxYear}` : `après ${maxYear}`}</strong>.
+                </span>
+              </>
+            )}
           </span>
         </CallOut>
       )}

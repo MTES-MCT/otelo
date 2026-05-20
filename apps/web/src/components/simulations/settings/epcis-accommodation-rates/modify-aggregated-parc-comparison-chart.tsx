@@ -26,7 +26,7 @@ const COLORS = {
   default: '#E5E5E5',
 }
 
-export const ModifyAggregatedParcsComparisonChart = () => {
+export const ModifyAggregatedParcsComparisonChart = ({ targetYear }: { targetYear: number | null }) => {
   const { simulationSettings } = useSimulationSettings()
   const baseYear = simulationSettings.millesime
   const epciIds = Object.keys(simulationSettings.epciScenarios)
@@ -34,12 +34,6 @@ export const ModifyAggregatedParcsComparisonChart = () => {
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
 
   if (!originalRatesData || epciIds.length === 0) return null
-
-  const rawAggregatedPeakYear = simulationSettings.peakYears
-    ? Math.min(...epciIds.map((id) => simulationSettings.peakYears![id]).filter(Boolean))
-    : undefined
-  const aggregatedPeakYear =
-    rawAggregatedPeakYear && rawAggregatedPeakYear > Number(simulationSettings.millesime) ? rawAggregatedPeakYear : undefined
 
   // Calculate aggregated rates (average across all EPCIs)
   const aggregateRates = () => {
@@ -181,11 +175,9 @@ export const ModifyAggregatedParcsComparisonChart = () => {
                 <span className="fr-text--medium">{`Le parc en ${baseYear} (moyenne du territoire)`}</span>
                 <CustomBar data={dataBaseYear} scale={unifiedScale} />
               </div>
-              {String(aggregatedPeakYear ?? simulationSettings.projection) !== baseYear && (
+              {String(targetYear) !== baseYear && (
                 <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                  <span className="fr-text--medium">
-                    Le parc en {aggregatedPeakYear ?? simulationSettings.projection} (moyenne du territoire)
-                  </span>
+                  <span className="fr-text--medium">Le parc en {targetYear} (moyenne du territoire)</span>
                   <CustomBar data={computedData} scale={unifiedScale} />
                 </div>
               )}

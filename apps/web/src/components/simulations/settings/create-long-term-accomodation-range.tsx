@@ -1,23 +1,17 @@
 import { Range } from '@codegouvfr/react-dsfr/Range'
-import { parseAsInteger, parseAsString, useQueryState } from 'nuqs'
 import { FC, useEffect } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
-import { useCreationPreviewPayload } from '~/hooks/use-creation-preview-payload'
-import { useSimulationPreview } from '~/hooks/use-simulation-preview'
+import { useCreationPeakYears } from '~/hooks/use-simulation-peak-years'
 
 interface CreateLongTermAccomodationRangeProps {
   epci: string
 }
 export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRangeProps> = ({ epci }) => {
-  const [projection] = useQueryState('projection', parseAsInteger)
-  const [millesime] = useQueryState('millesime', parseAsString)
-  const { payload, enabled } = useCreationPreviewPayload()
-  const { data } = useSimulationPreview(payload, { enabled })
+  const { peakYears, projection, millesime } = useCreationPeakYears()
 
-  const epciPeakYear = data?.flowRequirement?.epcis?.find((e) => e.code === epci)?.data.peakYear ?? null
-  const millesimeNum = millesime ? Number(millesime) : null
+  const epciPeakYear = peakYears[epci] ?? null
   const isPeakBeforeProjection = epciPeakYear !== null && projection !== null && epciPeakYear < projection
-  const isLockedByMillesime = isPeakBeforeProjection && millesimeNum !== null && epciPeakYear! <= millesimeNum
+  const isLockedByMillesime = isPeakBeforeProjection && millesime !== null && epciPeakYear! <= millesime
   const targetYear = isPeakBeforeProjection ? epciPeakYear : projection
 
   const { defaultRates, rates, updateRates } = useEpcisRates()

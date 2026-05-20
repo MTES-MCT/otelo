@@ -90,7 +90,7 @@ export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTable
               const territoryData = Object.values(row)[0]
               const scenarios: Array<{ key: ScenarioKey; name: string }> = [
                 { key: 'haute', name: 'Décohabitation haute' },
-                { key: 'central', name: 'Décohabitation centrale' },
+                { key: 'central', name: 'Décohabitation tendanciel' },
                 { key: 'basse', name: 'Décohabitation basse' },
               ]
               const prefix = populationType === 'haute' ? 'ph' : populationType === 'central' ? 'central' : 'pb'

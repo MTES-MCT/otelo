@@ -6,14 +6,15 @@ import { FC, useState } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 
-export const ModifyAllEpcisAccommodationRange: FC = () => {
+interface ModifyAllEpcisAccommodationRangeProps {
+  targetYear: number | null
+}
+
+export const ModifyAllEpcisAccommodationRange: FC<ModifyAllEpcisAccommodationRangeProps> = ({ targetYear }) => {
   const { simulationSettings, updateAllRates } = useSimulationSettings()
   const epciIds = Object.keys(simulationSettings.epciScenarios)
   const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
   const [reductionPercent, setReductionPercent] = useState(15)
-  const peakYears = simulationSettings.peakYears ? Object.values(simulationSettings.peakYears) : []
-  const minPeakYear = peakYears.length > 0 ? Math.min(...peakYears) : null
-  const targetYear = minPeakYear && minPeakYear < simulationSettings.projection ? minPeakYear : simulationSettings.projection
 
   const applyReductionToAllEpcis = (rangeValue: number) => {
     if (!originalRatesData) return

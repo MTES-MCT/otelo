@@ -33,7 +33,7 @@ export const OmphaleScenariosSelection: FC = () => {
     },
     {
       id: 'central',
-      label: 'Central',
+      label: 'Tendanciel',
       value: 'Central_C',
     },
     {
@@ -48,7 +48,7 @@ export const OmphaleScenariosSelection: FC = () => {
     },
     {
       id: 'basse',
-      label: 'Central',
+      label: 'Tendanciel',
       value: 'PB_C',
     },
     {
@@ -63,7 +63,7 @@ export const OmphaleScenariosSelection: FC = () => {
     },
     {
       id: 'haute',
-      label: 'Central',
+      label: 'Tendanciel',
       value: 'PH_C',
     },
     {

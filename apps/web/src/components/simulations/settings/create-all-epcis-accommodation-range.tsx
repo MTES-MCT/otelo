@@ -1,14 +1,14 @@
 'use client'
 
 import { Range } from '@codegouvfr/react-dsfr/Range'
-import { useQueryState } from 'nuqs'
 import { FC, useEffect, useState } from 'react'
 import { RateSettings, useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 
-export const CreateAllEpcisAccommodationRange: FC = () => {
-  const [projection] = useQueryState('projection')
-  const [peakYear] = useQueryState('peakYear')
-  const targetYear = peakYear && Number(peakYear) < Number(projection) ? peakYear : projection
+interface CreateAllEpcisAccommodationRangeProps {
+  targetYear: number | null
+}
+
+export const CreateAllEpcisAccommodationRange: FC<CreateAllEpcisAccommodationRangeProps> = ({ targetYear }) => {
   const { defaultRates, updateAllRates } = useEpcisRates()
   const [reductionPercent, setReductionPercent] = useState(15)
 

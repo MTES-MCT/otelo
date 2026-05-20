@@ -2,8 +2,7 @@ import { Range } from '@codegouvfr/react-dsfr/Range'
 import { FC } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
-import { useModifyPreviewPayload } from '~/hooks/use-modify-preview-payload'
-import { useSimulationPreview } from '~/hooks/use-simulation-preview'
+import { useModifyPeakYears } from '~/hooks/use-simulation-peak-years'
 
 interface ModifyLongTermAccomodationRangeProps {
   epci: string
@@ -12,14 +11,12 @@ interface ModifyLongTermAccomodationRangeProps {
 export const ModifyLongTermAccomodationRange: FC<ModifyLongTermAccomodationRangeProps> = ({ epci }) => {
   const { simulationSettings, updateRates } = useSimulationSettings()
   const { data: originalRatesData } = useAccommodationRatesByEpci([epci], simulationSettings.millesime)
-  const payload = useModifyPreviewPayload()
-  const { data: previewData } = useSimulationPreview(payload)
+  const { peakYears } = useModifyPeakYears()
 
   const currentRates = simulationSettings.epciScenarios[epci]
   const originalLongTermVacancyRate = originalRatesData?.[epci]?.longTermVacancyRate || 0
 
-  const epciPreviewData = previewData?.flowRequirement?.epcis?.find((e) => e.code === epci)
-  const epciPeakYear = epciPreviewData?.data.peakYear ?? simulationSettings.peakYears?.[epci]
+  const epciPeakYear = peakYears[epci]
   const millesimeNum = Number(simulationSettings.millesime)
   const isPeakBeforeProjection = epciPeakYear !== undefined && epciPeakYear < simulationSettings.projection
   const isLockedByMillesime = isPeakBeforeProjection && epciPeakYear! <= millesimeNum

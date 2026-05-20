@@ -14,7 +14,10 @@ export const EpcisDetailsTable = ({ simulation }: EpcisDetailsTableProps) => {
     const epciTotalResults = simulation.results.epcisTotals.find((e) => e.epciCode === epci.code) as TEpciTotalCalculationResult
     const total = epciTotalResults.total
     const totalFlux = epciTotalResults.totalFlux
-    const totalStock = epciFlowRequirement.data.peakYear === 2021 ? epciTotalResults.totalStock : epciTotalResults.prepeakTotalStock
+    const totalStock =
+      epciFlowRequirement.data.peakYear === Number(simulation.scenario.millesime)
+        ? epciTotalResults.totalStock
+        : epciTotalResults.prepeakTotalStock
 
     const flowRequirementsEpci = simulation.results.flowRequirement.epcis.find((e) => e.code === epci.code) as TFlowRequirementChartData
     const flowResults = calculateFlowResultsForEpci(flowRequirementsEpci, totalFlux)
@@ -27,7 +30,7 @@ export const EpcisDetailsTable = ({ simulation }: EpcisDetailsTableProps) => {
       flowResults.secondaryResidenceAccomodationEvolution < 0
         ? formatNumber(Math.abs(flowResults.secondaryResidenceAccomodationEvolution))
         : 0,
-      `2021 - ${flowRequirementsEpci.data.peakYear === 2021 ? simulation.scenario.b1_horizon_resorption : flowRequirementsEpci.data.peakYear !== 2050 ? flowRequirementsEpci.data.peakYear : simulation.scenario.projection}`,
+      `${simulation.scenario.millesime} - ${flowRequirementsEpci.data.peakYear === 2021 ? simulation.scenario.b1_horizon_resorption : flowRequirementsEpci.data.peakYear !== 2050 ? flowRequirementsEpci.data.peakYear : simulation.scenario.projection}`,
     ]
   })
 

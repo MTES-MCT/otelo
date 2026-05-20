@@ -551,7 +551,7 @@ const getDecohabitationScenarioLabel = (scenario: string) => {
     case 'PB_C':
     case 'PH_C':
     default:
-      return 'Décohabitation centrale'
+      return 'Décohabitation tendanciel'
     case 'Central_B':
     case 'PB_B':
     case 'PH_B':

@@ -2,7 +2,7 @@
 
 import Button from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
-import { parseAsBoolean, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
+import { parseAsBoolean, parseAsString, useQueryStates } from 'nuqs'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import styles from './parc-comparison-charts.module.css'
@@ -26,16 +26,13 @@ const COLORS = {
   default: '#E5E5E5',
 }
 
-export const AggregatedSecondaryParcsComparisonChart = () => {
+export const AggregatedSecondaryParcsComparisonChart = ({ targetYear }: { targetYear: number | null }) => {
   const { rates, defaultRates } = useEpcisRates()
-  const [{ millesime, projection, peakYear, parcEvolutionShown }, setQueryStates] = useQueryStates({
+  const [{ millesime, parcEvolutionShown }, setQueryStates] = useQueryStates({
     millesime: parseAsString,
-    projection: parseAsInteger,
-    peakYear: parseAsString,
     parcEvolutionShown: parseAsBoolean.withDefault(false),
   })
   const baseYear = millesime
-  const targetYear = peakYear ?? projection
 
   const epciIds = Object.keys(defaultRates)
   if (epciIds.length === 0) return null
