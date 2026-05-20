@@ -43,7 +43,7 @@ export const ModifyLongTermAccomodationRange: FC<ModifyLongTermAccomodationRange
   const projectedRate = originalLongTermVacancyRate * (1 - reductionPercent / 100)
 
   return (
-    <>
+    <div className="fr-col-8">
       <Range
         label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${targetYear} ?`}
         max={100}
@@ -59,6 +59,6 @@ export const ModifyLongTermAccomodationRange: FC<ModifyLongTermAccomodationRange
         {((reductionPercent / 100) * originalLongTermVacancyRate * 100).toFixed(2)} % ={' '}
         <strong>{(projectedRate * 100).toFixed(2)} %</strong>
       </p>
-    </>
+    </div>
   )
 }
