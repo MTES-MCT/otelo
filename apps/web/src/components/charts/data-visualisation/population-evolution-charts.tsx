@@ -74,27 +74,38 @@ export const PopulationEvolutionChart: FC<PopulationEvolutionChartProps> = ({ da
   const epcisLinearChart = Object.keys(chartData.linearChart).filter((epci) => queryStates.epcis.includes(epci))
   const linearDataKey = type?.split('-')[0]
   const epciName = chartData.tableData[queryStates.epci as string]?.name
+
+  const periods = Array.from(new Set(Object.values(chartData.tableData).flatMap((row) => Object.keys(row.annualEvolution ?? {})))).sort()
+
+  const allYears = periods.flatMap((p) => p.split('-').map(Number)).filter(Boolean)
+  const minYear = allYears.length ? Math.min(...allYears) : 2010
+  const maxYear = allYears.length ? Math.max(...allYears) : 2021
+
   const barChartData = Object.entries(chartData.tableData)
     .filter(([key]) => queryStates.epcis.includes(key))
     .map(([key, value]) => ({
-      '2010-2015': value.annualEvolution?.['2010-2015']?.value ?? 0,
-      '2015-2021': value.annualEvolution?.['2015-2021']?.value ?? 0,
+      ...Object.fromEntries(periods.map((p) => [p, value.annualEvolution?.[p]?.value ?? 0])),
       epciCode: key,
       name: value.name,
     }))
 
   const title = type && DATA_TYPE_OPTIONS.find((option) => option.value === type)?.label
+  const periodLabel = periods.join(' et ')
   const barChartTitle =
     type === 'menage-evolution' ? (
-      <>Comparaison de l'évolution annuelle moyenne du nombre de ménages entre 2010-2015 et 2015-2021</>
+      <>Comparaison de l'évolution annuelle moyenne du nombre de ménages entre {periodLabel}</>
     ) : (
-      <>Comparaison de l'évolution annuelle moyenne du nombre d'habitants entre 2010-2015 et 2015-2021</>
+      <>Comparaison de l'évolution annuelle moyenne du nombre d'habitants entre {periodLabel}</>
     )
   const lineChartTitle =
     type === 'menage-evolution' ? (
-      <>Evolution du nombre de ménages entre 2010 et 2021</>
+      <>
+        Evolution du nombre de ménages entre {minYear} et {maxYear}
+      </>
     ) : (
-      <>Évolution de la population entre 2010 et 2021</>
+      <>
+        Évolution de la population entre {minYear} et {maxYear}
+      </>
     )
   return (
     <>
@@ -154,15 +165,13 @@ export const PopulationEvolutionChart: FC<PopulationEvolutionChartProps> = ({ da
               <XAxis dataKey="name" angle={-30} textAnchor="end" interval={0} tick={{ fontSize: 12 }} />
               <YAxis />
               <Tooltip content={customBarTooltip} />
-              <Bar dataKey="2010-2015" name="2010-2015" fill={barChartColors[0]} key="2010-2015" />
-              <Bar dataKey="2015-2021" name="2015-2021" fill={barChartColors[1]} key="2015-2021" />
+              {periods.map((p, i) => (
+                <Bar key={p} dataKey={p} name={p} fill={barChartColors[i]} />
+              ))}
             </BarChart>
           </ResponsiveContainer>
           <div className={classes.chartTitle}>{barChartTitle}</div>
-          {customLegend([
-            { name: '2010-2015', color: barChartColors[0] },
-            { name: '2015-2021', color: barChartColors[1] },
-          ])}
+          {customLegend(periods.map((p, i) => ({ name: p, color: barChartColors[i] })))}
         </div>
       </div>
     </>

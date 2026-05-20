@@ -632,6 +632,7 @@ model Sitadel {
 
 model RP {
   year                   Int
+  millesime              String @default("2021")
   menage                 Float
   population             Float
   vacant                 Float
@@ -641,7 +642,8 @@ model RP {
   epciCode               String @map("epci_code")
   epci                   Epci   @relation(fields: [epciCode], references: [code])
 
-  @@id([epciCode, year])
+  @@id([epciCode, year, millesime])
+  @@index([millesime])
   @@map("rp")
 }
 

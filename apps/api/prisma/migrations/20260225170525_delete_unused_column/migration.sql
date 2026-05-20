@@ -5,4 +5,4 @@
 
 */
 -- AlterTable
-ALTER TABLE "hosted_sne" DROP COLUMN IF EXISTS "free";
+ALTER TABLE "hosted_sne" DROP COLUMN "free";

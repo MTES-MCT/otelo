@@ -8,7 +8,7 @@ import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import classNames from 'classnames'
 import { parseAsArrayOf, parseAsString, useQueryState, useQueryStates } from 'nuqs'
 import React, { FC, useCallback, useEffect, useState } from 'react'
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { NameType, Payload as TooltipPayload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
@@ -309,6 +309,22 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
               </React.Fragment>
             ))}
 
+            <ReferenceLine
+              x={Number(millesime || '2021')}
+              stroke="#888"
+              strokeDasharray="6 3"
+              label={(props) => {
+                const { viewBox } = props as { viewBox?: { x: number; y: number; height: number } }
+                if (!viewBox) return null
+                const cx = viewBox.x - 10
+                const cy = viewBox.y + (viewBox.height ?? 200) / 2
+                return (
+                  <text x={cx} y={cy} textAnchor="middle" fill="#666" fontSize={11} transform={`rotate(-90, ${cx}, ${cy})`}>
+                    Données rétrospectives (RP INSEE)
+                  </text>
+                )
+              }}
+            />
             <XAxis dataKey="year" />
             <Tooltip content={<OmphaleScenariosTooltip basePopulation={basePopulation as TOmphaleEvolutionWithCustom} />} />
 

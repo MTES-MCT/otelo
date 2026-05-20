@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { TEpci } from '@shared'
 import { BadQualityService } from '~/bad-quality/bad-quality.service'
+import { DataPackVersionsService } from '~/data-pack-versions/data-pack-versions.service'
 import { DemographicEvolutionService } from '~/demographic-evolution/demographic-evolution.service'
 import { EpcisService } from '~/epcis/epcis.service'
 import { FinancialInadequationService } from '~/financial-inadequation/financial-inadequation.service'
@@ -27,6 +28,7 @@ export class DataVisualisationService {
     private readonly physicalInadequationService: PhysicalInadequationService,
     private readonly sitadelService: SitadelService,
     private readonly householdSizesService: HouseholdSizesService,
+    private readonly dataPackVersionsService: DataPackVersionsService,
   ) {}
 
   async getInadequateHousing(epcis: TEpci[], millesime?: string): Promise<TInadequateHousing> {
@@ -81,21 +83,28 @@ export class DataVisualisationService {
     }))
     switch (type) {
       case 'projection-menages-evolution':
-        return this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(epcis, millesime, populationType)
+        return this.demographicEvolutionService.getDemographicEvolutionOmphaleAndYear(
+          epcis,
+          millesime ?? (await this.dataPackVersionsService.getActive()).millesime,
+          populationType,
+        )
       case 'projection-population-evolution':
-        return this.demographicEvolutionService.getDemographicEvolutionPopulationAndYear(epcis, millesime)
+        return this.demographicEvolutionService.getDemographicEvolutionPopulationAndYear(
+          epcis,
+          millesime ?? (await this.dataPackVersionsService.getActive()).millesime,
+        )
       case 'menage-evolution':
-        return this.rpInseeService.getRP(epcis, 'menage')
+        return this.rpInseeService.getRP(epcis, 'menage', millesime ?? undefined)
       case 'population-evolution':
-        return this.rpInseeService.getRP(epcis, 'population')
+        return this.rpInseeService.getRP(epcis, 'population', millesime ?? undefined)
       case 'residences-secondaires':
         if (source === 'rp') {
-          return this.rpInseeService.getRP(epcis, 'secondaryAccommodation')
+          return this.rpInseeService.getRP(epcis, 'secondaryAccommodation', millesime ?? undefined)
         }
         return []
       case 'logements-vacants':
         if (source === 'rp') {
-          return this.rpInseeService.getRP(epcis, 'vacant')
+          return this.rpInseeService.getRP(epcis, 'vacant', millesime ?? undefined)
         }
         return this.vacancyService.getVacancy(epcis)
       case 'mal-logement':

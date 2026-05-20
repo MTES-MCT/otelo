@@ -16,6 +16,7 @@ export type YearData = Record<ScenarioKey, number>
 export type ProjectionMenagesEvolutionTableProps = {
   data: TDemographicProjectionDataTable
   maxYears: TDemographicMenagesMaxYearsByEpci
+  millesime?: string | null
 }
 
 const HORIZON_YEARS = [2030, 2040, 2050]
@@ -27,9 +28,9 @@ const getBaseYear = (data: TDemographicProjectionDataTable): string => {
   return yearKeys[0] || '2021'
 }
 
-export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTableProps> = ({ data, maxYears }) => {
+export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTableProps> = ({ data, maxYears, millesime }) => {
   const [populationType] = useQueryState('populationType', parseAsString.withDefault('haute'))
-  const baseYear = getBaseYear(data)
+  const baseYear = millesime ?? getBaseYear(data)
 
   const dataTable = Object.entries(data).map(([key, rowValue]) => {
     const typedRowValue = rowValue as unknown as TDemographicProjectionDataTableRow
@@ -57,6 +58,9 @@ export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTable
             <tr>
               <th rowSpan={2} className={styles.headerCell}>
                 EPCI/BH
+              </th>
+              <th rowSpan={2} className={styles.headerCell}>
+                Millésime
               </th>
               <th rowSpan={2} className={styles.headerCell}>
                 Scénarios
@@ -113,6 +117,11 @@ export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTable
                   {scenarioIndex === 0 && (
                     <td rowSpan={3} className={styles.sectionCell}>
                       {territoryName}
+                    </td>
+                  )}
+                  {scenarioIndex === 0 && (
+                    <td rowSpan={3} className={styles.dataCell}>
+                      {baseYear}
                     </td>
                   )}
                   <td className={styles.scenarioCell}>{scenario.name}</td>

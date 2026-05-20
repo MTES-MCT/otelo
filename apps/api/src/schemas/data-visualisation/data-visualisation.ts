@@ -103,7 +103,7 @@ export const ZDataVisualisationQuery = z.object({
   type: z.string(),
   populationType: z.string().optional(),
   source: z.string().optional(),
-  millesime: z.string(),
+  millesime: z.string().optional(),
 })
 
 export type TDataVisualisationQuery = z.infer<typeof ZDataVisualisationQuery>

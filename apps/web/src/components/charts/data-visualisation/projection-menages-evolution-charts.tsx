@@ -2,13 +2,24 @@ import { fr } from '@codegouvfr/react-dsfr'
 import Select from '@codegouvfr/react-dsfr/Select'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  TooltipProps,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { NameType, Payload as TooltipPayload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { DATA_TYPE_OPTIONS } from '~/components/data-visualisation/select-data-type'
-import { SelectMillesime } from '~/components/data-visualisation/select-millesime'
 import { TDemographicProjectionEvolution } from '~/schemas/population-evolution'
 import { formatNumber } from '~/utils/format-numbers'
 import styles from './projection-menages-evolution-charts.module.css'
@@ -190,8 +201,6 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
           {title} - {epciName}
         </h2>
         <div className="fr-flex fr-justify-content-end fr-flex-gap-4v fr-mb-4w">
-          <SelectMillesime />
-
           <Select
             label=""
             nativeSelectProps={{
@@ -228,6 +237,22 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
                   })()}
                 />
               )}
+              <ReferenceLine
+                x={Number(baseYear)}
+                stroke="#888"
+                strokeDasharray="6 3"
+                label={(props) => {
+                  const { viewBox } = props as { viewBox?: { x: number; y: number; height: number } }
+                  if (!viewBox) return null
+                  const cx = viewBox.x - 10
+                  const cy = viewBox.y + (viewBox.height ?? 200) / 2
+                  return (
+                    <text x={cx} y={cy} textAnchor="middle" fill="#666" fontSize={11} transform={`rotate(-90, ${cx}, ${cy})`}>
+                      Données rétrospectives (RP INSEE)
+                    </text>
+                  )
+                }}
+              />
               <Tooltip content={<CustomTooltip />} />
               {epcisLinearChart.map((epci) => {
                 const epciData = chartData.linearChart[epci].data

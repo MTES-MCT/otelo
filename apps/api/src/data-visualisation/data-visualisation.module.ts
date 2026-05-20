@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { BadQualityModule } from '~/bad-quality/bad-quality.module'
+import { DataPackVersionsModule } from '~/data-pack-versions/data-pack-versions.module'
 import { DemographicEvolutionModule } from '~/demographic-evolution/demographic-evolution.module'
 import { EpcisModule } from '~/epcis/epcis.module'
 import { FilocomModule } from '~/filocom/filocom.module'
@@ -29,6 +30,7 @@ import { DataVisualisationService } from './data-visualisation.service'
     PhysicalInadequationModule,
     SitadelModule,
     HouseholdSizesModule,
+    DataPackVersionsModule,
   ],
   providers: [DataVisualisationService],
   exports: [DataVisualisationService],

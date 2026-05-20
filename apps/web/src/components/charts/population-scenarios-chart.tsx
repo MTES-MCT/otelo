@@ -6,7 +6,7 @@ import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import classNames from 'classnames'
 import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
@@ -122,6 +122,22 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
                 }}
               />
             ))}
+            <ReferenceLine
+              x={queryStates.millesime ?? undefined}
+              stroke="#888"
+              strokeDasharray="6 3"
+              label={(props) => {
+                const { viewBox } = props as { viewBox?: { x: number; y: number; height: number } }
+                if (!viewBox) return null
+                const cx = viewBox.x - 10
+                const cy = viewBox.y + (viewBox.height ?? 200) / 2
+                return (
+                  <text x={cx} y={cy} textAnchor="middle" fill="#666" fontSize={11} transform={`rotate(-90, ${cx}, ${cy})`}>
+                    Données rétrospectives (RP INSEE)
+                  </text>
+                )
+              }}
+            />
             <XAxis dataKey="year" />
             <YAxis domain={[metadata.min, metadata.max]} tickFormatter={(value) => roundPopulation(value).toString()} />
             <Tooltip content={<PopulationScenariosCustomTooltip basePopulation={basePopulation} />} />
