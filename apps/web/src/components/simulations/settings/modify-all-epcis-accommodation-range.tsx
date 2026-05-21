@@ -6,10 +6,14 @@ import { FC, useState } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 
-export const ModifyAllEpcisAccommodationRange: FC = () => {
+interface ModifyAllEpcisAccommodationRangeProps {
+  targetYear: number | null
+}
+
+export const ModifyAllEpcisAccommodationRange: FC<ModifyAllEpcisAccommodationRangeProps> = ({ targetYear }) => {
   const { simulationSettings, updateAllRates } = useSimulationSettings()
   const epciIds = Object.keys(simulationSettings.epciScenarios)
-  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
+  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
   const [reductionPercent, setReductionPercent] = useState(15)
 
   const applyReductionToAllEpcis = (rangeValue: number) => {
@@ -34,7 +38,7 @@ export const ModifyAllEpcisAccommodationRange: FC = () => {
   return (
     <div className="fr-col-8">
       <Range
-        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${simulationSettings.projection} ?`}
+        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${targetYear} ?`}
         suffix="%"
         max={100}
         min={0}

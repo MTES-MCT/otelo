@@ -6,9 +6,9 @@ import Badge from '@codegouvfr/react-dsfr/Badge'
 import Button from '@codegouvfr/react-dsfr/Button'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import classNames from 'classnames'
-import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
-import React, { FC, useEffect, useState } from 'react'
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { parseAsArrayOf, parseAsString, useQueryState, useQueryStates } from 'nuqs'
+import React, { FC, useCallback, useEffect, useState } from 'react'
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { NameType, Payload as TooltipPayload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
@@ -115,6 +115,7 @@ const OmphaleScenariosTooltip = ({
   payload?: TooltipPayload<ValueType, NameType>[]
   basePopulation: TOmphaleEvolution
 }) => {
+  const [millesime] = useQueryState('millesime')
   const { classes } = useStyles()
   if (!active || !payload?.length) return null
   return (
@@ -129,7 +130,7 @@ const OmphaleScenariosTooltip = ({
             <div className={classes.tooltipContent}>
               <span className={classes.tooltipLabel}>
                 {item.name}: <strong>{evol > 0 ? `+${formatNumber(evol)}` : formatNumber(evol)}</strong> ménages par rapport à{' '}
-                <strong>2021</strong>
+                <strong>{millesime}</strong>
               </span>
               <span className={classes.tooltipSmallText}>({formatNumber(item.value)} ménages)</span>
             </div>
@@ -152,11 +153,13 @@ const findMaxValueYear = (data: TOmphaleEvolution[], scenarioKey?: string) => {
 
 export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demographicEvolution, epcis: epcisProps, scenarioId }) => {
   const { classes } = useStyles()
+  const [millesime] = useQueryState('millesime')
 
   const [queryStates, setQueryStates] = useQueryStates({
     omphale: parseAsString,
     population: parseAsString,
     projection: parseAsString,
+    peakYear: parseAsString,
     epciChart: parseAsString.withDefault(''),
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
     demographicEvolutionOmphaleCustomIds: parseAsArrayOf(parseAsString).withDefault([]),
@@ -167,7 +170,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
   const [isUsingCustomData, setIsUsingCustomData] = useState(false)
 
   // Fetch all custom demographic data with a single query
-  const { data: allCustomData = [] } = useDemographicEvolutionCustom(queryStates.demographicEvolutionOmphaleCustomIds)
+  const { data: allCustomData = [] } = useDemographicEvolutionCustom(queryStates.demographicEvolutionOmphaleCustomIds, millesime)
 
   // Find custom data that matches the current EPCI and scenario (if provided)
   const customDataEpci = allCustomData.find((data) => data.epciCode === currentEpci) || null
@@ -215,13 +218,28 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
     )
   }
 
-  const basePopulation = chartData.find((item) => item.year === 2021)
+  const basePopulation = chartData.find((item) => item.year === Number(millesime || '2021'))
   const popEvolution = chartData.find((item) => item.year === Number(period))
   const formattedOmphale = queryStates.omphale?.replace('Central_', 'central').replace('PB_', 'pb').replace('PH_', 'ph')
   const basePopulationValue = isUsingCustomData ? basePopulation?.custom : basePopulation?.[formattedOmphale as keyof typeof basePopulation]
   const popEvolutionValue = isUsingCustomData ? popEvolution?.custom : popEvolution?.[formattedOmphale as keyof typeof popEvolution]
   const evol = basePopulationValue && popEvolutionValue ? popEvolutionValue - basePopulationValue : 0
   const maxYear = findMaxValueYear(chartData, formattedOmphale)
+
+  const savePeakYear = useCallback(
+    (year: number | null) => {
+      const peakYearStr = year ? String(year) : null
+      if (peakYearStr !== queryStates.peakYear) {
+        setQueryStates({ peakYear: peakYearStr })
+      }
+    },
+    [queryStates.peakYear, setQueryStates],
+  )
+
+  useEffect(() => {
+    const validPeakYear = maxYear && maxYear > Number(millesime || '2021') ? maxYear : null
+    savePeakYear(validPeakYear)
+  }, [maxYear, millesime, savePeakYear])
 
   const onDeleteCustomData = async () => {
     if (!customDataEpci?.id) return
@@ -291,6 +309,22 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
               </React.Fragment>
             ))}
 
+            <ReferenceLine
+              x={Number(millesime || '2021')}
+              stroke="#888"
+              strokeDasharray="6 3"
+              label={(props) => {
+                const { viewBox } = props as { viewBox?: { x: number; y: number; height: number } }
+                if (!viewBox) return null
+                const cx = viewBox.x - 10
+                const cy = viewBox.y + (viewBox.height ?? 200) / 2
+                return (
+                  <text x={cx} y={cy} textAnchor="middle" fill="#666" fontSize={11} transform={`rotate(-90, ${cx}, ${cy})`}>
+                    Données rétrospectives (RP INSEE)
+                  </text>
+                )
+              }}
+            />
             <XAxis dataKey="year" />
             <Tooltip content={<OmphaleScenariosTooltip basePopulation={basePopulation as TOmphaleEvolutionWithCustom} />} />
 
@@ -309,7 +343,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
           ))}
         </div>
       </div>
-      {queryStates.omphale && maxYear && (
+      {queryStates.omphale && (
         <CallOut
           className="fr-py-2w fr-mb-0 fr-mt-4w"
           title={
@@ -321,13 +355,17 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
         >
           <span className="fr-text--md">
             <span>
-              Ce scénario anticipe une évolution du nombre de ménages de <strong>{evol > 0 ? `+${evol}` : evol}</strong> sur la période 2021
-              - {period}.
+              Ce scénario anticipe une évolution du nombre de ménages de <strong>{evol > 0 ? `+${evol}` : evol}</strong> sur la période{' '}
+              {millesime || '2021'} - {period}.
             </span>
-            <br />
-            <span>
-              Le pic de ménages sera atteint <strong>{maxYear < 2050 ? `en ${maxYear}` : `après ${maxYear}`}</strong>.
-            </span>
+            {maxYear && maxYear > Number(millesime || '2021') && (
+              <>
+                <br />
+                <span>
+                  Le pic de ménages sera atteint <strong>{maxYear < 2050 ? `en ${maxYear}` : `après ${maxYear}`}</strong>.
+                </span>
+              </>
+            )}
           </span>
         </CallOut>
       )}

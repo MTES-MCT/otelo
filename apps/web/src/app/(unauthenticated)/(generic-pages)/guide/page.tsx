@@ -56,18 +56,18 @@ export default function GuidePage() {
       <h4 id="donnees-demarrer">Les données pour démarrer : </h4>
       <ul>
         <li>
-          Le <span className="fr-text--bold">nombre de logements</span> du territoire au 1er janvier 2021
+          Le <span className="fr-text--bold">nombre de logements</span> du territoire au 1er janvier de l'année de référence (millésime)
         </li>
         <li>
-          Le <span className="fr-text--bold">taux de vacance</span> au 1er janvier 2021, en distinguant vacance de courte durée (moins de 2
-          ans) et vacance de <span className="fr-text--bold">longue durée</span> (2 ans ou plus).
+          Le <span className="fr-text--bold">taux de vacance</span> au 1er janvier de l'année de référence, en distinguant vacance de courte
+          durée (moins de 2 ans) et vacance de <span className="fr-text--bold">longue durée</span> (2 ans ou plus).
         </li>
         <li>
-          Le <span className="fr-text--bold">taux de résidences secondaires</span> au 1er janvier 2021
+          Le <span className="fr-text--bold">taux de résidences secondaires</span> au 1er janvier de l'année de référence
         </li>
         <li>
           Des <span className="fr-text--bold">projections démographiques</span> permettant de définir un nombre de ménages sur le territoire
-          pour chaque année entre 2021 et 2050
+          pour chaque année entre l'année de référence et 2050
         </li>
         <li>
           Des données permettant d'estimer le <span className="fr-text--bold">volume de situations de mal-logement</span> et de{' '}
@@ -75,8 +75,13 @@ export default function GuidePage() {
         </li>
       </ul>
       <p>
-        NB : l'année de référence est fixée à <span className="fr-text--bold">2021</span> compte-tenu des données les plus récentes
-        disponibles (recensement, données fiscales…). A chaque mise à jour des données, cette année de référence est susceptible d'évoluer.
+        NB : l'année de référence (appelée <span className="fr-text--bold">millésime</span>) dépend du jeu de données actif. Le millésime
+        par défaut est actuellement <span className="fr-text--bold">2022</span>, mais le millésime 2021 reste disponible. À chaque mise à
+        jour des données (recensement, données fiscales…), un nouveau millésime est susceptible d'être ajouté.
+      </p>
+      <p>
+        Pour la suite de ce guide, les exemples et illustrations utiliseront <span className="fr-text--bold">2022</span> comme année de
+        référence. Les mécanismes décrits s'appliquent de la même manière quel que soit le millésime choisi.
       </p>
       <h4 id="hypotheses-utilisateur">Hypothèses de l'utilisateur</h4>
       <h5 id="hypotheses-calcul-incontournables">Des hypothèses de calcul incontournables</h5>
@@ -86,8 +91,8 @@ export default function GuidePage() {
           logement
         </li>
         <li>Choisir un scénario de projection en population, puis en nombre de ménages</li>
-        <li>Définir une évolution du taux de vacance de longue durée entre 2021 et l'horizon de projection</li>
-        <li>Définir une évolution du taux de résidences secondaires entre 2021 et l'horizon de projection</li>
+        <li>Définir une évolution du taux de vacance de longue durée entre l'année de référence et l'horizon de projection</li>
+        <li>Définir une évolution du taux de résidences secondaires entre l'année de référence et l'horizon de projection</li>
       </ul>
       <p>Pour aller plus loin : </p>
       <ul className="fr-mb-4w">
@@ -130,8 +135,8 @@ export default function GuidePage() {
           « l’année du maximum ») :
           <ul>
             <li>
-              évolution linéaire depuis 2021 jusqu’au taux cible atteint à l’horizon de projection ou à l’année du maximum (C) si celle-ci
-              lui est antérieure;
+              évolution linéaire depuis l’année de référence jusqu’au taux cible atteint à l’horizon de projection ou à l’année du maximum
+              (C) si celle-ci lui est antérieure;
             </li>
             <li>vacance courte supposée stable (txVC); </li>
           </ul>
@@ -145,8 +150,8 @@ export default function GuidePage() {
               Otelo en déduit le volume de logements vacants (dont courte/longue) et de résidences secondaires correspondant à ces taux.{' '}
             </li>
             <li>
-              Si l'un de ces volumes est inférieur à sa valeur 2021, Otelo anticipe une remobilisation (transformation en résidences
-              principales).
+              Si l'un de ces volumes est inférieur à sa valeur de l'année de référence, Otelo anticipe une remobilisation (transformation en
+              résidences principales).
             </li>
           </ul>
         </li>
@@ -172,8 +177,8 @@ export default function GuidePage() {
       </ol>
       <p>
         Cas particulier traité par OTELO : si le besoin en résidences principales de l’année est nul ou négatif, l’outil n’active pas de
-        remobilisation supplémentaire (les taux de vacance et de résidences secondaires sont maintenus à leur niveau de 2021 pour cette
-        année-là). Un volume de logements excédentaires est alors mis en évidence dans les résultats.
+        remobilisation supplémentaire (les taux de vacance et de résidences secondaires sont maintenus à leur niveau de l'année de référence
+        pour cette année-là). Un volume de logements excédentaires est alors mis en évidence dans les résultats.
       </p>
       <h4 id="resultats-otelo">Les résultats fournis par Otelo</h4>
       <p>Pour chaque EPCI et chaque année simulée, Otelo restitue :</p>
@@ -246,7 +251,7 @@ export default function GuidePage() {
       <ul className="fr-mb-4w">
         <li>
           Si aucun EPCI du bassin n'a de projection propre : la projection du bassin est répartie entre les EPCI au prorata du nombre de
-          ménages en 2021.
+          ménages à l'année de référence.
         </li>
         <li>
           Si un ou plusieurs EPCI ont une projection propre : ils la conservent ; les autres partagent le reste de la projection du bassin.{' '}
@@ -296,8 +301,8 @@ export default function GuidePage() {
         signifie qu'à l'échelle locale, Otelo prolonge les tendances passées.
       </p>
       <p>
-        Vous pouvez consulter le solde naturel et le solde migratoire de votre territoire jusqu'en 2021 via les dossiers complets
-        disponibles sur&nbsp;
+        Vous pouvez consulter le solde naturel et le solde migratoire de votre territoire jusqu'à l'année de référence via les dossiers
+        complets disponibles sur&nbsp;
         <a
           href="https://www.insee.fr"
           target="_blank"
@@ -347,11 +352,11 @@ export default function GuidePage() {
       </p>
       <ul className="fr-mb-4w">
         <li>
-          Elle démarre en 2021 à partir de la part réelle de chaque EPCI dans le bassin, selon le nombre de <strong>ménages</strong> ou de{' '}
-          <strong>personnes vivant en ménage</strong>, selon le type de projection.
+          Elle démarre à l'année de référence à partir de la part réelle de chaque EPCI dans le bassin, selon le nombre de{' '}
+          <strong>ménages</strong> ou de <strong>personnes vivant en ménage</strong>, selon le type de projection.
         </li>
         <li>
-          Elle est ajustée chaque année en suivant la <strong>tendance observée entre 2015 et 2021</strong>.
+          Elle est ajustée chaque année en suivant la <strong>tendance observée sur les années précédant l'année de référence</strong>.
         </li>
       </ul>
       <p>📆 Deux périodes différentes :</p>
@@ -373,10 +378,10 @@ export default function GuidePage() {
         </li>
       </ul>
       <h5 id="illustration-simplifiee">🧮 Illustration simplifiée</h5>
-      <p>Un bassin de 25 000 ménages en 2021, avec 3 EPCI :</p>
+      <p>Un bassin de 25 000 ménages en 2022, avec 3 EPCI :</p>
       <Table
-        caption="Répartition des ménages par EPCI en 2021"
-        headers={['EPCI', 'Ménages en 2021', 'Part initiale']}
+        caption="Répartition des ménages par EPCI en 2022"
+        headers={['EPCI', 'Ménages en 2022', 'Part initiale']}
         data={[
           ['EPCI A', '12 500', '50 %'],
           ['EPCI B', '8 250', '33 %'],
@@ -385,7 +390,7 @@ export default function GuidePage() {
         noScroll
         fixed
       />
-      <p>📈 Tendance observée entre 2015 et 2021 :</p>
+      <p>📈 Tendance observée entre 2015 et 2022 :</p>
       <ul className="fr-mb-4w">
         <li>EPCI A : en légère baisse de 0.1 point / an</li>
         <li>EPCI B : stable</li>
@@ -421,7 +426,96 @@ export default function GuidePage() {
         <br />
         La <strong>même logique s'applique aux projections de population</strong>.
       </p>
-      <h3 id="donnees-parc-logement">📊 Les données sur le parc de logement</h3>
+      <h3 id="donnees-parc-logement">📊 Les données sur le parc de logements</h3>
+      <p>
+        À population donnée, plusieurs leviers peuvent être mobilisés pour répondre aux besoins en logements. Il est par exemple possible de
+        loger des ménages supplémentaires en remobilisant une partie des logements vacants de longue durée ou en réduisant la part des
+        résidences secondaires. À l'inverse, certaines évolutions du parc augmentent le besoin en logements neufs, comme les démolitions ou
+        les changements d'usage qui font disparaître des logements.
+      </p>
+      <p>
+        Otelo permet ainsi de formuler des hypothèses sur quatre composantes du parc : le <strong>taux de vacance de longue durée</strong>,
+        le <strong>taux de résidences secondaires</strong>, le <strong>taux annuel de restructuration</strong> et le{' '}
+        <strong>taux annuel de disparition</strong>. Ces paramètres ont un effet direct sur le besoin final en logements. Pour les définir,
+        il est utile de consulter les dernières valeurs observées sur le territoire, visibles dans l'onglet <strong>Infographie</strong>.
+      </p>
+      <h4 id="precisions-variables-parc">Précisions sur les variables à paramétrer</h4>
+      <h5 id="vacance-courte-longue-duree">La vacance : courte durée et longue durée</h5>
+      <p>
+        Les données de cadrage sont obtenues à partir de la valeur observée selon le millésime le plus récent des données fiscales
+        retraitées par le CGDD/SDES pour la vacance globale. Dans sa version actuelle, Otelo distingue la{' '}
+        <strong>vacance de courte durée</strong> (moins de 2 ans) de la <strong>vacance de longue durée</strong> (2 ans ou plus). Les taux
+        correspondants sont estimés à partir de la structure de vacance observée dans les fichiers fonciers, en appliquant au taux de
+        vacance global la part respective des logements vacants depuis moins de deux ans et de ceux vacants depuis deux ans ou plus.
+      </p>
+      <h5 id="vacance-courte-duree">Les logements vacants depuis moins de 2 ans</h5>
+      <p>
+        La vacance de courte durée correspond à une <strong>vacance de rotation</strong>, nécessaire au bon fonctionnement du parc de
+        logements. Elle permet notamment les déménagements, les ventes, les mises en location ou les travaux entre deux occupations. Dans
+        Otelo, cette composante n'est pas paramétrable. Elle est supposée évoluer au fil du temps au prorata du nombre de résidences
+        principales, selon le taux observé sur le territoire à l'année de référence.
+      </p>
+      <h5 id="vacance-longue-duree-parametrage">Les logements vacants depuis plus de 2 ans</h5>
+      <p>
+        La vacance de longue durée peut, en partie, constituer un gisement de logements remobilisables. Otelo propose donc de paramétrer une
+        évolution du taux de vacance de longue durée à l'horizon de projection. Par défaut, l'outil retient une réduction de{' '}
+        <strong>15 %</strong> de la part des logements vacants de longue durée à l'horizon de projection.
+      </p>
+      <p>
+        Une baisse du taux de vacance de longue durée ne signifie pas nécessairement une baisse du nombre de logements vacants en valeur
+        absolue. Si le parc total augmente fortement au cours de la période, le nombre de logements vacants de longue durée peut rester
+        stable, voire augmenter, tout en représentant une part plus faible du parc.
+      </p>
+      <p>
+        Enfin, la vitesse d'évolution dépend directement de l'horizon de projection retenu, ou de l'année du pic de ménages quand elle lui
+        est antérieure. Une baisse de 15 % du taux de logements vacants de longue durée à horizon 2035 implique un rythme de diminution plus
+        rapide qu'à horizon 2050, puisque la même évolution est répartie sur une période plus courte.
+      </p>
+      <h5 id="residences-secondaires-parametrage">L'évolution du taux de résidences secondaires</h5>
+      <p>
+        Par défaut, le taux cible de résidences secondaires correspond à la dernière valeur observée dans les données fiscales retraitées
+        par le CGDD/SDES.
+      </p>
+      <p>
+        Fixer un taux cible inférieur à la valeur de départ revient à faire l'hypothèse qu'une partie des résidences secondaires pourra être
+        mobilisée pour accueillir des ménages à titre de résidence principale. Cela diminue le besoin final en logements neufs. À l'inverse,
+        retenir un taux cible plus élevé revient à considérer qu'une part plus importante du parc sera consacrée aux résidences secondaires.
+        Cela augmente donc le besoin final en logements.
+      </p>
+      <p>
+        Comme pour la vacance, il faut distinguer l'évolution du <strong>taux</strong> et celle du <strong>volume</strong>. Un taux en
+        baisse ne signifie pas automatiquement une baisse du nombre de résidences secondaires en valeur absolue si, dans le même temps, le
+        parc total de logements progresse.
+      </p>
+      <h5 id="taux-restructuration">L'évolution du taux annuel de restructuration</h5>
+      <p>
+        Les restructurations correspondent aux créations de nouveaux logements au sein du parc existant, par exemple à travers la division
+        de logements ou des changements d'usage transformant des locaux non résidentiels en logements. Le taux de restructuration correspond
+        au volume de logements créés par ces phénomènes, rapporté à l'ensemble du parc.
+      </p>
+      <p>
+        Par défaut, Otelo propose de reconduire le taux annuel mesuré entre <strong>2015 et 2022</strong>. Plus ce taux est élevé, moins le
+        besoin en nouveaux logements sera important.
+      </p>
+      <p>
+        À l'inverse, des logements peuvent disparaître à travers des fusions ou des changements d'usage ; ces phénomènes sont pris en compte
+        dans le paramétrage du taux de disparition.
+      </p>
+      <h5 id="taux-disparition">L'évolution du taux annuel de disparition</h5>
+      <p>
+        Le taux annuel de disparition correspond à la proportion du parc de logements qui disparaît au cours d'une année. Cela peut
+        correspondre à des logements démolis, mais aussi à des logements retirés du parc du fait de fusions ou de changements d'usage comme
+        la transformation d'un logement en local d'activité.
+      </p>
+      <p>
+        Par défaut, Otelo propose de reconduire le taux annuel mesuré entre <strong>2013 et 2019</strong>. Plus ce taux est élevé, plus le
+        besoin en nouveaux logements sera important.
+      </p>
+      <p>
+        Ce paramétrage mérite une attention particulière sur les territoires ayant connu des opérations de rénovation urbaine avec des
+        démolitions importantes, notamment dans le parc social. Dans ce type de situation, la reconduction mécanique du taux observé peut
+        être inadaptée et mérite d'être discutée.
+      </p>
       <h3 id="situations-mal-logement">🎯 Les situations de mal-logement et de hors-logement</h3>
       <p>
         Otelo vous permet d'estimer un volume de situations de mal-logement et de hors logement, qui sont susceptibles de conclure à un
@@ -432,7 +526,7 @@ export default function GuidePage() {
       <p>
         L'horizon de résorption correspond à l'année à laquelle l'utilisateur estime que ce déficit actuel en logements sera résorbé, à un
         rythme annuel constant. Par défaut, il est fixé à 2050. Dans ce cas, pour un déficit estimé à 1000, le besoin annuel sera de 1000 /
-        (2050 – 2021) = 34,5 logements par an. Cet horizon de résorption est à définir au début du paramétrage relatif au hors logement et
+        (2050 – 2022) = 35,7 logements par an. Cet horizon de résorption est à définir au début du paramétrage relatif au hors logement et
         au mal-logement.
       </p>
       <p>

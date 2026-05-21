@@ -27,7 +27,8 @@ export const DataVisualisationTable: FC<{
     | TAccommodationLovacEvolution
   type: string | null
   source: string | null
-}> = ({ data, type, source }) => {
+  millesime?: string | null
+}> = ({ data, type, source, millesime }) => {
   const isPopulationOrMenageEvolution = ['population-evolution', 'menage-evolution'].includes(type ?? '')
   const isProjectionPopulationEvolution = ['projection-population-evolution'].includes(type ?? '')
   const isProjectionMenagesEvolution = ['projection-menages-evolution'].includes(type ?? '')
@@ -43,6 +44,7 @@ export const DataVisualisationTable: FC<{
       <ProjectionPopulationEvolutionTable
         maxYears={(data as TDemographicProjectionEvolution).maxYears}
         data={data.tableData as TDemographicProjectionDataTable}
+        millesime={millesime}
       />
     )
   }
@@ -52,6 +54,7 @@ export const DataVisualisationTable: FC<{
       <ProjectionMenagesEvolutionTable
         maxYears={(data as TDemographicMenagesEvolution).maxYears}
         data={data.tableData as TDemographicProjectionDataTable}
+        millesime={millesime}
       />
     )
   }

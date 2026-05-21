@@ -3,6 +3,8 @@
 import { FC } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { CreateAllSecondaryAccommodationRateInput } from '~/components/simulations/settings/create-all-secondary-accommodation-rate-input'
+import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-year-horizon-alert'
+import { useCreationPeakYears } from '~/hooks/use-simulation-peak-years'
 import { AggregatedSecondaryParcsComparisonChart } from './aggregated-secondary-parc-comparison-chart'
 
 interface AllEpcisSecondaryRatesViewProps {
@@ -11,6 +13,11 @@ interface AllEpcisSecondaryRatesViewProps {
 
 export const AllEpcisSecondaryRatesView: FC<AllEpcisSecondaryRatesViewProps> = ({ epcis }) => {
   const { defaultRates } = useEpcisRates()
+  const { minPeakYear, projection, millesime: millesimeNum } = useCreationPeakYears()
+
+  const isPeakBeforeProjection = minPeakYear !== null && projection !== null && minPeakYear < projection
+  const isLockedByMillesime = isPeakBeforeProjection && millesimeNum !== null && minPeakYear <= millesimeNum
+  const targetYear = isPeakBeforeProjection ? minPeakYear : projection
 
   // Calculate weighted average secondary accommodation rate across all EPCIs
   const epciIds = Object.keys(defaultRates)
@@ -23,13 +30,18 @@ export const AllEpcisSecondaryRatesView: FC<AllEpcisSecondaryRatesViewProps> = (
   return (
     <div className="fr-p-4w shadow">
       <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-        <span className="fr-text-mention--grey">
-          Le taux moyen observé sur l'ensemble du territoire s'élève à <strong>{(averageTxRS * 100).toFixed(2)} %</strong>.
-        </span>
-        <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
-          <CreateAllSecondaryAccommodationRateInput epcis={epcis} />
-          <AggregatedSecondaryParcsComparisonChart />
-        </div>
+        <PeakYearHorizonAlert peakYear={minPeakYear} projection={projection} millesime={millesimeNum} />
+        {!isLockedByMillesime && (
+          <>
+            <span className="fr-text-mention--grey">
+              Le taux moyen observé sur l'ensemble du territoire s'élève à <strong>{(averageTxRS * 100).toFixed(2)} %</strong>.
+            </span>
+            <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
+              <CreateAllSecondaryAccommodationRateInput epcis={epcis} />
+              <AggregatedSecondaryParcsComparisonChart targetYear={targetYear} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

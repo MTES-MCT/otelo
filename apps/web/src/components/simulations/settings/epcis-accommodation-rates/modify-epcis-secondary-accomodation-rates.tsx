@@ -11,7 +11,10 @@ import { ModifyAllEpcisSecondaryRatesView } from '~/components/simulations/setti
 import ModifyParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/modify-parc-comparison-charts'
 import { SecondaryRatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/secondary-rates-toggle-switch'
 import { ModifySecondaryAccommodationRateInput } from '~/components/simulations/settings/modify-accommodation-rate-input'
+import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-year-horizon-alert'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
+import { useModifyPeakYears } from '~/hooks/use-simulation-peak-years'
 import styles from './epcis-accommodation-rates.module.css'
 
 interface ModifyEpcisSecondaryAccomodationRatesProps {
@@ -25,34 +28,56 @@ interface TabChildrenProps {
 
 const TabChildren: FC<TabChildrenProps> = ({ epci, rates }) => {
   const { simulationSettings } = useSimulationSettings()
+  const { peakYears, isLoading } = useModifyPeakYears()
   const epciRates = rates?.[epci]
+
+  const epciPeakYear = peakYears[epci]
+  const isPeakBeforeProjection = epciPeakYear !== undefined && epciPeakYear < simulationSettings.projection
+  const isLockedByMillesime = isPeakBeforeProjection && epciPeakYear! <= Number(simulationSettings.millesime)
+  const targetYear = isPeakBeforeProjection ? epciPeakYear : simulationSettings.projection
+
   if (!epciRates) return null
+  if (isLoading) return <LoadingSpinner />
 
   return (
     <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-      <span className="fr-text-mention--grey">
-        Le taux observé en {epciRates.vacancy.year} s'élève à <strong>{Number(epciRates.txRs * 100).toFixed(2)} %</strong>.
-      </span>
-      <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
-        <ModifySecondaryAccommodationRateInput
-          txKey="txRs"
-          epci={epci}
-          label={`Quel objectif de taux souhaitez-vous fixer pour l'horizon ${simulationSettings.projection} ?`}
-        />
-        <ModifyParcsComparisonCharts epci={epci} />
-      </div>
+      <PeakYearHorizonAlert
+        peakYear={epciPeakYear ?? null}
+        projection={simulationSettings.projection}
+        millesime={Number(simulationSettings.millesime)}
+      />
+      {!isLockedByMillesime && (
+        <>
+          <span className="fr-text-mention--grey">
+            Le taux observé en {epciRates.vacancy.year} s'élève à <strong>{Number(epciRates.txRs * 100).toFixed(2)} %</strong>.
+          </span>
+          <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
+            <ModifySecondaryAccommodationRateInput
+              txKey="txRs"
+              epci={epci}
+              label={`Quel objectif de taux souhaitez-vous fixer pour l'horizon ${targetYear} ?`}
+            />
+            <ModifyParcsComparisonCharts epci={epci} targetYear={targetYear} />
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
 export const ModifyEpcisSecondaryAccommodationRates: FC<ModifyEpcisSecondaryAccomodationRatesProps> = ({ epcis }) => {
+  const { simulationSettings } = useSimulationSettings()
   const epcisCodes = epcis.map((epci) => epci.code)
-  const { data: rates } = useAccommodationRatesByEpci(epcisCodes)
+  const { data: rates } = useAccommodationRatesByEpci(epcisCodes, simulationSettings.millesime)
   const [ratesMode] = useQueryState('secondaryRates', parseAsString)
+  const { minPeakYear } = useModifyPeakYears()
+
+  const projection = simulationSettings.projection
+  const isPeakBeforeProjection = minPeakYear !== null && minPeakYear < projection
 
   if (!rates) return null
 
-  const isAllMode = ratesMode === 'all'
+  const isAllMode = ratesMode === 'all' && !isPeakBeforeProjection
 
   const tabs = epcis.map((epci) => ({
     content: <TabChildren epci={epci.code} rates={rates} />,
@@ -63,7 +88,7 @@ export const ModifyEpcisSecondaryAccommodationRates: FC<ModifyEpcisSecondaryAcco
   return (
     <>
       <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
-        <SecondaryRatesToggleSwitch />
+        <SecondaryRatesToggleSwitch disabled={isPeakBeforeProjection} />
       </div>
       {isAllMode ? (
         <ModifyAllEpcisSecondaryRatesView epcis={epcis} />

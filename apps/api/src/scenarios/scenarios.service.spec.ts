@@ -106,20 +106,25 @@ describe('ScenariosService', () => {
       }
 
       mockPrismaService.scenario.create = jest.fn().mockResolvedValue(mockCreatedScenario)
+      mockPrismaService.dataPackVersion.findFirstOrThrow = jest.fn().mockResolvedValue({ millesime: '2021' })
 
       const result = await service.create('user-1', mockCreateData)
 
       expect(result).toEqual(mockCreatedScenario)
+      expect(mockPrismaService.dataPackVersion.findFirstOrThrow).toHaveBeenCalledWith({
+        where: { isActive: true },
+      })
       expect(mockPrismaService.scenario.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           b2_scenario: 'central',
           projection: 2030,
+          millesime: '2021',
           epciScenarios: {
             createMany: {
               data: [{ epciCode: 'EPCI001', b2_tx_rs: 0.1, b2_tx_vacance: 0.05, baseEpci: true }],
             },
           },
-          user: { connect: { id: 'user-1' } },
+          userId: 'user-1',
         }),
       })
     })

@@ -1,5 +1,6 @@
 import { createMock, type DeepMocked } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
+import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
 import { ScenariosService } from '~/scenarios/scenarios.service'
@@ -21,6 +22,7 @@ describe('SimulationsService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: ScenariosService, useValue: mockScenariosService },
         { provide: EpciGroupsService, useValue: createMock<EpciGroupsService>() },
+        { provide: AccommodationRatesService, useValue: createMock<AccommodationRatesService>() },
       ],
     }).compile()
 
@@ -48,6 +50,7 @@ describe('SimulationsService', () => {
         projection: 2030,
         b1_horizon_resorption: 10,
         b11_part_etablissement: 0.5,
+        millesime: '2022',
         epciScenarios: [
           {
             epciCode: 'EPCI001',
@@ -108,6 +111,7 @@ describe('SimulationsService', () => {
           b1_horizon_resorption: mockOriginalSimulation.scenario.b1_horizon_resorption,
           epcis: expect.any(Object),
         }),
+        mockOriginalSimulation.scenario.millesime,
       )
       expect(mockPrismaService.simulation.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -150,6 +154,7 @@ describe('SimulationsService', () => {
         expect.objectContaining({
           epcis: {},
         }),
+        mockOriginalSimulation.scenario.millesime,
       )
     })
 

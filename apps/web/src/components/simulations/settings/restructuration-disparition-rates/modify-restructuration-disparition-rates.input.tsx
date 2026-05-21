@@ -18,7 +18,7 @@ export const ModifyRestructurationDisparitionRatesInput: FC<ModifyRestructuratio
   const { classes } = useStyles()
 
   const { simulationSettings, updateRates } = useSimulationSettings()
-  const { data: rates } = useAccommodationRatesByEpci([epci])
+  const { data: rates } = useAccommodationRatesByEpci([epci], simulationSettings.millesime)
   const accommodationRate = rates?.[epci]
   const urbanRenewalAccommodations = accommodationRate?.urbanRenewal ?? 0
   const ratesByEpci = simulationSettings.epciScenarios[epci]

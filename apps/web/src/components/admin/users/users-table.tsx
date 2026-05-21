@@ -4,6 +4,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
 import { Pagination } from '@codegouvfr/react-dsfr/Pagination'
 import Select from '@codegouvfr/react-dsfr/Select'
+import { SELECTABLE_USER_TYPES, USER_TYPE_LABELS } from '@shared'
 import {
   type Column,
   type ColumnDef,
@@ -20,6 +21,7 @@ import { FC, useMemo, useState } from 'react'
 import { useDeleteUser } from '~/hooks/use-delete-user'
 import { useStartImpersonation } from '~/hooks/use-impersonation'
 import { useUpdateUserAccess } from '~/hooks/use-update-user-access'
+import { useUpdateUserRegion } from '~/hooks/use-update-user-region'
 import { TUser } from '~/schemas/user'
 import styles from './users-table.module.css'
 
@@ -49,14 +51,12 @@ const UserRowActions: FC<UserRowActionsProps> = ({ user, onDelete, onImpersonate
   return (
     <>
       <div className={styles.actions}>
-        {user.role === 'USER' && (
-          <i
-            style={{ cursor: 'pointer' }}
-            onClick={() => onImpersonate(user.id)}
-            className="ri-user-follow-line"
-            title="Usurper cet utilisateur"
-          />
-        )}
+        <i
+          style={{ cursor: 'pointer' }}
+          onClick={() => onImpersonate(user.id)}
+          className="ri-user-follow-line"
+          title="Usurper cet utilisateur"
+        />
         <i style={{ cursor: 'pointer' }} onClick={modalActions.open} className="ri-delete-bin-5-fill" />
       </div>
       <modalActions.Component title="Êtes vous sûr de vouloir supprimer cet utilisateur ?">
@@ -81,8 +81,30 @@ const UserRowActions: FC<UserRowActionsProps> = ({ user, onDelete, onImpersonate
   )
 }
 
+const FRENCH_REGIONS = [
+  'Auvergne-Rhône-Alpes',
+  'Bourgogne-Franche-Comté',
+  'Bretagne',
+  'Centre-Val de Loire',
+  'Corse',
+  'Grand Est',
+  'Guadeloupe',
+  'Guyane',
+  'Hauts-de-France',
+  'Île-de-France',
+  'La Réunion',
+  'Martinique',
+  'Mayotte',
+  'Normandie',
+  'Nouvelle-Aquitaine',
+  'Occitanie',
+  'Pays de la Loire',
+  "Provence-Alpes-Côte d'Azur",
+]
+
 function getColumns(
   updateUserAccess: (params: { userId: string; hasAccess: boolean }) => void,
+  updateUserRegion: (params: { userId: string; region: string | null }) => void,
   deleteUser: (userId: string) => void,
   startImpersonation: (params: { userId: string }) => void,
   isPending: boolean,
@@ -109,6 +131,33 @@ function getColumns(
       cell: ({ row }) => {
         const user = row.original
         return <div className={classNames('fr-badge', user.role === 'ADMIN' ? styles.adminBadge : styles.userBadge)}>{user.role}</div>
+      },
+    },
+    {
+      accessorKey: 'type',
+      header: 'Typologie',
+      enableSorting: false,
+      filterFn: (row, columnId, filterValue) => {
+        if (filterValue === '') return true
+        return (row.getValue<string | undefined>(columnId) ?? '') === filterValue
+      },
+      meta: {
+        filterType: 'select',
+        options: [
+          { label: 'Toutes', value: '' },
+          ...SELECTABLE_USER_TYPES.map((type) => ({
+            label: USER_TYPE_LABELS[type],
+            value: type,
+          })),
+        ],
+      },
+      cell: ({ getValue }) => {
+        const type = getValue<TUser['type']>()
+        if (!type) {
+          return '-'
+        }
+
+        return USER_TYPE_LABELS[type as keyof typeof USER_TYPE_LABELS] ?? type
       },
     },
     {
@@ -160,6 +209,33 @@ function getColumns(
             <option value="authorized">✅</option>
             <option value="unauthorized">❌</option>
           </Select>
+        )
+      },
+    },
+    {
+      id: 'region',
+      header: 'Région',
+      size: 140,
+      maxSize: 140,
+      enableSorting: false,
+      enableColumnFilter: false,
+      cell: ({ row }) => {
+        const user = row.original
+        if (user.type !== 'DREAL') return <span style={{ color: '#999' }}>—</span>
+        return (
+          <select
+            className="fr-select"
+            value={user.region ?? ''}
+            onChange={(e) => updateUserRegion({ userId: user.id, region: e.target.value || null })}
+            style={{ width: '130px', padding: '4px 6px', fontSize: '11px' }}
+          >
+            <option value="">— Aucune —</option>
+            {FRENCH_REGIONS.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
         )
       },
     },
@@ -284,6 +360,7 @@ export const UsersTable: FC<UsersTableProps> = ({
   onSortChange,
 }) => {
   const { mutate: updateUserAccess, isPending } = useUpdateUserAccess()
+  const { mutate: updateUserRegion } = useUpdateUserRegion()
   const { mutateAsync: deleteUser } = useDeleteUser()
   const { startImpersonation } = useStartImpersonation()
 
@@ -291,8 +368,8 @@ export const UsersTable: FC<UsersTableProps> = ({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const columns = useMemo(
-    () => getColumns(updateUserAccess, deleteUser, startImpersonation, isPending),
-    [updateUserAccess, deleteUser, startImpersonation, isPending],
+    () => getColumns(updateUserAccess, updateUserRegion, deleteUser, startImpersonation, isPending),
+    [updateUserAccess, updateUserRegion, deleteUser, startImpersonation, isPending],
   )
 
   const table = useReactTable({

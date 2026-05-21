@@ -1,3 +1,4 @@
+import type { UserType } from '@shared'
 import { cookies } from 'next/headers'
 
 const DEFAULT_API_ORIGIN = 'http://localhost:4200'
@@ -41,8 +42,9 @@ interface SessionUser {
   lastname: string
   role: 'ADMIN' | 'USER'
   hasAccess: boolean
-  type?: 'DDT' | 'AgenceUrbanisme' | 'Collectivite' | 'DREAL' | 'BureauEtudes' | 'Autre' | null
+  type?: UserType | null
   lastLoginAt?: string
+  region?: string | null
 }
 
 export interface Session {

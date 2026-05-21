@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { auth } from '~/auth/better-auth'
 import { PrismaService } from '~/db/prisma.service'
-import { Prisma } from '~/generated/prisma/client'
+import { Prisma, UserType } from '~/generated/prisma/client'
 import { TUpdateUserType } from '~/schemas/users/update-user'
 import { TUser } from '~/schemas/users/user'
 
@@ -21,6 +21,7 @@ const fieldsWithoutPassword = {
   engaged: true,
   type: true,
   referent: true,
+  region: true,
 } satisfies Prisma.UserSelect
 
 const SORTABLE_FIELDS: Record<string, string> = {
@@ -85,6 +86,14 @@ export class UsersService {
     }
     return this.prisma.user.update({
       data: { hasAccess },
+      where: { id },
+      select: fieldsWithoutPassword,
+    })
+  }
+
+  async updateRegion(id: string, region: string | null): Promise<TUser> {
+    return this.prisma.user.update({
+      data: { region },
       where: { id },
       select: fieldsWithoutPassword,
     })
@@ -157,7 +166,7 @@ export class UsersService {
   }
 
   async importUsersFromCsv(
-    rows: Array<{ email: string; referent?: string; name: string; firstname: string; lastname: string }>,
+    rows: Array<{ email: string; referent?: string; name: string; firstname: string; lastname: string; type?: UserType }>,
   ): Promise<{ created: number; skipped: number }> {
     let created = 0
     let skipped = 0
@@ -176,6 +185,7 @@ export class UsersService {
           firstname: row.firstname,
           lastname: row.lastname,
           referent: row.referent || null,
+          type: row.type ?? null,
           hasAccess: true,
           emailVerified: true,
         },

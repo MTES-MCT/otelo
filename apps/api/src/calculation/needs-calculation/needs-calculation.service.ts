@@ -43,6 +43,7 @@ export class NeedsCalculationService {
         peakYear,
       )
 
+      const simulationMillesime = Number(simulation.scenario.millesime)
       const epciConstructionsNeuves = epciTotalFlux + epciTotalStock.prePeakTotal
 
       if (epciConstructionsNeuves > 0) {
@@ -51,7 +52,7 @@ export class NeedsCalculationService {
       }
 
       // Stock (mal-logement) is always accumulated regardless of construction needs
-      totalStock += peakYear && peakYear > 2021 ? epciTotalStock.prePeakTotal : epciTotalStock.total
+      totalStock += peakYear && peakYear > simulationMillesime ? epciTotalStock.prePeakTotal : epciTotalStock.total
 
       const epciVacantAccomodation =
         epciFlowRequirement.totals.longTermVacantAccomodation <= 0 ? epciFlowRequirement.totals.longTermVacantAccomodation : 0

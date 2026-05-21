@@ -1,0 +1,15 @@
+.resetButtonWrapper {
+  margin-bottom: 30px;
+}
+
+.resetButton {
+  display: block;
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 16px;
+  background: #fff;
+  border: none;
+}

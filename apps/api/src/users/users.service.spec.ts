@@ -2,6 +2,7 @@ import { createMock } from '@golevelup/ts-jest'
 import { NotFoundException } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { PrismaService } from '~/db/prisma.service'
+import { UserType } from '~/generated/prisma/client'
 import { TUser } from '~/schemas/users/user'
 import { UsersService } from './users.service'
 
@@ -103,6 +104,7 @@ describe('UsersService', () => {
           lastLoginAt: true,
           lastname: true,
           name: true,
+          region: true,
           role: true,
           type: true,
           updatedAt: true,
@@ -131,6 +133,7 @@ describe('UsersService', () => {
           lastLoginAt: true,
           lastname: true,
           name: true,
+          region: true,
           role: true,
           type: true,
           updatedAt: true,
@@ -235,6 +238,7 @@ describe('UsersService', () => {
           lastLoginAt: true,
           lastname: true,
           name: true,
+          region: true,
           role: true,
           type: true,
           updatedAt: true,
@@ -275,12 +279,15 @@ describe('UsersService', () => {
   })
 
   describe('importUsersFromCsv', () => {
-    const makeRow = (overrides?: Partial<{ email: string; referent: string; name: string; firstname: string; lastname: string }>) => ({
+    const makeRow = (
+      overrides?: Partial<{ email: string; referent: string; name: string; firstname: string; lastname: string; type: UserType }>,
+    ) => ({
       email: 'new@example.com',
       name: 'Jean Dupont',
       firstname: 'Jean',
       lastname: 'Dupont',
       referent: 'Réf. DDT 75',
+      type: undefined,
       ...overrides,
     })
 
@@ -298,10 +305,24 @@ describe('UsersService', () => {
           firstname: 'Jean',
           lastname: 'Dupont',
           referent: 'Réf. DDT 75',
+          type: null,
           hasAccess: true,
           emailVerified: true,
         },
       })
+    })
+
+    it('should persist typologie when provided', async () => {
+      prismaService.user.findUnique = jest.fn().mockResolvedValue(null)
+      prismaService.user.create = jest.fn().mockResolvedValue({})
+
+      await service.importUsersFromCsv([makeRow({ type: 'AgenceUrbanisme' })])
+
+      expect(prismaService.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ type: 'AgenceUrbanisme' }),
+        }),
+      )
     })
 
     it('should skip existing users without modifying them', async () => {

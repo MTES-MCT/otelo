@@ -4,9 +4,9 @@ import Badge from '@codegouvfr/react-dsfr/Badge'
 import Button from '@codegouvfr/react-dsfr/Button'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import classNames from 'classnames'
-import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
+import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
@@ -47,6 +47,7 @@ const SCENARIOS = [
 export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ demographicEvolution, epcis }) => {
   const { classes } = useStyles()
   const [queryStates, setQueryStates] = useQueryStates({
+    millesime: parseAsInteger,
     population: parseAsString,
     projection: parseAsString,
     scenario: parseAsString,
@@ -80,14 +81,16 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
       : scenario.stroke,
     strokeWidth: queryStates.population && scenario.queryValue === queryStates.population ? 2 : 1,
   }))
-
-  const basePopulation = data.find((item) => item.year === 2021) as TPopulationEvolution
+  const basePopulation = data.find((item) => item.year === queryStates.millesime) as TPopulationEvolution
   const popEvolution = data.find((item) => item.year === Number(period)) as TPopulationEvolution
 
   const evol =
     popEvolution[queryStates.population as keyof typeof popEvolution] -
     basePopulation[queryStates.population as keyof typeof basePopulation]
-
+  const handleClick = () => {
+    setQueryStates({ scenario: 'menages' })
+    window.scrollTo({ top: 0 })
+  }
   return (
     <>
       <PopulationScenariosSelection />
@@ -119,6 +122,22 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
                 }}
               />
             ))}
+            <ReferenceLine
+              x={queryStates.millesime ?? undefined}
+              stroke="#888"
+              strokeDasharray="6 3"
+              label={(props) => {
+                const { viewBox } = props as { viewBox?: { x: number; y: number; height: number } }
+                if (!viewBox) return null
+                const cx = viewBox.x - 10
+                const cy = viewBox.y + (viewBox.height ?? 200) / 2
+                return (
+                  <text x={cx} y={cy} textAnchor="middle" fill="#666" fontSize={11} transform={`rotate(-90, ${cx}, ${cy})`}>
+                    Données rétrospectives (RP INSEE)
+                  </text>
+                )
+              }}
+            />
             <XAxis dataKey="year" />
             <YAxis domain={[metadata.min, metadata.max]} tickFormatter={(value) => roundPopulation(value).toString()} />
             <Tooltip content={<PopulationScenariosCustomTooltip basePopulation={basePopulation} />} />
@@ -133,13 +152,14 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
           ))}
         </div>
       </div>
+
       {queryStates.population &&
         (() => {
           const scenario = queryStates.population as keyof typeof popEvolution
-          const popAt2021 = basePopulation[scenario] as number
+          const popBase = basePopulation[scenario] as number
           const popAtProjection = popEvolution[scenario] as number
-          const periodYears = Number(period) - 2021
-          const tcam = periodYears > 0 && popAt2021 > 0 ? (Math.pow(popAtProjection / popAt2021, 1 / periodYears) - 1) * 100 : 0
+          const periodYears = Number(period) - Number(queryStates.millesime)
+          const tcam = periodYears > 0 && popBase > 0 ? (Math.pow(popAtProjection / popBase, 1 / periodYears) - 1) * 100 : 0
 
           return (
             <CallOut
@@ -154,11 +174,12 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
               <span className="fr-text--md">
                 <span>
                   Ce scénario anticipe une évolution de la population de <strong>{evol > 0 ? `+${evol}` : evol}</strong> habitant
-                  {sPluriel(evol)} sur la période 2021 - {period}.
+                  {sPluriel(evol)} sur la période {queryStates.millesime} - {period}.
                 </span>
                 <br />
                 <span>
-                  Soit un taux de croissance annuel moyen de <strong>{tcam.toFixed(2)} %</strong> sur la période 2021 - {period}.
+                  Soit un taux de croissance annuel moyen de <strong>{tcam.toFixed(2)} %</strong> sur la période {queryStates.millesime} -{' '}
+                  {period}.
                 </span>
                 <br />
                 <span className="fr-text--sm fr-text-mention--grey fr-mb-0">Source des données : INSEE</span>
@@ -168,7 +189,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
         })()}
 
       <div className={classes.buttonContainer} data-chart-download-exclude>
-        <Button disabled={!queryStates.population} onClick={() => setQueryStates({ scenario: 'menages' })} className="fr-mt-4w">
+        <Button disabled={!queryStates.population} onClick={handleClick} className="fr-mt-4w">
           Choisir une projection de ménages
         </Button>
       </div>

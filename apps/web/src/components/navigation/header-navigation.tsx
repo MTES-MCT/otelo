@@ -13,7 +13,8 @@ export const HeaderNavigation: FC = () => {
   const { hasAccess: hasEpciNeighborsAccess } = useEpciNeighborsAccess()
 
   const isAdmin = session?.user?.role === 'ADMIN'
-  const items = session ? getMenuConnected(pathname, isAdmin, hasEpciNeighborsAccess) : getMenuDisconnected(pathname)
+  const isDreal = session?.user?.type === 'DREAL'
+  const items = session ? getMenuConnected(pathname, isAdmin, isDreal, hasEpciNeighborsAccess) : getMenuDisconnected(pathname)
 
   return <MainNavigation id="header-navigation" items={items} />
 }
@@ -51,7 +52,12 @@ const getMenuDisconnected = (pathname: string): MainNavigationProps.Item[] => [
   },
 ]
 
-const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAccess = false): MainNavigationProps.Item[] => [
+const getMenuConnected = (
+  pathname: string,
+  isAdmin = false,
+  isDreal = false,
+  hasEpciNeighborsAccess = false,
+): MainNavigationProps.Item[] => [
   {
     isActive: pathname === '/accueil',
     linkProps: { href: '/accueil', target: '_self' },
@@ -140,7 +146,7 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
     text: "Centre d'aide et ressources",
   },
   {
-    isActive: ['/a-propos', '/statistiques'].includes(pathname),
+    isActive: ['/a-propos', '/statistiques', '/pilotage'].includes(pathname),
     menuLinks: [
       {
         isActive: pathname === '/a-propos',
@@ -154,6 +160,15 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
         linkProps: { href: '/statistiques', target: '_self' },
         text: 'Statistiques',
       },
+      ...(isAdmin || isDreal
+        ? [
+            {
+              isActive: pathname === '/pilotage',
+              linkProps: { href: '/pilotage', target: '_self' },
+              text: 'Pilotage',
+            },
+          ]
+        : []),
     ],
     text: "À propos d'Otelo",
   },
@@ -185,6 +200,14 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
                 target: '_self',
               },
               text: 'Retours utilisateurs',
+            },
+            {
+              isActive: pathname.includes('/admin/consommateurs'),
+              linkProps: {
+                href: '/admin/consommateurs',
+                target: '_self',
+              },
+              text: 'Consommateurs API',
             },
           ],
           text: 'Administration',

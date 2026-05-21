@@ -114,7 +114,7 @@ export const OmphaleScenariosSelection: FC = () => {
           onClick={() => setKnowMore(!knowMore)}
           size="small"
         >
-          En savoir plus sur les hypothèses d'influence
+          En savoir plus sur les hypothèses
         </Button>
         {knowMore && (
           <p className="fr-text--sm fr-text-mention--grey fr-mt-1v">

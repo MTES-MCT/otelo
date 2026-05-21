@@ -22,7 +22,7 @@ export default async function TargetRatesHousing({ searchParams }: PageProps) {
 
   return (
     <>
-      <div className="fr-flex fr-direction-column fr-background-default--grey">
+      <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <CreateEpcisAccommodationRates epcis={simulationsEpcis} />
       </div>
       <div className="fr-px-2w fr-pt-2w">

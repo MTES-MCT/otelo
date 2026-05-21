@@ -22,6 +22,12 @@ export const omphaleMap = {
   ph_h: EOmphale.PH_H,
 }
 
+export const populationMap = {
+  central: 'central',
+  pb: 'basse',
+  ph: 'haute',
+} as const
+
 @Injectable()
 export class DemographicEvolutionService {
   constructor(
@@ -39,6 +45,7 @@ export class DemographicEvolutionService {
       where: {
         epciCode,
         year,
+        millesime: this.context.millesime,
       },
     })
 
@@ -67,6 +74,7 @@ export class DemographicEvolutionService {
       select: { epciCode: true, [omphale]: true, year: true },
       where: {
         epciCode,
+        millesime: this.context.millesime,
         year: {
           lte: yearProjection,
         },

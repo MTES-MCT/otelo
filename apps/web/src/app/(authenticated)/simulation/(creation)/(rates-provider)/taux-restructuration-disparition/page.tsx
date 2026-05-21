@@ -20,7 +20,7 @@ export default async function RestructurationDisparitionRatesPage({ searchParams
 
   return (
     <>
-      <div className="fr-flex fr-direction-column fr-background-default--grey">
+      <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <CreateRestructurationDisparitionRates epcis={simulationsEpcis} />
       </div>
       <div className="fr-px-2w fr-pt-2w">

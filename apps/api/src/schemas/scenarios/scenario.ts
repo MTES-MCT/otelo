@@ -50,6 +50,7 @@ export const ZScenario = ZCommonDateFields.extend({
   source_b11: z.nativeEnum(ESourceB11),
   source_b14: z.union([z.literal('RP'), z.literal('Filo'), z.literal('FF')]),
   source_b15: z.union([z.literal('RP'), z.literal('Filo')]),
+  millesime: z.string(),
   demographicEvolutionOmphaleCustom: z.array(ZDemographicEvolutionOmphaleCustom).optional(),
 })
 
@@ -80,5 +81,33 @@ export const ZUpdateSimulationDto = ZScenario.omit({
 })
 
 export type TUpdateSimulationDto = z.infer<typeof ZUpdateSimulationDto>
+
+export const ZExternalUpdateScenario = ZScenario.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  isConfidential: true,
+  b17_motif: true,
+  demographicEvolutionOmphaleCustom: true,
+  epciScenarios: true,
+})
+  .partial()
+  .extend({
+    epciScenarios: z
+      .record(
+        z.string(),
+        z.object({
+          b2_tx_disparition: z.number().optional(),
+          b2_tx_restructuration: z.number().optional(),
+          b2_tx_rs: z.number().optional(),
+          b2_tx_vacance: z.number().optional(),
+          b2_tx_vacance_longue: z.number().optional(),
+          b2_tx_vacance_courte: z.number().optional(),
+        }),
+      )
+      .optional(),
+  })
+
+export type TExternalUpdateScenario = z.infer<typeof ZExternalUpdateScenario>
 
 export type TEpciScenario = z.infer<typeof ZEpciScenario>

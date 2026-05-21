@@ -13,11 +13,11 @@ export default function InfographiesPage() {
   return (
     <div className="fr-container fr-background-default--grey fr-p-4w">
       <div className="fr-flex fr-direction-column fr-flex-gap-8v">
-        <div className="fr-flex fr-flex-gap-8v">
+        <div className="fr-flex fr-flex-gap-8v fr-justify-content-space-between">
           <DatavisualisationAutocomplete />
           <SelectDataType />
         </div>
-        <div className="fr-flex fr-justify-content-center fr-align-items-center">
+        <div className="fr-flex fr-justify-content-center fr-align-items-center fr-flex-gap-4v">
           <DataVisualisationFilters />
         </div>
       </div>

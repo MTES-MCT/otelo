@@ -36,8 +36,12 @@ export class ScenariosService {
     return this.prisma.scenario.findMany({ where: { userId } })
   }
 
-  async create(userId: string, data: TInitScenario) {
+  async create(userId: string, data: TInitScenario, millesime?: string) {
     const { epcis, demographicEvolutionOmphaleCustomIds, ...scenario } = data
+
+    const activePack = await this.prisma.dataPackVersion.findFirstOrThrow({
+      where: { isActive: true },
+    })
 
     const epciScenariosData = Object.entries(epcis).map(([code, epciScenario]) => ({
       epciCode: code,
@@ -47,12 +51,13 @@ export class ScenariosService {
     const createdScenario = await this.prisma.scenario.create({
       data: {
         ...scenario,
+        millesime: millesime || activePack.millesime,
         epciScenarios: {
           createMany: {
             data: epciScenariosData,
           },
         },
-        user: { connect: { id: userId } },
+        userId,
       },
     })
 

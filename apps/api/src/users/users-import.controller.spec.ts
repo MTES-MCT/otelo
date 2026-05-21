@@ -74,13 +74,13 @@ describe('UsersController - importCsv', () => {
 
   it('should parse valid CSV with semicolon delimiter', async () => {
     usersService.importUsersFromCsv.mockResolvedValue({ created: 1, skipped: 0 })
-    const csv = 'email;nom;prenom;referent\njean@test.com;Dupont;Jean;DDT 75'
+    const csv = "email;nom;prenom;referent;typologie\njean@test.com;Dupont;Jean;DDT 75;Agence d'urbanisme"
     const file = makeCsvFile(csv)
 
     const result = await controller.importCsv(file)
 
     expect(usersService.importUsersFromCsv).toHaveBeenCalledWith([
-      { email: 'jean@test.com', name: 'Jean Dupont', firstname: 'Jean', lastname: 'Dupont', referent: 'DDT 75' },
+      { email: 'jean@test.com', name: 'Jean Dupont', firstname: 'Jean', lastname: 'Dupont', referent: 'DDT 75', type: 'AgenceUrbanisme' },
     ])
     expect(result.created).toBe(1)
     expect(result.totalRows).toBe(1)
@@ -94,9 +94,21 @@ describe('UsersController - importCsv', () => {
     const result = await controller.importCsv(file)
 
     expect(usersService.importUsersFromCsv).toHaveBeenCalledWith([
-      { email: 'jean@test.com', name: 'Jean Dupont', firstname: 'Jean', lastname: 'Dupont', referent: undefined },
+      { email: 'jean@test.com', name: 'Jean Dupont', firstname: 'Jean', lastname: 'Dupont', referent: undefined, type: undefined },
     ])
     expect(result.validationErrors).toHaveLength(0)
+  })
+
+  it('should reject rows with invalid typologie', async () => {
+    usersService.importUsersFromCsv.mockResolvedValue({ created: 0, skipped: 0 })
+    const csv = 'email;nom;prenom;referent;typologie\njean@test.com;Dupont;Jean;DDT;Typologie inconnue'
+    const file = makeCsvFile(csv)
+
+    const result = await controller.importCsv(file)
+
+    expect(result.validationErrors).toHaveLength(1)
+    expect(result.validationErrors[0]).toEqual({ row: 2, error: 'Typologie invalide: Typologie inconnue' })
+    expect(usersService.importUsersFromCsv).toHaveBeenCalledWith([])
   })
 
   // --- Row validation (Zod) ---
@@ -159,7 +171,7 @@ describe('UsersController - importCsv', () => {
     expect(result.validationErrors[0].row).toBe(2)
     expect(result.validationErrors[1].row).toBe(4)
     expect(usersService.importUsersFromCsv).toHaveBeenCalledWith([
-      { email: 'valid@test.com', name: 'Marie Martin', firstname: 'Marie', lastname: 'Martin', referent: 'DDT 93' },
+      { email: 'valid@test.com', name: 'Marie Martin', firstname: 'Marie', lastname: 'Martin', referent: 'DDT 93', type: undefined },
     ])
     expect(result.totalRows).toBe(3)
   })
@@ -181,6 +193,7 @@ describe('UsersController - importCsv', () => {
       firstname: 'Jean',
       lastname: 'Dupont',
       referent: 'DDT',
+      type: undefined,
     })
     // Zod strips unknown keys — role, hasAccess, banned must NOT leak through
     expect(passedRows[0]).not.toHaveProperty('role')
@@ -227,6 +240,7 @@ describe('UsersController - importCsv', () => {
         firstname: 'François',
         lastname: 'Éléonore',
         referent: 'Réf. DDT île-de-France',
+        type: undefined,
       },
     ])
   })

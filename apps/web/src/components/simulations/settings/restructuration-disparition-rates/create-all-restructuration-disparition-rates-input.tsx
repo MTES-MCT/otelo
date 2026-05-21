@@ -6,6 +6,7 @@ import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import Input from '@codegouvfr/react-dsfr/Input'
 import { TAccommodationRates } from '@shared'
 import classNames from 'classnames'
+import { parseAsString, useQueryState } from 'nuqs'
 import { FC, useState } from 'react'
 import { tss } from 'tss-react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
@@ -13,9 +14,10 @@ import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci
 
 export const CreateAllRestructurationDisparitionRatesInput: FC = () => {
   const { classes } = useStyles()
+  const [millesime] = useQueryState('millesime', parseAsString)
   const { rates, defaultRates, updateAllRates } = useEpcisRates()
   const epciIds = Object.keys(rates)
-  const { data: accommodationRates } = useAccommodationRatesByEpci(epciIds)
+  const { data: accommodationRates } = useAccommodationRatesByEpci(epciIds, millesime ?? undefined)
 
   // Calculate average rates across all EPCIs
   const averageRestructuringRate =

@@ -53,10 +53,38 @@ const createTableData = (results: TVacancyAccommodationEvolution[]): TVacancyAcc
 export class VacancyService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getNewestVacancy(epcisCodes: string[]): Promise<VacancyAccommodation[]> {
-    return this.prismaService.vacancyAccommodation.findMany({
-      where: { epciCode: { in: epcisCodes }, year: { equals: 2021 } },
+  async getNewestVacancy(epcisCodes: string[], millesime?: string): Promise<VacancyAccommodation[]> {
+    const targetYear = Number(millesime)
+    const hasTargetYear = Number.isFinite(targetYear)
+
+    const targetYearData = await this.prismaService.vacancyAccommodation.findMany({
+      where: {
+        epciCode: { in: epcisCodes },
+        ...(hasTargetYear ? { year: targetYear } : {}),
+      },
+      orderBy: [{ epciCode: 'asc' }, { year: 'desc' }],
     })
+
+    const foundEpcis = new Set(targetYearData.map((item) => item.epciCode))
+    const missingEpcis = epcisCodes.filter((code) => !foundEpcis.has(code))
+
+    if (!missingEpcis.length) {
+      return targetYearData
+    }
+
+    const fallbackRows = await this.prismaService.vacancyAccommodation.findMany({
+      where: { epciCode: { in: missingEpcis } },
+      orderBy: [{ epciCode: 'asc' }, { year: 'desc' }],
+    })
+
+    const fallbackByEpci = new Map<string, VacancyAccommodation>()
+    for (const row of fallbackRows) {
+      if (!fallbackByEpci.has(row.epciCode)) {
+        fallbackByEpci.set(row.epciCode, row)
+      }
+    }
+
+    return [...targetYearData, ...Array.from(fallbackByEpci.values())]
   }
 
   async getVacancyByEpci(epciCode: string, years?: number[]) {

@@ -105,7 +105,12 @@ export default async function Resultats({ params }: SimulationPageProps) {
             peakYear={epciData.peakYear}
           />
           <SimulationDemographicParcEvolution results={flowResults} horizon={simulation.scenario.projection} peakYear={epciData.peakYear} />
-          <SimulationBadHousing simulationId={simulation.id} horizon={simulation.scenario.projection} results={stockResults} />
+          <SimulationBadHousing
+            simulationId={simulation.id}
+            horizon={simulation.scenario.projection}
+            results={stockResults}
+            millesime={simulation.scenario.millesime}
+          />
         </div>
       ),
       iconId: 'ri-road-map-line' as RiIconClassName,
@@ -162,7 +167,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
   return (
     <>
       <div className="fr-container fr-direction-column fr-flex fr-flex-gap-8v">
-        <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} />
+        <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
         <div className="fr-col-md-12 fr-flex fr-direction-column fr-direction-sm-row fr-align-items-center fr-mb-4w">
           <div className="fr-col-md-8 fr-mb-2w fr-mb-md-0">
             <SimulationHeaderSegmentedControls segments={segments} activeId={id} />
@@ -172,7 +177,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
               <Button
                 priority="secondary"
                 linkProps={{
-                  href: `/simulation/parametrages-demographique?epciGroupId=${simulation.epciGroupId}&epcis=${simulation.epcis.map((epci) => epci.code).join(',')}&projection=${simulation.scenario.projection}`,
+                  href: `/simulation/parametrages-demographique?epciGroupId=${simulation.epciGroupId}&epcis=${simulation.epcis.map((epci) => epci.code).join(',')}&projection=${simulation.scenario.projection}&millesime=${simulation.scenario.millesime}`,
                 }}
               >
                 Élaborer un autre scénario

@@ -73,6 +73,94 @@ describe('FlowRequirementService', () => {
     })
   })
 
+  describe('calculateNoAccommodationResorptionByYear', () => {
+    it('should return 0 at baseYear (cumulative starts after baseYear)', () => {
+      const result = service.calculateNoAccommodationResorptionByYear(280, 2030, 2049)
+      // baseYear is 2021 (set in `context` above). Cumulative at baseYear = 0.
+      expect(result[2021]).toBe(0)
+    })
+
+    it('should spread total linearly between baseYear and horizon', () => {
+      const result = service.calculateNoAccommodationResorptionByYear(280, 2030, 2049)
+      // horizonDelta = 2049 - 2021 = 28. Per-year share = 280 / 28 = 10.
+      expect(result[2022]).toBeCloseTo(10, 6)
+      expect(result[2023]).toBeCloseTo(20, 6)
+      expect(result[2030]).toBeCloseTo(90, 6)
+    })
+
+    it('should reach total exactly at horizon', () => {
+      const result = service.calculateNoAccommodationResorptionByYear(280, 2049, 2049)
+      expect(result[2049]).toBeCloseTo(280, 6)
+    })
+
+    it('should cap at total beyond horizon', () => {
+      const result = service.calculateNoAccommodationResorptionByYear(280, 2055, 2030)
+      // horizonDelta = 9. Per-year = 280/9. Cumulative at 2030 = 280 (full).
+      expect(result[2030]).toBeCloseTo(280, 6)
+      // Beyond horizon: stays at total.
+      expect(result[2031]).toBeCloseTo(280, 6)
+      expect(result[2055]).toBeCloseTo(280, 6)
+    })
+
+    it('should never exceed total when horizon > projection', () => {
+      const result = service.calculateNoAccommodationResorptionByYear(280, 2030, 2050)
+      // horizonDelta = 29. At year 2030 (projection): cumulative = 9/29 * 280 ≈ 86.9
+      expect(result[2030]).toBeLessThan(280)
+      expect(result[2030]).toBeCloseTo((9 * 280) / 29, 6)
+    })
+
+    it('should guard against horizon equal to baseYear', () => {
+      const result = service.calculateNoAccommodationResorptionByYear(280, 2025, 2021)
+      // horizonDelta = 0 → fallback: 0 at baseYear, total after.
+      expect(result[2021]).toBe(0)
+      expect(result[2022]).toBe(280)
+      expect(result[2025]).toBe(280)
+    })
+
+    it('should handle zero hors-logement stock', () => {
+      const result = service.calculateNoAccommodationResorptionByYear(0, 2030, 2049)
+      for (let year = 2021; year <= 2030; year++) {
+        expect(result[year]).toBe(0)
+      }
+    })
+  })
+
+  describe('calculateAccommodationVariationByYear with hors-logement resorption', () => {
+    it('should add cumulative HL to RP_N before dividing by (1-rates)', () => {
+      const menages = [
+        { year: 2021, centralB: 1000, epciCode: '200000001' },
+        { year: 2022, centralB: 1010, epciCode: '200000001' },
+        { year: 2023, centralB: 1020, epciCode: '200000001' },
+      ]
+      const vacantRate = { 2021: 0.08, 2022: 0.08, 2023: 0.08 }
+      const secondaryRate = { 2021: 0.02, 2022: 0.02, 2023: 0.02 }
+      const horsLogement = { 2021: 0, 2022: 5, 2023: 10 }
+
+      const result = service.calculateAccommodationVariationByYear(menages, EOmphale.CENTRAL_B, vacantRate, secondaryRate, horsLogement)
+      // 2021: (1000 + 0) / 0.9 = 1111.11 → 1111
+      expect(result[2021]).toBe(1111)
+      // 2022: (1010 + 5) / 0.9 = 1127.78 → 1128
+      expect(result[2022]).toBe(1128)
+      // 2023: (1020 + 10) / 0.9 = 1144.44 → 1144
+      expect(result[2023]).toBe(1144)
+    })
+
+    it('should reduce to old behaviour when noAccommodation map is empty', () => {
+      const menages = [
+        { year: 2021, centralB: 1000, epciCode: '200000001' },
+        { year: 2022, centralB: 1010, epciCode: '200000001' },
+      ]
+      const vacantRate = { 2021: 0.08, 2022: 0.08 }
+      const secondaryRate = { 2021: 0.02, 2022: 0.02 }
+
+      const result = service.calculateAccommodationVariationByYear(menages, EOmphale.CENTRAL_B, vacantRate, secondaryRate, {})
+      // Empty record → noAccommodation falls back to 0 for every year.
+      // 2021: 1000 / 0.9 = 1111.11 → 1111, 2022: 1010 / 0.9 = 1122.22 → 1122
+      expect(result[2021]).toBe(1111)
+      expect(result[2022]).toBe(1122)
+    })
+  })
+
   describe('calculateAdditionalHousingUnitsForDeficitAndNewHouseholds', () => {
     it('should sum new household growth and deficit reduction per year', () => {
       const demo: TDemographicEvolution = {
@@ -338,6 +426,27 @@ describe('FlowRequirementService', () => {
   describe.each(flowRequirementFixtures)('Excel validation: $name', (fixture: FlowRequirementFixture) => {
     const { config, data, expected } = fixture
 
+    // Each fixture may have its own baseYear (old methodo: 2021, new methodo: 2022).
+    // Rebuild the service with the fixture's baseYear so this.context.baseYear is correct.
+    beforeEach(async () => {
+      const fixtureContext = makeCalculationContext({ baseYear: config.baseYear })
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          FlowRequirementService,
+          { provide: 'CalculationContext', useValue: fixtureContext },
+          { provide: RenewalHousingStockService, useValue: createMock<RenewalHousingStockService>() },
+          { provide: DemographicEvolutionService, useValue: createMock<DemographicEvolutionService>() },
+          { provide: DemographicEvolutionCustomService, useValue: createMock<DemographicEvolutionCustomService>() },
+          { provide: StockRequirementsService, useValue: createMock<StockRequirementsService>() },
+        ],
+      }).compile()
+      service = module.get<FlowRequirementService>(FlowRequirementService)
+    })
+
+    // Cumulative hors-logement (B11+B12) resorption per year — zero for old-methodo fixtures.
+    const buildHorsLogementResorption = () =>
+      service.calculateNoAccommodationResorptionByYear(config.horsLogement ?? 0, config.projection, config.horizonResorption)
+
     /**
      * Compare a Record<number, number> from the code (rounded integers)
      * against unrounded Excel values. The code applies Math.round,
@@ -413,6 +522,7 @@ describe('FlowRequirementService', () => {
           omphale,
           data.vacantAccomodationEvolution,
           data.secondaryResidenceAccomodationEvolution,
+          buildHorsLogementResorption(),
         )
         expectRecordClose(result, expected.accommodationVariation, 1, config.baseYear)
       })
@@ -427,6 +537,7 @@ describe('FlowRequirementService', () => {
           omphale,
           data.vacantAccomodationEvolution,
           data.secondaryResidenceAccomodationEvolution,
+          buildHorsLogementResorption(),
         )
         const result = service.calculateVacantAccommodationVariationByYear(
           accommodationVariation,
@@ -446,6 +557,7 @@ describe('FlowRequirementService', () => {
           omphale,
           data.vacantAccomodationEvolution,
           data.secondaryResidenceAccomodationEvolution,
+          buildHorsLogementResorption(),
         )
         const result = service.calculateShortTermVacantAccommodationVariationByYear(
           accommodationVariation,
@@ -466,6 +578,7 @@ describe('FlowRequirementService', () => {
           omphale,
           data.vacantAccomodationEvolution,
           data.secondaryResidenceAccomodationEvolution,
+          buildHorsLogementResorption(),
         )
         const demo = buildDemographicEvolution(fixture)
         const deficitReduction = service.calculateAdditionalHousingUnitsForDeficitReduction(
@@ -495,6 +608,7 @@ describe('FlowRequirementService', () => {
           omphale,
           data.vacantAccomodationEvolution,
           data.secondaryResidenceAccomodationEvolution,
+          buildHorsLogementResorption(),
         )
         const result = service.calculateSecondaryResidenceVariationByYear(
           accommodationVariation,
@@ -514,6 +628,7 @@ describe('FlowRequirementService', () => {
           omphale,
           data.vacantAccomodationEvolution,
           data.secondaryResidenceAccomodationEvolution,
+          buildHorsLogementResorption(),
         )
         const demo = buildDemographicEvolution(fixture)
         const deficitReduction = service.calculateAdditionalHousingUnitsForDeficitReduction(
@@ -563,6 +678,7 @@ describe('FlowRequirementService', () => {
           omphale,
           data.vacantAccomodationEvolution,
           data.secondaryResidenceAccomodationEvolution,
+          buildHorsLogementResorption(),
         )
         const demo = buildDemographicEvolution(fixture)
         const deficitReduction = service.calculateAdditionalHousingUnitsForDeficitReduction(
@@ -661,6 +777,7 @@ describe('FlowRequirementService', () => {
           omphale,
           data.vacantAccomodationEvolution,
           data.secondaryResidenceAccomodationEvolution,
+          buildHorsLogementResorption(),
         )
         const demo = buildDemographicEvolution(fixture)
         const deficitReduction = service.calculateAdditionalHousingUnitsForDeficitReduction(

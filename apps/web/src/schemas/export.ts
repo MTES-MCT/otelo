@@ -25,7 +25,7 @@ export const ZRequestPowerpoint = z
     periodStart: z
       .string()
       .regex(/^\d{4}$/, { message: 'Veuillez entrer une année valide (YYYY)' })
-      .refine((val) => parseInt(val) >= 2021, { message: "L'année de début doit être supérieure ou égale à 2021" }),
+      .refine((val) => parseInt(val) >= 2020, { message: "L'année de début doit être supérieure ou égale à 2020" }),
     periodEnd: z
       .string()
       .regex(/^\d{4}$/, { message: 'Veuillez entrer une année valide (YYYY)' })

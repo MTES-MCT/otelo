@@ -11,20 +11,32 @@ import { formatNumber } from '~/utils/format-numbers'
 import styles from './projection-evolution-table.module.css'
 
 type ScenarioKey = 'basse' | 'central' | 'haute'
+export type YearData = Record<ScenarioKey, number>
 
 export type ProjectionMenagesEvolutionTableProps = {
   data: TDemographicProjectionDataTable
   maxYears: TDemographicMenagesMaxYearsByEpci
+  millesime?: string | null
 }
 
-export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTableProps> = ({ data, maxYears }) => {
+const HORIZON_YEARS = [2030, 2040, 2050]
+
+const getBaseYear = (data: TDemographicProjectionDataTable): string => {
+  const firstRow = Object.values(data)[0]
+  if (!firstRow) return '2021'
+  const yearKeys = Object.keys(firstRow).filter((k) => /^\d{4}$/.test(k) && !HORIZON_YEARS.includes(Number(k)))
+  return yearKeys[0] || '2021'
+}
+
+export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTableProps> = ({ data, maxYears, millesime }) => {
   const [populationType] = useQueryState('populationType', parseAsString.withDefault('haute'))
+  const baseYear = millesime ?? getBaseYear(data)
 
   const dataTable = Object.entries(data).map(([key, rowValue]) => {
     const typedRowValue = rowValue as unknown as TDemographicProjectionDataTableRow
     return {
       [typedRowValue.name]: {
-        '2021': typedRowValue['2021'],
+        [baseYear]: typedRowValue[baseYear],
         '2030': typedRowValue['2030'],
         '2040': typedRowValue['2040'],
         '2050': typedRowValue['2050'],
@@ -33,6 +45,8 @@ export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTable
       },
     }
   })
+
+  const firstPeriod = `${baseYear}-2030`
 
   return (
     <div className={styles.container}>
@@ -46,9 +60,12 @@ export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTable
                 EPCI/BH
               </th>
               <th rowSpan={2} className={styles.headerCell}>
+                Millésime
+              </th>
+              <th rowSpan={2} className={styles.headerCell}>
                 Scénarios
               </th>
-              <th className={styles.headerCell}>2021</th>
+              <th className={styles.headerCell}>{baseYear}</th>
               <th className={styles.headerCell}>2030</th>
               <th className={styles.headerCell}>2040</th>
               <th className={styles.headerCell}>2050</th>
@@ -62,10 +79,10 @@ export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTable
             </tr>
             <tr>
               <th colSpan={4} className={styles.emptyCell}></th>
-              <th className={styles.headerCell}>2021-2030</th>
+              <th className={styles.headerCell}>{firstPeriod}</th>
               <th className={styles.headerCell}>2030-2040</th>
               <th className={styles.headerCell}>2040-2050</th>
-              <th className={styles.headerCell}>2021-2030</th>
+              <th className={styles.headerCell}>{firstPeriod}</th>
               <th className={styles.headerCell}>2030-2040</th>
               <th className={styles.headerCell}>2040-2050</th>
               <th className={styles.emptyCell}></th>
@@ -102,14 +119,19 @@ export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTable
                       {territoryName}
                     </td>
                   )}
+                  {scenarioIndex === 0 && (
+                    <td rowSpan={3} className={styles.dataCell}>
+                      {baseYear}
+                    </td>
+                  )}
                   <td className={styles.scenarioCell}>{scenario.name}</td>
-                  <td className={styles.dataCell}>{formatNumber(territoryData['2021'][scenario.key])}</td>
-                  <td className={styles.dataCell}>{formatNumber(territoryData['2030'][scenario.key])}</td>
-                  <td className={styles.dataCell}>{formatNumber(territoryData['2040'][scenario.key])}</td>
-                  <td className={styles.dataCell}>{formatNumber(territoryData['2050'][scenario.key])}</td>
+                  <td className={styles.dataCell}>{formatNumber((territoryData[baseYear] as YearData)?.[scenario.key])}</td>
+                  <td className={styles.dataCell}>{formatNumber(territoryData['2030']?.[scenario.key])}</td>
+                  <td className={styles.dataCell}>{formatNumber(territoryData['2040']?.[scenario.key])}</td>
+                  <td className={styles.dataCell}>{formatNumber(territoryData['2050']?.[scenario.key])}</td>
                   <td className={styles.dataCell}>
-                    {territoryData.annualEvolution['2021-2030']?.[scenario.key]?.value
-                      ? formatNumber(territoryData.annualEvolution['2021-2030'][scenario.key].value)
+                    {territoryData.annualEvolution[firstPeriod]?.[scenario.key]?.value
+                      ? formatNumber(territoryData.annualEvolution[firstPeriod][scenario.key].value)
                       : '-'}
                   </td>
                   <td className={styles.dataCell}>
@@ -122,7 +144,7 @@ export const ProjectionMenagesEvolutionTable: FC<ProjectionMenagesEvolutionTable
                       ? formatNumber(territoryData.annualEvolution['2040-2050'][scenario.key].value)
                       : '-'}
                   </td>
-                  <td className={styles.dataCell}>{territoryData.annualEvolution['2021-2030']?.[scenario.key]?.percent || '-'}</td>
+                  <td className={styles.dataCell}>{territoryData.annualEvolution[firstPeriod]?.[scenario.key]?.percent || '-'}</td>
                   <td className={styles.dataCell}>{territoryData.annualEvolution['2030-2040']?.[scenario.key]?.percent || '-'}</td>
                   <td className={styles.dataCell}>{territoryData.annualEvolution['2040-2050']?.[scenario.key]?.percent || '-'}</td>
                   <td className={styles.dataCell}>

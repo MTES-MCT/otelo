@@ -11,7 +11,7 @@ export const DATA_SOURCES: SourceEntry[] = [
   // --- Projections démographiques ---
   {
     source: 'INSEE Omphale et CGDD/SDES',
-    millesime: '2021-2050',
+    millesime: '2022-2050',
     etape: 'Projections démographiques',
     etapeId: 'projections-demographiques',
     description:
@@ -45,17 +45,17 @@ export const DATA_SOURCES: SourceEntry[] = [
     etape: 'Taux annuel de restructuration et de disparition',
     etapeId: 'taux-restructuration-disparition',
     description:
-      "Valeurs de référence du taux annuel d'apparition de logements par restructuration et du taux annuel de disparition, calculées sur la base d'une mesure de ces taux sur les 5 dernières années, soit entre 2017 et 2022.",
+      "Valeurs de référence du taux annuel d'apparition de logements par restructuration et du taux annuel de disparition, calculées sur la base d'une mesure de ces taux entre 2015 et 2022.",
   },
 
   // --- Distinction vacance longue durée / courte durée ---
   {
     source: 'Fichiers fonciers',
-    millesime: '2023',
+    millesime: '2024',
     etape: 'Distinction vacance longue durée / courte durée',
     etapeId: 'vacance-longue-courte',
     description:
-      "Utilisation pour mesurer la part des logements vacants de longue durée (plus de 2 ans) et de courte durée (2 ans ou moins). La part de la vacance de longue durée observée dans les fichiers fonciers 2023 est appliquée au volume de logements vacants mesuré via la source d'origine fiscale CGDD/SDES.",
+      "Utilisation pour mesurer la part des logements vacants de longue durée (plus de 2 ans) et de courte durée (2 ans ou moins). La part de la vacance de longue durée observée dans les fichiers fonciers 2024 est appliquée au volume de logements vacants mesuré via la source d'origine fiscale CGDD/SDES.",
   },
 
   // --- Hors logement : sans abrisme et habitat de fortune ---
@@ -68,7 +68,7 @@ export const DATA_SOURCES: SourceEntry[] = [
   },
   {
     source: 'Système National d\u2019Enregistrement (SNE)',
-    millesime: '2019',
+    millesime: '2023',
     etape: 'Hors logement : sans abrisme et habitat de fortune',
     etapeId: 'hors-logement',
     description:
@@ -89,7 +89,7 @@ export const DATA_SOURCES: SourceEntry[] = [
   // --- Hors logement : ménages hébergés ---
   {
     source: 'Système National d\u2019Enregistrement (SNE)',
-    millesime: '2019',
+    millesime: '2023',
     etape: 'Hébergés chez un tiers',
     etapeId: 'menages-heberges',
     description:
@@ -136,7 +136,7 @@ export const DATA_SOURCES: SourceEntry[] = [
   },
   {
     source: 'Fichiers fonciers',
-    millesime: '2023',
+    millesime: '2024',
     etape: 'Résidences principales de mauvaise qualité',
     etapeId: 'mauvaise-qualite',
     description:

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { AccommodationRatesModule } from '~/accommodation-rates/accommodation-rates.module'
 import { PrismaModule } from '~/db/prisma.module'
 import { EmailModule } from '~/email/email.module'
 import { EpciGroupsModule } from '~/epci-groups/epci-groups.module'
@@ -10,7 +11,7 @@ import { SimulationsService } from './simulations.service'
 @Module({
   controllers: [SimulationsController],
   exports: [SimulationsService],
-  imports: [EpcisModule, ScenariosModule, PrismaModule, EmailModule, EpciGroupsModule],
+  imports: [EpcisModule, ScenariosModule, PrismaModule, EmailModule, EpciGroupsModule, AccommodationRatesModule],
   providers: [SimulationsService],
 })
 export class SimulationsModule {}

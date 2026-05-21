@@ -1,7 +1,7 @@
 import { TEpci } from '@shared'
 import { notFound } from 'next/navigation'
 import { authFetch, getSession } from '~/lib/auth/server'
-import { TSimulationWithRelations } from '~/schemas/simulation'
+import { TSimulationDashboardItem } from '~/schemas/simulation'
 
 export const getDashboardList = async () => {
   const session = await getSession()
@@ -20,7 +20,7 @@ export const getDashboardList = async () => {
     Array<{
       id: string
       name: string
-      simulations: TSimulationWithRelations[]
+      simulations: TSimulationDashboardItem[]
       epcis: Omit<TEpci, 'region'>[]
     }>
   >

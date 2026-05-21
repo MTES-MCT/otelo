@@ -5,16 +5,20 @@ import { TScenario } from '~/schemas/scenario'
 export interface SimulationInitialSettings {
   id: string
   projection: number
+  peakYears?: Record<string, number>
   simulationId: string
   b2_scenario: string
+  millesime: string
   epciScenarios: TScenario['epciScenarios']
 }
 
 export interface SimulationSettings {
   id: string
   projection: number
+  peakYears?: Record<string, number>
   simulationId: string
   b2_scenario: string
+  millesime: string
   epciScenarios: TEpcisAccommodationRates
 }
 

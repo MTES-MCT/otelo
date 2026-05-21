@@ -26,10 +26,11 @@ const COLORS = {
   default: '#E5E5E5',
 }
 
-export const ModifyAggregatedParcsComparisonChart = () => {
+export const ModifyAggregatedParcsComparisonChart = ({ targetYear }: { targetYear: number | null }) => {
   const { simulationSettings } = useSimulationSettings()
+  const baseYear = simulationSettings.millesime
   const epciIds = Object.keys(simulationSettings.epciScenarios)
-  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds)
+  const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
 
   if (!originalRatesData || epciIds.length === 0) return null
@@ -63,10 +64,10 @@ export const ModifyAggregatedParcsComparisonChart = () => {
 
   // Calculate dynamic scale
   const calculateUnifiedScale = () => {
-    const vacancy2021 = shortTermRate + originalLongTermRate
+    const vacancyBaseYear = shortTermRate + originalLongTermRate
     const vacancyComputed = shortTermRate + computedLongTermRate
 
-    const maxVacancy = Math.max(vacancy2021, vacancyComputed)
+    const maxVacancy = Math.max(vacancyBaseYear, vacancyComputed)
 
     if (maxVacancy < 30) {
       const suggestedScale = Math.ceil(maxVacancy * 1.3)
@@ -103,7 +104,7 @@ export const ModifyAggregatedParcsComparisonChart = () => {
     ]
   }
 
-  const data2021 = createScaledData(shortTermRate, originalLongTermRate, unifiedScale)
+  const dataBaseYear = createScaledData(shortTermRate, originalLongTermRate, unifiedScale)
   const computedData = createScaledData(shortTermRate, computedLongTermRate, unifiedScale)
 
   const CustomBar = ({ data, height = 32, scale }: CustomBarProps) => (
@@ -170,14 +171,16 @@ export const ModifyAggregatedParcsComparisonChart = () => {
                   <span className="fr-text--sm fr-mb-0">Vacance longue durée</span>
                 </div>
               </div>
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
-                <span className="fr-text--medium">Le parc en 2021 (moyenne du territoire)</span>
-                <CustomBar data={data2021} scale={unifiedScale} />
-              </div>
               <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">Le parc en {simulationSettings.projection} (moyenne du territoire)</span>
-                <CustomBar data={computedData} scale={unifiedScale} />
+                <span className="fr-text--medium">{`Le parc en ${baseYear} (moyenne du territoire)`}</span>
+                <CustomBar data={dataBaseYear} scale={unifiedScale} />
               </div>
+              {String(targetYear) !== baseYear && (
+                <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                  <span className="fr-text--medium">Le parc en {targetYear} (moyenne du territoire)</span>
+                  <CustomBar data={computedData} scale={unifiedScale} />
+                </div>
+              )}
             </div>
           </div>
         </ChartDownloadWrapper>

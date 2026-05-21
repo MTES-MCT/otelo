@@ -11,6 +11,7 @@ export const ZUser = ZUserBase.extend({
   engaged: z.boolean().optional(),
   type: z.enum(UserTypeValues).nullable().optional(),
   referent: z.string().nullable().optional(),
+  region: z.string().nullable().optional(),
 })
 
 export type TUser = z.infer<typeof ZUser>

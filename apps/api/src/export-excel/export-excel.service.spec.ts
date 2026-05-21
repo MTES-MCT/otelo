@@ -55,6 +55,7 @@ const makeSimulationData = () => ({
     ],
     isConfidential: false,
     projection: 2041,
+    millesime: '2021',
     source_b11: 'RP',
     source_b14: 'RP',
     source_b15: 'RP',
@@ -239,7 +240,7 @@ describe('ExportExcelService', () => {
       prisma.filocomFlux.findUnique = jest.fn().mockResolvedValue(makeFilocomFlux() as any)
       prisma.hostedFiness.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, autreCentre: 200 } as any)
       prisma.hostedFilocom.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, value: 800 } as any)
-      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, particular: 50, temporary: 30, free: 10 } as any)
+      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, particular: 50, temporary: 30 } as any)
       prisma.financialInadequation.findUnique = jest.fn().mockResolvedValue({
         epciCode: EPCI_CODE,
         nbAllPlus30AccessionPropriete: 300,
@@ -280,7 +281,7 @@ describe('ExportExcelService', () => {
         expect(row.getCell(3).value).toBe(epciTotals.totalFlux)
         // peakYear (2035) > 2021 → uses prepeakTotalStock
         expect(row.getCell(4).value).toBe(epciTotals.prepeakTotalStock)
-        expect(row.getCell(5).value).toBe(epciTotals.total)
+        expect(row.getCell(5).value).toBe(epciTotals.totalFlux + epciTotals.prepeakTotalStock)
         expect(row.getCell(6).value).toBe(epciTotals.vacantAccomodation)
         // projection (2041) > peakYear (2035) → display peakYear
         expect(row.getCell(7).value).toBe(flowEpci.data.peakYear)
@@ -291,7 +292,7 @@ describe('ExportExcelService', () => {
         expect(totalRow.getCell(1).value).toBe('Ensemble des EPCI')
         expect(totalRow.getCell(3).value).toBe(epciTotals.totalFlux)
         expect(totalRow.getCell(4).value).toBe(epciTotals.prepeakTotalStock)
-        expect(totalRow.getCell(5).value).toBe(epciTotals.total)
+        expect(totalRow.getCell(5).value).toBe(epciTotals.totalFlux + epciTotals.prepeakTotalStock)
         expect(totalRow.getCell(6).value).toBe(epciTotals.vacantAccomodation)
       })
     })
@@ -355,18 +356,17 @@ describe('ExportExcelService', () => {
       const txRpProj = 1 - 0.05 - 0.04 - 0.04 // 0.87
       const parctotProj = RP_PROJ / txRpProj
 
-      it('should derive D19 from D20 + D21', () => {
-        const d20Raw = parctotProj * 0.04
-        const d21Raw = parctotProj * 0.04
-        expect(epciSheet.getCell('D19').value).toBe(Math.round(d20Raw + d21Raw))
-      })
-
-      it('should use parctotProj for D20', () => {
-        expect(epciSheet.getCell('D20').value).toBe(Math.round(parctotProj * 0.04))
-      })
-
-      it('should use parctotProj for D21', () => {
-        expect(epciSheet.getCell('D21').value).toBe(Math.round(parctotProj * 0.04))
+      it('should compute D19-D21 from millesime values + flow besoin', () => {
+        // D15 = PARCTOT * shortTermVacancyRate = 100000 * 0.04 = 4000
+        // D16 = PARCTOT * longTermVacancyRate = 100000 * 0.04 = 4000
+        // G10 (shortTermBesoin) = 30, G11 (longTermBesoin) = 20
+        const d15 = Math.round(PARCTOT * 0.04)
+        const d16 = Math.round(PARCTOT * 0.04)
+        const d20 = d15 + flowEpci.totals.shortTermVacantAccomodation // 4000 + 30
+        const d21 = d16 + flowEpci.totals.longTermVacantAccomodation // 4000 + 20
+        expect(epciSheet.getCell('D20').value).toBe(d20)
+        expect(epciSheet.getCell('D21').value).toBe(d21)
+        expect(epciSheet.getCell('D19').value).toBe(d20 + d21)
       })
 
       it('should use parctotProj for D26 (secondary residences projection)', () => {
@@ -381,11 +381,9 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('D14').value).toBe(Math.round(d15Raw + d16Raw))
       })
 
-      it('should derive D25 from D24 - D26', () => {
-        const d24Raw = PARCTOT * 0.06
-        const d26Raw = parctotProj * 0.05
-        expect(epciSheet.getCell('D24').value).toBe(Math.round(d24Raw))
-        expect(epciSheet.getCell('D25').value).toBe(Math.round(d24Raw - d26Raw))
+      it('should still use filocom parctot for D24 (RS 2021) and D25 = D26 - D24', () => {
+        expect(epciSheet.getCell('D24').value).toBe(Math.round(PARCTOT * 0.06))
+        expect(epciSheet.getCell('D25').value).toBe(Math.round(parctotProj * 0.05) - Math.round(PARCTOT * 0.06))
       })
     })
 
@@ -506,6 +504,7 @@ describe('ExportExcelService', () => {
         b2_scenario: 'Central_C',
         epciScenarios: [csvEpciScenario],
         isConfidential: true,
+        millesime: '2021',
         projection: 2033,
         source_b11: 'RP',
         source_b14: 'Filo',
@@ -629,7 +628,7 @@ describe('ExportExcelService', () => {
         centreProvisoire: 60,
       } as any)
       prisma.hostedFilocom.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, value: 620 } as any)
-      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, particular: 45, temporary: 25, free: 8 } as any)
+      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: CSV_EPCI, particular: 45, temporary: 25 } as any)
       prisma.financialInadequation.findUnique = jest.fn().mockResolvedValue({
         epciCode: CSV_EPCI,
         nbAllPlus30AccessionPropriete: 200,
@@ -684,18 +683,17 @@ describe('ExportExcelService', () => {
       const txRpProj = 1 - csvEpciScenario.b2_tx_rs - csvEpciScenario.b2_tx_vacance_longue - csvEpciScenario.b2_tx_vacance_courte
       const parctotProj = CSV_RP_PROJ / txRpProj
 
-      it('should derive D19 from D20 + D21', () => {
-        const d20Raw = parctotProj * csvEpciScenario.b2_tx_vacance_courte
-        const d21Raw = parctotProj * csvEpciScenario.b2_tx_vacance_longue
-        expect(epciSheet.getCell('D19').value).toBe(Math.round(d20Raw + d21Raw))
-      })
-
-      it('should compute D20 with parctotProj', () => {
-        expect(epciSheet.getCell('D20').value).toBe(Math.round(parctotProj * csvEpciScenario.b2_tx_vacance_courte))
-      })
-
-      it('should compute D21 with parctotProj', () => {
-        expect(epciSheet.getCell('D21').value).toBe(Math.round(parctotProj * csvEpciScenario.b2_tx_vacance_longue))
+      it('should compute D19-D21 from millesime values + flow besoin', () => {
+        // D15 = CSV_PARCTOT * shortTermVacancyRate = 85000 * 0.05 = 4250
+        // D16 = CSV_PARCTOT * longTermVacancyRate = 85000 * 0.0358 = 3043
+        const d15 = Math.round(CSV_PARCTOT * 0.05)
+        const d16 = Math.round(CSV_PARCTOT * 0.0358)
+        const csvFlowEpci = results.flowRequirement.epcis[0]
+        const d20 = d15 + csvFlowEpci.totals.shortTermVacantAccomodation // 4250 + 60
+        const d21 = d16 + csvFlowEpci.totals.longTermVacantAccomodation // 3043 + 40
+        expect(epciSheet.getCell('D20').value).toBe(d20)
+        expect(epciSheet.getCell('D21').value).toBe(d21)
+        expect(epciSheet.getCell('D19').value).toBe(d20 + d21)
       })
 
       it('should compute D26 with parctotProj', () => {
@@ -809,6 +807,79 @@ describe('ExportExcelService', () => {
         expect(epciSheet.getCell('G15').value).toBe(700) // prepeakTotalStock
         expect(epciSheet.getCell('H15').value).toBe(900) // prepeak + postpeak
       })
+    })
+  })
+
+  describe('exportScenario - millesime labels and rates (2022)', () => {
+    it('should use millesime year and 2022 short/long vacancy rates in Excel cells', async () => {
+      const simulation = makeSimulationData()
+      simulation.scenario.millesime = '2022'
+
+      prisma.simulation.findUniqueOrThrow = jest.fn().mockResolvedValue(simulation as any)
+      resultsService.getResults.mockResolvedValue({ ...simulation, results: makeResults() } as any)
+      accommodationRatesService.getAccommodationRates.mockResolvedValue({
+        [EPCI_CODE]: {
+          vacancyRate: 0.08,
+          longTermVacancyRate: 0.03,
+          shortTermVacancyRate: 0.05,
+          txRs: 0.06,
+          urbanRenewal: PARCTOT,
+          vacancy: { nbAccommodation: 5000, year: 2022 },
+          restructuringRate: 0.018,
+          disappearanceRate: 0.03,
+          totalVacantCount: 8000,
+          longTermVacantCount: 4000,
+        },
+      } as any)
+      demographicEvolutionService.getDemographicEvolutionPopulationByEpci.mockResolvedValue(makeDemographicPopulation() as any)
+      demographicEvolutionService.getDemographicEvolution.mockResolvedValue(makeDemographicMenages() as any)
+
+      prisma.filocomFlux.findUnique = jest.fn().mockResolvedValue({
+        epciCode: EPCI_CODE,
+        parctot: PARCTOT,
+        txLvParctot: 0.08,
+        txRsParctot: 0.06,
+      } as any)
+      prisma.hostedFiness.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, autreCentre: 200 } as any)
+      prisma.hostedFilocom.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, value: 800 } as any)
+      prisma.hostedSne.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, particular: 50, temporary: 30 } as any)
+      prisma.financialInadequation.findUnique = jest.fn().mockResolvedValue({
+        epciCode: EPCI_CODE,
+        nbAllPlus30AccessionPropriete: 300,
+        nbAllPlus30ParcLocatifPrive: 400,
+      } as any)
+      prisma.badQuality_RP.findUnique = jest.fn().mockResolvedValue({
+        epciCode: EPCI_CODE,
+        saniLocNonhlm: 100,
+        saniPpT: 150,
+        saniChflLocNonhlm: 50,
+        saniChflPpT: 75,
+      } as any)
+      prisma.badQuality_Filocom.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.badQuality_Fonciers.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.physicalInadequation_RP.findUnique = jest.fn().mockResolvedValue({
+        epciCode: EPCI_CODE,
+        nbMenModPpt: 60,
+        nbMenModLocNonHLM: 45,
+      } as any)
+      prisma.physicalInadequation_Filo.findUnique = jest.fn().mockResolvedValue(null)
+      prisma.homeless.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, rp: 500, sne: 400 } as any)
+      prisma.hotel.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, rp: 150, sne: 120 } as any)
+      prisma.makeShiftHousing_RP.findUnique = jest.fn().mockResolvedValue({ epciCode: EPCI_CODE, value: 80 } as any)
+      prisma.makeShiftHousing_SNE.findUnique = jest.fn().mockResolvedValue(null)
+
+      const result = await service.exportScenario('sim-1')
+      const epciSheet = result.workbook.worksheets[1]
+
+      expect(epciSheet.getCell('A14').value).toBe('Situation en 2022')
+      expect(epciSheet.getCell('C14').value).toBe('8.00')
+      expect(epciSheet.getCell('C15').value).toBe('5.00')
+      expect(epciSheet.getCell('C16').value).toBe('3.00')
+      expect(epciSheet.getCell('A29').value).toBe('Taux observés entre 2015 et 2022')
+      expect(epciSheet.getCell('C29').value).toBe('1.80')
+      expect(epciSheet.getCell('D29').value).toBe(Math.round(PARCTOT * 0.018))
+      expect(accommodationRatesService.getAccommodationRates).toHaveBeenCalledWith(EPCI_CODE, '2022')
+      expect(accommodationRatesService.getAccommodationRates.mock.calls.some(([, millesime]) => millesime === undefined)).toBe(false)
     })
   })
 })

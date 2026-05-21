@@ -1,7 +1,7 @@
 import { ZCommonDateFields, ZEpci } from '@shared'
 import { z } from 'zod'
 import { ZResults } from '~/schemas/results'
-import { ZScenario } from '~/schemas/scenario'
+import { ZEpciScenario, ZScenario } from '~/schemas/scenario'
 
 export const ZSimulation = ZCommonDateFields.extend({
   datasourceId: z.string(),
@@ -21,15 +21,48 @@ export const ZSimulationWithRelations = ZSimulation.pick({
   epciGroupId: true,
   id: true,
   updatedAt: true,
+  userId: true,
 }).extend({
   epcis: z.array(ZEpci),
-  scenario: ZScenario.pick({ b2_scenario: true, projection: true }),
+  scenario: ZScenario.pick({ b2_scenario: true, projection: true, millesime: true }),
 })
 
 export type TSimulationWithRelations = z.infer<typeof ZSimulationWithRelations>
 
+export const ZSimulationDashboardSummary = z.object({
+  total: z.number(),
+  vacantAccomodation: z.number(),
+  secondaryAccommodation: z.number(),
+  renewalNeeds: z.number(),
+  populationAtProjection: z.number(),
+  householdsAtProjection: z.number(),
+  peakYear: z.number().nullable(),
+})
+
+export type TSimulationDashboardSummary = z.infer<typeof ZSimulationDashboardSummary>
+
+export const ZEpciScenarioBaseline = z.object({
+  vacancyRate: z.number(),
+  txRs: z.number(),
+  longTermVacancyRate: z.number(),
+})
+
+export const ZSimulationDashboardItem = ZSimulationWithRelations.extend({
+  scenario: ZScenario.pick({ b2_scenario: true, projection: true, millesime: true, b1_horizon_resorption: true }).extend({
+    epciScenarios: z.array(
+      ZEpciScenario.pick({ epciCode: true, b2_tx_rs: true, b2_tx_vacance: true, b2_tx_vacance_longue: true }).extend({
+        baseline: ZEpciScenarioBaseline.optional(),
+      }),
+    ),
+  }),
+  summary: ZSimulationDashboardSummary.nullable(),
+})
+
+export type TSimulationDashboardItem = z.infer<typeof ZSimulationDashboardItem>
+
 export const ZInitSimulationDto = z.object({
   name: z.string().min(1, 'Veuillez donner un nom pour cette simulation').max(100, 'Le nom ne doit pas dépasser 100 caractères').optional(),
+  millesime: z.string().optional(),
   epci: z.array(z.object({ code: z.string() })),
   scenario: z.object({
     b2_scenario: z.string(),
@@ -74,6 +107,7 @@ export type TGroupedSimulationWithResults = z.infer<typeof ZGroupedSimulationWit
 export const ZUpdateBadHousingSimulationDto = z.object({
   id: z.string(),
   scenario: ZScenario.omit({
+    millesime: true,
     b17_motif: true,
     b2_scenario: true,
     createdAt: true,

@@ -37,3 +37,31 @@ export const getOmphaleLabel = (value: string | null): string | null => {
 
   return `${formattedScenario} - ${formattedDecohabitation}`
 }
+
+type PopulationBadge = 'BASSE' | 'CENTRALE' | 'HAUTE'
+
+export const getPopulationBadge = (b2Scenario: string): PopulationBadge => {
+  const [population] = b2Scenario.split('_')
+  switch (population) {
+    case 'PB':
+      return 'BASSE'
+    case 'PH':
+      return 'HAUTE'
+    case 'Central':
+    default:
+      return 'CENTRALE'
+  }
+}
+
+export const getDecohabitationBadge = (b2Scenario: string): PopulationBadge => {
+  const [, decohabitation] = b2Scenario.split('_')
+  switch (decohabitation) {
+    case 'B':
+      return 'BASSE'
+    case 'H':
+      return 'HAUTE'
+    case 'C':
+    default:
+      return 'CENTRALE'
+  }
+}

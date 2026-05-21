@@ -26,8 +26,6 @@ export const RPAccommodationEvolutionChart: FC<RPAccommodationEvolutionChart> = 
 
   const SOURCE_OPTIONS = [
     { label: 'RP (INSEE)', value: 'rp' },
-    // todo : reenable as soon as filocom data is available
-    // ...(type === 'residences-secondaires' ? [{ label: 'FILOCOM', value: 'filocom' }] : []),
     ...(type === 'logements-vacants' ? [{ label: 'Fichiers Fonciers', value: 'lovac' }] : []),
   ]
   const { classes } = useStyles()
@@ -35,16 +33,16 @@ export const RPAccommodationEvolutionChart: FC<RPAccommodationEvolutionChart> = 
   const epcisLinearChart = Object.keys(chartData.linearChart).filter((epci) => queryStates.epcis.includes(epci))
   const linearDataKey = type === 'residences-secondaires' ? 'secondaryAccommodation' : 'vacant'
   const epciName = chartData.tableData[queryStates.epci as string]?.name
+
+  const periods = Array.from(new Set(Object.values(chartData.tableData).flatMap((row) => Object.keys(row.annualEvolution ?? {})))).sort()
+
   const barChartData = Object.entries(chartData.tableData)
     .filter(([key]) => queryStates.epcis.includes(key))
-    .map(([key, value]) => {
-      return {
-        '2010-2015': value.annualEvolution?.['2010-2015']?.value ?? 0,
-        '2015-2021': value.annualEvolution?.['2015-2021']?.value ?? 0,
-        epciCode: key,
-        name: value.name,
-      }
-    })
+    .map(([key, value]) => ({
+      ...Object.fromEntries(periods.map((p) => [p, value.annualEvolution?.[p]?.value ?? 0])),
+      epciCode: key,
+      name: value.name,
+    }))
 
   const title = type && DATA_TYPE_OPTIONS.find((option) => option.value === queryStates.type)?.label
   const barChartTitle =
@@ -120,23 +118,16 @@ export const RPAccommodationEvolutionChart: FC<RPAccommodationEvolutionChart> = 
     )
   }
 
-  const customBarLegend = () => {
-    const legendItems = [
-      { dataKey: '2010-2015', name: '2010-2015', color: getChartColor('2010-2015') },
-      { dataKey: '2015-2021', name: '2015-2021', color: getChartColor('2015-2021') },
-    ]
-
-    return (
-      <div className={classes.legend}>
-        {legendItems.map((entry) => (
-          <div key={entry.dataKey} className={classes.legendItem}>
-            <span className={classes.legendColorBox} style={{ backgroundColor: entry.color }} />
-            <span className={classes.legendLabel}>{entry.name}</span>
-          </div>
-        ))}
-      </div>
-    )
-  }
+  const customBarLegend = () => (
+    <div className={classes.legend}>
+      {periods.map((p) => (
+        <div key={p} className={classes.legendItem}>
+          <span className={classes.legendColorBox} style={{ backgroundColor: getChartColor(p as Parameters<typeof getChartColor>[0]) }} />
+          <span className={classes.legendLabel}>{p}</span>
+        </div>
+      ))}
+    </div>
+  )
 
   return (
     <>
@@ -208,8 +199,9 @@ export const RPAccommodationEvolutionChart: FC<RPAccommodationEvolutionChart> = 
               </XAxis>
               <YAxis />
               <Tooltip content={customBarTooltip} />
-              <Bar dataKey="2010-2015" name="2010-2015" fill={getChartColor('2010-2015')} key="2010-2015" />
-              <Bar dataKey="2015-2021" name="2015-2021" fill={getChartColor('2015-2021')} key="2015-2021" />
+              {periods.map((p) => (
+                <Bar key={p} dataKey={p} name={p} fill={getChartColor(p as Parameters<typeof getChartColor>[0])} />
+              ))}
             </BarChart>
           </ResponsiveContainer>
           {customBarLegend()}

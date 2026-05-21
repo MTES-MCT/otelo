@@ -5,6 +5,7 @@ import { searchParamsCache } from '~/app/(authenticated)/simulation/(creation)/s
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import { OmphaleScenariosChart } from '~/components/charts/omphale-scenarios-chart'
 import { PopulationScenariosChart } from '~/components/charts/population-scenarios-chart'
+import { PrefetchCreationSimulationPreview } from '~/components/simulations/preview/prefetch-creation-simulation-preview'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { DemographicSettingsHeader } from '~/components/simulations/settings/demographic-settings-header'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
@@ -22,10 +23,10 @@ type PageProps = {
 }
 
 export default async function DemographicSettingsPage({ searchParams }: PageProps) {
-  const { epcis } = await searchParamsCache.parse(searchParams)
+  const { epcis, millesime } = await searchParamsCache.parse(searchParams)
   const [omphaleEvolution, populationEvolution, epcisWithoutInseeProjection] = await Promise.all([
-    getOmphaleDemographicEvolutionByEpci(epcis),
-    getPopulationDemographicEvolutionByEpci(epcis),
+    getOmphaleDemographicEvolutionByEpci(epcis, millesime),
+    getPopulationDemographicEvolutionByEpci(epcis, millesime),
     getEpcisWithoutInseeProjection(epcis),
   ])
   const href = `/simulation/taux-cibles-logements-vacants`
@@ -33,6 +34,7 @@ export default async function DemographicSettingsPage({ searchParams }: PageProp
 
   return (
     <>
+      <PrefetchCreationSimulationPreview />
       {hasEpcisWithoutInseeProjection && (
         <div className="fr-py-2w fr-pt-2w">
           <Alert

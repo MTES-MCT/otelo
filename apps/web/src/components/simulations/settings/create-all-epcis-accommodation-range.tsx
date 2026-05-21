@@ -1,12 +1,14 @@
 'use client'
 
 import { Range } from '@codegouvfr/react-dsfr/Range'
-import { useQueryState } from 'nuqs'
 import { FC, useEffect, useState } from 'react'
 import { RateSettings, useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 
-export const CreateAllEpcisAccommodationRange: FC = () => {
-  const [projection] = useQueryState('projection')
+interface CreateAllEpcisAccommodationRangeProps {
+  targetYear: number | null
+}
+
+export const CreateAllEpcisAccommodationRange: FC<CreateAllEpcisAccommodationRangeProps> = ({ targetYear }) => {
   const { defaultRates, updateAllRates } = useEpcisRates()
   const [reductionPercent, setReductionPercent] = useState(15)
 
@@ -36,7 +38,7 @@ export const CreateAllEpcisAccommodationRange: FC = () => {
   return (
     <div className="fr-col-8">
       <Range
-        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${projection} ?`}
+        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${targetYear} ?`}
         suffix="%"
         max={100}
         min={0}

@@ -2,7 +2,19 @@ import { fr } from '@codegouvfr/react-dsfr'
 import Select from '@codegouvfr/react-dsfr/Select'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  TooltipProps,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { NameType, Payload as TooltipPayload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
@@ -123,6 +135,15 @@ export type ProjectionMenagesEvolutionChartProps = {
   type: string | null
 }
 
+const HORIZON_YEARS = [2030, 2040, 2050]
+
+const getBaseYear = (tableData: TDemographicProjectionEvolution['tableData']): string => {
+  const firstRow = Object.values(tableData)[0]
+  if (!firstRow) return '2021'
+  const yearKeys = Object.keys(firstRow).filter((k) => /^\d{4}$/.test(k) && !HORIZON_YEARS.includes(Number(k)))
+  return yearKeys[0] || '2021'
+}
+
 export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChartProps> = ({ data: chartData, type }) => {
   const [queryStates, setQueryStates] = useQueryStates({
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
@@ -133,17 +154,19 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
   const { classes } = useStyles()
   const epcisLinearChart = Object.keys(chartData.linearChart).filter((epci) => queryStates.epcis.includes(epci))
   const epciName = chartData.tableData[queryStates.epci as string]?.name
+  const baseYear = getBaseYear(chartData.tableData)
+  const firstPeriod = `${baseYear}-2030`
 
   const barChartData = Object.entries(chartData.tableData)
     .filter(([key]) => queryStates.epcis.includes(key))
     .map(([_, epciData]) => {
       return [
         {
-          basse: epciData.annualEvolution?.['2021-2030']?.basse?.value || 0,
-          central: epciData.annualEvolution?.['2021-2030']?.central?.value || 0,
-          haute: epciData.annualEvolution?.['2021-2030']?.haute?.value || 0,
+          basse: epciData.annualEvolution?.[firstPeriod]?.basse?.value || 0,
+          central: epciData.annualEvolution?.[firstPeriod]?.central?.value || 0,
+          haute: epciData.annualEvolution?.[firstPeriod]?.haute?.value || 0,
           name: epciData.name,
-          period: '2021-2030',
+          period: firstPeriod,
         },
         {
           basse: epciData.annualEvolution?.['2030-2040']?.basse?.value || 0,
@@ -177,19 +200,21 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
         <h2 className={fr.cx('fr-h5')}>
           {title} - {epciName}
         </h2>
-        <Select
-          label=""
-          nativeSelectProps={{
-            onChange: (event) => setQueryStates({ populationType: event.target.value }),
-            value: queryStates.populationType || '',
-          }}
-        >
-          {MENAGES_TYPE_OPTIONS.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </Select>
+        <div className="fr-flex fr-justify-content-end fr-flex-gap-4v fr-mb-4w">
+          <Select
+            label=""
+            nativeSelectProps={{
+              onChange: (event) => setQueryStates({ populationType: event.target.value }),
+              value: queryStates.populationType || '',
+            }}
+          >
+            {MENAGES_TYPE_OPTIONS.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </Select>
+        </div>
       </div>
       <div className={classes.chartsContainer}>
         <div className={classes.chartContainer}>
@@ -212,6 +237,22 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
                   })()}
                 />
               )}
+              <ReferenceLine
+                x={Number(baseYear)}
+                stroke="#888"
+                strokeDasharray="6 3"
+                label={(props) => {
+                  const { viewBox } = props as { viewBox?: { x: number; y: number; height: number } }
+                  if (!viewBox) return null
+                  const cx = viewBox.x - 10
+                  const cy = viewBox.y + (viewBox.height ?? 200) / 2
+                  return (
+                    <text x={cx} y={cy} textAnchor="middle" fill="#666" fontSize={11} transform={`rotate(-90, ${cx}, ${cy})`}>
+                      Données rétrospectives (RP INSEE)
+                    </text>
+                  )
+                }}
+              />
               <Tooltip content={<CustomTooltip />} />
               {epcisLinearChart.map((epci) => {
                 const epciData = chartData.linearChart[epci].data
@@ -256,7 +297,7 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
           <ResponsiveContainer width="100%" height="100%">
             <BarChart width={730} height={600} data={barChartData} margin={{ left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="period" ticks={['2021-2030', '2030-2040', '2040-2050']} />
+              <XAxis dataKey="period" ticks={[firstPeriod, '2030-2040', '2040-2050']} />
               <YAxis />
               <Tooltip
                 content={(props) => {

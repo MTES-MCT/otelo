@@ -2,7 +2,7 @@
 
 import Button from '@codegouvfr/react-dsfr/Button'
 import classNames from 'classnames'
-import { parseAsBoolean, useQueryState } from 'nuqs'
+import { parseAsBoolean, parseAsString, useQueryStates } from 'nuqs'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import styles from './parc-comparison-charts.module.css'
@@ -26,9 +26,13 @@ const COLORS = {
   default: '#E5E5E5',
 }
 
-export const AggregatedSecondaryParcsComparisonChart = () => {
+export const AggregatedSecondaryParcsComparisonChart = ({ targetYear }: { targetYear: number | null }) => {
   const { rates, defaultRates } = useEpcisRates()
-  const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
+  const [{ millesime, parcEvolutionShown }, setQueryStates] = useQueryStates({
+    millesime: parseAsString,
+    parcEvolutionShown: parseAsBoolean.withDefault(false),
+  })
+  const baseYear = millesime
 
   const epciIds = Object.keys(defaultRates)
   if (epciIds.length === 0) return null
@@ -65,10 +69,10 @@ export const AggregatedSecondaryParcsComparisonChart = () => {
 
   // Calculate dynamic scale
   const calculateUnifiedScale = () => {
-    const vacancy2021 = shortTermRate + longTermRate + originalSecondaryRate
+    const vacancyBaseYear = shortTermRate + longTermRate + originalSecondaryRate
     const vacancyComputed = shortTermRate + longTermRate + computedSecondaryRate
 
-    const maxVacancy = Math.max(vacancy2021, vacancyComputed)
+    const maxVacancy = Math.max(vacancyBaseYear, vacancyComputed)
 
     if (maxVacancy < 30) {
       const suggestedScale = Math.ceil(maxVacancy * 1.3)
@@ -110,7 +114,7 @@ export const AggregatedSecondaryParcsComparisonChart = () => {
     ]
   }
 
-  const data2021 = createScaledData(shortTermRate, longTermRate, originalSecondaryRate, unifiedScale)
+  const dataBaseYear = createScaledData(shortTermRate, longTermRate, originalSecondaryRate, unifiedScale)
   const computedData = createScaledData(shortTermRate, longTermRate, computedSecondaryRate, unifiedScale)
 
   const CustomBar = ({ data, height = 32, scale }: CustomBarProps) => (
@@ -151,7 +155,7 @@ export const AggregatedSecondaryParcsComparisonChart = () => {
   return (
     <div className="fr-border-top fr-p-3v fr-flex fr-direction-column fr-justify-content-space-between">
       <Button
-        onClick={() => setIsShown(!isShown)}
+        onClick={() => setQueryStates({ parcEvolutionShown: !parcEvolutionShown })}
         priority="tertiary no outline"
         className="fr-width-full fr-flex fr-justify-content-space-between"
       >
@@ -159,11 +163,11 @@ export const AggregatedSecondaryParcsComparisonChart = () => {
         <span
           className={classNames(
             'fr-text-title--blue-france fr-text--medium',
-            isShown ? 'ri-arrow-drop-up-line' : 'ri-arrow-drop-down-line',
+            parcEvolutionShown ? 'ri-arrow-drop-up-line' : 'ri-arrow-drop-down-line',
           )}
         />
       </Button>
-      {isShown && (
+      {parcEvolutionShown && (
         <ChartDownloadWrapper fileName="comparaison-parc-residences-secondaires">
           <div className={classNames(styles.chartContainer, 'fr-p-3w', 'fr-mt-3v')}>
             <div className="fr-flex fr-direction-column">
@@ -182,16 +186,18 @@ export const AggregatedSecondaryParcsComparisonChart = () => {
                 </div>
               </div>
               {/* 2021 Section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
-                <span className="fr-text--medium">Le parc en 2021 (moyenne du territoire)</span>
-                <CustomBar data={data2021} scale={unifiedScale} />
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                <span className="fr-text--medium">{`Le parc en ${baseYear} (moyenne du territoire)`}</span>
+                <CustomBar data={dataBaseYear} scale={unifiedScale} />
               </div>
 
               {/* projection section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">Le parc en 2050 (moyenne du territoire)</span>
-                <CustomBar data={computedData} scale={unifiedScale} />
-              </div>
+              {String(targetYear) !== baseYear && (
+                <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                  <span className="fr-text--medium">{`Le parc en ${targetYear} (moyenne du territoire)`}</span>
+                  <CustomBar data={computedData} scale={unifiedScale} />
+                </div>
+              )}
             </div>
           </div>
         </ChartDownloadWrapper>

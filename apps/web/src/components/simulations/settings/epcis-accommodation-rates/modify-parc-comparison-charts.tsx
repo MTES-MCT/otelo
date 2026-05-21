@@ -28,13 +28,16 @@ const COLORS = {
 
 const ModifyParcsComparisonCharts = ({
   epci,
+  targetYear,
   withSecondaryAccommodation = true,
 }: {
   epci: string
+  targetYear: number | null
   withSecondaryAccommodation?: boolean
 }) => {
   const { defaultRates } = useEpcisRates()
   const { simulationSettings } = useSimulationSettings()
+  const baseYear = simulationSettings.millesime
   const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
 
   const defaultRatesByEpci = defaultRates[epci]
@@ -52,10 +55,10 @@ const ModifyParcsComparisonCharts = ({
   // Calculate dynamic scale with round numbers and unified scale
   // Always include secondary accommodation in scale calculation to ensure consistent scale across pages
   const calculateUnifiedScale = () => {
-    const vacancy2021 = shortTermRate + originalLongTermRate + originalSecondaryAccommodationRate
+    const vacancyBaseYear = shortTermRate + originalLongTermRate + originalSecondaryAccommodationRate
     const vacancyComputed = shortTermRate + computedLongTermRate + computedSecondaryAccommodationRate
 
-    const maxVacancy = Math.max(vacancy2021, vacancyComputed)
+    const maxVacancy = Math.max(vacancyBaseYear, vacancyComputed)
 
     // Use dynamic scale if max vacancy rates are low, otherwise use 100%
     if (maxVacancy < 30) {
@@ -104,7 +107,7 @@ const ModifyParcsComparisonCharts = ({
     ]
   }
 
-  const data2021 = createScaledData(shortTermRate, originalLongTermRate, originalSecondaryAccommodationRate, unifiedScale)
+  const dataBaseYear = createScaledData(shortTermRate, originalLongTermRate, originalSecondaryAccommodationRate, unifiedScale)
   const computedData = createScaledData(shortTermRate, computedLongTermRate, computedSecondaryAccommodationRate, unifiedScale)
 
   const CustomBar = ({ data, height = 32 }: CustomBarProps) => (
@@ -178,16 +181,18 @@ const ModifyParcsComparisonCharts = ({
                 )}
               </div>
               {/* 2021 Section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-mb-3w">
-                <span className="fr-text--medium">Le parc en 2021</span>
-                <CustomBar data={data2021} />
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                <span className="fr-text--medium">{`Le parc en ${baseYear}`}</span>
+                <CustomBar data={dataBaseYear} />
               </div>
 
               {/* projection section */}
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">Le parc en 2050</span>
-                <CustomBar data={computedData} />
-              </div>
+              {String(targetYear) !== baseYear && (
+                <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+                  <span className="fr-text--medium">{`Le parc en ${targetYear}`}</span>
+                  <CustomBar data={computedData} />
+                </div>
+              )}
             </div>
           </div>
         </ChartDownloadWrapper>

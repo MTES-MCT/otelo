@@ -4,12 +4,16 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import { Tag } from '@codegouvfr/react-dsfr/Tag'
 import { TEpci } from '@shared'
 import { useState } from 'react'
+import { ShareSimulationModal } from '~/components/collaboration/share-simulation-modal'
+import { useSession } from '~/lib/auth/client'
 import { TSimulationWithResults } from '~/schemas/simulation'
 import { formatDecohabitation, formatScenario } from '~/utils/omphale-label'
 import styles from './simulation-settings-dropdown.module.css'
 
 export const SimulationSettingsDropdown = ({ simulation, epci }: { simulation: TSimulationWithResults; epci?: TEpci }) => {
   const [showDropdown, setShowDropdown] = useState(false)
+  const { data: session } = useSession()
+  const isOwner = session?.user?.id === simulation.userId
 
   const categories = [
     {
@@ -92,6 +96,7 @@ export const SimulationSettingsDropdown = ({ simulation, epci }: { simulation: T
           <Button priority="secondary" size="small" linkProps={{ href: `/simulation/${simulation.id}/modifier/cadrage-temporel` }}>
             Modifier
           </Button>
+          {isOwner && <ShareSimulationModal simulationId={simulation.id} simulationName={simulation.name ?? 'Simulation'} />}
         </div>
         {/* we will reenable it sooner or later */}
         {/* <SimulationSettingsPresentationMode /> */}

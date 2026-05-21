@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Prisma, Role } from '~/generated/prisma/client'
 import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
-import { TCloneSimulationDto } from '~/schemas/simulations/simulation'
+import { TActualizeSimulationDto, TCloneSimulationDto, TRenameSimulationDto } from '~/schemas/simulations/simulation'
 import { TUser } from '~/schemas/users/user'
 import { SimulationsService } from '~/simulations/simulations.service'
 
@@ -39,7 +39,7 @@ export class SimulationsController {
   })
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getSimulation(@User() user: TUser, @Param('id') id: string) {
+  async getSimulation(@Param('id') id: string) {
     return this.simulationsService.get(id)
   }
 
@@ -68,6 +68,17 @@ export class SimulationsController {
     paramName: 'id',
     roles: [Role.ADMIN, Role.USER],
   })
+  @Patch(':id/name')
+  @HttpCode(HttpStatus.OK)
+  async renameSimulation(@Param('id') id: string, @Body() data: TRenameSimulationDto, @User() { id: userId }: TUser) {
+    return this.simulationsService.rename(userId, id, data.name)
+  }
+
+  @AccessControl({
+    entity: Prisma.ModelName.Simulation,
+    paramName: 'id',
+    roles: [Role.ADMIN, Role.USER],
+  })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteSimulation(@Param('id') id: string, @User() { id: userId }: TUser) {
@@ -83,5 +94,16 @@ export class SimulationsController {
   @HttpCode(HttpStatus.CREATED)
   async cloneSimulation(@Param('id') id: string, @Body() data: TCloneSimulationDto, @User() { id: userId }: TUser) {
     return this.simulationsService.clone(userId, id, data)
+  }
+
+  @AccessControl({
+    entity: Prisma.ModelName.Simulation,
+    paramName: 'id',
+    roles: [Role.ADMIN, Role.USER],
+  })
+  @Post(':id/actualize')
+  @HttpCode(HttpStatus.CREATED)
+  async actualizeSimulation(@Param('id') id: string, @Body() data: TActualizeSimulationDto, @User() { id: userId }: TUser) {
+    return this.simulationsService.actualize(userId, id, data.millesime, data.name)
   }
 }

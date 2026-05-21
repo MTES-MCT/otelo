@@ -4,22 +4,19 @@ import { Button } from '@codegouvfr/react-dsfr/Button'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
 import { Select } from '@codegouvfr/react-dsfr/Select'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { SELECTABLE_USER_TYPES, USER_TYPE_LABELS } from '@shared'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useUpdateUserType } from '~/hooks/use-update-user-type'
 import { useSession } from '~/lib/auth/client'
-import { TUpdateUserType, UserType, ZUpdateUserType } from '~/schemas/user'
+import { TUpdateUserType, ZUpdateUserType } from '~/schemas/user'
 
-const USER_TYPE_OPTIONS = [
-  { label: 'DDT', value: UserType.DDT },
-  { label: "Agence d'urbanisme", value: UserType.AgenceUrbanisme },
-  { label: 'Collectivité', value: UserType.Collectivite },
-  { label: 'DREAL', value: UserType.DREAL },
-  { label: "Bureau d'études", value: UserType.BureauEtudes },
-  { label: 'Autre', value: UserType.Autre },
-] as const
+const USER_TYPE_OPTIONS = SELECTABLE_USER_TYPES.map((value) => ({
+  label: USER_TYPE_LABELS[value],
+  value,
+}))
 
 const UserTypeModal = createModal({
   id: 'user-type-selection-modal',
