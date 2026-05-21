@@ -44,12 +44,13 @@ export type TSimulationDashboardSummary = z.infer<typeof ZSimulationDashboardSum
 export const ZEpciScenarioBaseline = z.object({
   vacancyRate: z.number(),
   txRs: z.number(),
+  longTermVacancyRate: z.number(),
 })
 
 export const ZSimulationDashboardItem = ZSimulationWithRelations.extend({
   scenario: ZScenario.pick({ b2_scenario: true, projection: true, millesime: true, b1_horizon_resorption: true }).extend({
     epciScenarios: z.array(
-      ZEpciScenario.pick({ epciCode: true, b2_tx_rs: true, b2_tx_vacance: true }).extend({
+      ZEpciScenario.pick({ epciCode: true, b2_tx_rs: true, b2_tx_vacance: true, b2_tx_vacance_longue: true }).extend({
         baseline: ZEpciScenarioBaseline.optional(),
       }),
     ),

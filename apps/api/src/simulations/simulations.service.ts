@@ -319,7 +319,7 @@ export class SimulationsService {
             millesime: true,
             b1_horizon_resorption: true,
             epciScenarios: {
-              select: { epciCode: true, b2_tx_rs: true, b2_tx_vacance: true },
+              select: { epciCode: true, b2_tx_rs: true, b2_tx_vacance: true, b2_tx_vacance_longue: true },
             },
           },
         },
@@ -490,7 +490,7 @@ export class SimulationsService {
 
   private async loadBaselineRatesByMillesime(
     simulations: Array<{ scenario: { millesime: string } | null; epcis: Array<{ code: string }> }>,
-  ): Promise<Map<string, Record<string, { vacancyRate: number; txRs: number }>>> {
+  ): Promise<Map<string, Record<string, { vacancyRate: number; txRs: number; longTermVacancyRate: number }>>> {
     const grouped = new Map<string, Set<string>>()
     for (const sim of simulations) {
       if (!sim.scenario) continue
@@ -499,7 +499,7 @@ export class SimulationsService {
       grouped.set(sim.scenario.millesime, set)
     }
 
-    const result = new Map<string, Record<string, { vacancyRate: number; txRs: number }>>()
+    const result = new Map<string, Record<string, { vacancyRate: number; txRs: number; longTermVacancyRate: number }>>()
     await Promise.all(
       Array.from(grouped.entries()).map(async ([millesime, epciSet]) => {
         const epciCodes = Array.from(epciSet)
@@ -508,9 +508,9 @@ export class SimulationsService {
           return
         }
         const rates = await this.accommodationRatesService.getAccommodationRates(epciCodes.join(','), millesime)
-        const byEpci: Record<string, { vacancyRate: number; txRs: number }> = {}
+        const byEpci: Record<string, { vacancyRate: number; txRs: number; longTermVacancyRate: number }> = {}
         for (const [epciCode, r] of Object.entries(rates)) {
-          byEpci[epciCode] = { vacancyRate: r.vacancyRate, txRs: r.txRs }
+          byEpci[epciCode] = { vacancyRate: r.vacancyRate, txRs: r.txRs, longTermVacancyRate: r.longTermVacancyRate }
         }
         result.set(millesime, byEpci)
       }),

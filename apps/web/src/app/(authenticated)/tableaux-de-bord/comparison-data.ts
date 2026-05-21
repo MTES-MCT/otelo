@@ -42,11 +42,11 @@ export function buildComparisonRows(
   const epciNameByCode = new Map(epcis.map((e) => [e.code, e.name]))
   const scenarioEpcis = scenario.epciScenarios
 
-  const vacancyValues = scenarioEpcis.map((e) => e.b2_tx_vacance)
+  const vacancyLongValues = scenarioEpcis.map((e) => e.b2_tx_vacance_longue)
   const rsValues = scenarioEpcis.map((e) => e.b2_tx_rs)
 
-  type RateField = 'b2_tx_vacance' | 'b2_tx_rs'
-  type BaselineField = 'vacancyRate' | 'txRs'
+  type RateField = 'b2_tx_vacance' | 'b2_tx_vacance_longue' | 'b2_tx_rs'
+  type BaselineField = 'vacancyRate' | 'longTermVacancyRate' | 'txRs'
 
   const buildRateValue = (rateField: RateField, baselineField: BaselineField, values: number[]): ComparisonValue => {
     if (scenarioEpcis.length === 0) return dash
@@ -129,7 +129,7 @@ export function buildComparisonRows(
     },
     {
       label: 'Taux de logements vacants',
-      value: buildRateValue('b2_tx_vacance', 'vacancyRate', vacancyValues),
+      value: buildRateValue('b2_tx_vacance_longue', 'longTermVacancyRate', vacancyLongValues),
       variant: 'default',
       evolutionDirection: 'lower-is-better',
     },
