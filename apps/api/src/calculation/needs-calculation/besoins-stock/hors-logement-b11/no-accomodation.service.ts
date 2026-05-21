@@ -26,17 +26,13 @@ export class NoAccomodationService extends BaseCalculator {
 
   async getHotel(epciCode: string): Promise<Hotel> {
     return this.prismaService.hotel.findFirstOrThrow({
-      where: {
-        epciCode,
-      },
+      where: { epciCode, millesime: this.context.millesime },
     })
   }
 
   async getRPMakeShiftHousing(epciCode: string): Promise<MakeShiftHousing_RP> {
     return this.prismaService.makeShiftHousing_RP.findFirstOrThrow({
-      where: {
-        epciCode,
-      },
+      where: { epciCode, millesime: this.context.millesime },
     })
   }
 

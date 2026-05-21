@@ -33,7 +33,8 @@ export class DataVisualisationService {
 
   async getInadequateHousing(epcis: TEpci[], millesime?: string): Promise<TInadequateHousing> {
     const { hosted } = await this.hostedService.getHosted(epcis, millesime)
-    const { noAccommodation } = await this.noAccommodationService.getNoAccommodation(epcis)
+    const activeMillesime = millesime ?? (await this.dataPackVersionsService.getActive()).millesime
+    const { noAccommodation } = await this.noAccommodationService.getNoAccommodation(epcis, activeMillesime)
     const { badQuality } = await this.badQualityService.getBadQuality(epcis, millesime)
     const { financialInadequation } = await this.financialInadequationService.getFinancialInadequation(epcis)
     const { physicalInadequation } = await this.physicalInadequationService.getPhysicalInadequation(epcis, millesime)

@@ -974,7 +974,7 @@ export class ExportExcelService {
     })
 
     const physicalInadequationRPData = await this.prismaService.physicalInadequation_RP.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const homelessData = await this.prismaService.homeless.findUnique({
@@ -982,11 +982,11 @@ export class ExportExcelService {
     })
 
     const hotelData = await this.prismaService.hotel.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const makeShiftHousingRPData = await this.prismaService.makeShiftHousing_RP.findUnique({
-      where: { epciCode: epciScenario.epciCode },
+      where: { epciCode_millesime: { epciCode: epciScenario.epciCode, millesime } },
     })
 
     const makeShiftHousingSNEData = await this.prismaService.makeShiftHousing_SNE.findUnique({

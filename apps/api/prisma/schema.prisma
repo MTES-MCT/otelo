@@ -22,8 +22,11 @@ model DataPackVersion {
   scenarios                      Scenario[]
   badQualityFilocom              BadQuality_Filocom[]
   physicalInadequationFilo       PhysicalInadequation_Filo[]
+  physicalInadequationRp         PhysicalInadequation_RP[]
   filocomFlux                    FilocomFlux[]
   hostedFilocom                  HostedFilocom[]
+  hotel                          Hotel[]
+  makeShiftHousingRp             MakeShiftHousing_RP[]
   demographicEvolutionOmphale    DemographicEvolutionOmphale[]
   demographicEvolutionPopulation DemographicEvolutionPopulation[]
   householdSizes                 HouseholdSizes[]
@@ -348,29 +351,33 @@ model PhysicalInadequation_Filo {
 }
 
 model PhysicalInadequation_RP {
-  nbMenAccLocHlm         Float  @map("nb_men_acc_loc_hlm")
-  nbMenAccLocMeuble      Float  @map("nb_men_acc_loc_meuble")
-  nbMenAccLocNonHLM      Float  @map("nb_men_acc_loc_non_hlm")
-  nbMenAccLogeGratuit    Float  @map("nb_men_acc_loge_gratuit")
-  nbMenAccPpt            Float  @map("nb_men_acc_ppt")
-  nbMenModLocHlm         Float  @map("nb_men_mod_loc_hlm")
-  nbMenModLocMeuble      Float  @map("nb_men_mod_loc_meuble")
-  nbMenModLocNonHLM      Float  @map("nb_men_mod_loc_non_hlm")
-  nbMenModLogeGratuit    Float  @map("nb_men_mod_loge_gratuit")
-  nbMenModPpt            Float  @map("nb_men_mod_ppt")
-  nbMenNormLocHlm        Float  @map("nb_men_norm_loc_hlm")
-  nbMenNormLocMeuble     Float  @map("nb_men_norm_loc_meuble")
-  nbMenNormLocNonHLM     Float  @map("nb_men_norm_loc_non_hlm")
-  nbMenNormLogeGratuit   Float  @map("nb_men_norm_loge_gratuit")
-  nbMenNormPpt           Float  @map("nb_men_norm_ppt")
-  nbMenStudioLocHlm      Float  @map("nb_men_studio_loc_hlm")
-  nbMenStudioLocMeuble   Float  @map("nb_men_studio_loc_meuble")
-  nbMenStudioLocNonHLM   Float  @map("nb_men_studio_loc_non_hlm")
-  nbMenStudioLogeGratuit Float  @map("nb_men_studio_loge_gratuit")
-  nbMenStudioPpt         Float  @map("nb_men_studio_ppt")
-  epciCode               String @id @map("epci_code")
-  epci                   Epci   @relation(fields: [epciCode], references: [code])
+  nbMenAccLocHlm         Float           @map("nb_men_acc_loc_hlm")
+  nbMenAccLocMeuble      Float           @map("nb_men_acc_loc_meuble")
+  nbMenAccLocNonHLM      Float           @map("nb_men_acc_loc_non_hlm")
+  nbMenAccLogeGratuit    Float           @map("nb_men_acc_loge_gratuit")
+  nbMenAccPpt            Float           @map("nb_men_acc_ppt")
+  nbMenModLocHlm         Float           @map("nb_men_mod_loc_hlm")
+  nbMenModLocMeuble      Float           @map("nb_men_mod_loc_meuble")
+  nbMenModLocNonHLM      Float           @map("nb_men_mod_loc_non_hlm")
+  nbMenModLogeGratuit    Float           @map("nb_men_mod_loge_gratuit")
+  nbMenModPpt            Float           @map("nb_men_mod_ppt")
+  nbMenNormLocHlm        Float           @map("nb_men_norm_loc_hlm")
+  nbMenNormLocMeuble     Float           @map("nb_men_norm_loc_meuble")
+  nbMenNormLocNonHLM     Float           @map("nb_men_norm_loc_non_hlm")
+  nbMenNormLogeGratuit   Float           @map("nb_men_norm_loge_gratuit")
+  nbMenNormPpt           Float           @map("nb_men_norm_ppt")
+  nbMenStudioLocHlm      Float           @map("nb_men_studio_loc_hlm")
+  nbMenStudioLocMeuble   Float           @map("nb_men_studio_loc_meuble")
+  nbMenStudioLocNonHLM   Float           @map("nb_men_studio_loc_non_hlm")
+  nbMenStudioLogeGratuit Float           @map("nb_men_studio_loge_gratuit")
+  nbMenStudioPpt         Float           @map("nb_men_studio_ppt")
+  epciCode               String          @map("epci_code")
+  millesime              String          @default("2021")
+  epci                   Epci            @relation(fields: [epciCode], references: [code])
+  dataPackVersion        DataPackVersion @relation(fields: [millesime], references: [millesime])
 
+  @@id([epciCode, millesime])
+  @@index([millesime])
   @@map("physical_inadequation_rp")
 }
 
@@ -460,19 +467,27 @@ model HostedSne {
 }
 
 model Hotel {
-  rp       Int
-  sne      Int
-  epciCode String @id @map("epci_code")
-  epci     Epci   @relation(fields: [epciCode], references: [code])
+  rp              Int
+  sne             Int
+  epciCode        String          @map("epci_code")
+  millesime       String          @default("2021")
+  epci            Epci            @relation(fields: [epciCode], references: [code])
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
 
+  @@id([epciCode, millesime])
+  @@index([millesime])
   @@map("hotel")
 }
 
 model MakeShiftHousing_RP {
-  value    Float
-  epciCode String @id @map("epci_code")
-  epci     Epci   @relation(fields: [epciCode], references: [code])
+  value           Float
+  epciCode        String          @map("epci_code")
+  millesime       String          @default("2021")
+  epci            Epci            @relation(fields: [epciCode], references: [code])
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
 
+  @@id([epciCode, millesime])
+  @@index([millesime])
   @@map("makeshift_housing_rp")
 }
 
