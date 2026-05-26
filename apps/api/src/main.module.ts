@@ -22,6 +22,7 @@ import { DataPackVersionsModule } from './data-pack-versions/data-pack-versions.
 import { DataVisualisationModule } from './data-visualisation/data-visualisation.module'
 import { DemographicEvolutionModule } from './demographic-evolution/demographic-evolution.module'
 import { DemographicEvolutionCustomModule } from './demographic-evolution-custom/demographic-evolution-custom.module'
+import { DocurbaModule } from './docurba/docurba.module'
 import { EmailModule } from './email/email.module'
 import { EpciGroupsModule } from './epci-groups/epci-groups.module'
 import { EpciNeighborsModule } from './epci-neighbors/epci-neighbors.module'
@@ -90,6 +91,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     SitadelModule,
     HouseholdSizesModule,
     ConsumersModule,
+    DocurbaModule,
     ExternalModule,
   ],
   providers: [
