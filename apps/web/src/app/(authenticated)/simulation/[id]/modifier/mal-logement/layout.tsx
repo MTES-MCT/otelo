@@ -1,4 +1,3 @@
-import { BadHousingPreview } from '~/components/simulations/preview/bad-housing-preview'
 import { BadHousingSettingsFormContextWrapper } from '~/components/simulations/settings/modification/mal-logement/bad-housing-settings-form-context-wrapper'
 import BadHousingSettingsSimulationSideMenu from '~/components/simulations/settings/modification/mal-logement/bad-housing-settings-simulation-side-menu'
 import { BadHousingSettingsSimulationStepper } from '~/components/simulations/settings/modification/mal-logement/bad-housing-settings-simulation-stepper'
@@ -18,7 +17,7 @@ export default async function ModifySimulationLayout({ children, params }: Simul
             <div className="fr-container">
               <BadHousingSettingsSimulationStepper />
               {children}
-              <BadHousingPreview />
+              {/*<BadHousingPreview />*/}
             </div>
           </div>
         </div>
