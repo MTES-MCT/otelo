@@ -28,7 +28,6 @@ const ALLOWED_TABLES = [
   'household_sizes',
   'vacancy_accommodation',
   'data_pack_versions',
-  'historical_demographic_series',
 ] as const
 
 type AllowedTable = (typeof ALLOWED_TABLES)[number]
