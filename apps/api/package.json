@@ -10,9 +10,10 @@
   },
   "scripts": {
     "build": "nest build",
-    "dev": "nest start --watch --exec \"node -r tsconfig-paths/register\"",
+    "postbuild": "node scripts/download-docurba.mjs",
+    "dev": "node scripts/download-docurba.mjs && nest start --watch --exec \"node -r tsconfig-paths/register\"",
     "start": "node dist/main",
-    "start:dev": "nest start --watch --exec \"node -r tsconfig-paths/register\"",
+    "start:dev": "node scripts/download-docurba.mjs && nest start --watch --exec \"node -r tsconfig-paths/register\"",
     "start:debug": "nest start --debug --watch --exec \"node -r tsconfig-paths/register\"",
     "start:prod": "node dist/main",
     "cli": "ts-node -r tsconfig-paths/register --project tsconfig.cli.json src/cli/cli.ts",
