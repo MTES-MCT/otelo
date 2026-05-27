@@ -12,6 +12,15 @@ if (!existsSync(PUBLIC_DIR)) mkdirSync(PUBLIC_DIR, { recursive: true })
 
 const FORCE = process.argv.includes('--force')
 
+const RETRY_DELAYS_MS = [5_000, 15_000, 30_000]
+
+async function attempt(url, tmp) {
+  const res = await fetch(url, { signal: AbortSignal.timeout(5 * 60 * 1000) })
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`)
+  const ws = createWriteStream(tmp)
+  await pipeline(Readable.fromWeb(res.body), ws)
+}
+
 async function download(url, filename) {
   const dest = join(PUBLIC_DIR, filename)
   const tmp = dest + '.tmp'
@@ -23,25 +32,31 @@ async function download(url, filename) {
 
   console.log(`Downloading ${filename}...`)
 
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(5 * 60 * 1000) })
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`)
-
-    const ws = createWriteStream(tmp)
-    await pipeline(Readable.fromWeb(res.body), ws)
-    renameSync(tmp, dest)
-
-    const mb = Math.round(statSync(dest).size / 1024 / 1024)
-    console.log(`✓ ${filename} saved (${mb}MB)`)
-  } catch (err) {
-    console.error(`✗ Failed to download ${filename}: ${err.message}`)
+  let lastErr
+  for (let i = 0; i <= RETRY_DELAYS_MS.length; i++) {
     try {
-      unlinkSync(tmp)
-    } catch {
-      /* ignore */
+      await attempt(url, tmp)
+      renameSync(tmp, dest)
+      const mb = Math.round(statSync(dest).size / 1024 / 1024)
+      console.log(`✓ ${filename} saved (${mb}MB)`)
+      return
+    } catch (err) {
+      lastErr = err
+      try {
+        unlinkSync(tmp)
+      } catch {
+        /* ignore */
+      }
+      if (i < RETRY_DELAYS_MS.length) {
+        const delay = RETRY_DELAYS_MS[i]
+        console.warn(`  Retry ${i + 1}/${RETRY_DELAYS_MS.length} for ${filename} in ${delay / 1000}s (${err.message})`)
+        await new Promise((r) => setTimeout(r, delay))
+      }
     }
-    if (existsSync(dest)) console.log(`  Keeping existing ${filename}`)
   }
+
+  console.error(`✗ Failed to download ${filename}: ${lastErr.message}`)
+  if (existsSync(dest)) console.log(`  Keeping existing ${filename}`)
 }
 
 await download('https://docurba.beta.gouv.fr/api/communes', 'communes.csv')
