@@ -979,3 +979,9 @@ enum B11Etablissement {
   maisonRelai
   horsMaisonRelai
 }
+
+model DocurbaFile {
+  filename  String   @id
+  content   Bytes
+  updatedAt DateTime @updatedAt
+}

@@ -1,7 +1,9 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
-import { createReadStream, existsSync } from 'fs'
+import { createReadStream, existsSync, mkdirSync, writeFileSync } from 'fs'
+import { readFile } from 'fs/promises'
 import Papa from 'papaparse'
 import { join } from 'path'
+import { PrismaService } from '../db/prisma.service'
 
 export type DocurbaEpciResult = {
   communeCode: string
@@ -32,6 +34,8 @@ function finalizeAggState(state: EpciAggState): AggregatedUrbanisme {
 
 @Injectable()
 export class DocurbaService implements OnModuleInit {
+  constructor(private readonly prisma: PrismaService) {}
+
   private readonly epciCache = new Map<string, { result: DocurbaEpciResult | null; cachedAt: number }>()
   private readonly epciInFlight = new Map<string, Promise<DocurbaEpciResult | null>>()
 
@@ -45,6 +49,13 @@ export class DocurbaService implements OnModuleInit {
 
   async onModuleInit() {
     const publicDir = join(__dirname, '..', '..', 'public', 'docurba')
+    if (!existsSync(publicDir)) mkdirSync(publicDir, { recursive: true })
+
+    const filenames = ['communes.csv', 'scots.csv', 'perimetres.csv']
+
+    // Restore missing files from DB fallback
+    await Promise.all(filenames.filter((f) => !existsSync(join(publicDir, f))).map((f) => this.restoreFromDb(publicDir, f)))
+
     const communesPath = join(publicDir, 'communes.csv')
     const scotsPath = join(publicDir, 'scots.csv')
     const perimetresPath = join(publicDir, 'perimetres.csv')
@@ -63,6 +74,35 @@ export class DocurbaService implements OnModuleInit {
     // Free intermediate maps
     this.scotsByPaId.clear()
     this.communeToPaId.clear()
+
+    // Persist any newly downloaded files to DB in background
+    Promise.all(filenames.filter((f) => existsSync(join(publicDir, f))).map((f) => this.persistToDb(publicDir, f))).catch(() => {
+      /* non-blocking */
+    })
+  }
+
+  private async restoreFromDb(publicDir: string, filename: string): Promise<void> {
+    try {
+      const row = await this.prisma.docurbaFile.findUnique({ where: { filename } })
+      if (row) {
+        writeFileSync(join(publicDir, filename), row.content)
+      }
+    } catch {
+      /* DB unavailable or no cached copy — degrade gracefully */
+    }
+  }
+
+  private async persistToDb(publicDir: string, filename: string): Promise<void> {
+    try {
+      const content = await readFile(join(publicDir, filename))
+      await this.prisma.docurbaFile.upsert({
+        where: { filename },
+        create: { filename, content },
+        update: { content },
+      })
+    } catch {
+      /* non-blocking, best-effort */
+    }
   }
 
   private streamCommunesCsv(filePath: string): Promise<void> {
