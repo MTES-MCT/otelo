@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "nest build",
-    "postbuild": "pnpm cli sync-docurba",
+    "postbuild": "[ \"$SYNC_DOCURBA_ON_BUILD\" = \"true\" ] && pnpm cli sync-docurba || true",
     "dev": "pnpm cli sync-docurba && nest start --watch --exec \"node -r tsconfig-paths/register\"",
     "start": "node dist/main",
     "start:dev": "pnpm cli sync-docurba && nest start --watch --exec \"node -r tsconfig-paths/register\"",
