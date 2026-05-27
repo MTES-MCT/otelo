@@ -11,6 +11,24 @@
 @import url("./helpers/dropdown.css");
 @import url("./helpers/link.css");
 
+@keyframes fr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fr-docurba-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 0.125rem solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: fr-spin 0.7s linear infinite;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+}
+
 /* Override DSFR [href] underline styles inside Leaflet containers */
 .leaflet-container a[href] {
   background-image: none;
