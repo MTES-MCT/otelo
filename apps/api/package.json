@@ -10,10 +10,10 @@
   },
   "scripts": {
     "build": "nest build",
-    "postbuild": "node scripts/download-docurba.mjs",
-    "dev": "node scripts/download-docurba.mjs && nest start --watch --exec \"node -r tsconfig-paths/register\"",
+    "postbuild": "pnpm cli sync-docurba",
+    "dev": "pnpm cli sync-docurba && nest start --watch --exec \"node -r tsconfig-paths/register\"",
     "start": "node dist/main",
-    "start:dev": "node scripts/download-docurba.mjs && nest start --watch --exec \"node -r tsconfig-paths/register\"",
+    "start:dev": "pnpm cli sync-docurba && nest start --watch --exec \"node -r tsconfig-paths/register\"",
     "start:debug": "nest start --debug --watch --exec \"node -r tsconfig-paths/register\"",
     "start:prod": "node dist/main",
     "cli": "ts-node -r tsconfig-paths/register --project tsconfig.cli.json src/cli/cli.ts",
