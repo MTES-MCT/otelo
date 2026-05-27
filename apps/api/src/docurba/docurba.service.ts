@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { createReadStream, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { readFile } from 'fs/promises'
 import Papa from 'papaparse'
@@ -34,6 +34,7 @@ function finalizeAggState(state: EpciAggState): AggregatedUrbanisme {
 
 @Injectable()
 export class DocurbaService implements OnModuleInit {
+  private readonly logger = new Logger(DocurbaService.name)
   constructor(private readonly prisma: PrismaService) {}
 
   private readonly epciCache = new Map<string, { result: DocurbaEpciResult | null; cachedAt: number }>()
@@ -86,9 +87,12 @@ export class DocurbaService implements OnModuleInit {
       const row = await this.prisma.docurbaFile.findUnique({ where: { filename } })
       if (row) {
         writeFileSync(join(publicDir, filename), row.content)
+        this.logger.log(`${filename} restored from DB (${Math.round(row.content.length / 1024)}KB)`)
+      } else {
+        this.logger.warn(`${filename} not found in DB`)
       }
-    } catch {
-      /* DB unavailable or no cached copy — degrade gracefully */
+    } catch (err) {
+      this.logger.error(`Failed to restore ${filename} from DB: ${(err as Error).message}`)
     }
   }
 
@@ -100,8 +104,9 @@ export class DocurbaService implements OnModuleInit {
         create: { filename, content },
         update: { content },
       })
-    } catch {
-      /* non-blocking, best-effort */
+      this.logger.log(`${filename} persisted to DB (${Math.round(content.length / 1024)}KB)`)
+    } catch (err) {
+      this.logger.error(`Failed to persist ${filename} to DB: ${(err as Error).message}`)
     }
   }
 
