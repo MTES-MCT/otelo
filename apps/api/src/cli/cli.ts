@@ -7,6 +7,7 @@ import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
 import { ImportBackupCommand } from './commands/import-backup.command'
 import { ImportCsvCommand } from './commands/import-csv.command'
 import { RecalculateResultsCommand } from './commands/recalculate-results.command'
+import { SyncDocurbaCommand } from './commands/sync-docurba.command'
 import { UpdateUserTypesCommand } from './commands/update-user-types.command'
 
 async function bootstrap() {
@@ -149,6 +150,23 @@ async function bootstrap() {
           dryRun: !options.write,
           verbose: options.verbose || false,
         })
+        await app.close()
+        process.exit(0)
+      } catch (error) {
+        console.error('✗ Erreur fatale:', error instanceof Error ? error.message : error)
+        await app.close()
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('sync-docurba')
+    .description('Télécharge les CSV Docurba, upsert en DB, ou restaure depuis DB si le download échoue')
+    .option('--force', 'Forcer le re-téléchargement même si les fichiers sont déjà présents')
+    .action(async (options) => {
+      try {
+        const command = app.get(SyncDocurbaCommand)
+        await command.execute({ force: options.force || false })
         await app.close()
         process.exit(0)
       } catch (error) {
