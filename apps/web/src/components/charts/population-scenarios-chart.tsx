@@ -58,15 +58,23 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
   const selectedEpci = queryStates.epciChart ?? queryStates.epcis[0]
   const selectedData = selectedEpci ? demographicEvolution[selectedEpci] : null
 
-  if (!selectedData) {
-    return (
+  // Message affiché quand l'EPCI sélectionné n'a pas de données de projection
+  // exploitables. On garde le sélecteur de territoire pour que l'utilisateur
+  // puisse basculer sur un autre EPCI comme le suggère le message.
+  const noDataMessage = (
+    <>
+      <DemographicSettingsSelectEpci epcis={epcis ?? queryStates.epcis} />
       <div className="fr-flex fr-justify-content-center fr-align-items-center fr-my-4w">
         <div>
           Aucune donnée disponible pour cet EPCI. Pour pouvoir choisir un scénario de projection, veuillez sélectionner un autre EPCI dans
           la liste.
         </div>
       </div>
-    )
+    </>
+  )
+
+  if (!selectedData) {
+    return noDataMessage
   }
 
   const { data, metadata } = selectedData
@@ -81,8 +89,12 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
       : scenario.stroke,
     strokeWidth: queryStates.population && scenario.queryValue === queryStates.population ? 2 : 1,
   }))
-  const basePopulation = data.find((item) => item.year === queryStates.millesime) as TPopulationEvolution
-  const popEvolution = data.find((item) => item.year === Number(period)) as TPopulationEvolution
+  const basePopulation = data.find((item) => item.year === queryStates.millesime) as TPopulationEvolution | undefined
+  const popEvolution = data.find((item) => item.year === Number(period)) as TPopulationEvolution | undefined
+
+  if (!basePopulation || !popEvolution) {
+    return noDataMessage
+  }
 
   const evol =
     popEvolution[queryStates.population as keyof typeof popEvolution] -
