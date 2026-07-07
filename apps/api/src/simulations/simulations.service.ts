@@ -424,9 +424,9 @@ export class SimulationsService {
 
   private async loadOmphaleByProjection(
     simulations: Array<{ scenario: { millesime: string; projection: number } | null; epcis: Array<{ code: string }> }>,
-  ): Promise<Map<string, Record<string, Record<string, number>>>> {
+  ): Promise<Map<string, Record<string, Record<string, number | null>>>> {
     const grouped = this.groupEpcisByProjectionKey(simulations)
-    const result = new Map<string, Record<string, Record<string, number>>>()
+    const result = new Map<string, Record<string, Record<string, number | null>>>()
 
     await Promise.all(
       Array.from(grouped.entries()).map(async ([key, { millesime, year, epciCodes }]) => {
@@ -449,7 +449,7 @@ export class SimulationsService {
             phH: true,
           },
         })
-        const byEpci: Record<string, Record<string, number>> = {}
+        const byEpci: Record<string, Record<string, number | null>> = {}
         for (const r of rows) {
           const { epciCode, ...values } = r
           byEpci[epciCode] = values
@@ -463,9 +463,9 @@ export class SimulationsService {
 
   private async loadPopulationByProjection(
     simulations: Array<{ scenario: { millesime: string; projection: number } | null; epcis: Array<{ code: string }> }>,
-  ): Promise<Map<string, Record<string, { central: number; haute: number; basse: number }>>> {
+  ): Promise<Map<string, Record<string, { central: number | null; haute: number | null; basse: number | null }>>> {
     const grouped = this.groupEpcisByProjectionKey(simulations)
-    const result = new Map<string, Record<string, { central: number; haute: number; basse: number }>>()
+    const result = new Map<string, Record<string, { central: number | null; haute: number | null; basse: number | null }>>()
 
     await Promise.all(
       Array.from(grouped.entries()).map(async ([key, { millesime, year, epciCodes }]) => {
@@ -477,7 +477,7 @@ export class SimulationsService {
           where: { epciCode: { in: epciCodes }, year, millesime },
           select: { epciCode: true, central: true, haute: true, basse: true },
         })
-        const byEpci: Record<string, { central: number; haute: number; basse: number }> = {}
+        const byEpci: Record<string, { central: number | null; haute: number | null; basse: number | null }> = {}
         for (const r of rows) {
           byEpci[r.epciCode] = { central: r.central, haute: r.haute, basse: r.basse }
         }
@@ -542,8 +542,8 @@ export class SimulationsService {
       epcis: Array<{ code: string }>
     },
     resultsForSim: Array<CachedSimulationResultRow>,
-    omphaleLookup: Map<string, Record<string, Record<string, number>>>,
-    populationLookup: Map<string, Record<string, { central: number; haute: number; basse: number }>>,
+    omphaleLookup: Map<string, Record<string, Record<string, number | null>>>,
+    populationLookup: Map<string, Record<string, { central: number | null; haute: number | null; basse: number | null }>>,
   ): TSimulationDashboardSummary | null {
     if (!sim.scenario || resultsForSim.length === 0) return null
 

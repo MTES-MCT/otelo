@@ -5,7 +5,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import classNames from 'classnames'
 import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { tss } from 'tss-react'
 import { CustomizedDot } from '~/components/charts/customized-dot'
@@ -23,7 +23,9 @@ interface PopulationEvolutionChartProps {
   epcis?: string[]
 }
 
-const SCENARIOS = [
+type TPopulationScenarioKey = 'basse' | 'central' | 'haute'
+
+const SCENARIOS: Array<{ dataKey: TPopulationScenarioKey; name: string; queryValue: TPopulationScenarioKey; stroke: string }> = [
   {
     dataKey: 'haute',
     name: 'Haute',
@@ -44,6 +46,15 @@ const SCENARIOS = [
   },
 ]
 
+// Un scénario de population est « disponible » pour un EPCI s'il possède au moins
+// une valeur non nulle sur une année de projection (postérieure au millésime de
+// base). Certains EPCI (ex. Dordogne) n'ont pas la projection « basse » : on ne
+// la propose alors pas à l'utilisateur et on ne trace pas sa courbe.
+const getAvailablePopulationScenarios = (data: TPopulationEvolution[], millesime: number | null): TPopulationScenarioKey[] => {
+  const baseYear = millesime ?? (data.length > 0 ? Math.min(...data.map((d) => d.year)) : 0)
+  return (['haute', 'central', 'basse'] as const).filter((key) => data.some((d) => d.year > baseYear && d[key] != null))
+}
+
 export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ demographicEvolution, epcis }) => {
   const { classes } = useStyles()
   const [queryStates, setQueryStates] = useQueryStates({
@@ -57,6 +68,17 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
 
   const selectedEpci = queryStates.epciChart ?? queryStates.epcis[0]
   const selectedData = selectedEpci ? demographicEvolution[selectedEpci] : null
+
+  const availableScenarioKeys = getAvailablePopulationScenarios(selectedData?.data ?? [], queryStates.millesime)
+
+  // Si le scénario de population sélectionné n'est plus disponible pour l'EPCI
+  // courant (ex. bascule vers un EPCI sans projection « basse »), on le
+  // réinitialise pour éviter un état de sélection incohérent.
+  useEffect(() => {
+    if (queryStates.population && !availableScenarioKeys.includes(queryStates.population as TPopulationScenarioKey)) {
+      setQueryStates({ population: null })
+    }
+  }, [queryStates.population, availableScenarioKeys.join(','), setQueryStates])
 
   // Message affiché quand l'EPCI sélectionné n'a pas de données de projection
   // exploitables. On garde le sélecteur de territoire pour que l'utilisateur
@@ -80,7 +102,8 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
   const { data, metadata } = selectedData
 
   const period = queryStates.projection ? queryStates.projection : '2030'
-  const displayedScenarios = SCENARIOS.map((scenario) => ({
+  const availableScenarios = SCENARIOS.filter((scenario) => availableScenarioKeys.includes(scenario.dataKey))
+  const displayedScenarios = availableScenarios.map((scenario) => ({
     ...scenario,
     stroke: queryStates.population
       ? scenario.queryValue === queryStates.population
@@ -97,15 +120,15 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
   }
 
   const evol =
-    popEvolution[queryStates.population as keyof typeof popEvolution] -
-    basePopulation[queryStates.population as keyof typeof basePopulation]
+    ((popEvolution[queryStates.population as keyof typeof popEvolution] as number | null) ?? 0) -
+    ((basePopulation[queryStates.population as keyof typeof basePopulation] as number | null) ?? 0)
   const handleClick = () => {
     setQueryStates({ scenario: 'menages' })
     window.scrollTo({ top: 0 })
   }
   return (
     <>
-      <PopulationScenariosSelection />
+      <PopulationScenariosSelection availableScenarios={availableScenarioKeys} />
       <DemographicSettingsSelectEpci epcis={epcis ?? queryStates.epcis} />
 
       <div className={classes.chartContainer}>
@@ -156,7 +179,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
           </LineChart>
         </ResponsiveContainer>
         <div className={classes.legend}>
-          {SCENARIOS.map((scenario) => (
+          {availableScenarios.map((scenario) => (
             <div key={scenario.dataKey} className={classes.legendItem}>
               <span className={classes.legendColorBox} style={{ backgroundColor: scenario.stroke }} />
               <span className={classes.legendLabel}>{scenario.name}</span>
