@@ -23,7 +23,7 @@ export const PopulationScenariosCustomTooltip = ({
       <p className={classes.tooltipTitle}>{`Année ${label}`}</p>
       {/* biome-ignore lint/suspicious/noExplicitAny: TODO */}
       {payload.map((item: any) => {
-        const evol = item.value - basePopulation[item.dataKey as keyof typeof basePopulation]
+        const evol = item.value - ((basePopulation[item.dataKey as keyof typeof basePopulation] as number | null) ?? 0)
         return (
           <div key={item.dataKey} className={classes.tooltipRow}>
             <span className={classes.tooltipColorBox} style={{ backgroundColor: item.stroke }} />

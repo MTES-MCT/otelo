@@ -38,16 +38,16 @@ export const ZGetDemographicEvolutionByOmphaleQuery = ZGetDemographicEvolutionBy
 export type TGetDemographicEvolutionByOmphaleQuery = z.infer<typeof ZGetDemographicEvolutionByOmphaleQuery>
 
 export const ZGetDemographicEvolution = z.object({
-  centralB: z.number().optional(),
-  centralC: z.number().optional(),
-  centralH: z.number().optional(),
+  centralB: z.number().nullish(),
+  centralC: z.number().nullish(),
+  centralH: z.number().nullish(),
   epciCode: z.string(),
-  pbB: z.number().optional(),
-  pbC: z.number().optional(),
-  pbH: z.number().optional(),
-  phB: z.number().optional(),
-  phC: z.number().optional(),
-  phH: z.number().optional(),
+  pbB: z.number().nullish(),
+  pbC: z.number().nullish(),
+  pbH: z.number().nullish(),
+  phB: z.number().nullish(),
+  phC: z.number().nullish(),
+  phH: z.number().nullish(),
   year: z.number(),
 })
 
@@ -77,9 +77,9 @@ export const ZDemographicEvolution = z.object({
 export type TDemographicEvolution = z.infer<typeof ZDemographicEvolution>
 
 export const ZDemographicEvolutionByEpci = z.object({
-  basse: z.number(),
-  central: z.number(),
-  haute: z.number(),
+  basse: z.number().nullable(),
+  central: z.number().nullable(),
+  haute: z.number().nullable(),
   year: z.number(),
 })
 
@@ -94,15 +94,15 @@ export const ZGetDemographicEvolutionByEpciQuery = z.object({
 export type TGetDemographicEvolutionByEpciQuery = z.infer<typeof ZGetDemographicEvolutionByEpciQuery>
 
 export const ZDemographicEvolutionMenagesByEpci = z.object({
-  centralB: z.number().optional(),
-  centralC: z.number().optional(),
-  centralH: z.number().optional(),
-  pbB: z.number().optional(),
-  pbC: z.number().optional(),
-  pbH: z.number().optional(),
-  phB: z.number().optional(),
-  phC: z.number().optional(),
-  phH: z.number().optional(),
+  centralB: z.number().nullish(),
+  centralC: z.number().nullish(),
+  centralH: z.number().nullish(),
+  pbB: z.number().nullish(),
+  pbC: z.number().nullish(),
+  pbH: z.number().nullish(),
+  phB: z.number().nullish(),
+  phC: z.number().nullish(),
+  phH: z.number().nullish(),
   year: z.number(),
 })
 
@@ -112,9 +112,9 @@ export const ZDemographicEvolutionPopulationByEpciAndYear = z.object({
   data: z.array(
     z.object({
       year: z.number(),
-      central: z.number(),
-      haute: z.number(),
-      basse: z.number(),
+      central: z.number().nullable(),
+      haute: z.number().nullable(),
+      basse: z.number().nullable(),
     }),
   ),
   metadata: z.object({ max: z.number(), min: z.number() }),
@@ -132,9 +132,9 @@ export const ZDemographicEvolutionPopulationByEpciRecord = z.record(
     data: z.array(
       z.object({
         year: z.number(),
-        central: z.number(),
-        haute: z.number(),
-        basse: z.number(),
+        central: z.number().nullable(),
+        haute: z.number().nullable(),
+        basse: z.number().nullable(),
       }),
     ),
     metadata: z.object({ max: z.number(), min: z.number() }),
@@ -175,15 +175,15 @@ export const ZDemographicEvolutionMenagesByEpciAndYear = z.object({
   data: z.array(
     z.object({
       year: z.number(),
-      centralB: z.number(),
-      centralC: z.number(),
-      centralH: z.number(),
-      phB: z.number(),
-      phC: z.number(),
-      phH: z.number(),
-      pbB: z.number(),
-      pbC: z.number(),
-      pbH: z.number(),
+      centralB: z.number().nullable(),
+      centralC: z.number().nullable(),
+      centralH: z.number().nullable(),
+      phB: z.number().nullable(),
+      phC: z.number().nullable(),
+      phH: z.number().nullable(),
+      pbB: z.number().nullable(),
+      pbC: z.number().nullable(),
+      pbH: z.number().nullable(),
     }),
   ),
   metadata: z.object({ max: z.number(), min: z.number() }),
@@ -201,15 +201,15 @@ export const ZDemographicEvolutionMenagesByEpciRecord = z.record(
     data: z.array(
       z.object({
         year: z.number(),
-        centralB: z.number(),
-        centralC: z.number(),
-        centralH: z.number(),
-        phB: z.number(),
-        phC: z.number(),
-        phH: z.number(),
-        pbB: z.number(),
-        pbC: z.number(),
-        pbH: z.number(),
+        centralB: z.number().nullable(),
+        centralC: z.number().nullable(),
+        centralH: z.number().nullable(),
+        phB: z.number().nullable(),
+        phC: z.number().nullable(),
+        phH: z.number().nullable(),
+        pbB: z.number().nullable(),
+        pbC: z.number().nullable(),
+        pbH: z.number().nullable(),
       }),
     ),
     metadata: z.object({ max: z.number(), min: z.number() }),

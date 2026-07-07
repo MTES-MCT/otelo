@@ -7,7 +7,10 @@ import { parseAsString, useQueryStates } from 'nuqs'
 import { FC, useState } from 'react'
 import styles from './charts.module.css'
 
-export const PopulationScenariosSelection: FC = () => {
+// `availableScenarios` liste les projections de population disponibles pour
+// l'EPCI courant. Non fourni = toutes disponibles (rétro-compatible). Les
+// scénarios absents sont désactivés plutôt que masqués, pour rester visibles.
+export const PopulationScenariosSelection: FC<{ availableScenarios?: string[] }> = ({ availableScenarios }) => {
   const [queryState, setQueryState] = useQueryStates({
     population: parseAsString,
     populationTouched: parseAsString,
@@ -18,6 +21,8 @@ export const PopulationScenariosSelection: FC = () => {
     setQueryState({ population: value, populationTouched: null })
   }
 
+  const isAvailable = (value: string) => !availableScenarios || availableScenarios.includes(value)
+
   const RADIO_OPTIONS = [
     {
       label: 'Basse',
@@ -25,6 +30,7 @@ export const PopulationScenariosSelection: FC = () => {
         value: 'basse',
         checked: queryState.population === 'basse',
         onChange: () => setPopulation('basse'),
+        disabled: !isAvailable('basse'),
       },
     },
     {
@@ -33,6 +39,7 @@ export const PopulationScenariosSelection: FC = () => {
         value: 'central',
         checked: queryState.population === 'central',
         onChange: () => setPopulation('central'),
+        disabled: !isAvailable('central'),
       },
     },
     {
@@ -41,14 +48,24 @@ export const PopulationScenariosSelection: FC = () => {
         value: 'haute',
         checked: queryState.population === 'haute',
         onChange: () => setPopulation('haute'),
+        disabled: !isAvailable('haute'),
       },
     },
   ]
 
   const hasError = !queryState.population && queryState.populationTouched === 'true'
 
+  const unavailableLabels = RADIO_OPTIONS.filter((o) => !isAvailable(o.nativeInputProps.value)).map((o) => o.label)
+
   return (
     <div className={styles.compactRadio}>
+      {unavailableLabels.length > 0 && (
+        <p className="fr-text--sm fr-text-mention--grey fr-mb-1v">
+          {unavailableLabels.length > 1
+            ? `Les scénarios ${unavailableLabels.join(', ')} ne sont pas disponibles pour ce territoire (projection INSEE manquante).`
+            : `Le scénario ${unavailableLabels[0]} n'est pas disponible pour ce territoire (projection INSEE manquante).`}
+        </p>
+      )}
       <RadioButtons
         key={`population-${queryState.population || 'none'}`}
         legend="Choisissez une projection d'évolution de la population"
