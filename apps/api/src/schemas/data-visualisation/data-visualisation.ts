@@ -64,28 +64,27 @@ export const ZDemographicProjectionResults = z.object({
 export type TDemographicProjectionResults = z.infer<typeof ZDemographicProjectionResults>
 
 const ZYearData = z.object({
-  basse: z.number(),
-  central: z.number(),
-  haute: z.number(),
+  basse: z.number().nullable(),
+  central: z.number().nullable(),
+  haute: z.number().nullable(),
 })
+
+// Une entrée d'évolution annuelle peut être null quand le scénario n'a pas de données pour l'EPCI (ex. population « basse » absente sur certains EPCI).
+const ZAnnualEvolutionEntry = z
+  .object({
+    percent: z.string(),
+    value: z.number(),
+  })
+  .nullable()
 
 const ZDemographicProjectionDataTableRow = z
   .object({
     annualEvolution: z.record(
       z.string(),
       z.object({
-        basse: z.object({
-          percent: z.string(),
-          value: z.number(),
-        }),
-        central: z.object({
-          percent: z.string(),
-          value: z.number(),
-        }),
-        haute: z.object({
-          percent: z.string(),
-          value: z.number(),
-        }),
+        basse: ZAnnualEvolutionEntry,
+        central: ZAnnualEvolutionEntry,
+        haute: ZAnnualEvolutionEntry,
       }),
     ),
     name: z.string(),

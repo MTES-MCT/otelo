@@ -1,0 +1,15 @@
+ALTER TABLE "demographic_evolution_population"
+  ALTER COLUMN "central" DROP NOT NULL,
+  ALTER COLUMN "haute" DROP NOT NULL,
+  ALTER COLUMN "basse" DROP NOT NULL;
+
+ALTER TABLE "demographic_evolution_omphale"
+  ALTER COLUMN "central_b" DROP NOT NULL,
+  ALTER COLUMN "central_c" DROP NOT NULL,
+  ALTER COLUMN "central_h" DROP NOT NULL,
+  ALTER COLUMN "ph_b" DROP NOT NULL,
+  ALTER COLUMN "ph_c" DROP NOT NULL,
+  ALTER COLUMN "ph_h" DROP NOT NULL,
+  ALTER COLUMN "pb_b" DROP NOT NULL,
+  ALTER COLUMN "pb_c" DROP NOT NULL,
+  ALTER COLUMN "pb_h" DROP NOT NULL;

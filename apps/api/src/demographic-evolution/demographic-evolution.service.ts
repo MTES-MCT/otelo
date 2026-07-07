@@ -30,9 +30,9 @@ const createProjectionPopulationTableData = (
 
     data.forEach((item) => {
       acc[epci.code][item.year] = {
-        basse: Math.round(item.basse),
-        central: Math.round(item.central),
-        haute: Math.round(item.haute),
+        basse: item.basse === null ? null : Math.round(item.basse),
+        central: item.central === null ? null : Math.round(item.central),
+        haute: item.haute === null ? null : Math.round(item.haute),
       }
     })
     const years = data.map((item) => item.year).sort((a, b) => a - b)
@@ -45,24 +45,33 @@ const createProjectionPopulationTableData = (
 
       if (startValue && endValue) {
         acc[epci.code].annualEvolution![`${startYear}-${endYear}`] = {
-          basse: {
-            percent: `${((Math.pow(endValue.basse / startValue.basse, 1 / (endYear - startYear)) - 1) * 100).toFixed(2)}%`,
-            value: Math.round((endValue.basse - startValue.basse) / (endYear - startYear)),
-          },
-          central: {
-            percent: `${((Math.pow(endValue.central / startValue.central, 1 / (endYear - startYear)) - 1) * 100).toFixed(2)}%`,
-            value: Math.round((endValue.central - startValue.central) / (endYear - startYear)),
-          },
-          haute: {
-            percent: `${((Math.pow(endValue.haute / startValue.haute, 1 / (endYear - startYear)) - 1) * 100).toFixed(2)}%`,
-            value: Math.round((endValue.haute - startValue.haute) / (endYear - startYear)),
-          },
+          basse: annualEvolutionEntry(startValue.basse, endValue.basse, startYear, endYear),
+          central: annualEvolutionEntry(startValue.central, endValue.central, startYear, endYear),
+          haute: annualEvolutionEntry(startValue.haute, endValue.haute, startYear, endYear),
         }
       }
     }
 
     return acc
   }, {} as TDemographicProjectionDataTable)
+}
+
+// Calcule le taux de croissance annuel moyen et la variation annuelle entre deux
+// années pour un scénario donné. Renvoie null quand une des bornes est absente
+// (scénario indisponible pour l'EPCI, ex. population « basse »).
+const annualEvolutionEntry = (
+  startValue: number | null,
+  endValue: number | null,
+  startYear: number,
+  endYear: number,
+): { percent: string; value: number } | null => {
+  if (startValue === null || endValue === null || startValue === 0) {
+    return null
+  }
+  return {
+    percent: `${((Math.pow(endValue / startValue, 1 / (endYear - startYear)) - 1) * 100).toFixed(2)}%`,
+    value: Math.round((endValue - startValue) / (endYear - startYear)),
+  }
 }
 
 const createProjectionMenagesTableData = (
@@ -80,11 +89,14 @@ const createProjectionMenagesTableData = (
       } as TDemographicProjectionDataTable[string]
     }
     const dataKeyPrefix = populationType === 'haute' ? 'ph' : populationType === 'central' ? 'central' : 'pb'
+    const bKey = `${dataKeyPrefix}B` as const
+    const cKey = `${dataKeyPrefix}C` as const
+    const hKey = `${dataKeyPrefix}H` as const
     data.forEach((item) => {
       acc[epci.code][item.year] = {
-        basse: Math.round(item[`${dataKeyPrefix}B`]!),
-        central: Math.round(item[`${dataKeyPrefix}C`]!),
-        haute: Math.round(item[`${dataKeyPrefix}H`]!),
+        basse: item[bKey] == null ? null : Math.round(item[bKey]),
+        central: item[cKey] == null ? null : Math.round(item[cKey]),
+        haute: item[hKey] == null ? null : Math.round(item[hKey]),
       }
     })
     const years = data.map((item) => item.year).sort((a, b) => a - b)
@@ -96,18 +108,9 @@ const createProjectionMenagesTableData = (
       const endValue = data.find((item) => item.year === endYear)
       if (startValue && endValue) {
         acc[epci.code].annualEvolution![`${startYear}-${endYear}`] = {
-          basse: {
-            percent: `${((Math.pow(endValue[`${dataKeyPrefix}B`]! / startValue[`${dataKeyPrefix}B`]!, 1 / (endYear - startYear)) - 1) * 100).toFixed(2)}%`,
-            value: Math.round((endValue[`${dataKeyPrefix}B`]! - startValue[`${dataKeyPrefix}B`]!) / (endYear - startYear)),
-          },
-          central: {
-            percent: `${((Math.pow(endValue[`${dataKeyPrefix}C`]! / startValue[`${dataKeyPrefix}C`]!, 1 / (endYear - startYear)) - 1) * 100).toFixed(2)}%`,
-            value: Math.round((endValue[`${dataKeyPrefix}C`]! - startValue[`${dataKeyPrefix}C`]!) / (endYear - startYear)),
-          },
-          haute: {
-            percent: `${((Math.pow(endValue[`${dataKeyPrefix}H`]! / startValue[`${dataKeyPrefix}H`]!, 1 / (endYear - startYear)) - 1) * 100).toFixed(2)}%`,
-            value: Math.round((endValue[`${dataKeyPrefix}H`]! - startValue[`${dataKeyPrefix}H`]!) / (endYear - startYear)),
-          },
+          basse: annualEvolutionEntry(startValue[bKey] ?? null, endValue[bKey] ?? null, startYear, endYear),
+          central: annualEvolutionEntry(startValue[cKey] ?? null, endValue[cKey] ?? null, startYear, endYear),
+          haute: annualEvolutionEntry(startValue[hKey] ?? null, endValue[hKey] ?? null, startYear, endYear),
         }
       }
     }
@@ -128,15 +131,15 @@ export class DemographicEvolutionService {
       Array<{
         epci_code: string
         year: number
-        centralB: number
-        centralC: number
-        centralH: number
-        phB: number
-        phC: number
-        phH: number
-        pbB: number
-        pbC: number
-        pbH: number
+        centralB: number | null
+        centralC: number | null
+        centralH: number | null
+        phB: number | null
+        phC: number | null
+        phH: number | null
+        pbB: number | null
+        pbC: number | null
+        pbH: number | null
       }>
     >`
       SELECT 
@@ -169,7 +172,7 @@ export class DemographicEvolutionService {
       acc[epci_code].data.push(data)
 
       Object.entries(data).forEach(([key, value]) => {
-        if (key !== 'year') {
+        if (key !== 'year' && value !== null) {
           const numValue = Number(value)
           acc[epci_code].metadata.min = Math.min(acc[epci_code].metadata.min, numValue)
           acc[epci_code].metadata.max = Math.max(acc[epci_code].metadata.max, numValue)
@@ -249,9 +252,9 @@ export class DemographicEvolutionService {
       Array<{
         epci_code: string
         year: number
-        central: number
-        haute: number
-        basse: number
+        central: number | null
+        haute: number | null
+        basse: number | null
       }>
     >`
         SELECT 
@@ -278,7 +281,7 @@ export class DemographicEvolutionService {
       acc[epci_code].data.push(data)
 
       Object.entries(data).forEach(([key, value]) => {
-        if (key !== 'year') {
+        if (key !== 'year' && value !== null) {
           const numValue = Number(value)
           acc[epci_code].metadata.min = Math.min(acc[epci_code].metadata.min, numValue)
           acc[epci_code].metadata.max = Math.max(acc[epci_code].metadata.max, numValue)
@@ -295,14 +298,14 @@ export class DemographicEvolutionService {
       data.forEach((item) => {
         const existing = allYearsMap.get(item.year)
         if (existing) {
-          existing.central += item.central
-          existing.haute += item.haute
-          existing.basse += item.basse
+          existing.central += item.central ?? 0
+          existing.haute += item.haute ?? 0
+          existing.basse += item.basse ?? 0
         } else {
           allYearsMap.set(item.year, {
-            central: item.central,
-            haute: item.haute,
-            basse: item.basse,
+            central: item.central ?? 0,
+            haute: item.haute ?? 0,
+            basse: item.basse ?? 0,
           })
         }
       })
@@ -342,9 +345,10 @@ export class DemographicEvolutionService {
       }
 
       data.forEach((item) => {
-        if (item.central > maxYearsValues.central.value) maxYearsValues.central = { value: item.central, year: item.year }
-        if (item.haute > maxYearsValues.haute.value) maxYearsValues.haute = { value: item.haute, year: item.year }
-        if (item.basse > maxYearsValues.basse.value) maxYearsValues.basse = { value: item.basse, year: item.year }
+        if (item.central !== null && item.central > maxYearsValues.central.value)
+          maxYearsValues.central = { value: item.central, year: item.year }
+        if (item.haute !== null && item.haute > maxYearsValues.haute.value) maxYearsValues.haute = { value: item.haute, year: item.year }
+        if (item.basse !== null && item.basse > maxYearsValues.basse.value) maxYearsValues.basse = { value: item.basse, year: item.year }
       })
 
       acc[epci.code] = maxYearsValues
@@ -411,15 +415,18 @@ export class DemographicEvolutionService {
       }
 
       data.forEach((item) => {
-        if (item.centralB > maxYearsValues.centralB.value) maxYearsValues.centralB = { value: item.centralB, year: item.year }
-        if (item.centralC > maxYearsValues.centralC.value) maxYearsValues.centralC = { value: item.centralC, year: item.year }
-        if (item.centralH > maxYearsValues.centralH.value) maxYearsValues.centralH = { value: item.centralH, year: item.year }
-        if (item.phB > maxYearsValues.phB.value) maxYearsValues.phB = { value: item.phB, year: item.year }
-        if (item.phC > maxYearsValues.phC.value) maxYearsValues.phC = { value: item.phC, year: item.year }
-        if (item.phH > maxYearsValues.phH.value) maxYearsValues.phH = { value: item.phH, year: item.year }
-        if (item.pbB > maxYearsValues.pbB.value) maxYearsValues.pbB = { value: item.pbB, year: item.year }
-        if (item.pbC > maxYearsValues.pbC.value) maxYearsValues.pbC = { value: item.pbC, year: item.year }
-        if (item.pbH > maxYearsValues.pbH.value) maxYearsValues.pbH = { value: item.pbH, year: item.year }
+        if (item.centralB !== null && item.centralB > maxYearsValues.centralB.value)
+          maxYearsValues.centralB = { value: item.centralB, year: item.year }
+        if (item.centralC !== null && item.centralC > maxYearsValues.centralC.value)
+          maxYearsValues.centralC = { value: item.centralC, year: item.year }
+        if (item.centralH !== null && item.centralH > maxYearsValues.centralH.value)
+          maxYearsValues.centralH = { value: item.centralH, year: item.year }
+        if (item.phB !== null && item.phB > maxYearsValues.phB.value) maxYearsValues.phB = { value: item.phB, year: item.year }
+        if (item.phC !== null && item.phC > maxYearsValues.phC.value) maxYearsValues.phC = { value: item.phC, year: item.year }
+        if (item.phH !== null && item.phH > maxYearsValues.phH.value) maxYearsValues.phH = { value: item.phH, year: item.year }
+        if (item.pbB !== null && item.pbB > maxYearsValues.pbB.value) maxYearsValues.pbB = { value: item.pbB, year: item.year }
+        if (item.pbC !== null && item.pbC > maxYearsValues.pbC.value) maxYearsValues.pbC = { value: item.pbC, year: item.year }
+        if (item.pbH !== null && item.pbH > maxYearsValues.pbH.value) maxYearsValues.pbH = { value: item.pbH, year: item.year }
       })
 
       acc[epci.code] = maxYearsValues
