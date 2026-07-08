@@ -1,5 +1,9 @@
-import { ZEpci } from '@shared'
 import { z } from 'zod'
+
+const ZPowerpointEpci = z.object({
+  code: z.string(),
+  name: z.string().min(1, { message: 'Veuillez sélectionner un EPCI' }),
+})
 
 export const ZLayout = z.object({
   layoutEpciName: z.string(),
@@ -266,13 +270,8 @@ export const ZRequestPowerpointDto = z.object({
     .string()
     .regex(/^\d{4}$/, { message: 'Veuillez entrer une année valide (YYYY)' })
     .refine((val) => parseInt(val) <= 2050, { message: "L'année de fin ne peut pas être supérieure à 2050" }),
-  epci: z
-    .object({
-      code: z.string(),
-      name: z.string().min(1, { message: 'Veuillez sélectionner un EPCI' }),
-    })
-    .optional(),
-  epcis: z.array(ZEpci).optional(),
+  epci: ZPowerpointEpci.optional(),
+  epcis: z.array(ZPowerpointEpci).optional(),
 })
 
 export const ZRequestPowerpoint = ZRequestPowerpointDto.superRefine((data, ctx) => {
@@ -331,7 +330,7 @@ export const ZRequestPowerpoint = ZRequestPowerpointDto.superRefine((data, ctx) 
     }
   } else {
     // For other document types, use single EPCI selection
-    if (!!data.epci && !data.epci?.name) {
+    if (!data.epci?.name) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Veuillez sélectionner un EPCI',
@@ -344,10 +343,7 @@ export const ZRequestPowerpoint = ZRequestPowerpointDto.superRefine((data, ctx) 
 export type TRequestPowerpoint = z.infer<typeof ZRequestPowerpoint>
 
 export const ZPowerpointData = ZRequestPowerpointDto.omit({ epcis: true }).extend({
-  epci: z.object({
-    code: z.string(),
-    name: z.string().min(1, { message: 'Veuillez sélectionner un EPCI' }),
-  }),
+  epci: ZPowerpointEpci,
   username: z.string(),
 })
 export type TPowerpointData = z.infer<typeof ZPowerpointData>
