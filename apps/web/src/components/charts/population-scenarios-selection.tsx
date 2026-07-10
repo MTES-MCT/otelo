@@ -8,8 +8,9 @@ import { FC, useState } from 'react'
 import styles from './charts.module.css'
 
 // `availableScenarios` liste les projections de population disponibles pour
-// l'EPCI courant. Non fourni = toutes disponibles (rétro-compatible). Les
-// scénarios absents sont désactivés plutôt que masqués, pour rester visibles.
+// TOUS les EPCI du bassin d'habitat (intersection). Non fourni = toutes
+// disponibles (rétro-compatible). Les scénarios absents pour au moins un EPCI
+// sont désactivés plutôt que masqués, pour rester visibles.
 export const PopulationScenariosSelection: FC<{ availableScenarios?: string[] }> = ({ availableScenarios }) => {
   const [queryState, setQueryState] = useQueryStates({
     population: parseAsString,
@@ -62,8 +63,8 @@ export const PopulationScenariosSelection: FC<{ availableScenarios?: string[] }>
       {unavailableLabels.length > 0 && (
         <p className="fr-text--sm fr-text-mention--grey fr-mb-1v">
           {unavailableLabels.length > 1
-            ? `Les scénarios ${unavailableLabels.join(', ')} ne sont pas disponibles pour ce territoire (projection INSEE manquante).`
-            : `Le scénario ${unavailableLabels[0]} n'est pas disponible pour ce territoire (projection INSEE manquante).`}
+            ? `Les scénarios ${unavailableLabels.join(', ')} ne sont pas disponibles pour au moins un EPCI du bassin d'habitat (projection INSEE manquante).`
+            : `Le scénario ${unavailableLabels[0]} n'est pas disponible pour au moins un EPCI du bassin d'habitat (projection INSEE manquante).`}
         </p>
       )}
       <RadioButtons
