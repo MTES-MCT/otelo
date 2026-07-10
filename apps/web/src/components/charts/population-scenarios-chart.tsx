@@ -48,11 +48,25 @@ const SCENARIOS: Array<{ dataKey: TPopulationScenarioKey; name: string; queryVal
 
 // Un scénario de population est « disponible » pour un EPCI s'il possède au moins
 // une valeur non nulle sur une année de projection (postérieure au millésime de
-// base). Certains EPCI (ex. Dordogne) n'ont pas la projection « basse » : on ne
-// la propose alors pas à l'utilisateur et on ne trace pas sa courbe.
+// base). Certains EPCI (ex. Dordogne) n'ont pas la projection « basse ».
 const getAvailablePopulationScenarios = (data: TPopulationEvolution[], millesime: number | null): TPopulationScenarioKey[] => {
   const baseYear = millesime ?? (data.length > 0 ? Math.min(...data.map((d) => d.year)) : 0)
   return (['haute', 'central', 'basse'] as const).filter((key) => data.some((d) => d.year > baseYear && d[key] != null))
+}
+
+// Le scénario choisi s'applique à l'ensemble du bassin d'habitat : il ne peut
+// être proposé que s'il est disponible pour TOUS les EPCI du groupe. On calcule
+// donc l'intersection des scénarios disponibles sur chaque EPCI. Ex. si un seul
+// EPCI du bassin n'a pas la projection « basse », elle n'est proposée pour aucun.
+const getGroupAvailablePopulationScenarios = (
+  demographicEvolution: TPopulationDemographicEvolution,
+  millesime: number | null,
+): TPopulationScenarioKey[] => {
+  const entries = Object.values(demographicEvolution)
+  if (entries.length === 0) return []
+  return (['haute', 'central', 'basse'] as const).filter((key) =>
+    entries.every((entry) => getAvailablePopulationScenarios(entry.data, millesime).includes(key)),
+  )
 }
 
 export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ demographicEvolution, epcis }) => {
@@ -69,7 +83,10 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
   const selectedEpci = queryStates.epciChart ?? queryStates.epcis[0]
   const selectedData = selectedEpci ? demographicEvolution[selectedEpci] : null
 
-  const availableScenarioKeys = getAvailablePopulationScenarios(selectedData?.data ?? [], queryStates.millesime)
+  // Disponibilité calculée sur l'ensemble du bassin (intersection), pas sur le
+  // seul EPCI affiché : un scénario n'est sélectionnable que s'il existe pour
+  // tous les EPCI du groupe.
+  const availableScenarioKeys = getGroupAvailablePopulationScenarios(demographicEvolution, queryStates.millesime)
 
   // Si le scénario de population sélectionné n'est plus disponible pour l'EPCI
   // courant (ex. bascule vers un EPCI sans projection « basse »), on le
