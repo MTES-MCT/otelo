@@ -1,4 +1,5 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest'
+import { UnprocessableEntityException } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { PrismaService } from '~/db/prisma.service'
 import { EOmphale, TGetDemographicEvolution } from '~/schemas/demographic-evolution/demographic-evolution'
@@ -103,6 +104,33 @@ describe('DemographicEvolutionService', () => {
       expect(result.data[0].year).toBe(2021)
       expect(result.data[1].year).toBe(2022)
       expect(result.data[1].value).toBe(100)
+    })
+  })
+
+  describe('getProjectionByYearAndOmphale', () => {
+    it('should return the projection when it exists', async () => {
+      prisma.demographicEvolutionOmphale.findFirst = jest
+        .fn()
+        .mockResolvedValue({ epciCode: '200000001', centralH: 1100, year: 2030 } as any)
+
+      const result = await service.getProjectionByYearAndOmphale({ epciCode: '200000001', omphale: EOmphale.CENTRAL_H, year: 2030 })
+
+      expect(prisma.demographicEvolutionOmphale.findFirst).toHaveBeenCalledWith({
+        select: { epciCode: true, centralH: true, year: true },
+        where: { epciCode: '200000001', year: 2030, millesime: '2021' },
+      })
+      expect(result.centralH).toBe(1100)
+      expect(result.year).toBe(2030)
+    })
+
+    it('should throw an UnprocessableEntityException when the projection is missing', async () => {
+      // Cas des EPCI sans projection démographique INSEE (ex. certaines CC rurales) :
+      // pas de ligne de projection -> erreur explicite plutôt qu'une erreur Prisma opaque.
+      prisma.demographicEvolutionOmphale.findFirst = jest.fn().mockResolvedValue(null)
+
+      await expect(
+        service.getProjectionByYearAndOmphale({ epciCode: '200071819', omphale: EOmphale.CENTRAL_H, year: 2030 }),
+      ).rejects.toBeInstanceOf(UnprocessableEntityException)
     })
   })
 

@@ -170,7 +170,7 @@ export function TableauDeBord({ simulations, groupName, userEmail }: TableauDeBo
                                     label: 'Inclure',
                                     nativeInputProps: {
                                       checked: field.value.includes(simulation.id),
-                                      disabled: !field.value.includes(simulation.id) && field.value.length >= 4,
+                                      disabled: !field.value.includes(simulation.id) && field.value.length >= 3,
                                       onChange: (e) => {
                                         if (e.target.checked) {
                                           field.onChange([...field.value, simulation.id])
@@ -236,7 +236,14 @@ export function TableauDeBord({ simulations, groupName, userEmail }: TableauDeBo
                     stateRelatedMessage={errors.documentType?.message}
                     nativeSelectProps={{
                       value: field.value,
-                      onChange: field.onChange,
+                      onChange: (e) => {
+                        field.onChange(e)
+                        if (e.target.value === 'SCoT') {
+                          setValue('epci', undefined, { shouldDirty: true, shouldValidate: true })
+                        } else {
+                          setValue('epcis', undefined, { shouldDirty: true, shouldValidate: true })
+                        }
+                      },
                     }}
                   />
                 )}

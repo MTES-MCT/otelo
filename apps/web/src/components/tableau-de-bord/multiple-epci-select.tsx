@@ -5,10 +5,12 @@ import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
 import { TEpci } from '@shared'
 import { ComponentProps } from 'react'
 
+type PowerpointEpci = Pick<TEpci, 'code' | 'name'>
+
 type MultipleEpciSelectProps = {
   epcis: TEpci[]
-  selectedEpcis: TEpci[]
-  onChange: (selectedEpcis: TEpci[]) => void
+  selectedEpcis: PowerpointEpci[]
+  onChange: (selectedEpcis: PowerpointEpci[]) => void
   error?: string
 }
 

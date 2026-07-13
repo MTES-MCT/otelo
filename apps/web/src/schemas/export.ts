@@ -1,5 +1,9 @@
-import { ZEpci } from '@shared'
 import z from 'zod'
+
+const ZPowerpointEpci = z.object({
+  code: z.string(),
+  name: z.string().min(1, { message: 'Veuillez sélectionner un EPCI' }),
+})
 
 export const ZRequestPowerpoint = z
   .object({
@@ -30,13 +34,8 @@ export const ZRequestPowerpoint = z
       .string()
       .regex(/^\d{4}$/, { message: 'Veuillez entrer une année valide (YYYY)' })
       .refine((val) => parseInt(val) <= 2050, { message: "L'année de fin ne peut pas être supérieure à 2050" }),
-    epci: z
-      .object({
-        code: z.string(),
-        name: z.string().min(1, { message: 'Veuillez sélectionner un EPCI' }),
-      })
-      .optional(),
-    epcis: z.array(ZEpci).optional(),
+    epci: ZPowerpointEpci.optional(),
+    epcis: z.array(ZPowerpointEpci).optional(),
     privilegedSimulationProjection: z.number().optional(),
   })
   .superRefine((data, ctx) => {
@@ -104,7 +103,7 @@ export const ZRequestPowerpoint = z
       }
     } else {
       // For other document types, use single EPCI selection
-      if (!!data.epci && !data.epci?.name) {
+      if (!data.epci?.name) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Veuillez sélectionner un EPCI',

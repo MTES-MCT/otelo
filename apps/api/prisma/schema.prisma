@@ -295,15 +295,16 @@ model SimulationShareLink {
 
 model DemographicEvolutionOmphale {
   year            Int
-  centralB        Float           @map("central_b")
-  centralC        Float           @map("central_c")
-  centralH        Float           @map("central_h")
-  phB             Float           @map("ph_b")
-  phC             Float           @map("ph_c")
-  phH             Float           @map("ph_h")
-  pbB             Float           @map("pb_b")
-  pbC             Float           @map("pb_c")
-  pbH             Float           @map("pb_h")
+  // Nullable : certains EPCI n'ont pas toutes les projections de scénarios.
+  centralB        Float?          @map("central_b")
+  centralC        Float?          @map("central_c")
+  centralH        Float?          @map("central_h")
+  phB             Float?          @map("ph_b")
+  phC             Float?          @map("ph_c")
+  phH             Float?          @map("ph_h")
+  pbB             Float?          @map("pb_b")
+  pbC             Float?          @map("pb_c")
+  pbH             Float?          @map("pb_h")
   epciCode        String          @map("epci_code")
   millesime       String          @default("2021")
   epci            Epci            @relation(fields: [epciCode], references: [code])
@@ -316,9 +317,10 @@ model DemographicEvolutionOmphale {
 
 model DemographicEvolutionPopulation {
   year            Int
-  central         Float           @map("central")
-  haute           Float           @map("haute")
-  basse           Float           @map("basse")
+  // Nullable : cf. DemographicEvolutionOmphale.
+  central         Float?          @map("central")
+  haute           Float?          @map("haute")
+  basse           Float?          @map("basse")
   epciCode        String          @map("epci_code")
   millesime       String          @default("2021")
   epci            Epci            @relation(fields: [epciCode], references: [code])

@@ -220,15 +220,15 @@ export class ExportPowerpointService {
     return {
       text: {
         ...commonData.baseLayout,
-        pb1: evolutionData['2021-2030'].basse.percent,
-        pb2: evolutionData['2030-2040'].basse.percent,
-        pb3: evolutionData['2040-2050'].basse.percent,
-        pc1: evolutionData['2021-2030'].central.percent,
-        pc2: evolutionData['2030-2040'].central.percent,
-        pc3: evolutionData['2040-2050'].central.percent,
-        ph1: evolutionData['2021-2030'].haute.percent,
-        ph2: evolutionData['2030-2040'].haute.percent,
-        ph3: evolutionData['2040-2050'].haute.percent,
+        pb1: evolutionData['2021-2030'].basse?.percent ?? 'N/D',
+        pb2: evolutionData['2030-2040'].basse?.percent ?? 'N/D',
+        pb3: evolutionData['2040-2050'].basse?.percent ?? 'N/D',
+        pc1: evolutionData['2021-2030'].central?.percent ?? 'N/D',
+        pc2: evolutionData['2030-2040'].central?.percent ?? 'N/D',
+        pc3: evolutionData['2040-2050'].central?.percent ?? 'N/D',
+        ph1: evolutionData['2021-2030'].haute?.percent ?? 'N/D',
+        ph2: evolutionData['2030-2040'].haute?.percent ?? 'N/D',
+        ph3: evolutionData['2040-2050'].haute?.percent ?? 'N/D',
       },
       charts: [
         {
@@ -289,25 +289,25 @@ export class ExportPowerpointService {
       text: {
         ...commonData.baseLayout,
         // Pop. Centrale - Décohabitation accélérée (haute)
-        pcA1: centralData.annualEvolution['2021-2030'].haute.percent,
-        pcA2: centralData.annualEvolution['2030-2040'].haute.percent,
-        pcA3: centralData.annualEvolution['2040-2050'].haute.percent,
+        pcA1: centralData.annualEvolution['2021-2030'].haute?.percent ?? 'N/D',
+        pcA2: centralData.annualEvolution['2030-2040'].haute?.percent ?? 'N/D',
+        pcA3: centralData.annualEvolution['2040-2050'].haute?.percent ?? 'N/D',
         // Pop. Centrale - Décohabitation tendancielle (central)
-        pcT1: centralData.annualEvolution['2021-2030'].central.percent,
-        pcT2: centralData.annualEvolution['2030-2040'].central.percent,
-        pcT3: centralData.annualEvolution['2040-2050'].central.percent,
+        pcT1: centralData.annualEvolution['2021-2030'].central?.percent ?? 'N/D',
+        pcT2: centralData.annualEvolution['2030-2040'].central?.percent ?? 'N/D',
+        pcT3: centralData.annualEvolution['2040-2050'].central?.percent ?? 'N/D',
         // Pop. Centrale - Décohabitation décélérée (basse)
-        pcD1: centralData.annualEvolution['2021-2030'].basse.percent,
-        pcD2: centralData.annualEvolution['2030-2040'].basse.percent,
-        pcD3: centralData.annualEvolution['2040-2050'].basse.percent,
+        pcD1: centralData.annualEvolution['2021-2030'].basse?.percent ?? 'N/D',
+        pcD2: centralData.annualEvolution['2030-2040'].basse?.percent ?? 'N/D',
+        pcD3: centralData.annualEvolution['2040-2050'].basse?.percent ?? 'N/D',
         // Pop. Haute - Décohabitation tendancielle
-        phT1: hauteData.annualEvolution['2021-2030'].central.percent,
-        phT2: hauteData.annualEvolution['2030-2040'].central.percent,
-        phT3: hauteData.annualEvolution['2040-2050'].central.percent,
+        phT1: hauteData.annualEvolution['2021-2030'].central?.percent ?? 'N/D',
+        phT2: hauteData.annualEvolution['2030-2040'].central?.percent ?? 'N/D',
+        phT3: hauteData.annualEvolution['2040-2050'].central?.percent ?? 'N/D',
         // Pop. Basse - Décohabitation tendancielle
-        pbT1: basseData.annualEvolution['2021-2030'].central.percent,
-        pbT2: basseData.annualEvolution['2030-2040'].central.percent,
-        pbT3: basseData.annualEvolution['2040-2050'].central.percent,
+        pbT1: basseData.annualEvolution['2021-2030'].central?.percent ?? 'N/D',
+        pbT2: basseData.annualEvolution['2030-2040'].central?.percent ?? 'N/D',
+        pbT3: basseData.annualEvolution['2040-2050'].central?.percent ?? 'N/D',
       },
       charts: [
         {

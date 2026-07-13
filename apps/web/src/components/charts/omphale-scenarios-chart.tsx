@@ -123,7 +123,7 @@ const OmphaleScenariosTooltip = ({
       <p className={classes.tooltipTitle}>{`Année ${label}`}</p>
       {/* biome-ignore lint/suspicious/noExplicitAny: TODO */}
       {payload.map((item: any) => {
-        const evol = item.value - basePopulation[item.dataKey as keyof typeof basePopulation]
+        const evol = item.value - ((basePopulation[item.dataKey as keyof typeof basePopulation] as number | null) ?? 0)
         return (
           <div key={item.dataKey} className={classes.tooltipRow}>
             <span className={classes.tooltipColorBox} style={{ backgroundColor: item.stroke }} />
@@ -259,6 +259,20 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
       console.error('Error deleting custom demographic data:', error)
       alert('Erreur lors de la suppression des données personnalisées')
     }
+  }
+
+  if (!isUsingCustomData && (!basePopulation || !popEvolution)) {
+    return (
+      <>
+        <DemographicSettingsSelectEpci epcis={epcisProps ?? queryStates.epcis} />
+        <div className="fr-flex fr-justify-content-center fr-align-items-center fr-my-4w">
+          <div>
+            Aucune donnée disponible pour cet EPCI. Pour pouvoir choisir un scénario de décohabitation, veuillez sélectionner un autre EPCI
+            dans la liste.
+          </div>
+        </div>
+      </>
+    )
   }
 
   return (

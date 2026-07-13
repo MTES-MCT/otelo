@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, UnprocessableEntityException } from '@nestjs/common'
 import { CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { PrismaService } from '~/db/prisma.service'
 import {
@@ -40,7 +40,7 @@ export class DemographicEvolutionService {
     const { epciCode } = query
     const { omphale, year } = query
 
-    const demographicEvolution = await this.prismaService.demographicEvolutionOmphale.findFirstOrThrow({
+    const demographicEvolution = await this.prismaService.demographicEvolutionOmphale.findFirst({
       select: { epciCode: true, [omphale]: true, year: true },
       where: {
         epciCode,
@@ -48,6 +48,12 @@ export class DemographicEvolutionService {
         millesime: this.context.millesime,
       },
     })
+
+    if (!demographicEvolution) {
+      throw new UnprocessableEntityException(
+        `Projection démographique (Omphale) indisponible pour l'EPCI ${epciCode} (année ${year}, scénario ${omphale}, millésime ${this.context.millesime}).`,
+      )
+    }
 
     return {
       centralB: demographicEvolution.centralB,
