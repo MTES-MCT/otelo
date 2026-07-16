@@ -4,19 +4,10 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import Link from 'next/link'
 import { useParams, usePathname, useSearchParams } from 'next/navigation'
 import { FC } from 'react'
+import { buildStepPath, getFlowFromPathname, getSlugFromPathname, getStepIndex, getStepsForFlow } from './wizard-steps'
 
 type PreviousStepLinkProps = {
   label?: string
-}
-
-// Mapping of current step to previous step
-const PREVIOUS_STEP_MAP: Record<string, string> = {
-  // Creation flow
-  'cadrage-temporel': '/simulation/choix-du-territoire',
-  'parametrages-demographique': '/simulation/cadrage-temporel',
-  'taux-cibles-logements-vacants': '/simulation/parametrages-demographique',
-  'taux-cibles-residences-secondaires': '/simulation/taux-cibles-logements-vacants',
-  'taux-restructuration-disparition': '/simulation/taux-cibles-residences-secondaires',
 }
 
 export const PreviousStepLink: FC<PreviousStepLinkProps> = ({ label = 'Précédent' }) => {
@@ -25,35 +16,29 @@ export const PreviousStepLink: FC<PreviousStepLinkProps> = ({ label = 'Précéde
   const searchParams = useSearchParams()
   const searchParamsString = new URLSearchParams(searchParams).toString()
 
-  // Extract the current step from pathname
-  const pathParts = pathname.split('/')
-  const currentStep = pathParts[pathParts.length - 1]
+  const flow = getFlowFromPathname(pathname)
+  const steps = getStepsForFlow(flow)
+  const currentIndex = getStepIndex(getSlugFromPathname(pathname), flow)
+  const simulationId = flow === 'modification' ? String(params.id) : undefined
 
-  // Determine if we're in modification mode
-  const isModification = pathname.includes('/modifier/')
-  const simulationId = isModification ? params.id : null
-
-  // Get the base previous step
-  let previousHref = PREVIOUS_STEP_MAP[currentStep]
-
-  if (!previousHref) {
-    // If no mapping found, just return null (no button)
+  // Hors du parcours : pas de bouton.
+  if (currentIndex === -1) {
     return null
   }
 
-  // Adjust for modification flow
-  if (isModification && simulationId) {
-    // For modification flow, prefix with /simulation/[id]/modifier
-    // Exception: cadrage-temporel should go back to results page
-    if (currentStep === 'cadrage-temporel') {
-      previousHref = `/simulation/${simulationId}/resultats`
-    } else {
-      // Replace /simulation/ with /simulation/[id]/modifier/
-      previousHref = previousHref.replace('/simulation/', `/simulation/${simulationId}/modifier/`)
-    }
+  // On entre en modification depuis les résultats : la première étape y ramène.
+  // En création, rien ne précède la première étape.
+  const previousHref =
+    currentIndex === 0
+      ? flow === 'modification' && simulationId
+        ? `/simulation/${simulationId}/resultats`
+        : null
+      : buildStepPath(steps[currentIndex - 1].slug, flow, simulationId)
+
+  if (!previousHref) {
+    return null
   }
 
-  // Append search params
   const hrefWithParams = `${previousHref}${searchParamsString ? `?${searchParamsString}` : ''}`
 
   return (
