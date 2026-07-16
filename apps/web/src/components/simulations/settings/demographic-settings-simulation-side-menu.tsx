@@ -14,6 +14,7 @@ import { useEpcis } from '~/hooks/use-epcis'
 import { DemographicSettingsSimulationSideMenuStepNumber } from './demographic-settings-simulation-side-menu-step-number'
 import { DemographicSettingsSimulationSideMenuTitle } from './demographic-settings-simulation-side-menu-title'
 import styles from './simulation-side-menu.module.css'
+import { buildStepPath, CREATION_STEPS, getSlugFromPathname, getStepIndex } from './wizard-steps'
 
 const MAX_EPCIS_DISPLAYED = 2
 
@@ -34,59 +35,21 @@ export default function DemographicSettingsSimulationSideMenu() {
   // Explicitly check the URL params, not the fetched data
   const epciNames = epcisParam.length > 0 && epcis ? epcis.map((epci) => epci.name) : undefined
 
-  // Determine current step index based on pathname
-  const getCurrentStepIndex = () => {
-    if (pathname.includes('choix-du-territoire')) return 0
-    if (pathname.includes('cadrage-temporel')) return 1
-    if (pathname.includes('parametrages-demographique')) return 2
-    if (pathname.includes('taux-cibles-logements-vacants')) return 3
-    if (pathname.includes('taux-cibles-residences-secondaires')) return 4
-    if (pathname.includes('taux-restructuration-disparition')) return 5
-    if (pathname.includes('resultats')) return 6 // After all steps
-    return -1
-  }
-
-  const currentStepIndex = getCurrentStepIndex()
+  // Les résultats se situent après la dernière étape : tous les récapitulatifs y sont visibles.
+  const currentStepIndex = pathname.includes('resultats') ? CREATION_STEPS.length : getStepIndex(getSlugFromPathname(pathname), 'creation')
 
   // States for "Voir plus" buttons
   const [showAllVacancy, setShowAllVacancy] = useState(false)
   const [showAllSecondary, setShowAllSecondary] = useState(false)
   const [showAllRestructuration, setShowAllRestructuration] = useState(false)
 
-  const demographicSteps = [
-    {
-      data: epciNames && epciNames.length > 0 ? 'Votre territoire' : undefined,
-      path: '/simulation/choix-du-territoire',
-      queryKeys: ['epci', 'epcis'],
-      titleText: 'Choix du territoire',
-    },
-    {
-      path: '/simulation/cadrage-temporel',
-      queryKeys: ['projection'],
-      titleText: 'Horizon de temps',
-      iconId: 'ri-time-line',
-    },
-    {
-      path: '/simulation/parametrages-demographique',
-      queryKeys: ['omphale'],
-      titleText: 'Projection démographique',
-    },
-    {
-      path: '/simulation/taux-cibles-logements-vacants',
-      queryKeys: [],
-      titleText: 'Logements vacants longue durée',
-    },
-    {
-      path: '/simulation/taux-cibles-residences-secondaires',
-      queryKeys: [],
-      titleText: 'Résidences secondaires',
-    },
-    {
-      path: '/simulation/taux-restructuration-disparition',
-      queryKeys: [],
-      titleText: 'Renouvellement urbain',
-    },
-  ]
+  const demographicSteps = CREATION_STEPS.map((step) => ({
+    data: step.slug === 'choix-du-territoire' && epciNames && epciNames.length > 0 ? 'Votre territoire' : undefined,
+    iconId: step.iconId,
+    path: buildStepPath(step.slug, 'creation'),
+    queryKeys: step.queryKeys,
+    titleText: step.shortTitle,
+  }))
 
   return (
     <div className={styles.container}>

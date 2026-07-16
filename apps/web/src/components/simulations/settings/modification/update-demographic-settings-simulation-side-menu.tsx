@@ -10,6 +10,7 @@ import { useEpcis } from '~/hooks/use-epcis'
 import { DemographicSettingsSimulationSideMenuStepNumber } from '../demographic-settings-simulation-side-menu-step-number'
 import { DemographicSettingsSimulationSideMenuTitle } from '../demographic-settings-simulation-side-menu-title'
 import styles from '../simulation-side-menu.module.css'
+import { buildStepPath, MODIFICATION_STEPS, WizardStepSlug } from '../wizard-steps'
 import { UpdateDemographicSettingsGuideTag } from './update-demographic-settings-guide-tag'
 
 const MAX_EPCIS_DISPLAYED = 2
@@ -40,36 +41,19 @@ export default function UpdateDemographicSettingsSimulationSideMenu({ id }: Upda
     name: [...(epcisList || []), ...(bassinEpcis || [])]?.find((epci) => epci.code === code)?.name || code,
   }))
 
-  const demographicSteps = [
-    {
-      path: `/simulation/${id}/modifier/cadrage-temporel`,
-      queryKeys: ['projection'],
-      titleText: 'Horizon de temps',
-      iconId: 'ri-time-line',
-      data: `${simulationSettings.projection}`,
-    },
-    {
-      path: `/simulation/${id}/modifier/parametrages-demographique`,
-      queryKeys: ['omphale'],
-      titleText: 'Projection démographique',
-      data: simulationSettings.b2_scenario,
-    },
-    {
-      path: `/simulation/${id}/modifier/taux-cibles-logements-vacants`,
-      queryKeys: [],
-      titleText: 'Logements vacants longue durée',
-    },
-    {
-      path: `/simulation/${id}/modifier/taux-cibles-residences-secondaires`,
-      queryKeys: [],
-      titleText: 'Résidences secondaires',
-    },
-    {
-      path: `/simulation/${id}/modifier/taux-restructuration-disparition`,
-      queryKeys: [],
-      titleText: 'Renouvellement urbain',
-    },
-  ]
+  // Récapitulatif affiché sous les étapes déjà paramétrées.
+  const stepData: Partial<Record<WizardStepSlug, string | undefined>> = {
+    'cadrage-temporel': `${simulationSettings.projection}`,
+    'parametrages-demographique': simulationSettings.b2_scenario,
+  }
+
+  const demographicSteps = MODIFICATION_STEPS.map((step) => ({
+    data: stepData[step.slug],
+    iconId: step.iconId,
+    path: buildStepPath(step.slug, 'modification', id),
+    queryKeys: step.queryKeys,
+    titleText: step.shortTitle,
+  }))
 
   return (
     <div className={styles.container}>
