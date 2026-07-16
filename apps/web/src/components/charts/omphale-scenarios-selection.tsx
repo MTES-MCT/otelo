@@ -5,6 +5,7 @@ import { RadioButtons } from '@codegouvfr/react-dsfr/RadioButtons'
 import classNames from 'classnames'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { FC, useEffect, useState } from 'react'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import styles from './charts.module.css'
 
 export const OmphaleScenariosSelection: FC = () => {
@@ -92,7 +93,7 @@ export const OmphaleScenariosSelection: FC = () => {
   const hasError = !queryStates.omphale && !hasCustomData && queryStates.omphaleTouched === 'true'
 
   return (
-    <div className={styles.compactRadio}>
+    <div className={styles.compactRadio} {...tutorialAnchor('omphale-select')}>
       <RadioButtons
         key={`omphale-${queryStates.omphale || 'none'}`}
         legend="Choisissez une projection d'évolution des ménages"

@@ -5,6 +5,8 @@ import Stepper from '@codegouvfr/react-dsfr/Stepper'
 import classNames from 'classnames'
 import { usePathname } from 'next/navigation'
 import { FC, useMemo } from 'react'
+import { TutorialButton } from '~/components/simulations/tutorial/tutorial-button'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { getFlowFromPathname, getSlugFromPathname, getStepsForFlow } from './wizard-steps'
 
 export const DemographicSettingsSimulationStepper: FC = () => {
@@ -28,9 +30,15 @@ export const DemographicSettingsSimulationStepper: FC = () => {
     <div
       className={classNames('fr-px-2w fr-py-0-5v fr-px-md-4w fr-pt-md-4w shadow', !isRatesPath && 'fr-pb-5w')}
       style={{ background: fr.colors.decisions.background.default.grey.default }}
+      {...tutorialAnchor('stepper')}
     >
-      <Stepper currentStep={currentStep} stepCount={stepCount} title={title} />
-      {description && <div className="fr-text--sm fr-text-mention--grey fr-mb-0">{description}</div>}
+      <div className="fr-flex fr-flex-gap-4v" style={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Stepper currentStep={currentStep} stepCount={stepCount} title={title} />
+          {description && <div className="fr-text--sm fr-text-mention--grey fr-mb-0">{description}</div>}
+        </div>
+        <TutorialButton />
+      </div>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import classNames from 'classnames'
 import { parseAsString, useQueryStates } from 'nuqs'
 import { FC, useState } from 'react'
 import { MillesimeReminder } from '~/components/simulations/settings/millesime-reminder'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import styles from './charts.module.css'
 
 // `availableScenarios` liste les projections de population disponibles pour
@@ -60,7 +61,7 @@ export const PopulationScenariosSelection: FC<{ availableScenarios?: string[] }>
   const unavailableLabels = RADIO_OPTIONS.filter((o) => !isAvailable(o.nativeInputProps.value)).map((o) => o.label)
 
   return (
-    <div className={styles.compactRadio}>
+    <div className={styles.compactRadio} {...tutorialAnchor('population-select')}>
       {unavailableLabels.length > 0 && (
         <p className="fr-text--sm fr-text-mention--grey fr-mb-1v">
           {unavailableLabels.length > 1

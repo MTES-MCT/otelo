@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Drawer } from '~/components/common/drawer'
 import { ScotInfoTable } from '~/components/simulations/docurba/scot-info-table'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useEpciGroups } from '~/hooks/use-epci-groups'
 import { useEpcis } from '~/hooks/use-epcis'
 import { BassinHabitatSelection } from './bassin-habitat-selection'
@@ -116,7 +117,7 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
         )}
       </div>
 
-      <div className={fr.cx('fr-ml-auto', 'fr-my-1w')}>
+      <div className={fr.cx('fr-ml-auto', 'fr-my-1w')} {...tutorialAnchor('next-step')}>
         <NextStepLink href={href} query="epcis" isDisabled={!canGoNextStep} />
       </div>
 
