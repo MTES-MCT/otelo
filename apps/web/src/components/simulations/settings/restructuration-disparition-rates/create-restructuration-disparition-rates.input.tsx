@@ -9,6 +9,7 @@ import { parseAsString, useQueryState } from 'nuqs'
 import { FC, useState } from 'react'
 import { tss } from 'tss-react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 
 type CreateRestructurationDisparitionRatesInputProps = {
@@ -64,7 +65,7 @@ export const CreateRestructurationDisparitionRatesInput: FC<CreateRestructuratio
   return (
     <div className="fr-flex fr-direction-column">
       <div className="fr-flex fr-flex-gap-4v">
-        <div className="fr-flex fr-direction-column fr-width-full">
+        <div className="fr-flex fr-direction-column fr-width-full" {...tutorialAnchor('restructuration-rate')}>
           <Input
             className="fr-width-full"
             iconId="ri-percent-line"
@@ -94,7 +95,7 @@ export const CreateRestructurationDisparitionRatesInput: FC<CreateRestructuratio
           )}
         </div>
 
-        <div className="fr-flex fr-direction-column fr-width-full">
+        <div className="fr-flex fr-direction-column fr-width-full" {...tutorialAnchor('disappearance-rate')}>
           <Input
             className="fr-width-full"
             iconId="ri-percent-line"
