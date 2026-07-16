@@ -12,6 +12,7 @@ import { AllEpcisRatesView } from '~/components/simulations/settings/epcis-accom
 import ParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/parc-comparison-charts'
 import { RatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/rates-toggle-switch'
 import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-year-horizon-alert'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 import { useCreationPeakYears } from '~/hooks/use-simulation-peak-years'
@@ -45,7 +46,7 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
           <PeakYearHorizonAlert peakYear={epciPeakYear ?? null} projection={projection} millesime={millesime ? Number(millesime) : null} />
           {!isLockedByMillesime && (
             <>
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v" {...tutorialAnchor('long-term-vacancy-rate')}>
                 <span className="fr-text--medium">Vacance de longue durée</span>
                 <p className="fr-mb-0">
                   Elle désigne les logements vacants depuis plus de deux ans. Elle représente un réservoir de logements mobilisables. Le
@@ -53,7 +54,7 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
                 </p>
               </div>
               <CreateVacancyAccommodationRatesInput epci={epci} />
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v" {...tutorialAnchor('short-term-vacancy-rate')}>
                 <div className="fr-flex fr-flex-gap-2v">
                   <span className="fr-text--medium">Vacance de courte durée</span>
                   <Badge>Non modifiable</Badge>

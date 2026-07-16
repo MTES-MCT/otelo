@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Drawer } from '~/components/common/drawer'
 import { ScotInfoTable } from '~/components/simulations/docurba/scot-info-table'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useEpciGroups } from '~/hooks/use-epci-groups'
 import { parseUrbanismeDocType } from '~/utils/epci-group-name'
 import { useEpcis } from '~/hooks/use-epcis'
@@ -142,7 +143,7 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
         )}
       </div>
 
-      <div className={fr.cx('fr-ml-auto', 'fr-my-1w')}>
+      <div className={fr.cx('fr-ml-auto', 'fr-my-1w')} {...tutorialAnchor('next-step')}>
         <NextStepLink href={href} query="epcis" isDisabled={!canGoNextStep} touchedQueryParam="territoireTouched" />
       </div>
 

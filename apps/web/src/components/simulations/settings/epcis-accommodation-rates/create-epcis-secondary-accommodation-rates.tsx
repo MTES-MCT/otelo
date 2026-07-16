@@ -11,6 +11,7 @@ import { AllEpcisSecondaryRatesView } from '~/components/simulations/settings/ep
 import ParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/parc-comparison-charts'
 import { SecondaryRatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/secondary-rates-toggle-switch'
 import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-year-horizon-alert'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 import { useCreationPeakYears } from '~/hooks/use-simulation-peak-years'
@@ -46,7 +47,10 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
           <span className="fr-text-mention--grey">
             Le taux observé en {epciRates.vacancy.year} s'élève à <strong>{Number(epciRates.txRs * 100).toFixed(2)} %</strong>.
           </span>
-          <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
+          <div
+            className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between"
+            {...tutorialAnchor('secondary-rate')}
+          >
             <CreateSecondaryAccommodationRateInput
               epci={epci}
               label={`Quel objectif de taux souhaitez-vous fixer pour l'horizon ${targetYear} ?`}
