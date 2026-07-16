@@ -1,0 +1,126 @@
+/**
+ * Habillage DSFR des popovers driver.js.
+ *
+ * Tout passe par les variables du DSFR : le thème sombre (`data-fr-theme="dark"`) est
+ * donc pris en charge sans règle conditionnelle.
+ *
+ * Les sélecteurs sont volontairement en `.driver-popover.otelo-tutorial-popover`
+ * (spécificité 0,2,0) pour l'emporter sur `.driver-popover` (0,1,0) de driver.css,
+ * quel que soit l'ordre d'injection des feuilles par Next.
+ */
+
+.driver-popover.otelo-tutorial-popover {
+  --driver-popover-font-family: "Marianne", arial, sans-serif;
+
+  min-width: 300px;
+  max-width: 384px;
+  padding: 1.5rem;
+  border-radius: 0;
+  background-color: var(--background-default-grey);
+  color: var(--text-default-grey);
+  box-shadow: 0 8px 16px rgb(0 0 18 / 16%);
+}
+
+.otelo-tutorial-popover .driver-popover-title {
+  padding-right: 1.5rem;
+  color: var(--text-title-grey);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+}
+
+.otelo-tutorial-popover .driver-popover-description {
+  margin-top: 0.5rem;
+  color: var(--text-default-grey);
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
+.otelo-tutorial-popover .driver-popover-close-btn {
+  width: 28px;
+  height: 24px;
+  color: var(--text-mention-grey);
+  font-size: 1.25rem;
+}
+
+.otelo-tutorial-popover .driver-popover-close-btn:hover,
+.otelo-tutorial-popover .driver-popover-close-btn:focus {
+  color: var(--text-action-high-blue-france);
+}
+
+.otelo-tutorial-popover .driver-popover-footer {
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.otelo-tutorial-popover .driver-popover-progress-text {
+  color: var(--text-mention-grey);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.otelo-tutorial-popover .driver-popover-navigation-btns {
+  gap: 0.5rem;
+}
+
+.otelo-tutorial-popover .driver-popover-navigation-btns button + button {
+  margin-left: 0;
+}
+
+/* Boutons secondaires DSFR. */
+.otelo-tutorial-popover .driver-popover-footer-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border-action-high-blue-france);
+  border-radius: 0;
+  background-color: transparent;
+  color: var(--text-action-high-blue-france);
+  font-family: "Marianne", arial, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5rem;
+  text-shadow: none;
+}
+
+.otelo-tutorial-popover .driver-popover-footer-btn:hover {
+  background-color: var(--background-alt-blue-france);
+}
+
+/* Bouton primaire DSFR. */
+.otelo-tutorial-popover .driver-popover-next-btn {
+  background-color: var(--background-action-high-blue-france);
+  color: var(--text-inverted-grey);
+}
+
+.otelo-tutorial-popover .driver-popover-next-btn:hover {
+  background-color: var(--background-action-high-blue-france-hover);
+}
+
+.otelo-tutorial-popover:focus-visible,
+.otelo-tutorial-popover *:focus-visible {
+  outline: 2px solid var(--background-action-high-blue-france);
+  outline-offset: 2px;
+}
+
+/**
+ * La flèche.
+ *
+ * driver.css pose `border: 5px solid #fff` puis neutralise trois côtés sur quatre selon
+ * la variante. Un `border-color` groupé ici serait plus spécifique que ces règles et
+ * repeindrait les côtés transparents : la flèche deviendrait un losange plein.
+ * On ne repeint donc que le côté visible de chaque variante.
+ */
+.otelo-tutorial-popover .driver-popover-arrow-side-left {
+  border-left-color: var(--background-default-grey);
+}
+
+.otelo-tutorial-popover .driver-popover-arrow-side-right {
+  border-right-color: var(--background-default-grey);
+}
+
+.otelo-tutorial-popover .driver-popover-arrow-side-top {
+  border-top-color: var(--background-default-grey);
+}
+
+.otelo-tutorial-popover .driver-popover-arrow-side-bottom {
+  border-bottom-color: var(--background-default-grey);
+}
