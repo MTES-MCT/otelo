@@ -4,6 +4,12 @@
   height: 100%;
 }
 
+.actionsBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .typeSelectionContainer {
   display: flex;
   justify-content: center;
