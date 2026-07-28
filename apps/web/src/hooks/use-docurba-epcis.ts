@@ -1,27 +1,35 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { DocurbaEpciData } from './use-docurba-epci'
+import { useQuery } from '@tanstack/react-query'
+
+export type DocurbaEpciData = {
+  communeCode: string
+  scotName: string | null
+  documentType: string | null
+  approvalYear: string | null
+  procedureInProgress: { type: string; documentType: string } | null
+}
+
+// Le service NestJS renvoie `null` au bout de 3s si son cache est froid, et poursuit le calcul
+// en arrière-plan. On réinterroge donc tant qu'il reste des EPCI sans réponse, sans jamais
+// masquer ceux déjà résolus (un EPCI réellement absent de Docurba reste `null` indéfiniment).
+const MAX_POLLS = 6
+const POLL_INTERVAL_MS = 5000
 
 export const useDocurbaEpcis = (codes: string[]) => {
-  const queryClient = useQueryClient()
   const sortedKey = [...codes].sort().join(',')
 
   return useQuery<Record<string, DocurbaEpciData | null>>({
+    enabled: codes.length > 0,
     queryKey: ['docurba-epcis', sortedKey],
     queryFn: async () => {
       const res = await fetch(`/api/docurba/epcis?codes=${encodeURIComponent(sortedKey)}`)
       if (res.status === 204 || !res.ok) return Object.fromEntries(codes.map((c) => [c, null]))
-      const data: Record<string, DocurbaEpciData | null> = await res.json()
-
-      for (const [code, result] of Object.entries(data)) {
-        if (result !== null) queryClient.setQueryData(['docurba-epci', code], result)
-      }
-
-      if (Object.values(data).some((v) => v === null)) throw new Error('pending')
-
-      return data
+      return res.json()
     },
-    retry: 6,
-    retryDelay: 5000,
+    refetchInterval: ({ state }) => {
+      if (!state.data || state.dataUpdateCount >= MAX_POLLS) return false
+      return Object.values(state.data).some((value) => value === null) ? POLL_INTERVAL_MS : false
+    },
+    placeholderData: (previousData) => previousData,
     staleTime: 60 * 60 * 1000,
   })
 }
