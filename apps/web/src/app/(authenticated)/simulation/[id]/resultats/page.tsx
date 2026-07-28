@@ -1,12 +1,11 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import { RiIconClassName } from '@codegouvfr/react-dsfr/fr/generatedFromCss/classNames'
 import { SynthesisCnEvolutionChart } from '~/components/charts/synthesis-cn-evolution-chart'
+import { ScotInfoDrawer } from '~/components/simulations/docurba/scot-info-drawer'
 import { SimulationAnnualsNeedsSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs'
 import { SimulationBadHousing } from '~/components/simulations/results/bad-housing/simulation-bad-housing'
 import { SimulationDemographicBadHousingSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-summary'
 import { SimulationDemographicParcEvolution } from '~/components/simulations/results/demographic-parc-evolution/simulation-demographic-parc-evolution'
-import { EpciScotInfo } from '~/components/simulations/results/docurba/epci-scot-info'
-import { SynthesisScotInfo } from '~/components/simulations/results/docurba/synthesis-scot-info'
 import { ExportExcelSimulationButton } from '~/components/simulations/results/export-simulation-settings-button'
 import { SimulationHeaderSegmentedControls } from '~/components/simulations/results/header/simulation-header-segmented-controls'
 import { SimulationHeaderTitle } from '~/components/simulations/results/header/simulation-header-title'
@@ -84,8 +83,10 @@ export default async function Resultats({ params }: SimulationPageProps) {
     return {
       content: (
         <div key={epci.code} className="fr-container fr-flex fr-direction-column fr-flex-gap-8v">
-          <EpciScotInfo epciCode={epci.code} />
-          <SimulationSettingsDropdown simulation={simulation} epci={epci} />
+          <div className="fr-flex fr-flex-gap-4v fr-justify-content-space-between fr-align-items-start">
+            <SimulationSettingsDropdown simulation={simulation} epci={epci} />
+            <ScotInfoDrawer epcis={[{ code: epci.code, name: epci.name }]} />
+          </div>
           <SimulationNeedsSummary projection={simulation.scenario.projection} results={epciResults} epci={epciData} />
           <SimulationDemographicBadHousingSummary
             simulationId={simulation.id}
@@ -130,7 +131,10 @@ export default async function Resultats({ params }: SimulationPageProps) {
   const bassinTab = {
     content: (
       <div key="territory" className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
-        <SimulationSettingsDropdown simulation={simulation} />
+        <div className="fr-flex fr-flex-gap-4v fr-justify-content-space-between fr-align-items-start">
+          <SimulationSettingsDropdown simulation={simulation} />
+          <ScotInfoDrawer epcis={simulation.epcis} label="Voir la planification territoriale du bassin d'habitat" />
+        </div>
         <SimulationNeedsSummary projection={simulation.scenario.projection} results={results} epcis={simulation.epcis} />
 
         {/* <SimulationDemographicBadHousingSummary
@@ -154,7 +158,6 @@ export default async function Resultats({ params }: SimulationPageProps) {
         )}
 
         <SimulationEpcisDetails simulation={simulation} />
-        <SynthesisScotInfo epcis={simulation.epcis} />
       </div>
     ),
     iconId: 'ri-home-line' as RiIconClassName,
