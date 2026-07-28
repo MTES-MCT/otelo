@@ -1,6 +1,29 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+// L'API envoie les deux formes de la RFC 6266 : `filename*` (UTF-8, accents préservés) et
+// `filename` translittéré en ASCII pour les clients anciens. On privilégie donc `filename*`.
+const UTF8_FILENAME = /filename\*=UTF-8''([^;]+)/i
+const ASCII_FILENAME = /filename="([^"]*)"|filename=([^;]+)/i
+
+const parseFilename = (contentDisposition: string | null): string | undefined => {
+  if (!contentDisposition) {
+    return undefined
+  }
+
+  const utf8Match = contentDisposition.match(UTF8_FILENAME)
+  if (utf8Match) {
+    try {
+      return decodeURIComponent(utf8Match[1])
+    } catch {
+      // Valeur mal encodée : on retombe sur la forme ASCII ci-dessous.
+    }
+  }
+
+  const asciiMatch = contentDisposition.match(ASCII_FILENAME)
+  return (asciiMatch?.[1] ?? asciiMatch?.[2])?.trim() || undefined
+}
+
 export const useExportExcelSimulation = () => {
   const exportSettings = async (id: string) => {
     try {
@@ -12,10 +35,7 @@ export const useExportExcelSimulation = () => {
         throw new Error('Failed to export simulation')
       }
 
-      const contentDisposition = response.headers.get('content-disposition')
-      const filename = contentDisposition
-        ? contentDisposition.split('filename=')[1].replace(/"/g, '')
-        : `scenario-${new Date().toISOString()}.xlsx`
+      const filename = parseFilename(response.headers.get('content-disposition')) ?? `scenario-${new Date().toISOString()}.xlsx`
 
       const blob = await response.blob()
 

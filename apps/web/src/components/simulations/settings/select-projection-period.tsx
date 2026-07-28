@@ -3,25 +3,27 @@
 import { Range } from '@codegouvfr/react-dsfr/Range'
 import { useQueryState } from 'nuqs'
 import { FC, useEffect } from 'react'
+import { clampProjectionYear, DEFAULT_PROJECTION_YEAR, getMinProjectionYear, MAX_PROJECTION_YEAR } from '~/utils/projection'
 
 export const SelectProjectionPeriod: FC = () => {
   const [projection, setProjection] = useQueryState('projection')
   const [millesime] = useQueryState('millesime')
-  const minYear = millesime ? Number(millesime) : 2021
+  const minYear = getMinProjectionYear(millesime)
 
+  const projectionValue = clampProjectionYear(Number(projection) || DEFAULT_PROJECTION_YEAR, millesime)
+
+  // Réaligne l'URL quand la projection est absente, ou hors bornes après un changement de millésime.
   useEffect(() => {
-    if (!projection) {
-      setProjection('2030')
+    if (projection !== String(projectionValue)) {
+      setProjection(String(projectionValue))
     }
-  }, [projection, setProjection])
-
-  const projectionValue = projection ?? '2030'
+  }, [projection, projectionValue, setProjection])
 
   return (
     <>
       <Range
         label="Faites glisser le curseur pour établir l'horizon de temps du scénario."
-        max={2050}
+        max={MAX_PROJECTION_YEAR}
         min={minYear}
         nativeInputProps={{ onChange: (e) => setProjection(e.target.value), value: projectionValue }}
       />
