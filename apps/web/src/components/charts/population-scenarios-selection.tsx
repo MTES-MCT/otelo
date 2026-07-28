@@ -5,6 +5,7 @@ import { RadioButtons } from '@codegouvfr/react-dsfr/RadioButtons'
 import classNames from 'classnames'
 import { parseAsString, useQueryStates } from 'nuqs'
 import { FC, useState } from 'react'
+import { MillesimeReminder } from '~/components/simulations/settings/millesime-reminder'
 import styles from './charts.module.css'
 
 // `availableScenarios` liste les projections de population disponibles pour
@@ -80,6 +81,7 @@ export const PopulationScenariosSelection: FC<{ availableScenarios?: string[] }>
           content: classNames('fr-justify-content-space-between fr-flex', styles.noWrap),
         }}
       />
+      <MillesimeReminder />
       <div data-chart-download-exclude>
         <Button
           priority="tertiary no outline"
