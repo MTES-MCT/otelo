@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { useCreateSimulation } from '~/hooks/use-create-simulation'
 import { TInitSimulationDto, ZInitSimulationDto } from '~/schemas/simulation'
+import { clampProjectionYear, DEFAULT_PROJECTION_YEAR } from '~/utils/projection'
 
 const modal = createModal({
   id: 'scenario-naming-modal',
@@ -68,7 +69,8 @@ export const ScenarioNamingModal: FC = () => {
           },
           {} as Record<string, TInitSimulationDto['scenario']['epcis'][string]>,
         ),
-        projection: (queryStates.projection as number) ?? 2030,
+        // Reborné ici aussi : l'étape de cadrage temporel peut être court-circuitée.
+        projection: clampProjectionYear(queryStates.projection ?? DEFAULT_PROJECTION_YEAR, queryStates.millesime),
         demographicEvolutionOmphaleCustomIds: queryStates.demographicEvolutionOmphaleCustomIds,
       },
     },

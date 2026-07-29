@@ -1439,7 +1439,8 @@ export class ExportExcelService {
     const workbook = new ExcelJS.Workbook()
 
     const simulation = await this.prismaService.simulation.findUniqueOrThrow({
-      include: { epcis: true, scenario: { include: { epciScenarios: true } } },
+      // `epciGroup` sert à nommer le fichier quand aucun EPCI de base n'est désigné.
+      include: { epciGroup: true, epcis: true, scenario: { include: { epciScenarios: true } } },
       where: { id: simulationId },
     })
 
