@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { useCreateSimulation } from '~/hooks/use-create-simulation'
 import { TInitSimulationDto, ZInitSimulationDto } from '~/schemas/simulation'
+import { parseUrbanismeDocAnswer } from '~/utils/epci-group-name'
 import { clampProjectionYear, DEFAULT_PROJECTION_YEAR } from '~/utils/projection'
 
 const modal = createModal({
@@ -28,6 +29,7 @@ export const ScenarioNamingModal: FC = () => {
     region: parseAsString,
     epciGroupName: parseAsString,
     epciGroupId: parseAsString,
+    urbanismeDoc: parseAsString,
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
     demographicEvolutionOmphaleCustomIds: parseAsArrayOf(parseAsString).withDefault([]),
   })
@@ -49,6 +51,7 @@ export const ScenarioNamingModal: FC = () => {
       epci: selectedEpcis.map((epciCode) => ({ code: epciCode })),
       epciGroupId: queryStates.epciGroupId,
       epciGroupName: queryStates.epciGroupName,
+      worksOnPlanningDocument: parseUrbanismeDocAnswer(queryStates.urbanismeDoc),
       scenario: {
         b2_scenario: queryStates.omphale as string,
         epcis: selectedEpcis.reduce(

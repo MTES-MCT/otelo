@@ -7,9 +7,12 @@ import { useRouter } from 'next/navigation'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { useEffect, useState } from 'react'
 import { AutocompleteInput } from '~/components/simulations/autocomplete/autocomplete-input'
+import { useEpciGroupNamePrefill } from '~/hooks/use-epci-group-name-prefill'
 import { useEpcis } from '~/hooks/use-epcis'
 import { GeoApiCommuneResult, GeoApiEpciResult } from '~/hooks/use-geoapi-search'
+import { buildTerritoryLabel } from '~/utils/epci-group-name'
 import { EpciGroupNameInput } from './epci-group-name-input'
+import { UrbanismeDocQuestion } from './urbanisme-doc-question'
 
 type BassinHabitatSelectionProps = {
   bassinEpcis: TEpci[]
@@ -45,7 +48,11 @@ export const BassinHabitatSelection = ({ bassinEpcis }: BassinHabitatSelectionPr
     router.refresh()
   }
 
-  const baseEpciData = bassinEpcis.find((epci) => epci.code === baseEpci)
+  const baseEpciData = bassinEpcis.find((epci) => epci.code === baseEpci) ?? selectedEpcis?.find((epci) => epci.code === baseEpci)
+
+  useEpciGroupNamePrefill({
+    territoryLabel: baseEpciData ? buildTerritoryLabel(baseEpciData.name, baseEpciData.bassinName) : '',
+  })
 
   if (isLoadingEpcis) {
     return <div>Chargement en cours...</div>
@@ -80,6 +87,8 @@ export const BassinHabitatSelection = ({ bassinEpcis }: BassinHabitatSelectionPr
               ))}
             </ul>
           </div>
+
+          <UrbanismeDocQuestion />
 
           <hr className={fr.cx('fr-mt-3w')} />
           <EpciGroupNameInput value={epciGroupName || ''} />

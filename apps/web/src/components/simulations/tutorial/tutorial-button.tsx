@@ -1,13 +1,13 @@
 'use client'
 
-import Button from '@codegouvfr/react-dsfr/Button'
 import { usePathname } from 'next/navigation'
-import { FC, useRef } from 'react'
+import { FC } from 'react'
 import { getFlowFromPathname, getSlugFromPathname } from '../settings/wizard-steps'
-import { useTutorial } from './use-tutorial'
+import { CREATION_TUTORIAL_CONTENT } from './tutorial-content'
+import { TutorialTrigger } from './tutorial-trigger'
 
 /**
- * Déclenche le mode tuto de l'étape courante.
+ * Déclenche le mode tuto de l'étape courante du parcours de création.
  *
  * Le tuto ne couvre pour l'instant que la création. La garde sur le parcours est
  * indispensable : le stepper est rendu aussi en modification, où les slugs sont les mêmes
@@ -15,25 +15,7 @@ import { useTutorial } from './use-tutorial'
  */
 export const TutorialButton: FC = () => {
   const pathname = usePathname()
-  const triggerRef = useRef<HTMLButtonElement>(null)
-  const isCreation = getFlowFromPathname(pathname) === 'creation'
-  const { hasTutorial, start } = useTutorial(isCreation ? getSlugFromPathname(pathname) : undefined, triggerRef)
+  const slug = getFlowFromPathname(pathname) === 'creation' ? getSlugFromPathname(pathname) : undefined
 
-  if (!hasTutorial) {
-    return null
-  }
-
-  return (
-    <Button
-      priority="tertiary no outline"
-      size="small"
-      iconId="fr-icon-question-line"
-      iconPosition="left"
-      onClick={start}
-      type="button"
-      nativeButtonProps={{ ref: triggerRef }}
-    >
-      Besoin d'aide sur cette étape
-    </Button>
-  )
+  return <TutorialTrigger steps={slug ? CREATION_TUTORIAL_CONTENT[slug] : undefined} label="Besoin d'aide sur cette étape" />
 }

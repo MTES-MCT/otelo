@@ -24,17 +24,15 @@ export const MillesimeReminder = () => {
   const href = `/simulation/cadrage-temporel${searchParamsString ? `?${searchParamsString}` : ''}`
 
   return (
-    <p className="fr-text--sm fr-text-mention--grey fr-mb-0">
+    // Exclu des exports PNG : c'est un repère de paramétrage, pas une légende du graphique.
+    <p className="fr-text--sm fr-text-mention--grey fr-mb-0" data-chart-download-exclude>
       <span aria-hidden="true" className="fr-icon-information-line fr-icon--sm fr-mr-1v" />
       Projections calculées à partir des données du millésime <strong>{millesime}</strong>
       {projection ? `, du 1er janvier ${millesime} au 1er janvier ${projection}` : ''}.{' '}
       {isCreation && (
-        // Exclu des exports PNG : un lien n'a pas de sens dans une image
-        <span data-chart-download-exclude>
-          <Link href={href} className="fr-link fr-text--sm">
-            Modifier le millésime
-          </Link>
-        </span>
+        <Link href={href} className="fr-link fr-text--sm">
+          Modifier le millésime
+        </Link>
       )}
     </p>
   )

@@ -1,5 +1,6 @@
 import { SimulationParcEvolutionDataWrapper } from '~/components/simulations/results/demographic-parc-evolution/simulation-demographic-parc-evolution-data-wrapper'
 import { SimulationChartTableSwitch } from '~/components/simulations/results/simulation-chart-table-switch'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 
 export type SimulationDemographicParcEvolutionProps = {
   results: {
@@ -20,7 +21,7 @@ export const SimulationDemographicParcEvolution = ({ results, horizon, peakYear 
     return null
   }
   return (
-    <div className="fr-background-default--grey shadow" id="demographie-parc">
+    <div className="fr-background-default--grey shadow" id="demographie-parc" {...tutorialAnchor('results-parc-evolution')}>
       <div className="fr-py-8w fr-px-5w">
         <div id="demographique-parc-evolution" className="fr-flex fr-justify-content-space-between fr-align-items-center">
           <h3 className="fr-h4 fr-mb-0">Démographie et évolution du parc</h3>

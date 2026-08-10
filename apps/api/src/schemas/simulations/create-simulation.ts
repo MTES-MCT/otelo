@@ -18,6 +18,7 @@ export const ZInitSimulation = ZCreateSimulation.extend({
   millesime: z.string().optional(),
   epciGroupName: z.string().optional().nullable(),
   epciGroupId: z.string().optional().nullable(),
+  worksOnPlanningDocument: z.boolean().optional().nullable(),
 })
 
 export type TInitSimulation = z.infer<typeof ZInitSimulation>
