@@ -61,7 +61,8 @@ export const PopulationScenariosSelection: FC<{ availableScenarios?: string[] }>
   const unavailableLabels = RADIO_OPTIONS.filter((o) => !isAvailable(o.nativeInputProps.value)).map((o) => o.label)
 
   return (
-    <div className={styles.compactRadio} {...tutorialAnchor('population-select')}>
+    // Exclu des exports PNG : ce sont les commandes du graphique, pas son contenu.
+    <div className={styles.compactRadio} data-chart-download-exclude {...tutorialAnchor('population-select')}>
       {unavailableLabels.length > 0 && (
         <p className="fr-text--sm fr-text-mention--grey fr-mb-1v">
           {unavailableLabels.length > 1

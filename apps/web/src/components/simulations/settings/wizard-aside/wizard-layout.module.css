@@ -1,0 +1,44 @@
+/*
+ * Le parcours porte trois colonnes : étapes, contenu, colonne latérale. Le `fr-container` standard
+ * (78rem) ne suffit plus — la colonne centrale y tombait sous 500px et les titres se coupaient en
+ * plein mot. On élargit donc jusqu'à 100rem, en gardant un plafond pour ne pas étirer les lignes
+ * à l'infini sur les très grands écrans.
+ */
+.container {
+  width: 100%;
+  max-width: 100rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 48em) {
+  .container {
+    padding-inline: 1.5rem;
+  }
+}
+
+/*
+ * La colonne centrale est élastique plutôt que fixée à fr-col-md-9 : quand la colonne latérale ne
+ * s'affiche pas (étapes territoire et horizon en création), elle reprend toute la place restante,
+ * sans largeur conditionnelle à calculer côté serveur.
+ */
+.mainColumn {
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ * Le menu d'étapes garde sa largeur d'origine (les 25% de l'ancien fr-container) au lieu de suivre
+ * l'élargissement : toute la place gagnée doit revenir au contenu, pas à la navigation.
+ */
+.navColumn {
+  flex: 0 0 19rem;
+  max-width: 19rem;
+}
+
+@media (max-width: 47.99em) {
+  .navColumn {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}

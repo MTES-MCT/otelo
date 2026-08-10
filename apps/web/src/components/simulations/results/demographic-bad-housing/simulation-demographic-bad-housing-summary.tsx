@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 import { SimulationDemographicBadHousingChartSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-chart-summary'
 import { SimulationResultPresentationHighlight } from '~/components/simulations/results/simulation-result-presentation-highlight'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { formatNumber } from '~/utils/format-numbers'
 import styles from './simulation-demographic-bad-housing-summary.module.css'
 
@@ -45,7 +46,10 @@ export const SimulationDemographicBadHousingSummary = ({
   }
 
   return (
-    <div className="fr-background-default--grey fr-flex fr-direction-column fr-py-8w fr-px-5w shadow">
+    <div
+      className="fr-background-default--grey fr-flex fr-direction-column fr-py-8w fr-px-5w shadow"
+      {...tutorialAnchor('results-needs-split')}
+    >
       <h3 className="fr-h4">À quels besoins répondront ces logements ?</h3>
 
       <SimulationDemographicBadHousingChartSummary totalFlux={totalFlux} totalStock={totalStock} epci={epci} />

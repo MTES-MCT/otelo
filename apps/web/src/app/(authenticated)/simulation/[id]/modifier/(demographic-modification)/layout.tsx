@@ -3,6 +3,9 @@ import { DemographicSettingsSimulationStepper } from '~/components/simulations/s
 import { SimulationSettingsFormContextWrapper } from '~/components/simulations/settings/modification/simulation-settings-form-context-wrapper'
 import UpdateDemographicSettingsSimulationSideMenu from '~/components/simulations/settings/modification/update-demographic-settings-simulation-side-menu'
 import { SimulationFormRatesProviderContextWrapper } from '~/components/simulations/settings/simulation-form-context-wrapper'
+import { ModificationEstimationCard } from '~/components/simulations/settings/wizard-aside/modification-estimation-card'
+import { WizardAside } from '~/components/simulations/settings/wizard-aside/wizard-aside'
+import wizardLayout from '~/components/simulations/settings/wizard-aside/wizard-layout.module.css'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
 import type { SimulationLayoutProps } from '~/types/simulation-page-props'
 
@@ -23,22 +26,25 @@ export default async function ModifySimulationLayout({ children, params }: Simul
   )
 
   return (
-    <div className="fr-container">
+    <div className={wizardLayout.container}>
       <SimulationSettingsFormContextWrapper peakYears={peakYears}>
         <SimulationFormRatesProviderContextWrapper epcis={epcis}>
-          <div className="fr-flex fr-flex-gap-12v">
-            <nav className="fr-col-md-3">
+          <div className="fr-flex fr-flex-wrap fr-flex-gap-6v">
+            <nav className={wizardLayout.navColumn}>
               <AuthenticatedBreadcrumb />
               <UpdateDemographicSettingsSimulationSideMenu id={id} />
             </nav>
 
-            <div className="fr-col-md-9">
-              <main className="fr-container">
+            <div className={wizardLayout.mainColumn}>
+              <main>
                 <DemographicSettingsSimulationStepper />
                 {children}
-                {/*<DemographicPreview />*/}
               </main>
             </div>
+
+            <WizardAside>
+              <ModificationEstimationCard />
+            </WizardAside>
           </div>
         </SimulationFormRatesProviderContextWrapper>
       </SimulationSettingsFormContextWrapper>

@@ -5,6 +5,7 @@ import { Tag } from '@codegouvfr/react-dsfr/Tag'
 import { TEpci } from '@shared'
 import { useState } from 'react'
 import { ShareSimulationModal } from '~/components/collaboration/share-simulation-modal'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useSession } from '~/lib/auth/client'
 import { TSimulationWithResults } from '~/schemas/simulation'
 import { formatDecohabitation, formatScenario } from '~/utils/omphale-label'
@@ -83,7 +84,7 @@ export const SimulationSettingsDropdown = ({ simulation, epci }: { simulation: T
   return (
     <>
       <div className="fr-flex fr-direction-column fr-flex-gap-4v">
-        <div className="fr-flex fr-flex-gap-2v">
+        <div className="fr-flex fr-flex-gap-2v" {...tutorialAnchor('results-settings')}>
           <Button
             priority="tertiary no outline"
             iconPosition="right"

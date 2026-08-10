@@ -5,7 +5,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import { TEpci } from '@shared'
 import classNames from 'classnames'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Drawer } from '~/components/common/drawer'
 import { ScotInfoTable } from '~/components/simulations/docurba/scot-info-table'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
@@ -50,14 +50,6 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
   const hasEpcis = !!epcis?.length
   const scotEpcis = (selectedEpcis ?? []).map(({ code, name }) => ({ code, name }))
   const hasSelectedEpcis = scotEpcis.length > 0
-
-  // Le drawer s'ouvre de lui-même quand une sélection apparaît, puis reste à la main de l'utilisateur.
-  // La ref est initialisée depuis l'URL pour ne pas rouvrir le drawer à chaque retour sur la page.
-  const hadSelection = useRef(hasEpcis)
-  useEffect(() => {
-    if (hasSelectedEpcis && !hadSelection.current) setIsScotDrawerOpen(true)
-    hadSelection.current = hasSelectedEpcis
-  }, [hasSelectedEpcis])
 
   const isGroupNameTaken = groups?.some((group) => group.name.toLowerCase() === epciGroupName?.toLowerCase()) || false
 

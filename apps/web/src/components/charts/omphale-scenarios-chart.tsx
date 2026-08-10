@@ -11,6 +11,7 @@ import React, { FC, useCallback, useEffect, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { NameType, Payload as TooltipPayload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { tss } from 'tss-react'
+import { ChartDownloadButton } from '~/components/charts/chart-download-wrapper'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { OmphaleScenariosSelection } from '~/components/charts/omphale-scenarios-selection'
@@ -293,6 +294,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
         />
       )}
       <DemographicSettingsSelectEpci epcis={epcisProps ?? queryStates.epcis} />
+      <ChartDownloadButton />
       <div className={classes.chartContainer}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart width={500} height={300} data={chartData}>

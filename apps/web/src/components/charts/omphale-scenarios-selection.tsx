@@ -93,7 +93,8 @@ export const OmphaleScenariosSelection: FC = () => {
   const hasError = !queryStates.omphale && !hasCustomData && queryStates.omphaleTouched === 'true'
 
   return (
-    <div className={styles.compactRadio} {...tutorialAnchor('omphale-select')}>
+    // Exclu des exports PNG : ce sont les commandes du graphique, pas son contenu.
+    <div className={styles.compactRadio} data-chart-download-exclude {...tutorialAnchor('omphale-select')}>
       <RadioButtons
         key={`omphale-${queryStates.omphale || 'none'}`}
         legend="Choisissez une projection d'évolution des ménages"
