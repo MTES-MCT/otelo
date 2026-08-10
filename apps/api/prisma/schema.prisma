@@ -698,6 +698,8 @@ enum NeighborCategory {
 model EpciGroup {
   id             String           @id @default(uuid())
   name           String
+  /// L'utilisateur élabore-t-il un document d'urbanisme sur ce territoire ? null = question non posée.
+  worksOnPlanningDocument Boolean? @map("works_on_planning_document")
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
   userId         String?          @map("user_id")

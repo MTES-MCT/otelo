@@ -8,11 +8,14 @@ import { useRouter } from 'next/navigation'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { useState } from 'react'
 import { AutocompleteInput } from '~/components/simulations/autocomplete/autocomplete-input'
+import { useEpciGroupNamePrefill } from '~/hooks/use-epci-group-name-prefill'
 import { useEpcis } from '~/hooks/use-epcis'
 import { GeoApiCommuneResult, GeoApiEpciResult } from '~/hooks/use-geoapi-search'
+import { buildTerritoryLabel } from '~/utils/epci-group-name'
 import { CheckboxEpcis } from './checkbox-epcis'
 import { ContiguousEpcisCheckboxes } from './contiguous-epcis-checkboxes'
 import { EpciGroupNameInput } from './epci-group-name-input'
+import { UrbanismeDocQuestion } from './urbanisme-doc-question'
 
 type CustomSelectionProps = {
   bassinEpcis: TEpci[]
@@ -39,7 +42,10 @@ export const CustomSelection = ({ bassinEpcis }: CustomSelectionProps) => {
     router.refresh()
   }
 
-  const baseEpciData = bassinEpcis.find((epci) => epci.code === baseEpci)
+  const baseEpciData = bassinEpcis.find((epci) => epci.code === baseEpci) ?? selectedEpcis?.find((epci) => epci.code === baseEpci)
+
+  // Pas de préfixe « Bassin » ici : la sélection est libre, même si elle recouvre tout un bassin d'habitat.
+  useEpciGroupNamePrefill({ territoryLabel: baseEpciData ? buildTerritoryLabel(baseEpciData.name) : '' })
 
   if (isLoadingEpcis) {
     return <div>Chargement en cours...</div>
@@ -83,6 +89,8 @@ export const CustomSelection = ({ bassinEpcis }: CustomSelectionProps) => {
           </div>
 
           {isEditing && <ContiguousEpcisCheckboxes epcis={bassinEpcis} />}
+
+          <UrbanismeDocQuestion />
 
           <hr className={fr.cx('fr-mt-3w')} />
           <EpciGroupNameInput value={epciGroupName || ''} />

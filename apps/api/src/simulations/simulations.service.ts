@@ -131,6 +131,10 @@ export class SimulationsService {
       if (!hasAccess) {
         throw new ForbiddenException()
       }
+      // Le groupe existe déjà : on ne peut qu'ajouter l'information, jamais la retirer.
+      if (data.worksOnPlanningDocument === true) {
+        await this.epciGroupsService.markWorksOnPlanningDocument(epciGroupId, userId)
+      }
     }
 
     const scenario = await this.scenariosService.create(userId, data.scenario, data.millesime)
@@ -139,6 +143,7 @@ export class SimulationsService {
       const epciGroup = await this.epciGroupsService.create(userId, {
         name: data.epciGroupName,
         epciCodes: data.epci.map((epci) => epci.code),
+        worksOnPlanningDocument: data.worksOnPlanningDocument,
       })
       epciGroupId = epciGroup.id
     }

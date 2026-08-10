@@ -3,8 +3,7 @@
 import { type Driver, driver } from 'driver.js'
 import 'driver.js/dist/driver.css'
 import { type RefObject, useCallback, useEffect, useRef } from 'react'
-import type { WizardStepSlug } from '../settings/wizard-steps'
-import { CREATION_TUTORIAL_CONTENT, type TutorialAnchor, tutorialSelector } from './tutorial-content'
+import { type TutorialStep, tutorialStepSelector } from './tutorial-content'
 import './tutorial.css'
 
 /**
@@ -20,16 +19,20 @@ const isVisible = (element: HTMLElement): boolean => {
 }
 
 /**
- * Première occurrence visible d'une ancre.
+ * Première occurrence visible de la cible d'une étape.
  *
  * Les blocs de taux sont répétés par EPCI dans des onglets : une ancre existe en autant
  * d'exemplaires que d'EPCI, dont un seul est réellement affiché.
  */
-const resolveAnchor = (anchor: TutorialAnchor): HTMLElement | null =>
-  Array.from(document.querySelectorAll<HTMLElement>(tutorialSelector(anchor))).find(isVisible) ?? null
+const resolveTarget = (step: TutorialStep): HTMLElement | null =>
+  Array.from(document.querySelectorAll<HTMLElement>(tutorialStepSelector(step))).find(isVisible) ?? null
 
 /**
- * Pilote le mode tuto de l'étape courante.
+ * Pilote le mode tuto de l'écran courant.
+ *
+ * Le hook ne connaît pas les écrans : il reçoit les étapes à jouer. Chaque appelant va les
+ * chercher dans le registre qui le concerne (parcours de création indexé par slug, page de
+ * résultats, etc.).
  *
  * driver.js manipule le DOM hors de React : l'instance est détruite au démontage et à
  * chaque changement d'étape, faute de quoi un popover survivrait à la navigation.
@@ -38,15 +41,13 @@ const resolveAnchor = (anchor: TutorialAnchor): HTMLElement | null =>
  * piège de tabulation, focus initial. Ajouter les nôtres par-dessus les ferait entrer en
  * conflit avec les siens.
  */
-export const useTutorial = (slug: WizardStepSlug | undefined, triggerRef: RefObject<HTMLButtonElement | null>) => {
+export const useTutorial = (steps: TutorialStep[] | undefined, triggerRef: RefObject<HTMLButtonElement | null>) => {
   const driverRef = useRef<Driver | null>(null)
   const observerRef = useRef<ResizeObserver | null>(null)
   // Distingue une fermeture par l'utilisateur d'une destruction au démontage : sans ce
   // drapeau, quitter l'étape tuto ouvert ramènerait le focus sur le bouton d'aide, qui
   // survit dans le layout.
   const isTearingDownRef = useRef(false)
-
-  const steps = slug ? CREATION_TUTORIAL_CONTENT[slug] : undefined
 
   const teardown = useCallback(() => {
     isTearingDownRef.current = true
@@ -57,8 +58,9 @@ export const useTutorial = (slug: WizardStepSlug | undefined, triggerRef: RefObj
     isTearingDownRef.current = false
   }, [])
 
-  // Chaque étape est une route : on ferme le tuto de l'étape quittée.
-  useEffect(() => teardown, [slug, teardown])
+  // Chaque étape est une route : on ferme le tuto de l'étape quittée. Les registres sont
+  // des constantes de module, l'identité des étapes ne change donc qu'avec l'écran.
+  useEffect(() => teardown, [steps, teardown])
 
   const start = useCallback(() => {
     if (!steps?.length) {
@@ -69,8 +71,8 @@ export const useTutorial = (slug: WizardStepSlug | undefined, triggerRef: RefObj
     // n'ignore pas une ancre absente : il affiche un popover orphelin centré. On résout
     // donc en amont pour que la progression annoncée corresponde aux bulles montrées.
     const reachable = steps
-      .map((step) => ({ ...step, initial: resolveAnchor(step.anchor) }))
-      .filter((step): step is typeof step & { initial: HTMLElement } => Boolean(step.initial))
+      .map((step) => ({ step, initial: resolveTarget(step) }))
+      .filter((entry): entry is typeof entry & { initial: HTMLElement } => Boolean(entry.initial))
 
     if (!reachable.length) {
       return
@@ -99,11 +101,11 @@ export const useTutorial = (slug: WizardStepSlug | undefined, triggerRef: RefObj
       stagePadding: 6,
       // Le DSFR n'arrondit pas ses surfaces.
       stageRadius: 0,
-      steps: reachable.map(({ anchor, initial, title, description, side, align }) => ({
+      steps: reachable.map(({ step, initial }) => ({
         // Résolu à chaque bulle plutôt qu'une fois pour toutes : `refresh()` ne
         // re-résout pas la cible et se recalerait sur un nœud détaché.
-        element: () => resolveAnchor(anchor) ?? initial,
-        popover: { align, description, side, title },
+        element: () => resolveTarget(step) ?? initial,
+        popover: { align: step.align, description: step.description, side: step.side, title: step.title },
       })),
       onPopoverRender: (popover) => {
         popover.closeButton.setAttribute('aria-label', "Fermer l'aide")

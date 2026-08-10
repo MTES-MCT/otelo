@@ -4,6 +4,7 @@ import { AccommodationRatesService } from '~/accommodation-rates/accommodation-r
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
 import { ScenariosService } from '~/scenarios/scenarios.service'
+import { TInitSimulation } from '~/schemas/simulations/create-simulation'
 import { TCloneSimulationDto } from '~/schemas/simulations/simulation'
 import { SimulationsService } from './simulations.service'
 
@@ -11,17 +12,19 @@ describe('SimulationsService', () => {
   let service: SimulationsService
   let mockPrismaService: DeepMocked<PrismaService>
   let mockScenariosService: DeepMocked<ScenariosService>
+  let mockEpciGroupsService: DeepMocked<EpciGroupsService>
 
   beforeEach(async () => {
     mockPrismaService = createMock<PrismaService>()
     mockScenariosService = createMock<ScenariosService>()
+    mockEpciGroupsService = createMock<EpciGroupsService>()
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SimulationsService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: ScenariosService, useValue: mockScenariosService },
-        { provide: EpciGroupsService, useValue: createMock<EpciGroupsService>() },
+        { provide: EpciGroupsService, useValue: mockEpciGroupsService },
         { provide: AccommodationRatesService, useValue: createMock<AccommodationRatesService>() },
       ],
     }).compile()
@@ -163,6 +166,52 @@ describe('SimulationsService', () => {
       mockScenariosService.create = jest.fn().mockRejectedValue(new Error('Scenario creation failed'))
 
       await expect(service.clone(userId, originalId, cloneData)).rejects.toThrow('Scenario creation failed')
+    })
+  })
+
+  describe('create', () => {
+    const userId = 'user-1'
+
+    const buildInitSimulation = (overrides: Partial<TInitSimulation>): TInitSimulation =>
+      ({
+        name: 'Scénario',
+        epci: [{ code: '200040392' }],
+        scenario: {},
+        ...overrides,
+      }) as TInitSimulation
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockScenariosService.create = jest.fn().mockResolvedValue({ id: 'scenario-1' })
+      mockPrismaService.simulation.create = jest.fn().mockResolvedValue({ id: 'simulation-1' })
+    })
+
+    it('should forward worksOnPlanningDocument when creating a new group', async () => {
+      mockEpciGroupsService.create = jest.fn().mockResolvedValue({ id: 'group-1' })
+
+      await service.create(userId, buildInitSimulation({ epciGroupName: 'SCoT du Grand Périgueux', worksOnPlanningDocument: true }))
+
+      expect(mockEpciGroupsService.create).toHaveBeenCalledWith(userId, {
+        name: 'SCoT du Grand Périgueux',
+        epciCodes: ['200040392'],
+        worksOnPlanningDocument: true,
+      })
+    })
+
+    it('should mark an existing group when the user declares working on a planning document', async () => {
+      mockEpciGroupsService.hasUserAccessTo = jest.fn().mockResolvedValue(true)
+
+      await service.create(userId, buildInitSimulation({ epciGroupId: 'group-1', worksOnPlanningDocument: true }))
+
+      expect(mockEpciGroupsService.markWorksOnPlanningDocument).toHaveBeenCalledWith('group-1', userId)
+    })
+
+    it.each([[false], [null], [undefined]])('should not downgrade an existing group when the answer is %s', async (answer) => {
+      mockEpciGroupsService.hasUserAccessTo = jest.fn().mockResolvedValue(true)
+
+      await service.create(userId, buildInitSimulation({ epciGroupId: 'group-1', worksOnPlanningDocument: answer }))
+
+      expect(mockEpciGroupsService.markWorksOnPlanningDocument).not.toHaveBeenCalled()
     })
   })
 
