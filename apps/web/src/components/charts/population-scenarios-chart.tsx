@@ -8,6 +8,7 @@ import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'n
 import { FC, useEffect } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { tss } from 'tss-react'
+import { ChartDownloadButton } from '~/components/charts/chart-download-wrapper'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { PopulationScenariosCustomTooltip } from '~/components/charts/population-scenarios-custom-tooltip'
@@ -147,6 +148,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
     <>
       <PopulationScenariosSelection availableScenarios={availableScenarioKeys} />
       <DemographicSettingsSelectEpci epcis={epcis ?? queryStates.epcis} />
+      <ChartDownloadButton />
 
       <div className={classes.chartContainer}>
         <ResponsiveContainer width="100%" height="100%">

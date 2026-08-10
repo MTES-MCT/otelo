@@ -86,10 +86,10 @@ export const DemographicSettingsFormWrapper = ({
 
   return (
     <DemographicSettingsHeader>
-      <ChartDownloadWrapper fileName="scenarios-population">
+      <ChartDownloadWrapper fileName="scenarios-population" withFloatingButton={false}>
         <PopulationScenariosChart demographicEvolution={populationEvolution} epcis={epcis} />
       </ChartDownloadWrapper>
-      <ChartDownloadWrapper fileName="scenarios-omphale">
+      <ChartDownloadWrapper fileName="scenarios-omphale" withFloatingButton={false}>
         <OmphaleScenariosChart demographicEvolution={omphaleEvolution} scenarioId={scenarioId} onChange={handleChange} epcis={epcis} />
       </ChartDownloadWrapper>
     </DemographicSettingsHeader>

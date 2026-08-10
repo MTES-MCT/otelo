@@ -12,6 +12,7 @@ type EpciGroupNameInputProps = {
 export const EpciGroupNameInput: FC<EpciGroupNameInputProps> = ({ value }) => {
   const [_, setQueryStates] = useQueryStates({
     epciGroupName: parseAsString,
+    epciGroupNameAuto: parseAsString,
   })
   const { data: groups } = useEpciGroups()
 
@@ -25,8 +26,9 @@ export const EpciGroupNameInput: FC<EpciGroupNameInputProps> = ({ value }) => {
       stateRelatedMessage={isGroupNameTaken ? 'Ce nom est déjà utilisé par un autre groupe' : undefined}
       nativeInputProps={{
         value,
+        // Seul point de bascule auto → manuel : dès que l'utilisateur tape, le préremplissage ne réécrit plus.
         onChange: (e) => {
-          setQueryStates({ epciGroupName: e.target.value })
+          setQueryStates({ epciGroupName: e.target.value, epciGroupNameAuto: null })
         },
         placeholder: 'Ex: Métropole du Grand Paris Est',
       }}

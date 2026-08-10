@@ -1,13 +1,13 @@
 import type { WizardStepSlug } from '../settings/wizard-steps'
 
 /**
- * Contenu du mode tuto du parcours de création, indexé par étape.
+ * Contenu des modes tuto, un registre par écran couvert.
  *
  * Les textes sont dérivés des contenus déjà validés du produit (guide, FAQ, textes en page)
  * ou des règles lues dans le code.
  *
- * La modification réutilise les mêmes slugs mais d'autres composants : son contenu devra
- * vivre dans son propre registre, d'où le préfixe `CREATION_`.
+ * La modification réutilise les mêmes slugs que la création mais d'autres composants : son
+ * contenu devra vivre dans son propre registre, d'où le préfixe `CREATION_`.
  */
 
 /**
@@ -37,19 +37,41 @@ export type TutorialAnchor =
   // taux-restructuration-disparition
   | 'restructuration-rate'
   | 'disappearance-rate'
+  // page de résultats
+  | 'results-scenarios'
+  | 'results-settings'
+  | 'results-total-need'
+  | 'results-needs-split'
+  | 'results-existing-parc'
+  | 'results-synthesis-chart'
+  | 'results-annual-needs'
+  | 'results-parc-evolution'
+  | 'results-epcis-details'
+  | 'results-bad-housing'
 
 /** À étaler sur l'élément à mettre en avant : `<div {...tutorialAnchor('stepper')}>`. */
 export const tutorialAnchor = (anchor: TutorialAnchor) => ({ 'data-tuto': anchor })
 
 export const tutorialSelector = (anchor: TutorialAnchor) => `[data-tuto="${anchor}"]`
 
-export type TutorialStep = {
-  anchor: TutorialAnchor
+/**
+ * Une étape vise soit une de nos ancres, soit — faute de mieux — un sélecteur brut.
+ * Le sélecteur est l'échappatoire pour le balisage que nous ne produisons pas : les
+ * composants DSFR n'acceptent que les props qu'ils déclarent et refusent un attribut
+ * arbitraire. À n'utiliser que dans ce cas : un sélecteur de classe n'est pas protégé
+ * contre une montée de version du DSFR.
+ */
+type TutorialTarget = { anchor: TutorialAnchor; selector?: never } | { anchor?: never; selector: string }
+
+export type TutorialStep = TutorialTarget & {
   title: string
   description: string
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
 }
+
+export const tutorialStepSelector = (step: TutorialStep): string =>
+  step.anchor === undefined ? step.selector : tutorialSelector(step.anchor)
 
 export const CREATION_TUTORIAL_CONTENT: Partial<Record<WizardStepSlug, TutorialStep[]>> = {
   'choix-du-territoire': [
@@ -230,3 +252,112 @@ export const CREATION_TUTORIAL_CONTENT: Partial<Record<WizardStepSlug, TutorialS
     },
   ],
 }
+
+/**
+ * Contenu du mode tuto de la page de résultats.
+ *
+ * Liste unique et non indexée, contrairement à la création : la page n'a pas d'étapes mais
+ * des onglets — « Synthèse des besoins » puis un onglet par EPCI — dont un seul est monté
+ * à la fois. Les ancres absentes de l'onglet courant sont filtrées au démarrage, si bien
+ * que l'ordre ci-dessous, calqué sur l'ordre du DOM, produit le bon parcours dans les deux
+ * cas sans qu'on ait à tenir deux registres.
+ */
+export const RESULTS_TUTORIAL_CONTENT: TutorialStep[] = [
+  {
+    anchor: 'results-scenarios',
+    title: 'Comparer plusieurs scénarios',
+    description:
+      "Les scénarios élaborés sur ce même territoire s'affichent ici côte à côte. Basculer de l'un à l'autre conserve l'onglet et la vue en cours : c'est la façon la plus directe de mesurer ce que change une hypothèse.",
+    side: 'bottom',
+    align: 'start',
+  },
+  {
+    // Le DSFR ne laisse pas poser d'attribut sur la liste d'onglets : on la vise par sa classe.
+    selector: '.fr-tabs__list',
+    title: 'Deux échelles de lecture',
+    description:
+      "L'onglet « Synthèse des besoins » agrège l'ensemble du territoire d'étude. Les onglets suivants détaillent chaque EPCI : c'est là que se lisent les écarts internes au territoire, qu'un total masque toujours.",
+    side: 'bottom',
+    align: 'start',
+  },
+  {
+    anchor: 'results-settings',
+    title: 'Les hypothèses derrière ces chiffres',
+    description:
+      '« Paramétrage » déplie les hypothèses retenues pour ce scénario : projection démographique, taux cibles de vacance et de résidences secondaires, renouvellement urbain. Aucun résultat de cette page ne se lit indépendamment de ces choix.',
+    side: 'bottom',
+    align: 'start',
+  },
+  {
+    anchor: 'results-total-need',
+    title: 'Le besoin en logements neufs',
+    description:
+      "C'est le nombre de logements à construire d'ici l'horizon de projection. Il additionne deux composantes : le besoin lié aux évolutions démographiques et à celles du parc, et la part des situations de mal-logement qui appelle une construction neuve.",
+    side: 'top',
+    align: 'start',
+  },
+  {
+    anchor: 'results-total-need',
+    title: 'Un besoin, pas un objectif',
+    description:
+      "Otelo estime un besoin sous les hypothèses que vous avez retenues. Ce n'est ni une prévision, ni un objectif de production : la traduction en objectifs relève du débat local et des documents de planification.",
+    side: 'top',
+    align: 'start',
+  },
+  {
+    anchor: 'results-needs-split',
+    title: 'À quels besoins répondent ces logements ?',
+    description:
+      "La répartition entre démographie et mal-logement dit à quoi sert la construction neuve sur ce territoire. Un poids fort du mal-logement signale un besoin déjà constitué aujourd'hui, indépendant de l'évolution du nombre de ménages.",
+    side: 'top',
+    align: 'start',
+  },
+  {
+    anchor: 'results-existing-parc',
+    title: 'Ce que le parc existant absorbe',
+    description:
+      'Ces volumes sont déjà déduits du besoin affiché plus haut : ils traduisent vos taux cibles. Remobiliser des logements vacants de longue durée, ramener des résidences secondaires vers la résidence principale, créer des logements par restructuration du parc — autant de logements neufs qui ne seront pas à construire.',
+    side: 'top',
+    align: 'start',
+  },
+  {
+    anchor: 'results-synthesis-chart',
+    title: 'Le rythme, EPCI par EPCI',
+    description:
+      "Le besoin réparti année par année, superposé aux permis autorisés et aux logements commencés issus de Sit@del2. L'écart entre les deux mesure la distance entre le besoin estimé et la production récemment observée.",
+    side: 'top',
+    align: 'start',
+  },
+  {
+    anchor: 'results-annual-needs',
+    title: 'Le besoin annualisé',
+    description:
+      "Le besoin total ramené à un rythme annuel, confronté aux logements autorisés et commencés des dernières années d'après Sit@del2. C'est le format le plus directement comparable aux objectifs d'un document de planification.",
+    side: 'top',
+    align: 'start',
+  },
+  {
+    anchor: 'results-parc-evolution',
+    title: "D'où vient le besoin",
+    description:
+      'Le graphique décompose le besoin lié au flux : évolution du nombre de ménages, renouvellement urbain, résidences secondaires, vacance. Les postes négatifs sont ceux que le parc existant prend en charge.',
+    side: 'top',
+    align: 'start',
+  },
+  {
+    anchor: 'results-epcis-details',
+    title: 'Le détail chiffré par EPCI',
+    description:
+      "Le même calcul, ligne à ligne pour chaque EPCI du territoire. La dernière colonne rappelle la période retenue : elle peut s'arrêter avant l'horizon de projection si l'EPCI atteint son pic de ménages plus tôt.",
+    side: 'top',
+    align: 'start',
+  },
+  {
+    anchor: 'results-bad-housing',
+    title: 'Les situations de mal-logement',
+    description:
+      "La ventilation du besoin en stock par type de situation : personnes hébergées chez un tiers, hors logement, ménages au taux d'effort excessif, logement trop petit ou précaire. « Affiner le mal-logement » permet d'en revoir l'horizon de résorption et le périmètre.",
+    side: 'top',
+    align: 'start',
+  },
+]

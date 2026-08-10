@@ -1,6 +1,7 @@
 import { AccommodationContructionEvolutionChart } from '~/components/charts/accommodation-construction-evolution-chart'
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import { SimulationAnnualsNeedsDropdownSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs-dropdown-summary'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
 
 type SimulationAnnualsNeedsSummaryProps = {
@@ -24,7 +25,7 @@ export const SimulationAnnualsNeedsSummary = ({
     return null
   }
   return (
-    <div className="fr-background-default--grey shadow">
+    <div className="fr-background-default--grey shadow" {...tutorialAnchor('results-annual-needs')}>
       <div className="fr-py-8w fr-px-5w">
         <ChartDownloadWrapper fileName="besoins-annualises">
           <AccommodationContructionEvolutionChart
