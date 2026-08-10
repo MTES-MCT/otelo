@@ -14,6 +14,7 @@ import { SimulationSecondaryVacantsAccommodationsSummary } from '~/components/si
 import { SimulationEpcisDetails } from '~/components/simulations/results/simulation-epcis-details'
 import { SimulationResultsTabs } from '~/components/simulations/results/simulation-results-tabs'
 import { SimulationNeedsSummary } from '~/components/simulations/results/summary/simulation-needs-summary'
+import { ResultsTutorialButton } from '~/components/simulations/tutorial/results-tutorial-button'
 import { TEpciCalculationResult, TEpciTotalCalculationResult, TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
 import type { SimulationPageProps } from '~/types/simulation-page-props'
@@ -174,7 +175,10 @@ export default async function Resultats({ params }: SimulationPageProps) {
   return (
     <>
       <div className="fr-container fr-direction-column fr-flex fr-flex-gap-8v">
-        <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
+        <div className="fr-flex fr-flex-gap-4v fr-align-items-center fr-justify-content-space-between">
+          <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
+          <ResultsTutorialButton />
+        </div>
         <div className="fr-col-md-12 fr-flex fr-direction-column fr-direction-sm-row fr-align-items-center fr-mb-4w">
           <div className="fr-col-md-8 fr-mb-2w fr-mb-md-0">
             <SimulationHeaderSegmentedControls segments={segments} activeId={id} />

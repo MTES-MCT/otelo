@@ -1,0 +1,89 @@
+/* Colonne d'appoint, volontairement étroite : elle accompagne le contenu sans lui disputer la place. */
+.aside {
+  flex: 0 0 18rem;
+  max-width: 18rem;
+}
+
+/* Repris de app/(unauthenticated)/(generic-pages)/@summary/summary.module.css */
+.sticky {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Sous md les fr-col-md-* ne s'appliquent plus : la colonne passe sous le contenu, pleine largeur. */
+@media (max-width: 47.99em) {
+  .aside {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .sticky {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+.card {
+  background-color: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  border-top: 4px solid var(--border-plain-blue-france);
+  padding: 1rem 1.125rem;
+}
+
+.cardTitle {
+  color: var(--text-mention-grey);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.questionList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Les libellés sont longs et la colonne étroite : on retire l'indentation DSFR des listes. */
+.questionList > li {
+  padding: 0;
+}
+
+.questionList > li::before {
+  content: none;
+}
+
+.headline {
+  color: var(--text-active-blue-france);
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+/* Le libellé peut se replier ; la valeur, jamais. */
+.row > :last-child {
+  white-space: nowrap;
+}
+
+.deduction {
+  color: var(--text-default-success);
+}
+
+.zeroDeduction {
+  color: var(--text-mention-grey);
+}
+
+.stale {
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}

@@ -2,6 +2,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import { SimulationBadHousingDataWrapper } from '~/components/simulations/results/bad-housing/simulation-bad-housing-data-wrapper'
 import { SimulationBadHousingDescription } from '~/components/simulations/results/bad-housing/simulation-bad-housing-header'
 import { SimulationChartTableSwitch } from '~/components/simulations/results/simulation-chart-table-switch'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 
 type SimulationAnnualsNeedsProps = {
   simulationId: string
@@ -31,7 +32,7 @@ export const SimulationBadHousing = ({ simulationId, millesime, horizon, results
   const maxValueName = chartData.find((item) => item.value === maxValue)?.name || ''
 
   return (
-    <div className="fr-background-default--grey shadow" id="mal-logement">
+    <div className="fr-background-default--grey shadow" id="mal-logement" {...tutorialAnchor('results-bad-housing')}>
       <div className="fr-py-8w fr-px-5w">
         <div id="bad-housing-evolution" className="fr-flex fr-justify-content-space-between fr-align-items-center">
           <h3 className="fr-h4 fr-mb-0">Situations de mal logement</h3>

@@ -32,13 +32,25 @@ export class EpciGroupsService {
     })
   }
 
+  /**
+   * Enregistre que l'utilisateur élabore un document d'urbanisme sur ce territoire.
+   * Sens unique : une réponse négative ultérieure ne doit pas effacer un « oui » déjà donné.
+   */
+  async markWorksOnPlanningDocument(id: string, userId: string): Promise<void> {
+    await this.prisma.epciGroup.updateMany({
+      where: { id, userId, deleted: null },
+      data: { worksOnPlanningDocument: true },
+    })
+  }
+
   async create(userId: string, data: TCreateEpciGroupDto): Promise<TEpciGroupWithEpcis> {
-    const { name, epciCodes } = data
+    const { name, epciCodes, worksOnPlanningDocument } = data
 
     return this.prisma.epciGroup.create({
       data: {
         name,
         userId,
+        worksOnPlanningDocument: worksOnPlanningDocument ?? null,
         epciGroupEpcis: {
           create: epciCodes.map((epciCode) => ({
             epciCode,

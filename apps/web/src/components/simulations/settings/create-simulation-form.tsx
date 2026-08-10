@@ -13,6 +13,7 @@ import { CreateValidationRestructurationDisparitionRates } from '~/components/si
 import { ValidationSettingsInputEpci } from '~/components/simulations/validation-settings/validation-settings-input-epci'
 import { useCreateSimulation } from '~/hooks/use-create-simulation'
 import { TInitSimulationDto, ZInitSimulationDto } from '~/schemas/simulation'
+import { parseUrbanismeDocAnswer } from '~/utils/epci-group-name'
 import { getOmphaleLabel } from '~/utils/omphale-label'
 import { clampProjectionYear, DEFAULT_PROJECTION_YEAR } from '~/utils/projection'
 
@@ -33,6 +34,7 @@ export const CreateSimulationForm: FC = () => {
     region: parseAsString,
     epciGroupName: parseAsString,
     epciGroupId: parseAsString,
+    urbanismeDoc: parseAsString,
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
     demographicEvolutionOmphaleCustomIds: parseAsArrayOf(parseAsString).withDefault([]),
   })
@@ -57,6 +59,7 @@ export const CreateSimulationForm: FC = () => {
       epci: selectedEpcis.map((epciCode) => ({ code: epciCode })),
       epciGroupId: queryStates.epciGroupId,
       epciGroupName: queryStates.epciGroupName,
+      worksOnPlanningDocument: parseUrbanismeDocAnswer(queryStates.urbanismeDoc),
       scenario: {
         b2_scenario: queryStates.omphale as string,
         epcis: selectedEpcis.reduce(

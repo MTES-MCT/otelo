@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { dsfrHighlightColors } from '~/components/charts/data-visualisation/colors'
 import { SimulationResultPresentationHighlight } from '~/components/simulations/results/simulation-result-presentation-highlight'
 import { ColoredEpciData, EpciData, SimulationNeedsSummaryMap } from '~/components/simulations/results/summary/simulation-needs-summary-map'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { formatNumber } from '~/utils/format-numbers'
 import styles from './simulation-needs-summary.module.css'
 
@@ -68,7 +69,10 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis 
 
   return (
     <>
-      <div className="fr-background-default--grey shadow fr-flex fr-justify-content-space-between fr-align-items-center">
+      <div
+        className="fr-background-default--grey shadow fr-flex fr-justify-content-space-between fr-align-items-center"
+        {...tutorialAnchor('results-total-need')}
+      >
         <div className="fr-col-md-6 fr-py-8w fr-px-5w">
           {hasNewHousingNeeds && (
             <div className="fr-flex fr-direction-column">

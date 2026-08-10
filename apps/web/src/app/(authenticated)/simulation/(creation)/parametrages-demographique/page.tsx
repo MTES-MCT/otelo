@@ -55,10 +55,10 @@ export default async function DemographicSettingsPage({ searchParams }: PageProp
       )}
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <DemographicSettingsHeader>
-          <ChartDownloadWrapper fileName="scenarios-population">
+          <ChartDownloadWrapper fileName="scenarios-population" withFloatingButton={false}>
             <PopulationScenariosChart demographicEvolution={populationEvolution} />
           </ChartDownloadWrapper>
-          <ChartDownloadWrapper fileName="scenarios-omphale">
+          <ChartDownloadWrapper fileName="scenarios-omphale" withFloatingButton={false}>
             <OmphaleScenariosChart demographicEvolution={omphaleEvolution} />
           </ChartDownloadWrapper>
         </DemographicSettingsHeader>
