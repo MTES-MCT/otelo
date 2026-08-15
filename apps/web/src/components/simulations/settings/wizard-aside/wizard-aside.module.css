@@ -64,6 +64,48 @@
   color: var(--text-active-blue-france);
 }
 
+.subtitle {
+  color: var(--text-mention-grey);
+}
+
+/* Le volume du bloc est aligné à droite comme les termes qu'il totalise. */
+.sectionTitle {
+  border-bottom: 1px solid var(--border-default-grey);
+  padding-bottom: 0.25rem;
+}
+
+/*
+ * Les trois règles suivantes doivent battre `.questionList > li { padding: 0 }` : d'où le sélecteur
+ * descendant, à la même spécificité d'élément mais avec une classe de plus.
+ */
+
+/* Les termes sont indentés sous leur bloc : la colonne est étroite, une flèche suffit. */
+.questionList > .termRow {
+  padding-left: 0.75rem;
+}
+
+.termRow > :first-child::before {
+  content: "⇒ ";
+  color: var(--text-mention-grey);
+}
+
+/* Terme piloté par l'étape en cours : signalé, jamais seul porteur de l'information (cf. fr-sr-only). */
+.questionList > .editing {
+  background-color: var(--background-alt-blue-france);
+  color: var(--text-label-blue-france);
+  margin: 0 -0.375rem;
+  padding: 0.125rem 0.375rem 0.125rem 1.125rem;
+}
+
+.questionList > .total {
+  border-top: 1px solid var(--border-default-grey);
+  padding-top: 0.375rem;
+}
+
+.footnote {
+  color: var(--text-mention-grey);
+}
+
 .row {
   display: flex;
   gap: 0.5rem;
@@ -73,14 +115,6 @@
 /* Le libellé peut se replier ; la valeur, jamais. */
 .row > :last-child {
   white-space: nowrap;
-}
-
-.deduction {
-  color: var(--text-default-success);
-}
-
-.zeroDeduction {
-  color: var(--text-mention-grey);
 }
 
 .stale {

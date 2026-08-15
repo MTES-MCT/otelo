@@ -1,6 +1,6 @@
 'use client'
 
-import { parseAsInteger, useQueryStates } from 'nuqs'
+import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
 import { useCreationPreviewPayload } from '~/hooks/use-creation-preview-payload'
 import { useSimulationPreview } from '~/hooks/use-simulation-preview'
@@ -8,7 +8,7 @@ import { buildEstimationBreakdown } from '~/utils/estimation-breakdown'
 import { EstimationCard } from './estimation-card'
 
 export const CreationEstimationCard: FC = () => {
-  const [{ projection }] = useQueryStates({ projection: parseAsInteger })
+  const [{ projection, epciGroupName }] = useQueryStates({ projection: parseAsInteger, epciGroupName: parseAsString })
   const { payload, enabled } = useCreationPreviewPayload()
   const { data, isFetching, error } = useSimulationPreview(payload, { enabled })
 
@@ -18,5 +18,12 @@ export const CreationEstimationCard: FC = () => {
     return null
   }
 
-  return <EstimationCard breakdown={buildEstimationBreakdown(data)} projection={projection} isStale={isFetching} />
+  return (
+    <EstimationCard
+      breakdown={buildEstimationBreakdown(data)}
+      projection={projection}
+      territoryLabel={epciGroupName}
+      isStale={isFetching}
+    />
+  )
 }

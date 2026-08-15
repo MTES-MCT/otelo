@@ -1,3 +1,4 @@
+import { DocurbaEpciData } from '~/hooks/use-docurba-epcis'
 import { TPlanningDocumentType } from '~/schemas/epci-group'
 
 /** Valeurs du paramètre d'URL `urbanismeDocType`, posé quand l'utilisateur répond « oui ». */
@@ -30,8 +31,10 @@ type BuildEpciGroupNameArgs = {
   bassinName?: string | null
   worksOnUrbanismeDoc: boolean
   docType: UrbanismeDocType | null
-  /** Document saisi par l'utilisateur. */
+  /** Document choisi dans la liste Docurba, ou saisi librement. */
   docName?: string | null
+  /** Données Docurba de l'EPCI de base uniquement : sur un bassin, les autres EPCI peuvent porter d'autres documents. */
+  docurba: Pick<DocurbaEpciData, 'scotName' | 'documentType'> | null | undefined
 }
 
 /** Traduit le paramètre d'URL `urbanismeDoc` en flag envoyé à l'API. `null` = question non posée. */
@@ -54,14 +57,17 @@ export const buildEpciGroupName = ({
   worksOnUrbanismeDoc,
   docType,
   docName,
+  docurba,
 }: BuildEpciGroupNameArgs): string => {
   if (!worksOnUrbanismeDoc) return territoryLabel
 
   if (docType === 'plh-plui') return docName?.trim() ?? ''
 
   if (docType === 'scot') {
-    // Sans bassin d'habitat (sélection personnalisée), on retombe sur le libellé du territoire.
-    return bassinName ? `SCoT ${bassinName}` : `SCoT ${territoryLabel}`
+    // Sans bassin d'habitat (sélection personnalisée), on retombe sur le SCoT trouvé sur Docurba.
+    if (bassinName) return `SCoT ${bassinName}`
+    if (docurba?.scotName) return docurba.scotName
+    return `SCoT ${territoryLabel}`
   }
 
   return ''

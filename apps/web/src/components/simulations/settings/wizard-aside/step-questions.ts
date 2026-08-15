@@ -28,6 +28,7 @@ export const STEP_QUESTIONS: Partial<Record<WizardStepSlug, StepQuestion[]>> = {
     { label: '« Population basse », est-ce une perte d’habitants ?', anchor: 'projections-population' },
     { label: 'Qu’est-ce que la décohabitation ?', anchor: 'projections-menages' },
     { label: 'Comment ces projections sont-elles élaborées ?', anchor: 'elaboration-projections' },
+    { label: 'Où paramétrer la résorption du mal-logement ?', anchor: 'situations-mal-logement' },
   ],
 
   'taux-cibles-logements-vacants': [
