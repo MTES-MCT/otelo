@@ -19,9 +19,10 @@ import { UrbanismeDocQuestion } from './urbanisme-doc-question'
 
 type CustomSelectionProps = {
   bassinEpcis: TEpci[]
+  hasUrbanismeDocError?: boolean
 }
 
-export const CustomSelection = ({ bassinEpcis }: CustomSelectionProps) => {
+export const CustomSelection = ({ bassinEpcis, hasUrbanismeDocError }: CustomSelectionProps) => {
   const router = useRouter()
   const [{ baseEpci, epcis, epciGroupName }, setQueryStates] = useQueryStates({
     baseEpci: parseAsString,
@@ -44,7 +45,7 @@ export const CustomSelection = ({ bassinEpcis }: CustomSelectionProps) => {
 
   const baseEpciData = bassinEpcis.find((epci) => epci.code === baseEpci) ?? selectedEpcis?.find((epci) => epci.code === baseEpci)
 
-  // Pas de préfixe « Bassin » ici : la sélection est libre, même si elle recouvre tout un bassin d'habitat.
+  // Pas de nom de bassin ici : la sélection est libre, même si elle recouvre tout un bassin d'habitat.
   useEpciGroupNamePrefill({ territoryLabel: baseEpciData ? buildTerritoryLabel(baseEpciData.name) : '' })
 
   if (isLoadingEpcis) {
@@ -90,7 +91,7 @@ export const CustomSelection = ({ bassinEpcis }: CustomSelectionProps) => {
 
           {isEditing && <ContiguousEpcisCheckboxes epcis={bassinEpcis} />}
 
-          <UrbanismeDocQuestion />
+          <UrbanismeDocQuestion hasError={hasUrbanismeDocError} />
 
           <hr className={fr.cx('fr-mt-3w')} />
           <EpciGroupNameInput value={epciGroupName || ''} />

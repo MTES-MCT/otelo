@@ -1,5 +1,6 @@
 import { ZCommonDateFields, ZEpci } from '@shared'
 import { z } from 'zod'
+import { ZPlanningDocumentType } from '~/schemas/epci-group'
 import { ZResults } from '~/schemas/results'
 import { ZEpciScenario, ZScenario } from '~/schemas/scenario'
 
@@ -84,6 +85,8 @@ export const ZInitSimulationDto = z.object({
   epciGroupName: z.string().optional().nullable(),
   epciGroupId: z.string().optional().nullable(),
   worksOnPlanningDocument: z.boolean().optional().nullable(),
+  planningDocumentType: ZPlanningDocumentType.optional().nullable(),
+  planningDocumentName: z.string().optional().nullable(),
 })
 
 export type TInitSimulationDto = z.infer<typeof ZInitSimulationDto>

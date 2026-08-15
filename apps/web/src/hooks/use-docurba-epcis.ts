@@ -1,11 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
 
+/** Miroir de `DocurbaPlanningDocument` (apps/api/src/docurba/docurba.service.ts). */
+export type DocurbaPlanningDocument = {
+  documentType: string
+  carrierName: string
+}
+
 export type DocurbaEpciData = {
   communeCode: string
   scotName: string | null
   documentType: string | null
   approvalYear: string | null
   procedureInProgress: { type: string; documentType: string } | null
+  planningDocuments: DocurbaPlanningDocument[]
 }
 
 // Le service NestJS renvoie `null` au bout de 3s si son cache est froid, et poursuit le calcul
@@ -32,4 +39,19 @@ export const useDocurbaEpcis = (codes: string[]) => {
     placeholderData: (previousData) => previousData,
     staleTime: 60 * 60 * 1000,
   })
+}
+
+/** Libellé proposé à l'utilisateur, conservé tel quel comme nom de groupe. */
+export const formatPlanningDocumentLabel = ({ documentType, carrierName }: DocurbaPlanningDocument): string =>
+  `${documentType} — ${carrierName}`
+
+/** Documents de tous les EPCI du territoire, dédoublonnés et triés pour un ordre stable. */
+export const collectPlanningDocuments = (docurbaByEpci: Record<string, DocurbaEpciData | null> | undefined): string[] => {
+  const labels = new Set<string>()
+  for (const data of Object.values(docurbaByEpci ?? {})) {
+    for (const document of data?.planningDocuments ?? []) {
+      labels.add(formatPlanningDocumentLabel(document))
+    }
+  }
+  return [...labels].sort((a, b) => a.localeCompare(b, 'fr'))
 }

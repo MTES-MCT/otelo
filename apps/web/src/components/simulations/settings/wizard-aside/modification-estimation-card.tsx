@@ -7,7 +7,12 @@ import { useSimulationPreview } from '~/hooks/use-simulation-preview'
 import { buildEstimationBreakdown } from '~/utils/estimation-breakdown'
 import { EstimationCard } from './estimation-card'
 
-export const ModificationEstimationCard: FC = () => {
+type ModificationEstimationCardProps = {
+  /** Libellé du territoire, calculé côté serveur : le contexte de paramétrage ne porte que les taux. */
+  territoryLabel?: string | null
+}
+
+export const ModificationEstimationCard: FC<ModificationEstimationCardProps> = ({ territoryLabel }) => {
   const { simulationSettings } = useSimulationSettings()
   const payload = useModifyPreviewPayload()
   const { data, isFetching, error } = useSimulationPreview(payload)
@@ -17,6 +22,11 @@ export const ModificationEstimationCard: FC = () => {
   }
 
   return (
-    <EstimationCard breakdown={buildEstimationBreakdown(data)} projection={simulationSettings.projection ?? null} isStale={isFetching} />
+    <EstimationCard
+      breakdown={buildEstimationBreakdown(data)}
+      projection={simulationSettings.projection ?? null}
+      territoryLabel={territoryLabel}
+      isStale={isFetching}
+    />
   )
 }
