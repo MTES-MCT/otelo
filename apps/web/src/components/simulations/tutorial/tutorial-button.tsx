@@ -17,5 +17,7 @@ export const TutorialButton: FC = () => {
   const pathname = usePathname()
   const slug = getFlowFromPathname(pathname) === 'creation' ? getSlugFromPathname(pathname) : undefined
 
-  return <TutorialTrigger steps={slug ? CREATION_TUTORIAL_CONTENT[slug] : undefined} label="Besoin d'aide sur cette étape" />
+  return (
+    <TutorialTrigger label="Besoin d'aide sur cette étape" steps={slug ? CREATION_TUTORIAL_CONTENT[slug] : undefined} trackingName={slug} />
+  )
 }
