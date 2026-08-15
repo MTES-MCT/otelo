@@ -16,9 +16,10 @@ import { UrbanismeDocQuestion } from './urbanisme-doc-question'
 
 type BassinHabitatSelectionProps = {
   bassinEpcis: TEpci[]
+  hasUrbanismeDocError?: boolean
 }
 
-export const BassinHabitatSelection = ({ bassinEpcis }: BassinHabitatSelectionProps) => {
+export const BassinHabitatSelection = ({ bassinEpcis, hasUrbanismeDocError }: BassinHabitatSelectionProps) => {
   const router = useRouter()
   const [{ baseEpci, epcis, epciGroupName }, setQueryStates] = useQueryStates({
     baseEpci: parseAsString,
@@ -51,6 +52,7 @@ export const BassinHabitatSelection = ({ bassinEpcis }: BassinHabitatSelectionPr
   const baseEpciData = bassinEpcis.find((epci) => epci.code === baseEpci) ?? selectedEpcis?.find((epci) => epci.code === baseEpci)
 
   useEpciGroupNamePrefill({
+    bassinName: baseEpciData?.bassinName,
     territoryLabel: baseEpciData ? buildTerritoryLabel(baseEpciData.name, baseEpciData.bassinName) : '',
   })
 
@@ -88,7 +90,7 @@ export const BassinHabitatSelection = ({ bassinEpcis }: BassinHabitatSelectionPr
             </ul>
           </div>
 
-          <UrbanismeDocQuestion />
+          <UrbanismeDocQuestion hasError={hasUrbanismeDocError} />
 
           <hr className={fr.cx('fr-mt-3w')} />
           <EpciGroupNameInput value={epciGroupName || ''} />

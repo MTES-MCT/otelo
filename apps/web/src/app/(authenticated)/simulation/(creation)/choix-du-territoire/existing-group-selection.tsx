@@ -13,6 +13,8 @@ export const ExistingGroupSelection = () => {
     epciGroupId: parseAsString,
     epciChart: parseAsString,
     urbanismeDoc: parseAsString,
+    urbanismeDocType: parseAsString,
+    urbanismeDocName: parseAsString,
   })
 
   return (
@@ -27,6 +29,8 @@ export const ExistingGroupSelection = () => {
             epciGroupName: null,
             epcis: [],
             urbanismeDoc: null,
+            urbanismeDocName: null,
+            urbanismeDocType: null,
           })
         }}
       />

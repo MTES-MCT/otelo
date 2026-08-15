@@ -186,24 +186,45 @@ describe('SimulationsService', () => {
       mockPrismaService.simulation.create = jest.fn().mockResolvedValue({ id: 'simulation-1' })
     })
 
-    it('should forward worksOnPlanningDocument when creating a new group', async () => {
+    it('should forward the planning document when creating a new group', async () => {
       mockEpciGroupsService.create = jest.fn().mockResolvedValue({ id: 'group-1' })
 
-      await service.create(userId, buildInitSimulation({ epciGroupName: 'SCoT du Grand Périgueux', worksOnPlanningDocument: true }))
+      await service.create(
+        userId,
+        buildInitSimulation({
+          epciGroupName: 'SCoT du Grand Périgueux',
+          worksOnPlanningDocument: true,
+          planningDocumentType: 'SCOT',
+          planningDocumentName: null,
+        }),
+      )
 
       expect(mockEpciGroupsService.create).toHaveBeenCalledWith(userId, {
         name: 'SCoT du Grand Périgueux',
         epciCodes: ['200040392'],
         worksOnPlanningDocument: true,
+        planningDocumentType: 'SCOT',
+        planningDocumentName: null,
       })
     })
 
-    it('should mark an existing group when the user declares working on a planning document', async () => {
+    it('should mark an existing group with the document the user declared', async () => {
       mockEpciGroupsService.hasUserAccessTo = jest.fn().mockResolvedValue(true)
 
-      await service.create(userId, buildInitSimulation({ epciGroupId: 'group-1', worksOnPlanningDocument: true }))
+      await service.create(
+        userId,
+        buildInitSimulation({
+          epciGroupId: 'group-1',
+          worksOnPlanningDocument: true,
+          planningDocumentType: 'PLH_PLUI',
+          planningDocumentName: 'PLUiH — CA Seine-Eure',
+        }),
+      )
 
-      expect(mockEpciGroupsService.markWorksOnPlanningDocument).toHaveBeenCalledWith('group-1', userId)
+      expect(mockEpciGroupsService.markWorksOnPlanningDocument).toHaveBeenCalledWith('group-1', userId, {
+        planningDocumentType: 'PLH_PLUI',
+        planningDocumentName: 'PLUiH — CA Seine-Eure',
+      })
     })
 
     it.each([[false], [null], [undefined]])('should not downgrade an existing group when the answer is %s', async (answer) => {
