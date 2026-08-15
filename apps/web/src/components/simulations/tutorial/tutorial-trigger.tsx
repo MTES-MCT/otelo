@@ -9,6 +9,8 @@ type TutorialTriggerProps = {
   /** Étapes de l'écran courant, ou `undefined` si l'écran n'est pas couvert par le tuto. */
   steps: TutorialStep[] | undefined
   label: string
+  /** Identifiant de l'écran, remonté avec les événements d'ouverture et de fin. */
+  trackingName?: string
 }
 
 /**
@@ -17,9 +19,9 @@ type TutorialTriggerProps = {
  * Ne rend rien si aucune étape n'est fournie : un bouton d'aide qui n'ouvre rien vaut moins
  * que pas de bouton du tout.
  */
-export const TutorialTrigger: FC<TutorialTriggerProps> = ({ steps, label }) => {
+export const TutorialTrigger: FC<TutorialTriggerProps> = ({ steps, label, trackingName }) => {
   const triggerRef = useRef<HTMLButtonElement>(null)
-  const { hasTutorial, start } = useTutorial(steps, triggerRef)
+  const { hasTutorial, start } = useTutorial(steps, triggerRef, trackingName)
 
   if (!hasTutorial) {
     return null

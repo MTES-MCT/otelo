@@ -6,6 +6,7 @@ import { SimulationFormRatesProviderContextWrapper } from '~/components/simulati
 import { ModificationEstimationCard } from '~/components/simulations/settings/wizard-aside/modification-estimation-card'
 import { WizardAside } from '~/components/simulations/settings/wizard-aside/wizard-aside'
 import wizardLayout from '~/components/simulations/settings/wizard-aside/wizard-layout.module.css'
+import { WizardStepTracker } from '~/components/simulations/settings/wizard-step-tracker'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
 import type { SimulationLayoutProps } from '~/types/simulation-page-props'
 
@@ -32,6 +33,7 @@ export default async function ModifySimulationLayout({ children, params }: Simul
 
   return (
     <div className={wizardLayout.container}>
+      <WizardStepTracker />
       <SimulationSettingsFormContextWrapper peakYears={peakYears}>
         <SimulationFormRatesProviderContextWrapper epcis={epcis}>
           <div className="fr-flex fr-flex-wrap fr-flex-gap-6v">
