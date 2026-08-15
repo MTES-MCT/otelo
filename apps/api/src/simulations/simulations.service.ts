@@ -133,7 +133,10 @@ export class SimulationsService {
       }
       // Le groupe existe déjà : on ne peut qu'ajouter l'information, jamais la retirer.
       if (data.worksOnPlanningDocument === true) {
-        await this.epciGroupsService.markWorksOnPlanningDocument(epciGroupId, userId)
+        await this.epciGroupsService.markWorksOnPlanningDocument(epciGroupId, userId, {
+          planningDocumentName: data.planningDocumentName,
+          planningDocumentType: data.planningDocumentType,
+        })
       }
     }
 
@@ -144,6 +147,8 @@ export class SimulationsService {
         name: data.epciGroupName,
         epciCodes: data.epci.map((epci) => epci.code),
         worksOnPlanningDocument: data.worksOnPlanningDocument,
+        planningDocumentType: data.planningDocumentType,
+        planningDocumentName: data.planningDocumentName,
       })
       epciGroupId = epciGroup.id
     }

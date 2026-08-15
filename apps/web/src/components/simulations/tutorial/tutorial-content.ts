@@ -29,6 +29,8 @@ export type TutorialAnchor =
   // parametrages-demographique
   | 'population-select'
   | 'omphale-select'
+  // colonne latérale, présente de l'étape démographique à la dernière
+  | 'estimation-card'
   // taux-cibles-logements-vacants
   | 'long-term-vacancy-rate'
   | 'short-term-vacancy-rate'
@@ -119,7 +121,7 @@ export const CREATION_TUTORIAL_CONTENT: Partial<Record<WizardStepSlug, TutorialS
       anchor: 'next-step',
       title: 'Pourquoi le bouton est-il grisé ?',
       description:
-        "Il s'active une fois le territoire sélectionné et nommé. Le nom doit être libre : s'il est déjà porté par un de vos groupes, le passage à l'étape suivante reste bloqué.",
+        "Il s'active une fois le territoire sélectionné, la question sur le document d'urbanisme répondue, et le groupe nommé. Le nom doit être libre : s'il est déjà porté par un de vos groupes, le passage à l'étape suivante reste bloqué.",
       side: 'top',
       align: 'end',
     },
@@ -167,6 +169,14 @@ export const CREATION_TUTORIAL_CONTENT: Partial<Record<WizardStepSlug, TutorialS
       description:
         'La décohabitation est le phénomène par lequel des personnes quittent un logement partagé pour créer des ménages indépendants. Les scénarios se distinguent par son rythme. À population égale, plus la décohabitation est forte, plus il faut de logements.',
       side: 'bottom',
+      align: 'start',
+    },
+    {
+      anchor: 'estimation-card',
+      title: 'Votre estimation se construit ici',
+      description:
+        'Chaque étape ajoute ses termes à cette carte : la démographie et le mal-logement maintenant, puis la vacance, les résidences secondaires et le renouvellement urbain. Les lignes en cours de paramétrage sont mises en couleur. Les situations de mal-logement (*) sont reprises telles quelles à ce stade : leur résorption — quelles situations retenir et à quel horizon les résorber — se paramètre depuis la page de résultats.',
+      side: 'left',
       align: 'start',
     },
   ],

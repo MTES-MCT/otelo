@@ -12,6 +12,7 @@ import { NextStepLink } from '~/components/simulations/settings/next-step-link'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useEpciGroups } from '~/hooks/use-epci-groups'
 import { useEpcis } from '~/hooks/use-epcis'
+import { parseUrbanismeDocType } from '~/utils/epci-group-name'
 import { BassinHabitatSelection } from './bassin-habitat-selection'
 import classes from './choix-du-territoire.module.css'
 import { CustomSelection } from './custom-selection'
@@ -23,15 +24,19 @@ type WrapperSimulationTypePageProps = {
 }
 
 export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulationTypePageProps) => {
-  const [{ epcis, epciGroupName, epciGroupId }, setQueryStates] = useQueryStates({
-    baseEpci: parseAsString,
-    epcis: parseAsArrayOf(parseAsString).withDefault([]),
-    epciGroupName: parseAsString,
-    epciGroupNameAuto: parseAsString,
-    epciGroupId: parseAsString,
-    epciChart: parseAsString,
-    urbanismeDoc: parseAsString,
-  })
+  const [{ epcis, epciGroupName, epciGroupId, urbanismeDoc, urbanismeDocType, urbanismeDocName, territoireTouched }, setQueryStates] =
+    useQueryStates({
+      baseEpci: parseAsString,
+      epcis: parseAsArrayOf(parseAsString).withDefault([]),
+      epciGroupName: parseAsString,
+      epciGroupNameAuto: parseAsString,
+      epciGroupId: parseAsString,
+      epciChart: parseAsString,
+      urbanismeDoc: parseAsString,
+      urbanismeDocType: parseAsString,
+      urbanismeDocName: parseAsString,
+      territoireTouched: parseAsString,
+    })
   const { data: groups } = useEpciGroups({ withActiveSimulations: true })
   const { data: selectedEpcis } = useEpcis(epcis)
   const [selectedMethod, setSelectedMethod] = useState<SelectionMethod>(() => {
@@ -47,7 +52,17 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
   const hasSelectedEpcis = scotEpcis.length > 0
 
   const isGroupNameTaken = groups?.some((group) => group.name.toLowerCase() === epciGroupName?.toLowerCase()) || false
-  const canGoNextStep = hasEpcis && !!(epciGroupName || epciGroupId) && !isGroupNameTaken
+
+  // Le document d'urbanisme conditionne le nom proposé : la question est obligatoire partout sauf sur
+  // un groupe existant, qui porte déjà son nom et n'utilise la réponse que pour enrichir le groupe.
+  const isUrbanismeDocRequired = selectedMethod !== 'existing-group'
+  const docType = parseUrbanismeDocType(urbanismeDocType)
+  const isUrbanismeDocAnswered =
+    urbanismeDoc === 'non' || (urbanismeDoc === 'oui' && !!docType && (docType !== 'plh-plui' || !!urbanismeDocName?.trim()))
+
+  const canGoNextStep =
+    hasEpcis && !!(epciGroupName || epciGroupId) && !isGroupNameTaken && (!isUrbanismeDocRequired || isUrbanismeDocAnswered)
+  const hasUrbanismeDocError = territoireTouched === 'true' && isUrbanismeDocRequired && !isUrbanismeDocAnswered
   const href = '/simulation/cadrage-temporel'
 
   const handleMethodSelect = (method: SelectionMethod) => {
@@ -59,7 +74,10 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
         epciGroupNameAuto: null,
         epcis: [],
         baseEpci: null,
+        territoireTouched: null,
         urbanismeDoc: null,
+        urbanismeDocName: null,
+        urbanismeDocType: null,
       })
     }
   }
@@ -107,14 +125,18 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
             </div>
 
             {selectedMethod === 'existing-group' && <ExistingGroupSelection />}
-            {selectedMethod === 'bassin-habitat' && <BassinHabitatSelection bassinEpcis={bassinEpcis} />}
-            {selectedMethod === 'custom-selection' && <CustomSelection bassinEpcis={bassinEpcis} />}
+            {selectedMethod === 'bassin-habitat' && (
+              <BassinHabitatSelection bassinEpcis={bassinEpcis} hasUrbanismeDocError={hasUrbanismeDocError} />
+            )}
+            {selectedMethod === 'custom-selection' && (
+              <CustomSelection bassinEpcis={bassinEpcis} hasUrbanismeDocError={hasUrbanismeDocError} />
+            )}
           </>
         )}
       </div>
 
       <div className={fr.cx('fr-ml-auto', 'fr-my-1w')} {...tutorialAnchor('next-step')}>
-        <NextStepLink href={href} query="epcis" isDisabled={!canGoNextStep} />
+        <NextStepLink href={href} query="epcis" isDisabled={!canGoNextStep} touchedQueryParam="territoireTouched" />
       </div>
 
       {hasSelectedEpcis && (
