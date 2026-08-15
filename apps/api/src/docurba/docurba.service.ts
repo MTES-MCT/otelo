@@ -3,31 +3,53 @@ import { createReadStream, existsSync, mkdirSync } from 'fs'
 import Papa from 'papaparse'
 import { join } from 'path'
 
+/** Document intercommunal approuvé, tel que nommé par Docurba : type et collectivité qui le porte. */
+export type DocurbaPlanningDocument = {
+  documentType: string
+  carrierName: string
+}
+
 export type DocurbaEpciResult = {
   communeCode: string
   scotName: string | null
   documentType: string | null
   approvalYear: string | null
   procedureInProgress: { type: string; documentType: string } | null
+  /** Documents de la famille PLUi portés sur cet EPCI, à proposer tels quels au nommage du groupe. */
+  planningDocuments: DocurbaPlanningDocument[]
 }
 
-type AggregatedUrbanisme = Pick<DocurbaEpciResult, 'documentType' | 'approvalYear' | 'procedureInProgress'>
+type AggregatedUrbanisme = Pick<DocurbaEpciResult, 'documentType' | 'approvalYear' | 'procedureInProgress' | 'planningDocuments'>
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const BACKGROUND_TIMEOUT_MS = 3000
 const COMMUNE_CODE_COLS = ['code_insee', 'code_commune', 'commune_code']
+
+/**
+ * Docurba ne connaît pas le PLH : on retient la famille PLUi (PLUi, PLUiH, PLUiHM, PLUiM), dont les
+ * variantes « H » tiennent lieu de PLH. Les PLU communaux sont écartés — un EPCI en compte autant que
+ * de communes, ce qui noierait la liste proposée à l'utilisateur.
+ */
+const isIntercommunalDocument = (documentType: string): boolean => documentType.startsWith('PLUi')
 
 type EpciAggState = {
   communeCode: string | null
   docTypes: Set<string>
   latestYear: string | null
   procedureInProgress: { type: string; documentType: string } | null
+  /** Clé `type|porteur` pour dédoublonner les communes couvertes par un même document. */
+  planningDocuments: Map<string, DocurbaPlanningDocument>
 }
 
 function finalizeAggState(state: EpciAggState): AggregatedUrbanisme {
   const docTypes = [...state.docTypes]
   const documentType = docTypes.includes('PLUi') ? 'PLUi' : docTypes.length === 1 ? (docTypes[0] ?? null) : docTypes.join(', ') || null
-  return { documentType, approvalYear: state.latestYear, procedureInProgress: state.procedureInProgress }
+  return {
+    documentType,
+    approvalYear: state.latestYear,
+    procedureInProgress: state.procedureInProgress,
+    planningDocuments: [...state.planningDocuments.values()],
+  }
 }
 
 @Injectable()
@@ -92,13 +114,25 @@ export class DocurbaService implements OnModuleInit {
 
           if (!aggByEpci.has(siren)) {
             const communeCode = communeCodeCol ? (data[communeCodeCol] ?? null) : null
-            aggByEpci.set(siren, { communeCode, docTypes: new Set(), latestYear: null, procedureInProgress: null })
+            aggByEpci.set(siren, {
+              communeCode,
+              docTypes: new Set(),
+              latestYear: null,
+              procedureInProgress: null,
+              planningDocuments: new Map(),
+            })
           }
 
           const state = aggByEpci.get(siren)!
 
           const docType = data['pa_type_document']
           if (docType) state.docTypes.add(docType)
+
+          // `cp_` = collectivité porteuse (à ne pas confondre avec `pc_`, la procédure en cours).
+          const carrierName = data['cp_nom']
+          if (docType && carrierName && isIntercommunalDocument(docType)) {
+            state.planningDocuments.set(`${docType}|${carrierName}`, { documentType: docType, carrierName })
+          }
 
           const year = data['pa_annee_approbation']
           if (year && (!state.latestYear || year > state.latestYear)) state.latestYear = year
@@ -173,7 +207,7 @@ export class DocurbaService implements OnModuleInit {
       }
 
       const scotName = this.communeToScot.get(firstCode) ?? null
-      const urbanisme = localUrbanisme ?? { documentType: null, approvalYear: null, procedureInProgress: null }
+      const urbanisme = localUrbanisme ?? { documentType: null, approvalYear: null, procedureInProgress: null, planningDocuments: [] }
 
       return { communeCode: firstCode, scotName, ...urbanisme }
     } catch {

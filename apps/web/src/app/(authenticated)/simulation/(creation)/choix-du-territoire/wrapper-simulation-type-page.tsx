@@ -11,8 +11,8 @@ import { ScotInfoTable } from '~/components/simulations/docurba/scot-info-table'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useEpciGroups } from '~/hooks/use-epci-groups'
-import { parseUrbanismeDocType } from '~/utils/epci-group-name'
 import { useEpcis } from '~/hooks/use-epcis'
+import { parseUrbanismeDocType } from '~/utils/epci-group-name'
 import { BassinHabitatSelection } from './bassin-habitat-selection'
 import classes from './choix-du-territoire.module.css'
 import { CustomSelection } from './custom-selection'
@@ -32,10 +32,10 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
       epciGroupNameAuto: parseAsString,
       epciGroupId: parseAsString,
       epciChart: parseAsString,
-      territoireTouched: parseAsString,
       urbanismeDoc: parseAsString,
       urbanismeDocType: parseAsString,
       urbanismeDocName: parseAsString,
+      territoireTouched: parseAsString,
     })
   const { data: groups } = useEpciGroups({ withActiveSimulations: true })
   const { data: selectedEpcis } = useEpcis(epcis)

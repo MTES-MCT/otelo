@@ -17,6 +17,11 @@ export default async function ModifySimulationLayout({ children, params }: Simul
 
   const epcis = simulation.scenario.epciScenarios.map((e) => e.epciCode)
 
+  // Le contexte de paramétrage ne porte que les taux : le libellé du territoire se calcule ici.
+  const baseEpci = simulation.epcis.find((epci) => epci.baseEpci) ?? simulation.epcis[0]
+  const otherEpcisCount = simulation.epcis.length - 1
+  const territoryLabel = baseEpci ? `${baseEpci.name}${otherEpcisCount > 0 ? ` + ${otherEpcisCount} EPCI` : ''}` : null
+
   const peakYears = simulation.results?.flowRequirement?.epcis?.reduce(
     (acc, epci) => {
       acc[epci.code] = epci.data.peakYear
@@ -43,7 +48,7 @@ export default async function ModifySimulationLayout({ children, params }: Simul
             </div>
 
             <WizardAside>
-              <ModificationEstimationCard />
+              <ModificationEstimationCard territoryLabel={territoryLabel} />
             </WizardAside>
           </div>
         </SimulationFormRatesProviderContextWrapper>

@@ -149,6 +149,9 @@ export class SimulationsService {
       const epciGroup = await this.epciGroupsService.create(userId, {
         name: data.epciGroupName,
         epciCodes: data.epci.map((epci) => epci.code),
+        worksOnPlanningDocument: data.worksOnPlanningDocument,
+        planningDocumentType: data.planningDocumentType,
+        planningDocumentName: data.planningDocumentName,
       })
       epciGroupId = epciGroup.id
     }
