@@ -1,18 +1,18 @@
-import { redirect } from 'next/navigation'
+import type { Metadata } from 'next'
 import { FeedbacksContent } from '~/components/admin/feedbacks/feedbacks-content'
-import { authFetch, getSession } from '~/lib/auth/server'
+import { AdminPageHeader } from '~/components/admin/shared/admin-page-header'
+import { authFetch } from '~/lib/auth/server'
+
+export const metadata: Metadata = {
+  title: 'Retours utilisateurs',
+}
 
 interface FeedbacksPageProps {
   searchParams: Promise<{ startDate?: string; endDate?: string }>
 }
 
 export default async function FeedbacksPage({ searchParams }: FeedbacksPageProps) {
-  const session = await getSession()
-  if (!session || session.user.role !== 'ADMIN') {
-    redirect('/accueil')
-  }
-
-  const { startDate, endDate } = await searchParams
+  const { endDate, startDate } = await searchParams
 
   const params = new URLSearchParams()
   if (startDate) params.set('startDate', startDate)
@@ -27,5 +27,14 @@ export default async function FeedbacksPage({ searchParams }: FeedbacksPageProps
 
   const feedbacks = await res.json()
 
-  return <FeedbacksContent feedbacks={feedbacks} startDate={startDate} endDate={endDate} />
+  return (
+    <>
+      <AdminPageHeader
+        icon="fr-icon-questionnaire-line"
+        subtitle="Notes de satisfaction et commentaires laissés par les utilisateurs."
+        title="Retours utilisateurs"
+      />
+      <FeedbacksContent endDate={endDate} feedbacks={feedbacks} startDate={startDate} />
+    </>
+  )
 }

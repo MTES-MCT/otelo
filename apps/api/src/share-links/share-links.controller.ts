@@ -1,8 +1,10 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Post, Req, UseGuards } from '@nestjs/common'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
+import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { RequestWithShareSimulationId, ShareTokenGuard } from '~/common/guards/share-token.guard'
 import { Prisma, Role } from '~/generated/prisma/client'
+import { TUser } from '~/schemas/users/user'
 import { ShareLinksService } from './share-links.service'
 
 @Controller()
@@ -27,8 +29,8 @@ export class ShareLinksController {
   })
   @Post('simulations/:simulationId/share/toggle')
   @HttpCode(HttpStatus.OK)
-  async toggleShare(@Param('simulationId') simulationId: string) {
-    return this.shareLinksService.toggleShare(simulationId)
+  async toggleShare(@Param('simulationId') simulationId: string, @User() { id: userId }: TUser) {
+    return this.shareLinksService.toggleShare(simulationId, userId)
   }
 
   @AllowAnonymous()

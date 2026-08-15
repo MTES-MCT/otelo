@@ -8,7 +8,8 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { admin, genericOAuth } from 'better-auth/plugins'
 import { adminAc, userAc } from 'better-auth/plugins/admin/access'
-import { PrismaClient } from '~/generated/prisma/client'
+import { type Prisma, PrismaClient } from '~/generated/prisma/client'
+import type { UserType } from '~/generated/prisma/enums'
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -50,6 +51,26 @@ type PrismaLike = {
   user: { update: (args: { where: { id: string }; data: Record<string, unknown> }) => Promise<unknown> }
 }
 
+type LoginEventPrismaLike = {
+  user: {
+    findUnique: (args: {
+      where: { id: string }
+      select: Prisma.UserSelect
+    }) => Promise<{ region?: string | null; type?: UserType | null } | null>
+  }
+  loginEvent: {
+    create: (args: { data: Prisma.LoginEventUncheckedCreateInput }) => Promise<unknown>
+    updateMany: (args: { where: Prisma.LoginEventWhereInput; data: Prisma.LoginEventUpdateManyMutationInput }) => Promise<unknown>
+  }
+}
+
+type SessionLike = {
+  id?: string
+  userId: string
+  impersonatedBy?: string | null
+  [key: string]: unknown
+}
+
 export async function checkWhitelistBeforeCreate(db: PrismaLike, user: { email: string; [key: string]: unknown }) {
   const whitelist = await db.userWhitelist.findUnique({
     where: { email: user.email },
@@ -69,6 +90,88 @@ export async function updateLastLoginAt(db: PrismaLike, session: { userId: strin
     where: { id: session.userId },
     data: { lastLoginAt: new Date() },
   })
+}
+
+/**
+ * Déduit la méthode de connexion du chemin d'appel better-auth.
+ *
+ * Renvoie `null` plutôt qu'une valeur par défaut : le contexte n'est pas garanti présent
+ * dans les hooks de base, et compter une connexion ProConnect comme « mot de passe »
+ * fausserait le suivi d'adoption de ProConnect.
+ */
+export function resolveLoginProvider(path?: string | null): string | null {
+  if (!path) {
+    return null
+  }
+
+  if (path.includes('oauth2') || path.includes('callback') || path.includes('proconnect')) {
+    return 'proconnect'
+  }
+
+  if (path.includes('sign-in') || path.includes('sign-up')) {
+    return 'credential'
+  }
+
+  return null
+}
+
+/**
+ * Journalise une connexion dans `login_events`.
+ *
+ * Les sessions d'usurpation ne sont pas journalisées : un administrateur naviguant
+ * « en tant que » un utilisateur ne doit pas gonfler ses statistiques d'usage.
+ *
+ * `type` et `region` sont copiés au moment de la connexion : ce sont des champs mutables
+ * de `users`, une jointure ultérieure réécrirait rétroactivement l'historique.
+ *
+ * N'échoue jamais : le suivi d'usage ne doit pas pouvoir empêcher une connexion.
+ */
+export async function recordLoginEvent(db: LoginEventPrismaLike, session: SessionLike, path?: string | null) {
+  if (session.impersonatedBy || !session.id) {
+    return
+  }
+
+  try {
+    const user = await db.user.findUnique({
+      where: { id: session.userId },
+      select: { region: true, type: true },
+    })
+
+    await db.loginEvent.create({
+      data: {
+        provider: resolveLoginProvider(path),
+        region: user?.region ?? null,
+        sessionId: session.id,
+        userId: session.userId,
+        userType: user?.type ?? null,
+      },
+    })
+  } catch (error) {
+    console.error('[login-events] Failed to record login event', error)
+  }
+}
+
+/**
+ * Rafraîchit `lastSeenAt` au renouvellement de session (au-delà de `updateAge`),
+ * ce qui donne un heartbeat serveur sans aucun code client.
+ *
+ * `updateMany` plutôt que `update` : les sessions ouvertes avant la mise en place
+ * de `login_events` n'ont pas de ligne correspondante, et leur renouvellement ne
+ * doit pas lever d'erreur.
+ */
+export async function touchLoginEvent(db: LoginEventPrismaLike, session: SessionLike) {
+  if (!session.id) {
+    return
+  }
+
+  try {
+    await db.loginEvent.updateMany({
+      where: { sessionId: session.id },
+      data: { lastSeenAt: new Date() },
+    })
+  } catch (error) {
+    console.error('[login-events] Failed to refresh login event', error)
+  }
 }
 
 export const auth = betterAuth({
@@ -228,7 +331,15 @@ export const auth = betterAuth({
     },
     session: {
       create: {
-        after: (session) => updateLastLoginAt(prisma, session),
+        after: async (session, context) => {
+          await updateLastLoginAt(prisma, session)
+          await recordLoginEvent(prisma, session, context?.path)
+        },
+      },
+      update: {
+        // Better-auth renouvelle la session au-delà de `updateAge` (15 min) : ce hook
+        // fournit donc un heartbeat serveur sans aucun code client ni endpoint de ping.
+        after: (session) => touchLoginEvent(prisma, session),
       },
     },
   },

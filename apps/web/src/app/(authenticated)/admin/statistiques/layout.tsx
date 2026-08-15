@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Statistiques de l'application Otelo",
+  title: 'Statistiques métier',
 }
 
 export default function StatistiquesLayout({ children }: { children: React.ReactNode }) {

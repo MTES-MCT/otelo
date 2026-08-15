@@ -56,6 +56,7 @@ export const CustomSelection = ({ bassinEpcis, hasUrbanismeDocError }: CustomSel
     <>
       <h3 className={fr.cx('fr-h5')}>Créer une sélection personnalisée</h3>
       <AutocompleteInput
+        searchCategory="territoire"
         label="Rechercher un EPCI"
         onClick={onSelectEpci}
         hintText="Saisissez le nom de l'EPCI du territoire concerné, ou par défaut, vous pouvez saisir le nom de la commune ou son code postal."

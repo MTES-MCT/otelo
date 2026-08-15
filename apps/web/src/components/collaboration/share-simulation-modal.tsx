@@ -8,6 +8,7 @@ import ToggleSwitch from '@codegouvfr/react-dsfr/ToggleSwitch'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useShareStatus, useToggleShare } from '~/hooks/use-share-link'
+import { useTracking } from '~/hooks/use-tracking'
 
 interface ShareSimulationModalProps {
   simulationId: string
@@ -17,6 +18,7 @@ interface ShareSimulationModalProps {
 export function ShareSimulationModal({ simulationId, simulationName }: ShareSimulationModalProps) {
   const { data: shareStatus, isLoading } = useShareStatus(simulationId)
   const { mutate: toggleShare, isPending } = useToggleShare(simulationId)
+  const { trackEvent } = useTracking()
 
   const modalActions = useMemo(
     () =>
@@ -31,7 +33,20 @@ export function ShareSimulationModal({ simulationId, simulationName }: ShareSimu
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(shareUrl)
+    // P2 — le volume de partages activés se mesure en base ; cet événement dit
+    // combien de personnes vont jusqu'à réellement diffuser le lien.
+    trackEvent({ action: 'copie lien', category: 'Partage' })
     toast.success('Lien copié dans le presse-papiers')
+  }
+
+  // P1 — l'activation elle-même est journalisée en base ; l'événement permet de la
+  // situer dans le parcours (depuis quelle page, après quelle action).
+  const handleToggleShare = () => {
+    trackEvent({
+      action: shareStatus?.active ? 'desactivation partage' : 'activation partage',
+      category: 'Partage',
+    })
+    toggleShare()
   }
 
   return (
@@ -52,7 +67,7 @@ export function ShareSimulationModal({ simulationId, simulationName }: ShareSimu
             <ToggleSwitch
               label="Activer le partage"
               checked={shareStatus?.active ?? false}
-              onChange={() => toggleShare()}
+              onChange={handleToggleShare}
               disabled={isPending}
             />
 

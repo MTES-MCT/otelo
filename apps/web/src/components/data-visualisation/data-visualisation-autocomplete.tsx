@@ -31,6 +31,7 @@ export const DatavisualisationAutocomplete = () => {
     <AutocompleteInput
       hintText="Saisissez le nom de l'EPCI du territoire concerné, ou par défaut, vous pouvez saisir le nom de la commune ou son code postal."
       onClick={handleInputClick}
+      searchCategory="infographie"
     />
   )
 }

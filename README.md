@@ -200,6 +200,17 @@ otelo/
 | Recharts | 3.x | Visualisation données |
 | Leaflet | 1.9.x | Cartographie |
 
+### Mesure d'audience (Matomo)
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_MATOMO_URL` | URL de l'instance Matomo (ex : `https://stats.beta.gouv.fr`). Vide = tracker désactivé. |
+| `NEXT_PUBLIC_MATOMO_SITE_ID` | Identifiant du site dans Matomo |
+
+⚠️ Ces variables sont préfixées `NEXT_PUBLIC_` : Next.js les **inline au build**. Elles doivent donc être définies au moment du `pnpm build:web` sur Scalingo, pas seulement au runtime. Un build fait sans elles produit une application sans mesure d'audience, sans erreur visible.
+
+Le tracking n'est actif qu'en `NODE_ENV=production`. Le plan de tracking complet (catalogue d'événements, dimensions personnalisées, limites connues) est maintenu dans [`apps/web/src/lib/TRACKING.md`](apps/web/src/lib/TRACKING.md) — toute instrumentation ajoutée au code doit y être documentée.
+
 ### Package partagé (`@shared`)
 
 Types TypeScript et schémas Zod réutilisables entre le frontend et le backend :

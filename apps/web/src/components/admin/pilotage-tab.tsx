@@ -8,7 +8,7 @@ import { USER_TYPE_LABELS } from '@shared'
 import classNames from 'classnames'
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
-import { useExportPilotageStatistics } from '~/hooks/use-export-pilotage-statistics'
+import { useCsvExport } from '~/hooks/use-csv-export'
 import { usePilotageEpcisCoverage } from '~/hooks/use-pilotage-epcis-coverage'
 import { usePilotageStatistics } from '~/hooks/use-pilotage-statistics'
 import { useSession } from '~/lib/auth/client'
@@ -43,7 +43,7 @@ export default function PilotageTab() {
   const effectiveRegion = isDreal ? userRegion : selectedRegion
 
   const { data, isLoading, error } = usePilotageStatistics(effectiveRegion, undefined)
-  const { isPending: isExporting, mutateAsync: exportCsv } = useExportPilotageStatistics()
+  const { exportCsv, isPending: isExporting } = useCsvExport('/api/statistics/pilotage/export', 'export-pilotage.csv')
   const { data: coverageData = [] } = usePilotageEpcisCoverage(effectiveRegion, undefined, selectedTypology)
 
   const effectiveMapType = isAdmin ? adminMapView || undefined : session?.user.type

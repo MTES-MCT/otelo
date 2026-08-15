@@ -1,0 +1,302 @@
+/*
+ * Coquille d'administration.
+ *
+ * Le fond gris avec des cartes blanches est ce qui donne son identité visuelle à
+ * l'espace d'administration : le contenu métier d'Otelo est sur fond blanc.
+ */
+
+.shell {
+  display: flex;
+  align-items: stretch;
+  min-height: 100%;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 0 0 16rem;
+  border-right: 1px solid var(--border-default-grey);
+  background-color: var(--background-default-grey);
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem 0.75rem;
+}
+
+.navSectionTitle {
+  padding: 0 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-mention-grey);
+}
+
+.navItem,
+.navItemActive {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--text-default-grey);
+  background-color: transparent;
+}
+
+.navItem:hover {
+  background-color: var(--background-default-grey-hover);
+}
+
+.navItemActive {
+  color: var(--text-active-blue-france);
+  background-color: var(--background-action-low-blue-france);
+  font-weight: 500;
+}
+
+.navBadge {
+  margin-left: auto;
+  padding: 0 0.375rem;
+  border-radius: 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+  color: var(--text-mention-grey);
+  background-color: var(--background-contrast-grey);
+}
+
+.sidebarFooter {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-default-grey);
+  font-size: 0.75rem;
+  color: var(--text-mention-grey);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 2rem;
+  background-color: var(--background-alt-grey);
+}
+
+/* En-tête de page : pastille d'icône + titre + sous-titre. */
+
+.pageIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.25rem;
+  color: var(--text-action-high-blue-france);
+  background-color: var(--background-action-low-blue-france);
+}
+
+/* DSFR ajoute une marge à droite de ses icônes : elle décentre la pastille. */
+.pageIconBadge::before {
+  margin-right: 0 !important;
+}
+
+/* Cartes. */
+
+.card {
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.5rem;
+  background-color: var(--background-default-grey);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* Cartes d'indicateurs. */
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.statCard {
+  position: relative;
+  overflow: hidden;
+  padding: 1.25rem;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.5rem;
+  background-color: var(--background-default-grey);
+}
+
+.statCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.statCardBlue::before {
+  background-color: var(--background-action-high-blue-france);
+}
+
+.statCardGreen::before {
+  background-color: var(--background-flat-success);
+}
+
+.statCardOrange::before {
+  background-color: var(--background-flat-warning);
+}
+
+.statCardPurple::before {
+  background-color: var(--background-flat-info);
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-mention-grey);
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.statHint {
+  font-size: 0.75rem;
+  color: var(--text-mention-grey);
+}
+
+.statIcon {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  opacity: 0.12;
+}
+
+/* Barre de période, réutilisée pour toute rangée de puces de filtre. */
+
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip,
+.chipActive {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--text-default-grey);
+  background-color: var(--background-default-grey);
+}
+
+.chip:hover {
+  background-color: var(--background-default-grey-hover);
+}
+
+.chipActive {
+  color: var(--text-inverted-blue-france);
+  background-color: var(--background-action-high-blue-france);
+  border-color: var(--background-action-high-blue-france);
+}
+
+.dateInputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.dateInput {
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-bottom: 2px solid var(--border-plain-grey);
+  font-size: 0.875rem;
+  color: var(--text-default-grey);
+  background-color: var(--background-contrast-grey);
+}
+
+/* Graphiques. */
+
+.chartContainer {
+  height: 300px;
+  padding: 1rem 1.25rem;
+}
+
+.chartContainerTall {
+  height: 400px;
+  padding: 1rem 1.25rem;
+}
+
+.noData {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 0.875rem;
+  color: var(--text-mention-grey);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    flex: 1 1 auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-default-grey);
+  }
+
+  .content {
+    padding: 1rem;
+  }
+
+  .grid2,
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
