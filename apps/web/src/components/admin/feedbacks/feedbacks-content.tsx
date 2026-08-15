@@ -35,9 +35,8 @@ export function FeedbacksContent({ feedbacks, startDate, endDate }: FeedbacksCon
   }
 
   return (
-    <div className={fr.cx('fr-container', 'fr-py-10v')}>
-      <h1>Retours utilisateurs</h1>
-
+    // Le titre et le conteneur sont fournis par la coquille d'administration.
+    <>
       <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters', 'fr-mb-5v')}>
         <div className={fr.cx('fr-col-12', 'fr-col-md-4')}>
           <Input
@@ -98,6 +97,6 @@ export function FeedbacksContent({ feedbacks, startDate, endDate }: FeedbacksCon
           </div>
         </>
       )}
-    </div>
+    </>
   )
 }

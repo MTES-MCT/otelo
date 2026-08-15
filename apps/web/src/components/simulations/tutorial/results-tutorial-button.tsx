@@ -11,4 +11,6 @@ import { TutorialTrigger } from './tutorial-trigger'
  * démarrage, si bien que la synthèse et les onglets EPCI n'affichent que leurs propres
  * bulles à partir d'un registre unique.
  */
-export const ResultsTutorialButton: FC = () => <TutorialTrigger steps={RESULTS_TUTORIAL_CONTENT} label="Comprendre ces résultats" />
+export const ResultsTutorialButton: FC = () => (
+  <TutorialTrigger label="Comprendre ces résultats" steps={RESULTS_TUTORIAL_CONTENT} trackingName="resultats" />
+)

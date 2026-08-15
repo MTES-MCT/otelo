@@ -65,6 +65,7 @@ export const BassinHabitatSelection = ({ bassinEpcis, hasUrbanismeDocError }: Ba
       <h3 className={fr.cx('fr-h5')}>Choisir un Bassin d'Habitat</h3>
       <p className={fr.cx('fr-text--sm', 'fr-hint-text')}>Recherchez un EPCI pour sélectionner automatiquement son bassin d'habitat</p>
       <AutocompleteInput
+        searchCategory="territoire"
         label="Rechercher un EPCI"
         onClick={onSelectEpci}
         hintText="Saisissez le nom de l'EPCI pour charger automatiquement tous les EPCI de son bassin d'habitat."

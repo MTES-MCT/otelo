@@ -1,6 +1,6 @@
 import { fr } from '@codegouvfr/react-dsfr'
-import Button from '@codegouvfr/react-dsfr/Button'
 import { redirect } from 'next/navigation'
+import { UnauthorizedActions } from '~/components/auth/unauthorized-actions'
 import { getSession } from '~/lib/auth/server'
 
 export const dynamic = 'force-dynamic'
@@ -31,26 +31,7 @@ export default async function Unauthorized() {
               d'engagement est obligatoire pour accéder à Otelo. Il vous sera demandé lors du dépôt de votre demande d'accès sur Démarches
               Simplifiées.
             </p>
-            <div>
-              <Button
-                linkProps={{ href: '/assets/pdf/acte_engagement.pdf', target: '_blank' }}
-                priority="tertiary"
-                size="large"
-                className={fr.cx('fr-mb-4v')}
-              >
-                Télécharger l'acte d'engagement
-              </Button>
-            </div>
-            <div>
-              <Button
-                linkProps={{ href: 'https://www.demarches-simplifiees.fr/commencer/acces-a-otelo', target: '_blank' }}
-                priority="primary"
-                size="large"
-                className={fr.cx('fr-mb-4v')}
-              >
-                Demander l'accès à Otelo
-              </Button>
-            </div>
+            <UnauthorizedActions />
             <p className={fr.cx('fr-text--xs', 'fr-text--alt')}>Vous serez redirigé vers le formulaire de demande d'accès.</p>
           </div>
         </div>

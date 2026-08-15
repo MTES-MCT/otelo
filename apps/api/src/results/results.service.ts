@@ -15,9 +15,15 @@ export class ResultsService {
 
   async getResults(simulationId: string): Promise<TSimulationWithResults> {
     const simulation = await this.simulationsService.get(simulationId)
-    const results = await this.needsCalculationService.calculate(simulation)
 
-    await Promise.all([this.upsertSimulationResults(simulationId, results), this.insertResultsHistory(simulationId, results)])
+    const startedAt = Date.now()
+    const results = await this.needsCalculationService.calculate(simulation)
+    const durationMs = Date.now() - startedAt
+
+    await Promise.all([
+      this.upsertSimulationResults(simulationId, results),
+      this.insertResultsHistory(simulationId, results, { durationMs, nbEpcis: simulation.epcis.length }),
+    ])
     return { ...simulation, results }
   }
 
@@ -50,8 +56,14 @@ export class ResultsService {
     const simulations: Record<string, TSimulationWithResults> = {}
 
     for (const simulation of allSimulations) {
+      const startedAt = Date.now()
       const results = await this.needsCalculationService.calculate(simulation)
-      await Promise.all([this.upsertSimulationResults(simulation.id, results), this.insertResultsHistory(simulation.id, results)])
+      const durationMs = Date.now() - startedAt
+
+      await Promise.all([
+        this.upsertSimulationResults(simulation.id, results),
+        this.insertResultsHistory(simulation.id, results, { durationMs, nbEpcis: simulation.epcis.length }),
+      ])
       simulations[simulation.id] = { ...simulation, results }
     }
 
@@ -120,14 +132,31 @@ export class ResultsService {
     })
   }
 
-  async insertResultsHistory(simulationId: string, results: TResults) {
+  /**
+   * Historise un calcul.
+   *
+   * Les résultats identiques au dernier enregistrement ne créent pas de nouvelle ligne —
+   * les résultats sont recalculés à chaque affichage, la table exploserait sinon. En
+   * revanche la ligne existante est rafraîchie : sans cela, un affichage sans changement
+   * de paramètre ne laisserait aucune trace, et la mesure de latence raterait justement
+   * le cas le plus fréquent.
+   */
+  async insertResultsHistory(simulationId: string, results: TResults, timing?: { durationMs: number; nbEpcis: number }) {
     const lastEntry = await this.prisma.simulationResultsHistory.findFirst({
       where: { simulationId },
       orderBy: { calculatedAt: 'desc' },
-      select: { resultsJson: true },
+      select: { id: true, resultsJson: true },
     })
 
     if (lastEntry && JSON.stringify(lastEntry.resultsJson) === JSON.stringify(results)) {
+      await this.prisma.simulationResultsHistory.update({
+        where: { id: lastEntry.id },
+        data: {
+          calculatedAt: new Date(),
+          durationMs: timing?.durationMs,
+          nbEpcis: timing?.nbEpcis,
+        },
+      })
       return
     }
 
@@ -135,6 +164,8 @@ export class ResultsService {
       data: {
         simulationId,
         resultsJson: results as object,
+        durationMs: timing?.durationMs,
+        nbEpcis: timing?.nbEpcis,
       },
     })
   }

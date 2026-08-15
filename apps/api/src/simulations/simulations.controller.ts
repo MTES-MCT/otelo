@@ -59,8 +59,8 @@ export class SimulationsController {
   })
   @Put(':id/scenario')
   @HttpCode(HttpStatus.ACCEPTED)
-  async updateSimulation(@Param('id') id: string, @Body() data: TUpdateSimulationDto) {
-    return this.simulationsService.update(id, data)
+  async updateSimulation(@Param('id') id: string, @Body() data: TUpdateSimulationDto, @User() { id: userId }: TUser) {
+    return this.simulationsService.update(id, data, userId)
   }
 
   @AccessControl({

@@ -51,7 +51,15 @@ export class ExportPowerpointController {
       username: `${user.firstname}  ${user.lastname}`,
     })
 
-    await this.simulationsService.markAsExported(selectedSimulations)
+    // `privilegedSimulation` est obligatoire dans le formulaire mais n'était pas transmis :
+    // tous les exports PowerPoint étaient enregistrés avec `isPrivileged: false`.
+    await this.simulationsService.markAsExported(selectedSimulations, {
+      documentType,
+      nextStep,
+      periodEnd: Number.parseInt(periodEnd, 10) || undefined,
+      periodStart: Number.parseInt(periodStart, 10) || undefined,
+      privilegedSimulationId: privilegedSimulation,
+    })
     const simulations = await this.simulationsService.getMany(selectedSimulations)
 
     const privilegedSim = data.privilegedSimulation ? simulations.find((sim) => sim.id === privilegedSimulation) : null

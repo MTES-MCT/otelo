@@ -1,0 +1,52 @@
+.entry {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-default-grey);
+  list-style: none;
+}
+
+.entry:first-child {
+  border-top: 0;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.diff {
+  width: 100%;
+  margin-top: 0.75rem;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.diff th {
+  width: 45%;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  text-align: left;
+  font-weight: 400;
+  color: var(--text-mention-grey);
+}
+
+.diff td {
+  padding: 0.25rem 0.5rem;
+}
+
+/* La valeur précédente est barrée : le sens de lecture doit être évident sans lire l'en-tête. */
+.before {
+  text-decoration: line-through;
+  color: var(--text-mention-grey);
+}
+
+.arrow {
+  width: 1.5rem;
+  text-align: center;
+  color: var(--text-mention-grey);
+}
+
+.after {
+  font-weight: 500;
+  color: var(--text-default-info);
+}

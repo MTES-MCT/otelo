@@ -3,6 +3,7 @@
 import { type Driver, driver } from 'driver.js'
 import 'driver.js/dist/driver.css'
 import { type RefObject, useCallback, useEffect, useRef } from 'react'
+import { trackEvent } from '~/lib/tracking'
 import { type TutorialStep, tutorialStepSelector } from './tutorial-content'
 import './tutorial.css'
 
@@ -41,7 +42,16 @@ const resolveTarget = (step: TutorialStep): HTMLElement | null =>
  * piège de tabulation, focus initial. Ajouter les nôtres par-dessus les ferait entrer en
  * conflit avec les siens.
  */
-export const useTutorial = (steps: TutorialStep[] | undefined, triggerRef: RefObject<HTMLButtonElement | null>) => {
+export const useTutorial = (
+  steps: TutorialStep[] | undefined,
+  triggerRef: RefObject<HTMLButtonElement | null>,
+  /**
+   * Identifiant de l'écran, pour le suivi d'usage. Le tuto est entièrement opt-in et
+   * sans état persisté : sans ces événements, rien ne permet de savoir s'il est ouvert,
+   * ni jusqu'où les utilisateurs vont dedans.
+   */
+  trackingName?: string,
+) => {
   const driverRef = useRef<Driver | null>(null)
   const observerRef = useRef<ResizeObserver | null>(null)
   // Distingue une fermeture par l'utilisateur d'une destruction au démontage : sans ce
@@ -111,13 +121,34 @@ export const useTutorial = (steps: TutorialStep[] | undefined, triggerRef: RefOb
         popover.closeButton.setAttribute('aria-label', "Fermer l'aide")
       },
       onDestroyed: () => {
-        if (!isTearingDownRef.current) {
-          triggerRef.current?.focus()
+        if (isTearingDownRef.current) {
+          return
         }
+
+        // A2 — un tuto détruit par navigation n'est ni terminé ni abandonné : il est
+        // interrompu par l'écran, ce que le drapeau de démontage écarte plus haut.
+        if (trackingName) {
+          const activeIndex = instance.getActiveIndex() ?? 0
+
+          trackEvent({
+            action: 'fin tutoriel',
+            category: 'Aide',
+            name: activeIndex >= reachable.length - 1 ? 'termine' : 'abandonne',
+            value: activeIndex + 1,
+          })
+        }
+
+        triggerRef.current?.focus()
       },
     })
 
     driverRef.current = instance
+
+    // A1 — ouverture du tuto : le seul signal d'usage disponible, le mode tuto
+    // n'écrivant rien ni en base ni en stockage local.
+    if (trackingName) {
+      trackEvent({ action: 'ouverture tutoriel', category: 'Aide', name: trackingName, value: reachable.length })
+    }
 
     // Le contenu bouge sous le projecteur : alertes « pic de ménages », graphiques montés
     // après coup, requêtes react-query qui se résolvent. `refresh()` est throttlé en
@@ -126,7 +157,7 @@ export const useTutorial = (steps: TutorialStep[] | undefined, triggerRef: RefOb
     observerRef.current.observe(document.body)
 
     instance.drive()
-  }, [steps, teardown, triggerRef])
+  }, [steps, teardown, triggerRef, trackingName])
 
   return { hasTutorial: Boolean(steps?.length), start }
 }

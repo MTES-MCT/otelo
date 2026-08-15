@@ -3,6 +3,7 @@
 import { toPng } from 'html-to-image'
 import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
+import { trackEvent } from '~/lib/tracking'
 
 export const useChartDownload = (fileName: string) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -29,6 +30,10 @@ export const useChartDownload = (fileName: string) => {
       link.download = `${fileName}-${new Date().toISOString().slice(0, 10)}.png`
       link.href = dataUrl
       link.click()
+
+      // I3 — quels graphiques sont réellement emportés dans les documents des utilisateurs.
+      // Aucune trace en base : le rendu est entièrement côté navigateur.
+      trackEvent({ action: 'telechargement graphique', category: 'Infographie', name: fileName })
     } catch {
       toast.error("Erreur lors du téléchargement de l'image")
     }

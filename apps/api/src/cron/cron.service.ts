@@ -8,6 +8,9 @@ import { anonymizeEmail } from '~/common/utils/email-anonymizer'
 import { PrismaService } from '~/db/prisma.service'
 import { DossierNode, GraphQLResponse } from './interfaces/demarches-simplifiees.interface'
 
+/** Durée de conservation des connexions (recommandation CNIL pour la mesure d'audience). */
+const LOGIN_EVENTS_RETENTION_MONTHS = 25
+
 const query = `
     query GetDossiers($after: String, $id: Int!) {
         demarche(number: $id) {
@@ -80,6 +83,29 @@ export class CronService {
       } catch (error) {
         this.logger.error('Error in user access update CRON job:', error)
       }
+
+      await this.purgeOldLoginEvents()
+    }
+  }
+
+  /**
+   * La CNIL recommande une conservation maximale de 25 mois pour la mesure d'audience.
+   * Sans cette purge, `login_events` croîtrait indéfiniment.
+   */
+  async purgeOldLoginEvents(): Promise<void> {
+    const threshold = new Date()
+    threshold.setMonth(threshold.getMonth() - LOGIN_EVENTS_RETENTION_MONTHS)
+
+    try {
+      const { count } = await this.prismaService.loginEvent.deleteMany({
+        where: { startedAt: { lt: threshold } },
+      })
+
+      if (count > 0) {
+        this.logger.log(`Purged ${count} login events older than ${LOGIN_EVENTS_RETENTION_MONTHS} months`)
+      }
+    } catch (error) {
+      this.logger.error('Error purging old login events:', error)
     }
   }
 

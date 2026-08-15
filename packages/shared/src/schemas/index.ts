@@ -22,4 +22,7 @@ export * from './entities/user.base'
 // Rates
 export * from './rates/accommodations-rates'
 // Statistics
+export * from './statistics/activation-statistics'
+export * from './statistics/audience-statistics'
+export * from './statistics/simulation-changes'
 export * from './statistics/template-statistics'
