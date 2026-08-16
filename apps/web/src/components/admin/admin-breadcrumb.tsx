@@ -7,8 +7,8 @@ export const AdminBreadcrumb = () => {
   const pathname = usePathname()
 
   const getCurrentPageLabel = () => {
-    if (pathname.includes('/gestion-des-utilisateurs')) {
-      return 'Gestion des utilisateurs'
+    if (pathname.includes('/utilisateurs')) {
+      return 'Utilisateurs'
     }
     if (pathname.includes('/statistiques')) {
       return 'Statistiques'

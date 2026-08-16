@@ -75,6 +75,7 @@ export const TerritoiresVoisinsPage = () => {
       >
         <div className="fr-flex-grow-1 fr-flex-basis-0">
           <AutocompleteInput
+            searchCategory="voisins"
             hintText="Recherchez un EPCI par nom ou une commune par nom / code postal"
             label="Territoire"
             onClick={handleEpciSelect}

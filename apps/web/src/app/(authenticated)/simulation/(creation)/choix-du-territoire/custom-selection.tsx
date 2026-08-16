@@ -1,6 +1,5 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
 import Button from '@codegouvfr/react-dsfr/Button'
 import { TEpci } from '@shared'
@@ -54,8 +53,9 @@ export const CustomSelection = ({ bassinEpcis, hasUrbanismeDocError }: CustomSel
 
   return (
     <>
-      <h3 className={fr.cx('fr-h5')}>Créer une sélection personnalisée</h3>
+      <h3 className="fr-h5">Créer une sélection personnalisée</h3>
       <AutocompleteInput
+        searchCategory="territoire"
         label="Rechercher un EPCI"
         onClick={onSelectEpci}
         hintText="Saisissez le nom de l'EPCI du territoire concerné, ou par défaut, vous pouvez saisir le nom de la commune ou son code postal."
@@ -64,10 +64,10 @@ export const CustomSelection = ({ bassinEpcis, hasUrbanismeDocError }: CustomSel
 
       {selectedEpcis && selectedEpcis.length > 0 && (
         <>
-          <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters', 'fr-grid-row--middle')}>
-            <div className={fr.cx('fr-col-md-9')}>
+          <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+            <div className="fr-col-md-9">
               {!isEditing && (
-                <div className={fr.cx('fr-py-5w')}>
+                <div className="fr-py-5w">
                   Les territoires inclus dans la simulation sont :
                   <ul>
                     {selectedEpcis?.map((epci) => (
@@ -77,12 +77,12 @@ export const CustomSelection = ({ bassinEpcis, hasUrbanismeDocError }: CustomSel
                 </div>
               )}
               {isEditing && (
-                <div className={fr.cx('fr-py-5w')}>
+                <div className="fr-py-5w">
                   <CheckboxEpcis epcis={bassinEpcis} legend="Sélection des territoires du bassin" />
                 </div>
               )}
             </div>
-            <div className={fr.cx('fr-col-md-3')}>
+            <div className="fr-col-md-3">
               <Button priority="secondary" onClick={toggleEditing}>
                 Éditer les territoires inclus
               </Button>
@@ -93,9 +93,9 @@ export const CustomSelection = ({ bassinEpcis, hasUrbanismeDocError }: CustomSel
 
           <UrbanismeDocQuestion hasError={hasUrbanismeDocError} />
 
-          <hr className={fr.cx('fr-mt-3w')} />
+          <hr className="fr-mt-3w" />
           <EpciGroupNameInput value={epciGroupName || ''} />
-          <div className={fr.cx('fr-mt-2w')}>
+          <div className="fr-mt-2w">
             <Alert
               description="Les résultats de votre simulation seront donnés à l'échelle de l'EPCI ou à l'échelle du bassin d'habitat."
               severity="info"

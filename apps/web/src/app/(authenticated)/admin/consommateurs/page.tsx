@@ -1,18 +1,20 @@
-import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { ConsumersManagement } from '~/components/admin/consumers/consumers-management'
-import { getSession } from '~/lib/auth/server'
+import { AdminPageHeader } from '~/components/admin/shared/admin-page-header'
 
-export default async function ConsumersPage() {
-  const session = await getSession()
+export const metadata: Metadata = {
+  title: 'Consommateurs API',
+}
 
-  if (!session || session.user.role !== 'ADMIN') {
-    return notFound()
-  }
-
+export default function ConsumersPage() {
   return (
-    <div className="fr-px-4w fr-py-10v">
-      <h1>Consommateurs API</h1>
+    <>
+      <AdminPageHeader
+        icon="fr-icon-lock-line"
+        subtitle="Clés d'accès à l'API publique : création, révocation et régénération."
+        title="Consommateurs API"
+      />
       <ConsumersManagement />
-    </div>
+    </>
   )
 }

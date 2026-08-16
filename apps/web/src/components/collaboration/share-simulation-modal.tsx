@@ -1,6 +1,5 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import Button from '@codegouvfr/react-dsfr/Button'
 import Input from '@codegouvfr/react-dsfr/Input'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
@@ -8,6 +7,7 @@ import ToggleSwitch from '@codegouvfr/react-dsfr/ToggleSwitch'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useShareStatus, useToggleShare } from '~/hooks/use-share-link'
+import { useTracking } from '~/hooks/use-tracking'
 
 interface ShareSimulationModalProps {
   simulationId: string
@@ -17,6 +17,7 @@ interface ShareSimulationModalProps {
 export function ShareSimulationModal({ simulationId, simulationName }: ShareSimulationModalProps) {
   const { data: shareStatus, isLoading } = useShareStatus(simulationId)
   const { mutate: toggleShare, isPending } = useToggleShare(simulationId)
+  const { trackEvent } = useTracking()
 
   const modalActions = useMemo(
     () =>
@@ -31,7 +32,16 @@ export function ShareSimulationModal({ simulationId, simulationName }: ShareSimu
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(shareUrl)
+    trackEvent({ action: 'copie lien', category: 'Partage' })
     toast.success('Lien copié dans le presse-papiers')
+  }
+
+  const handleToggleShare = () => {
+    trackEvent({
+      action: shareStatus?.active ? 'desactivation partage' : 'activation partage',
+      category: 'Partage',
+    })
+    toggleShare()
   }
 
   return (
@@ -41,23 +51,23 @@ export function ShareSimulationModal({ simulationId, simulationName }: ShareSimu
       </Button>
 
       <modalActions.Component title={`Partager "${simulationName}"`} concealingBackdrop>
-        <p className={fr.cx('fr-text--sm', 'fr-mb-2w')}>
+        <p className="fr-text--sm fr-mb-2w">
           Activez le partage pour générer un lien permettant à toute personne d'accéder aux résultats en lecture seule.
         </p>
 
         {isLoading ? (
-          <p className={fr.cx('fr-text--sm')}>Chargement...</p>
+          <p className="fr-text--sm">Chargement...</p>
         ) : (
           <>
             <ToggleSwitch
               label="Activer le partage"
               checked={shareStatus?.active ?? false}
-              onChange={() => toggleShare()}
+              onChange={handleToggleShare}
               disabled={isPending}
             />
 
             {shareStatus?.active && shareStatus.token && (
-              <div className={fr.cx('fr-mt-2w')}>
+              <div className="fr-mt-2w">
                 <div className="fr-flex fr-flex-gap-2v fr-align-items-end fr-justify-content-end">
                   <div className="fr-flex-grow-1">
                     <Input
