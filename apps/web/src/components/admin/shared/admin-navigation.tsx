@@ -14,7 +14,6 @@ type NavItem = {
   icon: string
   href: string
   badgeKey?: BadgeKey
-  /** Route hors de la coquille d'administration (ex. /pilotage, ouvert aussi aux DREAL). */
   external?: boolean
 }
 
@@ -45,7 +44,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Journal des modifications', icon: 'fr-icon-article-line', href: '/admin/journal' },
       { label: 'Exports', icon: 'fr-icon-download-line', href: '/admin/exports' },
-      { label: 'Consommateurs API', icon: 'fr-icon-key-line', href: '/admin/consommateurs' },
+      { label: 'Consommateurs API', icon: 'fr-icon-lock-line', href: '/admin/consommateurs' },
     ],
   },
 ]
@@ -65,11 +64,18 @@ export const AdminNavigation: FC = () => {
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
   return (
-    <aside className={styles.sidebar}>
-      <nav className={styles.sidebarNav} aria-label="Navigation de l'administration">
+    <aside
+      className={classNames(
+        'fr-flex fr-direction-column fr-justify-content-space-between fr-border-right fr-background-default--grey',
+        styles.sidebar,
+      )}
+    >
+      <nav className="fr-flex fr-direction-column fr-flex-gap-6v fr-px-3v fr-py-6v" aria-label="Navigation de l'administration">
         {NAV_SECTIONS.map((section) => (
           <div key={section.title}>
-            <div className={styles.navSectionTitle}>{section.title}</div>
+            <div className={classNames('fr-px-3v fr-mb-2v fr-text--bold fr-text--uppercase fr-text-mention--grey', styles.navSectionTitle)}>
+              {section.title}
+            </div>
             {section.items.map((item) => {
               const active = isActive(item.href)
               const badge = getBadge(item.badgeKey)
@@ -79,22 +85,27 @@ export const AdminNavigation: FC = () => {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className={classNames('fr-link--no-underline', active ? styles.navItemActive : styles.navItem)}
+                  className={classNames(
+                    'fr-link--no-underline fr-flex fr-align-items-center fr-flex-gap-2v fr-px-3v fr-py-2v fr-border-radius--4 fr-text--sm fr-mb-2v',
+                    active ? classNames('fr-text--medium', styles.navItemActive) : styles.navItem,
+                  )}
                 >
                   <span className={item.icon} aria-hidden="true" />
                   {item.label}
                   {item.external && <span className="fr-icon-external-link-line fr-icon--sm" aria-hidden="true" />}
-                  {badge !== null && <span className={styles.navBadge}>{badge.toLocaleString('fr-FR')}</span>}
+                  {badge !== null && (
+                    <span
+                      className={classNames('fr-ml-auto fr-text--bold fr-text-mention--grey fr-background-contrast--grey', styles.navBadge)}
+                    >
+                      {badge.toLocaleString('fr-FR')}
+                    </span>
+                  )}
                 </Link>
               )
             })}
           </div>
         ))}
       </nav>
-      <div className={styles.sidebarFooter}>
-        <div className="fr-text--bold">Otelo</div>
-        <div>Administration</div>
-      </div>
     </aside>
   )
 }

@@ -1,6 +1,5 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import Button from '@codegouvfr/react-dsfr/Button'
 import { Select } from '@codegouvfr/react-dsfr/Select'
 import { Table } from '@codegouvfr/react-dsfr/Table'
@@ -98,7 +97,7 @@ export default function PilotageTab() {
 
   if (error) {
     return (
-      <div className={fr.cx('fr-alert', 'fr-alert--error')}>
+      <div className="fr-alert fr-alert--error">
         <p>Erreur lors du chargement des données de pilotage</p>
       </div>
     )
@@ -109,7 +108,7 @@ export default function PilotageTab() {
   return (
     <div>
       <h1 className="fr-mb-1v">Pilotage du déploiement</h1>
-      <p className={`${fr.cx('fr-text--sm')} fr-text-mention--grey fr-mb-4v`}>Suivi de l'usage et de la couverture territoriale d'Otelo.</p>
+      <p className="fr-text--sm fr-text-mention--grey fr-mb-4v">Suivi de l'usage et de la couverture territoriale d'Otelo.</p>
 
       {/* Filters — selects + export on one row */}
       <div className={styles.filtersBar}>
@@ -133,7 +132,7 @@ export default function PilotageTab() {
         )}
         {isDreal && userRegion && (
           <div>
-            <p className={fr.cx('fr-text--sm', 'fr-mb-0')}>
+            <p className="fr-text--sm fr-mb-0">
               <strong>Région :</strong> {userRegion}
             </p>
           </div>
@@ -262,7 +261,7 @@ export default function PilotageTab() {
             <div className={styles.rankingCard}>
               <h3 className={styles.rankingTitle}>Classement régions</h3>
               {regionRanking.length === 0 ? (
-                <p className={fr.cx('fr-text--sm')}>Aucune donnée</p>
+                <p className="fr-text--sm">Aucune donnée</p>
               ) : (
                 regionRanking.map((item, idx) => (
                   <div key={item.region} className={classNames(styles.rankingRow, 'fr-flex', 'fr-align-items-center')}>
@@ -284,7 +283,7 @@ export default function PilotageTab() {
                 </div>
               ))}
               {!effectiveRegion && (
-                <p className={`${fr.cx('fr-text--sm')} ${styles.legendHint} fr-text-mention--grey fr-mt-2v`}>
+                <p className={classNames('fr-text--sm fr-text-mention--grey fr-mt-2v', styles.legendHint)}>
                   Sélectionnez une région pour zoomer
                 </p>
               )}
@@ -298,7 +297,7 @@ export default function PilotageTab() {
         <div className={classNames(styles.sectionBox, 'fr-mb-0')}>
           <h2 className={classNames(styles.sectionBoxTitle, 'fr-mb-4v')}>Usage par typologie d'acteur</h2>
           {typologyUsage.length === 0 ? (
-            <p className={fr.cx('fr-text--sm')}>Aucune donnée disponible</p>
+            <p className="fr-text--sm">Aucune donnée disponible</p>
           ) : (
             typologyUsage.map((item) => (
               <div key={item.type} className={classNames(styles.typologyRow, 'fr-flex', 'fr-align-items-center')}>
@@ -335,11 +334,11 @@ export default function PilotageTab() {
       {isAdmin && (
         <>
           {/* Scénarios récents */}
-          <h2 className={fr.cx('fr-h4', 'fr-mb-3v', 'fr-mt-6v')}>Scénarios récents</h2>
+          <h2 className="fr-h4 fr-mb-3v fr-mt-6v">Scénarios récents</h2>
           <PilotageScenariosTable />
 
           {/* Estimations des besoins en logements par région */}
-          <h2 className={fr.cx('fr-h4', 'fr-mt-8v', 'fr-mb-3v')}>Estimations des besoins en logements par région</h2>
+          <h2 className="fr-h4 fr-mt-8v fr-mb-3v">Estimations des besoins en logements par région</h2>
           {data.housingByRegion.length > 0 ? (
             <Table
               fixed
@@ -358,7 +357,7 @@ export default function PilotageTab() {
           )}
 
           {/* Acteurs par région et type */}
-          <h2 className={fr.cx('fr-h4', 'fr-mt-8v', 'fr-mb-3v')}>Acteurs par région et type</h2>
+          <h2 className="fr-h4 fr-mt-8v fr-mb-3v">Acteurs par région et type</h2>
           {data.actorsByRegion.length > 0 ? (
             <Table
               fixed

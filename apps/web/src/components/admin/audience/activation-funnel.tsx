@@ -1,9 +1,10 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import { ACTIVATION_STEP_LABELS, type TActivationStep } from '@shared'
+import classNames from 'classnames'
 import type { FC } from 'react'
 import styles from '~/app/(authenticated)/admin/admin.module.css'
+import { ADMIN_CARD, ADMIN_CARD_HEADER } from '~/components/admin/shared/admin-classes'
 import { chartColor } from '~/components/admin/shared/admin-colors'
 import { ExportCsvButton } from '~/components/admin/shared/export-csv-button'
 import funnelStyles from './activation-funnel.module.css'
@@ -13,21 +14,16 @@ type ActivationFunnelProps = {
   isLoading?: boolean
 }
 
-/**
- * Entonnoir d'activation.
- *
- * La largeur des barres est rapportée au premier palier (l'inscription), pas au palier
- * précédent : l'export et le partage sont deux issues parallèles du premier scénario,
- * et les enchaîner donnerait des barres incohérentes.
- */
+// La largeur des barres est rapportée au premier palier (l'inscription), pas au palier
+// précédent : l'export et le partage sont deux issues parallèles du premier scénario.
 export const ActivationFunnel: FC<ActivationFunnelProps> = ({ funnel, isLoading }) => {
   const total = funnel?.[0]?.count ?? 0
 
   return (
-    <div className={styles.card}>
-      <div className={styles.cardHeader}>
+    <div className={ADMIN_CARD}>
+      <div className={ADMIN_CARD_HEADER}>
         <div>
-          <h3 className={styles.cardTitle}>Entonnoir d'activation</h3>
+          <h3 className={classNames('fr-m-0', styles.cardTitle)}>Entonnoir d'activation</h3>
           <p className="fr-text--xs fr-text-mention--grey fr-mb-0 fr-mt-1v">
             Cohorte des comptes créés sur la période, suivis jusqu'à leur premier partage.
           </p>
@@ -35,26 +31,26 @@ export const ActivationFunnel: FC<ActivationFunnelProps> = ({ funnel, isLoading 
         <ExportCsvButton dataset="activation" label="CSV" priority="tertiary" />
       </div>
 
-      <div className={fr.cx('fr-p-3w')}>
+      <div className="fr-p-3w">
         {isLoading ? (
           <p className="fr-text--sm fr-text-mention--grey fr-mb-0">Chargement…</p>
         ) : !funnel?.length || total === 0 ? (
           <p className="fr-text--sm fr-text-mention--grey fr-mb-0">Aucun compte créé sur cette période.</p>
         ) : (
-          <ol className={funnelStyles.steps}>
+          <ol className={classNames('fr-flex fr-direction-column fr-flex-gap-4v fr-m-0 fr-p-0', funnelStyles.steps)}>
             {funnel.map((step, index) => (
-              <li className={funnelStyles.step} key={step.step}>
-                <div className={funnelStyles.stepHeader}>
+              <li className="fr-flex fr-direction-column fr-flex-gap-1v" key={step.step}>
+                <div className="fr-flex fr-align-items-baseline fr-justify-content-space-between fr-flex-gap-4v">
                   <span className="fr-text--sm fr-text--bold">{step.label}</span>
                   <span className="fr-text--sm">{step.count.toLocaleString('fr-FR')}</span>
                 </div>
-                <div className={funnelStyles.barTrack}>
+                <div className={classNames('fr-background-contrast--grey', funnelStyles.barTrack)}>
                   <div
                     className={funnelStyles.barFill}
                     style={{ backgroundColor: chartColor(index), width: `${Math.min(100, (step.count / total) * 100)}%` }}
                   />
                 </div>
-                <div className={funnelStyles.stepMeta}>
+                <div className="fr-flex fr-flex-wrap fr-flex-gap-4v fr-text--xs fr-text-mention--grey">
                   {step.conversionFrom !== null && step.comparedToStep && (
                     <span>
                       {step.conversionFrom} % depuis « {ACTIVATION_STEP_LABELS[step.comparedToStep]} »

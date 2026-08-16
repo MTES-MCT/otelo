@@ -74,7 +74,7 @@ export const UsersTableHeader: FC<UsersTableHeaderProps> = ({ userCount, searchQ
         />
         <div className={classes.usersCountContainer}>
           <div className={classes.iconWrapper}>
-            <span className={cx(classes.userIcon, fr.cx('fr-icon-user-fill'))}></span>
+            <span className={cx(classes.userIcon, 'fr-icon-user-fill')}></span>
           </div>
           <span className={classes.userCount}>{userCount} utilisateurs</span>
         </div>

@@ -1,6 +1,5 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import { Button } from '@codegouvfr/react-dsfr/Button'
 import { Card } from '@codegouvfr/react-dsfr/Card'
 import { Input } from '@codegouvfr/react-dsfr/Input'
@@ -37,8 +36,8 @@ export function FeedbacksContent({ feedbacks, startDate, endDate }: FeedbacksCon
   return (
     // Le titre et le conteneur sont fournis par la coquille d'administration.
     <>
-      <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters', 'fr-mb-5v')}>
-        <div className={fr.cx('fr-col-12', 'fr-col-md-4')}>
+      <div className="fr-grid-row fr-grid-row--gutters fr-mb-5v">
+        <div className="fr-col-12 fr-col-md-4">
           <Input
             label="Date de début"
             nativeInputProps={{
@@ -48,7 +47,7 @@ export function FeedbacksContent({ feedbacks, startDate, endDate }: FeedbacksCon
             }}
           />
         </div>
-        <div className={fr.cx('fr-col-12', 'fr-col-md-4')}>
+        <div className="fr-col-12 fr-col-md-4">
           <Input
             label="Date de fin"
             nativeInputProps={{
@@ -58,7 +57,7 @@ export function FeedbacksContent({ feedbacks, startDate, endDate }: FeedbacksCon
             }}
           />
         </div>
-        <div className={fr.cx('fr-col-12', 'fr-col-md-4')} style={{ display: 'flex', alignItems: 'flex-end' }}>
+        <div className="fr-col-12 fr-col-md-4 fr-flex fr-align-items-end">
           <Button onClick={handleFilter}>Filtrer</Button>
         </div>
       </div>
@@ -67,22 +66,22 @@ export function FeedbacksContent({ feedbacks, startDate, endDate }: FeedbacksCon
         <p>Aucun retour utilisateur pour cette période.</p>
       ) : (
         <>
-          <p className={fr.cx('fr-mb-3v')}>
+          <p className="fr-mb-3v">
             {feedbacks.length} retour{feedbacks.length > 1 ? 's' : ''} utilisateur{feedbacks.length > 1 ? 's' : ''}
           </p>
-          <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
+          <div className="fr-grid-row fr-grid-row--gutters">
             {feedbacks.map((feedback) => (
-              <div key={feedback.id} className={fr.cx('fr-col-12', 'fr-col-md-6', 'fr-col-lg-4')}>
+              <div key={feedback.id} className="fr-col-12 fr-col-md-6 fr-col-lg-4">
                 <Card
                   title={`Note : ${feedback.rating}/5`}
                   titleAs="h3"
                   desc={
                     <>
-                      {feedback.comment && <p className={fr.cx('fr-mb-2v')}>{feedback.comment}</p>}
-                      <p className={fr.cx('fr-text--sm', 'fr-mb-1v')}>
+                      {feedback.comment && <p className="fr-mb-2v">{feedback.comment}</p>}
+                      <span className="fr-text--sm fr-mb-1v">
                         <a href={`mailto:${feedback.user.email}`}>{feedback.user.email}</a>
-                      </p>
-                      <p className={fr.cx('fr-text--xs', 'fr-mb-0')}>
+                      </span>
+                      <p className="fr-text--xs fr-mb-0">
                         {new Date(feedback.createdAt).toLocaleDateString('fr-FR', {
                           day: 'numeric',
                           month: 'long',

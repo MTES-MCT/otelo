@@ -7,8 +7,6 @@ import { useState } from 'react'
 import styles from './admin-data-table.module.css'
 
 type AdminDataTableProps<T> = {
-  // `unknown` en type de valeur : chaque colonne déclare son propre accesseur,
-  // la table n'a pas à connaître le type des cellules.
   columns: ColumnDef<T, unknown>[]
   data: T[]
   /** Nombre total de pages côté serveur. La pagination n'est rendue qu'au-delà de 1. */
@@ -22,13 +20,8 @@ type AdminDataTableProps<T> = {
   isRowSelected?: (row: T) => boolean
 }
 
-/**
- * Table d'administration.
- *
- * Le tri est local (les colonnes l'activent via `enableSorting`), la pagination est
- * serveur (`manualPagination`) : trier ne doit pas déclencher d'aller-retour réseau,
- * mais paginer ne doit pas charger tout le jeu de données.
- */
+// Tri local (les colonnes l'activent via `enableSorting`), pagination serveur
+// (`manualPagination`) : trier ne doit pas déclencher d'aller-retour réseau.
 export function AdminDataTable<T>({
   columns,
   data,
@@ -56,15 +49,21 @@ export function AdminDataTable<T>({
 
   const renderPlaceholder = (label: string, isErrorRow = false) => (
     <tr>
-      <td className={isErrorRow ? styles.errorCell : styles.centerCell} colSpan={columns.length}>
+      <td
+        className={classNames(
+          'fr-px-4v fr-py-8v fr-text--sm fr-text--center',
+          isErrorRow ? 'fr-text-default--error' : 'fr-text-mention--grey',
+        )}
+        colSpan={columns.length}
+      >
         {label}
       </td>
     </tr>
   )
 
   return (
-    <div className={classNames('fr-table', styles.wrapper)}>
-      <table>
+    <div className={classNames('fr-table fr-m-0', styles.wrapper)}>
+      <table className="fr-width-full">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
@@ -86,8 +85,8 @@ export function AdminDataTable<T>({
                         <span
                           aria-hidden="true"
                           className={classNames(
-                            styles.sortIcon,
-                            sortDirection ? styles.sortActive : styles.sortInactive,
+                            'fr-text--xs',
+                            sortDirection ? 'fr-text-action-high--blue-france' : styles.sortInactive,
                             sortDirection === 'asc'
                               ? 'fr-icon-arrow-up-line'
                               : sortDirection === 'desc'

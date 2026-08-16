@@ -25,8 +25,6 @@ export const SelectDataType: FC = () => {
     millesime: parseAsString,
   })
 
-  // I1 — l'usage des infographies ne laisse aucune trace en base : rien n'est persisté
-  // lorsqu'un utilisateur consulte un jeu de données.
   const handleChange = (value: string) => {
     if (value) {
       trackEvent({

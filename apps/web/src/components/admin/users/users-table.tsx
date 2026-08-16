@@ -181,8 +181,7 @@ function getColumns(
         const val = row.getValue<boolean>(columnId)
         return filterValue === 'true' ? val : !val
       },
-      size: 100,
-      maxSize: 100,
+      size: 110,
       meta: {
         filterType: 'select',
         options: [
@@ -248,8 +247,7 @@ function getColumns(
         const val = row.getValue<boolean>(columnId)
         return filterValue === 'true' ? val : !val
       },
-      size: 100,
-      maxSize: 100,
+      size: 150,
       meta: {
         filterType: 'select',
         options: [
@@ -268,6 +266,7 @@ function getColumns(
     },
     {
       id: 'actions',
+      size: 90,
       header: () => <div style={{ textAlign: 'right' }}>Actions</div>,
       enableSorting: false,
       enableColumnFilter: false,

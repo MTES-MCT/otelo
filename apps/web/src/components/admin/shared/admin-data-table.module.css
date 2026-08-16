@@ -1,10 +1,5 @@
 .wrapper {
-  margin: 0;
   overflow-x: auto;
-}
-
-.wrapper table {
-  width: 100%;
 }
 
 .sortableHeader {
@@ -12,31 +7,8 @@
   user-select: none;
 }
 
-.sortIcon {
-  font-size: 0.75rem;
-}
-
-.sortActive {
-  color: var(--text-action-high-blue-france);
-}
-
 .sortInactive {
   opacity: 0.35;
-}
-
-.centerCell,
-.errorCell {
-  padding: 2rem 1rem;
-  text-align: center;
-  font-size: 0.875rem;
-}
-
-.centerCell {
-  color: var(--text-mention-grey);
-}
-
-.errorCell {
-  color: var(--text-default-error);
 }
 
 .clickableRow {

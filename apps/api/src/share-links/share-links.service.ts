@@ -54,9 +54,6 @@ export class ShareLinksService {
   }
 
   async getResultsByToken(simulationId: string) {
-    // Compté en base plutôt que via Matomo : le token est anonymisé côté tracking,
-    // et une consultation doit être comptée même si le visiteur bloque les traqueurs.
-    // Volontairement non attendu : la page publique ne doit pas ralentir pour un compteur.
     void this.recordShareView(simulationId)
 
     return this.resultsService.getGroupedResults(simulationId)

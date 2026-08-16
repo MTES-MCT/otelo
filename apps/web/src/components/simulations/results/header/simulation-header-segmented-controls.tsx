@@ -24,9 +24,6 @@ export const SimulationHeaderSegmentedControls = ({
             key={segment.id}
             linkProps={{
               href: `/simulation/${segment.id}/resultats${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
-              // R1 — la comparaison de scénarios est le cœur de la valeur du produit,
-              // et rien en base ne distingue « a créé plusieurs scénarios » de
-              // « les a réellement comparés ».
               onClick: () => trackEvent({ action: 'comparaison scenarios', category: 'Simulation', value: segments.length }),
             }}
             priority={segment.id === activeId ? 'secondary' : 'tertiary'}
