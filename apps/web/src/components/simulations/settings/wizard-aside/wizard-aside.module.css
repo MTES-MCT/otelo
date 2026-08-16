@@ -112,8 +112,9 @@
   justify-content: space-between;
 }
 
-/* Le libellé peut se replier ; la valeur, jamais. */
-.row > :last-child {
+/* Le libellé peut se replier ; la valeur, jamais. Ciblé sur « pas le premier » et non sur
+   « le dernier » : une ligne sans valeur n'a qu'un enfant, qui reste un libellé. */
+.row > :not(:first-child) {
   white-space: nowrap;
 }
 

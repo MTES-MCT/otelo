@@ -14,7 +14,6 @@ export type EstimationSectionKey = 'principalResidences' | 'parcEvolution' | 'mo
 export type EstimationSection = {
   key: EstimationSectionKey
   title: string
-  formula: string
   terms: EstimationTermKey[]
 }
 
@@ -73,19 +72,16 @@ export const ESTIMATION_SECTIONS: EstimationSection[] = [
   {
     key: 'principalResidences',
     title: 'Besoin en résidences principales supplémentaires',
-    formula: 'A + B',
     terms: ['demographic', 'badHousing'],
   },
   {
     key: 'parcEvolution',
     title: 'Besoin lié à l’évolution du parc de logements',
-    formula: 'C + D + E + F',
     terms: ['fluidity', 'vacancyIncrease', 'secondaryIncrease', 'disappearanceSurplus'],
   },
   {
     key: 'mobilisable',
     title: 'Logements mobilisables au sein du parc existant',
-    formula: 'G + H + I',
     terms: ['vacancyRemobilised', 'secondaryDecrease', 'appearanceSurplus'],
   },
 ]

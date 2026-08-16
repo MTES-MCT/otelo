@@ -50,7 +50,7 @@ export const EstimationCard: FC<EstimationCardProps> = ({ breakdown, territoryLa
     const isEditing = isTermBeingEdited(key, slug)
 
     return (
-      <li key={key} className={classNames(styles.row, styles.termRow, fr.cx('fr-text--xs'), { [styles.editing]: isEditing })}>
+      <li key={key} className={classNames(styles.row, styles.termRow, 'fr-text--xs fr-mb-0', { [styles.editing]: isEditing })}>
         <span>
           {term.label}
           {term.footnote && <sup aria-hidden> *</sup>}
@@ -72,14 +72,19 @@ export const EstimationCard: FC<EstimationCardProps> = ({ breakdown, territoryLa
 
       {ESTIMATION_SECTIONS.map((section) => {
         const sectionTotal = getSectionTotal(section, breakdown, slug, flow)
+        const terms = section.terms.filter((key) => isTermVisible(key, breakdown, slug, flow))
 
         return (
           <section key={section.key} className={fr.cx('fr-mb-2w')}>
-            <p className={classNames(styles.row, styles.sectionTitle, fr.cx('fr-text--xs', 'fr-text--bold', 'fr-mb-1v'))}>
+            <p
+              className={classNames(styles.row, fr.cx('fr-text--xs', 'fr-text--bold', 'fr-mb-1v'), {
+                [styles.sectionTitle]: terms.length > 0,
+              })}
+            >
               <span>{section.title}</span>
-              <span>{sectionTotal === null ? section.formula : formatNumber(round(sectionTotal))}</span>
+              {sectionTotal !== null && <span>{formatNumber(round(sectionTotal))}</span>}
             </p>
-            <ul className={styles.questionList}>{section.terms.map(renderTerm)}</ul>
+            {terms.length > 0 && <ul className={styles.questionList}>{terms.map(renderTerm)}</ul>}
           </section>
         )
       })}
@@ -89,11 +94,11 @@ export const EstimationCard: FC<EstimationCardProps> = ({ breakdown, territoryLa
           <hr className={fr.cx('fr-pb-1w')} />
 
           <ul className={styles.questionList}>
-            <li className={classNames(styles.row, styles.total, fr.cx('fr-text--xs'))}>
+            <li className={classNames(styles.row, styles.total, 'fr-text--xs fr-mb-0')}>
               <span>Besoin en logements supplémentaires</span>
               <span className={fr.cx('fr-text--bold')}>{formatNumber(round(totals.additionalNeed))}</span>
             </li>
-            <li className={classNames(styles.row, styles.total, fr.cx('fr-text--xs'))}>
+            <li className={classNames(styles.row, styles.total, 'fr-text--xs fr-mb-0')}>
               <span>Optimisation du parc existant</span>
               <span className={fr.cx('fr-text--bold')}>{formatNumber(round(totals.existingParcOptimisation))}</span>
             </li>
