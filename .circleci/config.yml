@@ -132,12 +132,4 @@ commands:
     steps:
       - run:
           name: 'Create .env file from .env.dist'
-          # Les variables NEXT_PUBLIC_* sont inlinées au build : les valeurs Matomo
-          # doivent être injectées ici pour que le build vérifie une configuration
-          # réaliste. Absentes, le tracker est simplement désactivé.
-          command: |
-            cp apps/web/.env.dist apps/web/.env
-            if [ -n "$NEXT_PUBLIC_MATOMO_URL" ]; then
-              echo "NEXT_PUBLIC_MATOMO_URL=$NEXT_PUBLIC_MATOMO_URL" >> apps/web/.env
-              echo "NEXT_PUBLIC_MATOMO_SITE_ID=$NEXT_PUBLIC_MATOMO_SITE_ID" >> apps/web/.env
-            fi
+          command: cp apps/web/.env.dist apps/web/.env
