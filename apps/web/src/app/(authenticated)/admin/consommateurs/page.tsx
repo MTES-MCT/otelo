@@ -10,7 +10,7 @@ export default function ConsumersPage() {
   return (
     <>
       <AdminPageHeader
-        icon="fr-icon-key-line"
+        icon="fr-icon-lock-line"
         subtitle="Clés d'accès à l'API publique : création, révocation et régénération."
         title="Consommateurs API"
       />

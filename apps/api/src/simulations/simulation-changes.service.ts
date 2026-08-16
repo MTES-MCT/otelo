@@ -14,7 +14,6 @@ type ScenarioSnapshot = Record<string, unknown> & {
   epciScenarios?: Array<Record<string, unknown> & { epciCode: string }>
 }
 
-/** Champs techniques : leur variation ne dit rien du paramétrage métier. */
 const IGNORED_FIELDS = new Set([
   'id',
   'userId',
@@ -25,7 +24,6 @@ const IGNORED_FIELDS = new Set([
   'demographicEvolutionOmphaleCustom',
 ])
 
-/** Taux comparés par EPCI, dans l'ordre des étapes du wizard. */
 const EPCI_RATE_FIELDS = [
   'b2_tx_vacance',
   'b2_tx_vacance_longue',
@@ -35,33 +33,48 @@ const EPCI_RATE_FIELDS = [
   'b2_tx_disparition',
 ] as const
 
-/**
- * Deux valeurs sont considérées égales si leur forme sérialisée l'est.
- *
- * Les taux sont des flottants recalculés à chaque enregistrement : une comparaison stricte
- * signalerait des modifications inexistantes à cause d'écarts de représentation. Les
- * tableaux d'énumération (`b11_etablissement`) sont comparés sans tenir compte de l'ordre,
- * que Prisma ne garantit pas.
- */
-function isEqual(before: unknown, after: unknown): boolean {
-  if (Array.isArray(before) && Array.isArray(after)) {
-    return JSON.stringify([...before].sort()) === JSON.stringify([...after].sort())
+// Les taux sont des flottants recalculés à chaque enregistrement : une comparaison stricte
+// signalerait des modifications inexistantes à cause d'écarts de représentation.
+const FLOAT_TOLERANCE = 1e-9
+
+function haveSameNumbers(before: number, after: number): boolean {
+  return Math.abs(before - after) < FLOAT_TOLERANCE
+}
+
+// L'ordre des tableaux d'énumération (`b11_etablissement`) n'est pas garanti par Prisma.
+function haveSameItems(before: unknown[], after: unknown[]): boolean {
+  if (before.length !== after.length) {
+    return false
+  }
+
+  const sortedAfter = [...after].sort()
+
+  return [...before].sort().every((item, index) => item === sortedAfter[index])
+}
+
+function hasChanged(before: unknown, after: unknown): boolean {
+  if (before == null || after == null) {
+    return (before ?? null) !== (after ?? null)
   }
 
   if (typeof before === 'number' && typeof after === 'number') {
-    return Math.abs(before - after) < 1e-9
+    return !haveSameNumbers(before, after)
   }
 
-  return JSON.stringify(before ?? null) === JSON.stringify(after ?? null)
+  if (Array.isArray(before) && Array.isArray(after)) {
+    return !haveSameItems(before, after)
+  }
+
+  if (before instanceof Date && after instanceof Date) {
+    return before.getTime() !== after.getTime()
+  }
+
+  return before !== after
 }
 
-/**
- * Diff entre le scénario enregistré et celui soumis.
- *
- * Ne compare que les champs réellement présents dans la soumission : les formulaires de
- * modification n'envoient qu'une partie du scénario (démographie ou mal-logement), et
- * traiter les champs absents comme mis à null inventerait des modifications.
- */
+// Ne compare que les champs réellement présents dans la soumission : les formulaires de
+// modification n'envoient qu'une partie du scénario (démographie ou mal-logement), et
+// traiter les champs absents comme mis à null inventerait des modifications.
 export function computeScenarioDiff(before: ScenarioSnapshot, after: ScenarioSnapshot): ChangeEntry[] {
   const changes: ChangeEntry[] = []
 
@@ -72,7 +85,7 @@ export function computeScenarioDiff(before: ScenarioSnapshot, after: ScenarioSna
 
     const beforeValue = before[field]
 
-    if (!isEqual(beforeValue, afterValue)) {
+    if (hasChanged(beforeValue, afterValue)) {
       changes.push({ field, label: getChangeFieldLabel(field), before: beforeValue ?? null, after: afterValue })
     }
   }
@@ -91,7 +104,7 @@ export function computeScenarioDiff(before: ScenarioSnapshot, after: ScenarioSna
         continue
       }
 
-      if (!isEqual(beforeEpci[rate], afterEpci[rate])) {
+      if (hasChanged(beforeEpci[rate], afterEpci[rate])) {
         const field = `${afterEpci.epciCode}.${rate}`
         changes.push({
           field,
@@ -107,14 +120,6 @@ export function computeScenarioDiff(before: ScenarioSnapshot, after: ScenarioSna
   return changes
 }
 
-/**
- * Journalise les modifications apportées aux simulations.
- *
- * Les paramètres sont écrasés en place dans `scenarios` et `epci_scenarios` : sans ce
- * journal, `updatedAt` indique qu'une modification a eu lieu, jamais laquelle.
- *
- * Aucune écriture ici ne doit pouvoir faire échouer l'opération métier qu'elle décrit.
- */
 @Injectable()
 export class SimulationChangesService {
   private readonly logger = new Logger(SimulationChangesService.name)
@@ -129,8 +134,6 @@ export class SimulationChangesService {
   }): Promise<void> {
     const { action, changes, simulationId, userId } = params
 
-    // Un enregistrement sans modification effective (l'utilisateur revalide le formulaire
-    // sans rien toucher) ne doit pas polluer l'historique.
     if (action === 'scenario.updated' && (!changes || changes.length === 0)) {
       return
     }
@@ -152,7 +155,6 @@ export class SimulationChangesService {
     }
   }
 
-  /** Instantané du scénario avant modification, pour comparaison. */
   async getScenarioSnapshot(scenarioId: string) {
     return this.prisma.scenario.findUnique({
       where: { id: scenarioId },

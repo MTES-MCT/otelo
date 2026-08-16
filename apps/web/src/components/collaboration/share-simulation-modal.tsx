@@ -1,6 +1,5 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import Button from '@codegouvfr/react-dsfr/Button'
 import Input from '@codegouvfr/react-dsfr/Input'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
@@ -33,14 +32,10 @@ export function ShareSimulationModal({ simulationId, simulationName }: ShareSimu
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(shareUrl)
-    // P2 — le volume de partages activés se mesure en base ; cet événement dit
-    // combien de personnes vont jusqu'à réellement diffuser le lien.
     trackEvent({ action: 'copie lien', category: 'Partage' })
     toast.success('Lien copié dans le presse-papiers')
   }
 
-  // P1 — l'activation elle-même est journalisée en base ; l'événement permet de la
-  // situer dans le parcours (depuis quelle page, après quelle action).
   const handleToggleShare = () => {
     trackEvent({
       action: shareStatus?.active ? 'desactivation partage' : 'activation partage',
@@ -56,12 +51,12 @@ export function ShareSimulationModal({ simulationId, simulationName }: ShareSimu
       </Button>
 
       <modalActions.Component title={`Partager "${simulationName}"`} concealingBackdrop>
-        <p className={fr.cx('fr-text--sm', 'fr-mb-2w')}>
+        <p className="fr-text--sm fr-mb-2w">
           Activez le partage pour générer un lien permettant à toute personne d'accéder aux résultats en lecture seule.
         </p>
 
         {isLoading ? (
-          <p className={fr.cx('fr-text--sm')}>Chargement...</p>
+          <p className="fr-text--sm">Chargement...</p>
         ) : (
           <>
             <ToggleSwitch
@@ -72,7 +67,7 @@ export function ShareSimulationModal({ simulationId, simulationName }: ShareSimu
             />
 
             {shareStatus?.active && shareStatus.token && (
-              <div className={fr.cx('fr-mt-2w')}>
+              <div className="fr-mt-2w">
                 <div className="fr-flex fr-flex-gap-2v fr-align-items-end fr-justify-content-end">
                   <div className="fr-flex-grow-1">
                     <Input

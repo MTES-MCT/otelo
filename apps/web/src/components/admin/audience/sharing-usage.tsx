@@ -1,10 +1,11 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import Badge from '@codegouvfr/react-dsfr/Badge'
 import type { TAudienceStatistics } from '@shared'
+import classNames from 'classnames'
 import type { FC } from 'react'
 import styles from '~/app/(authenticated)/admin/admin.module.css'
+import { ADMIN_CARD, ADMIN_CARD_HEADER } from '~/components/admin/shared/admin-classes'
 import { ExportCsvButton } from '~/components/admin/shared/export-csv-button'
 import { StatCard } from '~/components/admin/shared/stat-card'
 import { formatDate } from '~/utils/date-helpers'
@@ -16,9 +17,9 @@ type SharingUsageProps = {
 
 export const SharingUsage: FC<SharingUsageProps> = ({ isLoading, sharing }) => (
   <>
-    <h2 className={fr.cx('fr-h5', 'fr-mt-4w')}>Partage de scénarios</h2>
+    <h2 className="fr-h5 fr-mt-4w">Partage de scénarios</h2>
 
-    <div className={`${styles.statsGrid} ${fr.cx('fr-mb-3w')}`}>
+    <div className={classNames('fr-mb-3w', styles.statsGrid)}>
       <StatCard
         accent="blue"
         hint="Liens créés sur la période"
@@ -30,7 +31,7 @@ export const SharingUsage: FC<SharingUsageProps> = ({ isLoading, sharing }) => (
       <StatCard
         accent="green"
         hint={`${sharing?.simulationsCreated ?? 0} scénario(s) créé(s) sur la période`}
-        icon="fr-icon-percent-line"
+        icon="fr-icon-pie-chart-line"
         isLoading={isLoading}
         label="Taux de partage"
         value={`${sharing?.activationRate ?? 0} %`}
@@ -53,14 +54,14 @@ export const SharingUsage: FC<SharingUsageProps> = ({ isLoading, sharing }) => (
       />
     </div>
 
-    <div className={styles.card}>
-      <div className={styles.cardHeader}>
-        <h3 className={styles.cardTitle}>Scénarios les plus consultés</h3>
+    <div className={ADMIN_CARD}>
+      <div className={ADMIN_CARD_HEADER}>
+        <h3 className={classNames('fr-m-0', styles.cardTitle)}>Scénarios les plus consultés</h3>
         <ExportCsvButton dataset="partages" label="CSV" priority="tertiary" />
       </div>
       {sharing?.topShared.length ? (
-        <div className={fr.cx('fr-table')} style={{ margin: 0 }}>
-          <table>
+        <div className="fr-table fr-m-0">
+          <table className="fr-width-full">
             <thead>
               <tr>
                 <th scope="col">Scénario</th>

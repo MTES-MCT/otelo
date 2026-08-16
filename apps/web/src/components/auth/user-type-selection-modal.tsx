@@ -41,8 +41,6 @@ export function UserTypeSelectionModal() {
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
       await mutateAsync(data)
-      // N2 — le type d'organisme est en base, mais la dimension Matomo n'est renseignée
-      // qu'à partir de la visite suivante : cet événement date le moment du choix.
       trackEvent({ action: 'selection type utilisateur', category: 'Authentification', name: data.type })
       // Hard navigate to get a fresh session and clear the selectType param
       window.location.href = '/tableaux-de-bord'

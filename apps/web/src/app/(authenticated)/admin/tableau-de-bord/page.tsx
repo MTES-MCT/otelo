@@ -1,9 +1,10 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
 import Button from '@codegouvfr/react-dsfr/Button'
+import classNames from 'classnames'
 import styles from '~/app/(authenticated)/admin/admin.module.css'
+import { ADMIN_CARD, ADMIN_CARD_HEADER } from '~/components/admin/shared/admin-classes'
 import { AdminPageHeader } from '~/components/admin/shared/admin-page-header'
 import { StatCard } from '~/components/admin/shared/stat-card'
 import { useAdminOverview } from '~/hooks/use-admin-overview'
@@ -21,12 +22,10 @@ export default function AdminDashboardPage() {
         title="Tableau de bord"
       />
 
-      {overviewError && (
-        <Alert className={fr.cx('fr-mb-3w')} description="Erreur lors du chargement des compteurs" severity="error" small />
-      )}
+      {overviewError && <Alert className="fr-mb-3w" description="Erreur lors du chargement des compteurs" severity="error" small />}
 
-      <h2 className={fr.cx('fr-h5')}>Comptes</h2>
-      <div className={`${styles.statsGrid} ${fr.cx('fr-mb-3w')}`}>
+      <h2 className="fr-h5">Comptes</h2>
+      <div className={classNames('fr-mb-3w', styles.statsGrid)}>
         <StatCard accent="blue" icon="fr-icon-team-line" isLoading={isOverviewLoading} label="Utilisateurs" value={overview?.users ?? 0} />
         <StatCard
           accent="green"
@@ -53,8 +52,8 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <h2 className={fr.cx('fr-h5')}>Production</h2>
-      <div className={`${styles.statsGrid} ${fr.cx('fr-mb-3w')}`}>
+      <h2 className="fr-h5">Production</h2>
+      <div className={classNames('fr-mb-3w', styles.statsGrid)}>
         <StatCard
           accent="blue"
           icon="fr-icon-file-text-line"
@@ -87,8 +86,8 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <h2 className={fr.cx('fr-h5')}>Couverture</h2>
-      <div className={`${styles.statsGrid} ${fr.cx('fr-mb-3w')}`}>
+      <h2 className="fr-h5">Couverture</h2>
+      <div className={classNames('fr-mb-3w', styles.statsGrid)}>
         <StatCard
           accent="green"
           hint="EPCI avec au moins un scénario sur 6 mois"
@@ -106,12 +105,12 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Aller plus loin</h2>
+      <div className={ADMIN_CARD}>
+        <div className={ADMIN_CARD_HEADER}>
+          <h2 className={classNames('fr-m-0', styles.cardTitle)}>Aller plus loin</h2>
         </div>
-        <div className={fr.cx('fr-p-3w')}>
-          <p className={fr.cx('fr-text--sm')}>
+        <div className="fr-p-3w">
+          <p className="fr-text--sm">
             Les connexions, le temps passé et l'usage du partage sont mesurés en base et détaillés dans « Audience &amp; usage ». Les
             parcours et les abandons, eux, ne sont observables que dans Matomo.
           </p>

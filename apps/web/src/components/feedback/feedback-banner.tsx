@@ -66,8 +66,6 @@ export const FeedbackBanner: FC = () => {
   }
 
   const onSubmit = (data: TFeedbackForm) => {
-    // E2 — les notes sont en base ; l'événement mesure le taux de report, que la base
-    // ne distingue pas d'une absence de réponse.
     trackEvent({ action: 'feedback', category: 'Engagement', name: 'envoi', value: data.rating })
     submitFeedback(data)
   }

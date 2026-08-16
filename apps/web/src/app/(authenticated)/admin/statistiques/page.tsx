@@ -1,7 +1,7 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
+import classNames from 'classnames'
 import styles from '~/app/(authenticated)/admin/admin.module.css'
 import { AdminPageHeader } from '~/components/admin/shared/admin-page-header'
 import { StatCard } from '~/components/admin/shared/stat-card'
@@ -20,9 +20,9 @@ export default function StatistiquesPage() {
         title="Statistiques métier"
       />
 
-      {error && <Alert className={fr.cx('fr-mb-3w')} description="Erreur lors du chargement des statistiques" severity="error" small />}
+      {error && <Alert className="fr-mb-3w" description="Erreur lors du chargement des statistiques" severity="error" small />}
 
-      <div className={`${styles.statsGrid} ${fr.cx('fr-mb-3w')}`}>
+      <div className={classNames('fr-mb-3w', styles.statsGrid)}>
         <StatCard
           accent="blue"
           icon="fr-icon-file-text-line"
@@ -55,8 +55,8 @@ export default function StatistiquesPage() {
         />
       </div>
 
-      <h2 className={fr.cx('fr-h5')}>Exports réalisés</h2>
-      <div className={`${styles.statsGrid} ${fr.cx('fr-mb-3w')}`}>
+      <h2 className="fr-h5">Exports réalisés</h2>
+      <div className={classNames('fr-mb-3w', styles.statsGrid)}>
         <StatCard
           accent="blue"
           hint="Utilisateurs ayant exporté le paramétrage"
@@ -75,7 +75,7 @@ export default function StatistiquesPage() {
         />
       </div>
 
-      <h2 className={fr.cx('fr-h5')}>Volumes des scénarios exportés</h2>
+      <h2 className="fr-h5">Volumes des scénarios exportés</h2>
       <div className={styles.statsGrid}>
         <StatCard
           accent="blue"

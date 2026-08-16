@@ -125,8 +125,6 @@ export const useTutorial = (
           return
         }
 
-        // A2 — un tuto détruit par navigation n'est ni terminé ni abandonné : il est
-        // interrompu par l'écran, ce que le drapeau de démontage écarte plus haut.
         if (trackingName) {
           const activeIndex = instance.getActiveIndex() ?? 0
 
@@ -144,8 +142,6 @@ export const useTutorial = (
 
     driverRef.current = instance
 
-    // A1 — ouverture du tuto : le seul signal d'usage disponible, le mode tuto
-    // n'écrivant rien ni en base ni en stockage local.
     if (trackingName) {
       trackEvent({ action: 'ouverture tutoriel', category: 'Aide', name: trackingName, value: reachable.length })
     }

@@ -1,3 +1,4 @@
+import classNames from 'classnames'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { AdminNavigation } from '~/components/admin/shared/admin-navigation'
@@ -9,15 +10,8 @@ export const metadata: Metadata = {
   title: 'Administration — Otelo',
 }
 
-/**
- * Coquille d'administration : garde de rôle + navigation latérale.
- *
- * La session et l'accès sont déjà vérifiés par le layout authentifié parent ; ce layout
- * n'ajoute que le contrôle de rôle, en un seul endroit plutôt que répété dans chaque page.
- *
- * Un utilisateur connecté sans le rôle ADMIN reçoit un 404 et non un 403 : l'existence
- * même de l'espace d'administration n'a pas à être révélée.
- */
+// Un utilisateur connecté sans le rôle ADMIN reçoit un 404 et non un 403 : l'existence
+// même de l'espace d'administration n'a pas à être révélée.
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession()
 
@@ -26,9 +20,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className={styles.shell}>
+    <div className={classNames('fr-flex fr-align-items-stretch', styles.shell)}>
       <AdminNavigation />
-      <div className={styles.content}>{children}</div>
+      <div className={classNames('fr-background-alt--grey', styles.content)}>{children}</div>
     </div>
   )
 }

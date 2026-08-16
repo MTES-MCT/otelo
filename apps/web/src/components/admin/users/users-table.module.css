@@ -16,6 +16,11 @@
   margin-bottom: 0 !important;
 }
 
+/* Sans largeur minimale, la colonne comprime le select au point de rogner l'icône. */
+.accessSelect select {
+  min-width: 5rem;
+}
+
 .actions {
   color: var(--text-action-high-blue-france);
   display: flex;

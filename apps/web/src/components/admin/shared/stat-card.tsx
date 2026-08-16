@@ -23,12 +23,12 @@ type StatCardProps = {
 }
 
 export const StatCard: FC<StatCardProps> = ({ accent = 'blue', hint, icon, isLoading, label, value }) => (
-  <div className={classNames(styles.statCard, ACCENT_CLASSES[accent])}>
-    <div className={styles.statLabel}>{label}</div>
-    <div className={classNames(styles.statValue, 'fr-mt-1v')}>
+  <div className={classNames('fr-p-5v fr-border fr-border-radius--8 fr-background-default--grey', styles.statCard, ACCENT_CLASSES[accent])}>
+    <div className={classNames('fr-text--xs fr-text--uppercase fr-text-mention--grey', styles.statLabel)}>{label}</div>
+    <div className={classNames('fr-mt-1v fr-text--bold fr-line-height-1', styles.statValue)}>
       {isLoading ? '—' : typeof value === 'number' ? value.toLocaleString('fr-FR') : value}
     </div>
-    {hint && <div className={classNames(styles.statHint, 'fr-mt-1v')}>{hint}</div>}
-    {icon && <span className={classNames(icon, styles.statIcon)} aria-hidden="true" />}
+    {hint && <div className="fr-mt-1v fr-text--xs fr-text-mention--grey">{hint}</div>}
+    {icon && <span className={classNames(icon, 'fr-icon--lg', styles.statIcon)} aria-hidden="true" />}
   </div>
 )

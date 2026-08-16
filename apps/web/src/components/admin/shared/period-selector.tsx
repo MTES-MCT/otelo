@@ -6,6 +6,7 @@ import type { FC } from 'react'
 import { useMemo } from 'react'
 import styles from '~/app/(authenticated)/admin/admin.module.css'
 import { getDateFrom, getToday } from '~/utils/date-helpers'
+import { ADMIN_CARD, ADMIN_CHIP, ADMIN_FILTER_CHIPS } from './admin-classes'
 
 export const PERIOD_PRESETS = ['7', '14', '30', '90'] as const
 
@@ -18,13 +19,8 @@ export type PeriodRange = {
   to: string
 }
 
-/**
- * Période partagée par l'affichage et les exports.
- *
- * L'état vit dans l'URL (nuqs) : la page est partageable, le retour navigateur fonctionne,
- * et surtout les boutons d'export lisent exactement la même période que les graphiques —
- * il n'y a pas deux sources de vérité à resynchroniser.
- */
+// L'état vit dans l'URL (nuqs) : la page est partageable et les boutons d'export lisent
+// exactement la même période que les graphiques, sans seconde source de vérité.
 export function usePeriodRange() {
   const [state, setState] = useQueryStates({
     preset: parseAsStringLiteral(PERIOD_PRESETS).withDefault(DEFAULT_PERIOD_PRESET),
@@ -54,23 +50,23 @@ export const PeriodSelector: FC = () => {
   const { isCustom, preset, range, setCustomRange, setPreset } = usePeriodRange()
 
   return (
-    <div className={classNames(styles.card, 'fr-mb-3w')}>
+    <div className={classNames(ADMIN_CARD, 'fr-mb-3w')}>
       <div className="fr-p-2w">
-        <div className={styles.filterBar}>
-          <div className={styles.filterChips}>
+        <div className="fr-flex fr-flex-wrap fr-align-items-center fr-flex-gap-4v">
+          <div className={ADMIN_FILTER_CHIPS}>
             {PERIOD_PRESETS.map((value) => (
               <button
                 key={value}
                 type="button"
                 aria-pressed={!isCustom && preset === value}
-                className={!isCustom && preset === value ? styles.chipActive : styles.chip}
+                className={classNames(ADMIN_CHIP, !isCustom && preset === value ? styles.chipActive : styles.chip)}
                 onClick={() => setPreset(value)}
               >
                 {value} jours
               </button>
             ))}
           </div>
-          <div className={styles.dateInputs}>
+          <div className="fr-flex fr-align-items-center fr-flex-gap-2v fr-ml-auto">
             <label className="fr-text--sm fr-mb-0" htmlFor="period-from">
               Du
             </label>

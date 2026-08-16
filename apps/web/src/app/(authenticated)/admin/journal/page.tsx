@@ -1,6 +1,5 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
 import Input from '@codegouvfr/react-dsfr/Input'
 import Pagination from '@codegouvfr/react-dsfr/Pagination'
@@ -10,6 +9,7 @@ import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { useDebounce } from 'use-debounce'
 import styles from '~/app/(authenticated)/admin/admin.module.css'
 import { ChangeEntry } from '~/components/admin/changes/change-entry'
+import { ADMIN_CARD, ADMIN_CARD_HEADER, ADMIN_CHIP, ADMIN_FILTER_CHIPS } from '~/components/admin/shared/admin-classes'
 import { AdminPageHeader } from '~/components/admin/shared/admin-page-header'
 import { ExportCsvButton } from '~/components/admin/shared/export-csv-button'
 import { PeriodSelector, usePeriodRange } from '~/components/admin/shared/period-selector'
@@ -43,11 +43,11 @@ export default function JournalPage() {
 
       <PeriodSelector />
 
-      <div className={classNames(styles.card, fr.cx('fr-mb-3w'))}>
+      <div className={classNames(ADMIN_CARD, 'fr-mb-3w')}>
         <div className="fr-p-2w">
-          <div className={styles.filterChips}>
+          <div className={ADMIN_FILTER_CHIPS}>
             <button
-              className={filters.action === '' ? styles.chipActive : styles.chip}
+              className={classNames(ADMIN_CHIP, filters.action === '' ? styles.chipActive : styles.chip)}
               onClick={() => setFilters({ action: '', page: 1 })}
               type="button"
             >
@@ -55,7 +55,7 @@ export default function JournalPage() {
             </button>
             {SIMULATION_CHANGE_ACTIONS.map((action) => (
               <button
-                className={filters.action === action ? styles.chipActive : styles.chip}
+                className={classNames(ADMIN_CHIP, filters.action === action ? styles.chipActive : styles.chip)}
                 key={action}
                 onClick={() => setFilters({ action, page: 1 })}
                 type="button"
@@ -76,11 +76,11 @@ export default function JournalPage() {
         </div>
       </div>
 
-      {error && <Alert className={fr.cx('fr-mb-3w')} description="Erreur lors du chargement du journal" severity="error" small />}
+      {error && <Alert className="fr-mb-3w" description="Erreur lors du chargement du journal" severity="error" small />}
 
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>
+      <div className={ADMIN_CARD}>
+        <div className={ADMIN_CARD_HEADER}>
+          <h2 className={classNames('fr-m-0', styles.cardTitle)}>
             {data ? `${data.total.toLocaleString('fr-FR')} modification${data.total > 1 ? 's' : ''}` : 'Modifications'}
           </h2>
         </div>
@@ -93,7 +93,7 @@ export default function JournalPage() {
             n'y figurent pas.
           </p>
         ) : (
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          <ul className="fr-m-0 fr-p-0">
             {data.items.map((change) => (
               <ChangeEntry change={change} key={change.id} />
             ))}

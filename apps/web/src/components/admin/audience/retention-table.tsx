@@ -1,9 +1,10 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
 import type { TRetentionCohort } from '@shared'
+import classNames from 'classnames'
 import type { FC } from 'react'
 import styles from '~/app/(authenticated)/admin/admin.module.css'
+import { ADMIN_CARD, ADMIN_CARD_HEADER } from '~/components/admin/shared/admin-classes'
 import { ExportCsvButton } from '~/components/admin/shared/export-csv-button'
 import { formatChartMonth } from '~/utils/date-helpers'
 
@@ -17,10 +18,10 @@ function share(part: number, total: number): string {
 }
 
 export const RetentionTable: FC<RetentionTableProps> = ({ isLoading, retention }) => (
-  <div className={styles.card}>
-    <div className={styles.cardHeader}>
+  <div className={ADMIN_CARD}>
+    <div className={ADMIN_CARD_HEADER}>
       <div>
-        <h3 className={styles.cardTitle}>Rétention par cohorte</h3>
+        <h3 className={classNames('fr-m-0', styles.cardTitle)}>Rétention par cohorte</h3>
         <p className="fr-text--xs fr-text-mention--grey fr-mb-0 fr-mt-1v">
           Part des inscrits d'un mois encore actifs un et trois mois après.
         </p>
@@ -33,8 +34,8 @@ export const RetentionTable: FC<RetentionTableProps> = ({ isLoading, retention }
     ) : !retention?.length ? (
       <p className="fr-p-3w fr-text--sm fr-text-mention--grey fr-mb-0">Aucune cohorte sur cette période.</p>
     ) : (
-      <div className={fr.cx('fr-table')} style={{ margin: 0 }}>
-        <table>
+      <div className="fr-table fr-m-0">
+        <table className="fr-width-full">
           <thead>
             <tr>
               <th scope="col">Cohorte</th>

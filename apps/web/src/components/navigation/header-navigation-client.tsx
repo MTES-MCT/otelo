@@ -181,32 +181,10 @@ const getMenuConnected = (pathname: string, isAdmin = false, hasEpciNeighborsAcc
     ? [
         {
           isActive: pathname.includes('/admin'),
-          menuLinks: [
-            {
-              isActive: pathname.includes('/admin/gestion-des-utilisateurs'),
-              linkProps: {
-                href: '/admin/gestion-des-utilisateurs',
-                target: '_self',
-              },
-              text: 'Gestion des utilisateurs',
-            },
-            {
-              isActive: pathname.includes('/admin/statistiques'),
-              linkProps: {
-                href: '/admin/statistiques',
-                target: '_self',
-              },
-              text: 'Statistiques',
-            },
-            {
-              isActive: pathname.includes('/admin/consommateurs'),
-              linkProps: {
-                href: '/admin/consommateurs',
-                target: '_self',
-              },
-              text: 'Consommateurs API',
-            },
-          ],
+          linkProps: {
+            href: '/admin/tableau-de-bord',
+            target: '_self',
+          },
           text: 'Administration',
         },
       ]

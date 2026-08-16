@@ -1,53 +1,36 @@
 import { BadRequestException } from '@nestjs/common'
+import dayjs from 'dayjs'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+import utc from 'dayjs/plugin/utc'
 
-/** Période par défaut quand l'appelant n'en fournit pas. */
+dayjs.extend(utc)
+dayjs.extend(customParseFormat)
+
 export const DEFAULT_RANGE_DAYS = 30
 
+const ISO_DATE_FORMAT = 'YYYY-MM-DD'
+
 export type DateRange = {
-  /** Borne basse incluse. */
   from: Date
   /** Borne haute EXCLUE : `to` + 1 jour, pour inclure toute la journée de `to`. */
   toExclusive: Date
 }
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+function parseIsoDate(value: string, field: string): dayjs.Dayjs {
+  const date = dayjs.utc(value, ISO_DATE_FORMAT, true)
 
-function parseIsoDate(value: string, field: string): Date {
-  if (!ISO_DATE.test(value)) {
-    throw new BadRequestException(`Le paramètre "${field}" doit être une date au format YYYY-MM-DD`)
-  }
-
-  const date = new Date(`${value}T00:00:00.000Z`)
-
-  if (Number.isNaN(date.getTime())) {
-    throw new BadRequestException(`Le paramètre "${field}" n'est pas une date valide`)
+  if (!date.isValid()) {
+    throw new BadRequestException(`Le paramètre "${field}" doit être une date au format ${ISO_DATE_FORMAT}`)
   }
 
   return date
 }
 
-function startOfUtcDay(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
-}
-
-/**
- * Résout la période commune à tous les endpoints de statistiques et d'export.
- *
- * Les bornes sont semi-ouvertes (`>= from` et `< to + 1 jour`) : c'est la seule façon
- * d'inclure toute la journée de `to` sans dépendre de la précision des timestamps.
- *
- * Les deux paramètres doivent être fournis ensemble ; l'un sans l'autre est une erreur
- * plutôt qu'un silence, sinon une période partiellement renseignée passerait inaperçue.
- */
 export function resolveDateRange(from?: string, to?: string): DateRange {
   if (!from && !to) {
-    const toExclusive = startOfUtcDay(new Date())
-    toExclusive.setUTCDate(toExclusive.getUTCDate() + 1)
+    const toExclusive = dayjs.utc().startOf('day').add(1, 'day')
 
-    const defaultFrom = new Date(toExclusive)
-    defaultFrom.setUTCDate(defaultFrom.getUTCDate() - DEFAULT_RANGE_DAYS)
-
-    return { from: defaultFrom, toExclusive }
+    return { from: toExclusive.subtract(DEFAULT_RANGE_DAYS, 'day').toDate(), toExclusive: toExclusive.toDate() }
   }
 
   if (!from || !to) {
@@ -57,20 +40,13 @@ export function resolveDateRange(from?: string, to?: string): DateRange {
   const parsedFrom = parseIsoDate(from, 'from')
   const parsedTo = parseIsoDate(to, 'to')
 
-  if (parsedTo < parsedFrom) {
+  if (parsedTo.isBefore(parsedFrom)) {
     throw new BadRequestException('Le paramètre "to" ne peut pas être antérieur à "from"')
   }
 
-  const toExclusive = new Date(parsedTo)
-  toExclusive.setUTCDate(toExclusive.getUTCDate() + 1)
-
-  return { from: parsedFrom, toExclusive }
+  return { from: parsedFrom.toDate(), toExclusive: parsedTo.add(1, 'day').toDate() }
 }
 
-/** Suffixe de nom de fichier d'export, aligné sur la période demandée. */
 export function formatRangeForFilename({ from, toExclusive }: DateRange): string {
-  const toInclusive = new Date(toExclusive)
-  toInclusive.setUTCDate(toInclusive.getUTCDate() - 1)
-
-  return `${from.toISOString().slice(0, 10)}_${toInclusive.toISOString().slice(0, 10)}`
+  return `${dayjs.utc(from).format(ISO_DATE_FORMAT)}_${dayjs.utc(toExclusive).subtract(1, 'day').format(ISO_DATE_FORMAT)}`
 }

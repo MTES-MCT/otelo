@@ -8,7 +8,6 @@ import { anonymizeEmail } from '~/common/utils/email-anonymizer'
 import { PrismaService } from '~/db/prisma.service'
 import { DossierNode, GraphQLResponse } from './interfaces/demarches-simplifiees.interface'
 
-/** Durée de conservation des connexions (recommandation CNIL pour la mesure d'audience). */
 const LOGIN_EVENTS_RETENTION_MONTHS = 25
 
 const query = `
