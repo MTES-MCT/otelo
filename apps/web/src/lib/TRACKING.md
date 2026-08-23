@@ -88,6 +88,7 @@ Clé de l'entonnoir : les six `WizardStepSlug` de `components/simulations/settin
 | A5 | Aide | `ouverture faq` | libellé de la question | ⏳ |
 | E1 | Engagement | `lien externe` | `quiz` / `webinaire` / `demarches-simplifiees` | ⏳ |
 | E2 | Engagement | `feedback` | `envoi` / `report`, value = note | ✅ `feedback/feedback-banner.tsx` |
+| E3 | Engagement | `signalement probleme` | — (le chemin de la page part dans le mail, jamais dans Matomo) | ✅ `components/report-issue-button.tsx` |
 | N1 | Authentification | `connexion` | `succes` / `erreur` / `proconnect` | ⏳ |
 | N2 | Authentification | `selection type utilisateur` | valeur de `UserType` | ✅ `auth/user-type-selection-modal.tsx` |
 | N3 | Authentification | `mur acces` | `telechargement acte` / `demarches-simplifiees` (l'affichage est une vue de page) | ✅ `auth/unauthorized-actions.tsx` |
