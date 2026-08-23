@@ -118,7 +118,7 @@ export const CustomTooltip = ({
                 <div key={item.dataKey} className={classes.tooltipRow}>
                   <span className={classes.tooltipDot} style={{ backgroundColor: item.stroke }} />
                   <span className={classes.tooltipItemLabel}>
-                    {label}: <strong>{value}</strong> habitants
+                    {label}: <strong>{value}</strong> ménages
                   </span>
                 </div>
               )
