@@ -3,10 +3,41 @@ export type ReleaseNotes = Record<number, ReleaseNotesByMonth>
 
 export const RELEASE_NOTES: ReleaseNotes = {
   2026: {
+    aout: [
+      "Ajout d'un accompagnement pas à pas du paramétrage jusqu'aux résultats, avec un panneau « Votre estimation en cours » qui détaille la composition du besoin au fil des étapes.",
+      "Ajout de la déclaration du document d'urbanisme travaillé (PLH, PLUi, SCoT), avec proposition automatique du nom de la simulation.",
+      "Mise à jour des libellés des bassins d'habitat : les codes techniques laissent place à des noms de territoire lisibles.",
+      "Ajout d'un bouton « Signaler un problème » dans l'en-tête, pour écrire à l'équipe Otelo depuis n'importe quelle page.",
+      "Correction de l'enregistrement des exports PowerPoint et des réponses au formulaire associé, qui n'étaient pas conservées.",
+      "Correction de l'actualisation des millésimes, qui pouvait ignorer certains EPCI sans le signaler.",
+      "Correction du libellé « habitants » affiché à tort au survol du graphique d'évolution du nombre de ménages.",
+    ],
+    juillet: [
+      "Ajout d'un mode tutoriel sur les 6 étapes de création d'une simulation, avec une aide contextuelle à chaque étape.",
+      "Ajout d'un volet d'information sur la planification territoriale (SCoT) accessible dès le choix du territoire.",
+      'Ajout du millésime dans le cadrage temporel, avec un rappel lors du paramétrage.',
+      "Correction des scénarios démographiques proposés, désormais déterminés sur l'ensemble des EPCI du bassin d'habitat.",
+      "Correction de l'encodage des accents dans les noms de fichiers exportés.",
+      "Correction de l'export PowerPoint et de l'affichage des résultats en l'absence de données démographiques.",
+    ],
+    mai: [
+      'Ajout des informations sur les documents de planification (SCoT) dans la page de résultats.',
+      "Ajout des données historiques dans les graphiques d'évolution et mise à jour du recensement au millésime 2022.",
+      "Ajout d'une carte de pilotage et du suivi de la couverture des territoires dans l'espace d'administration.",
+      'Mise à jour de la méthode de calcul des besoins en flux.',
+      "Correction du taux de vacance et de l'année de pic des logements vacants et des résidences secondaires.",
+      "Correction de plusieurs situations de mal-logement et ajustements d'affichage issus de la recette de mai.",
+    ],
     avril: [
       "Ajout d'un lien de partage en lecture seule pour consulter plus facilement une simulation.",
       'Amélioration de la présentation des résultats et de plusieurs libellés pour rendre la lecture plus claire.',
       'Correction du calcul de certains besoins liés au renouvellement urbain pour fiabiliser les résultats.',
+      'Ajout de la comparaison de scénarios depuis le tableau de bord, avec les valeurs détaillées dans le tableau comparatif.',
+      "Ajout d'un aperçu du résultat directement dans les formulaires de création et de modification de simulation.",
+      'Ajout de la comparaison en points de pourcentage pour les logements vacants et les résidences secondaires.',
+      "Extension du mode d'usurpation aux comptes administrateurs pour faciliter le support.",
+      "Limitation du nombre de scénarios actifs et d'EPCI par groupe pour préserver les temps de calcul.",
+      'Correction de la duplication de simulation, désormais réalisée au sein du même millésime.',
     ],
     mars: [
       "Ajout du centre d'aide pour mieux accompagner la prise en main de l'outil.",
