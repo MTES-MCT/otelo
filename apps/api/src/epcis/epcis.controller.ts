@@ -4,6 +4,7 @@ import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { EpcisService } from '~/epcis/epcis.service'
 import { Epci } from '~/generated/prisma/client'
 import { Role } from '~/generated/prisma/enums'
+import { TEpciContour } from '~/schemas/epcis/epci-contour'
 
 @Controller('epcis')
 export class EpcisController {
@@ -20,6 +21,20 @@ export class EpcisController {
     } catch (error) {
       throw new NotFoundException(`EPCI with code ${epcis} not found`, { cause: error })
     }
+  }
+
+  /** Contours des EPCI, pour la carte de la page de résultats. */
+  @AccessControl({
+    roles: [Role.ADMIN, Role.USER],
+  })
+  @Get('contours')
+  @HttpCode(HttpStatus.OK)
+  async getContours(@Query('codes') codes: string): Promise<TEpciContour[]> {
+    const epciCodes = codes?.split(',').filter(Boolean) ?? []
+    if (epciCodes.length === 0) {
+      return []
+    }
+    return this.epcisService.getContours(epciCodes)
   }
 
   @Get('contiguous')

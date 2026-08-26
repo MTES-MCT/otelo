@@ -14,6 +14,7 @@ import { SimulationEpcisDetails } from '~/components/simulations/results/simulat
 import { SimulationResultsTabs } from '~/components/simulations/results/simulation-results-tabs'
 import { SimulationNeedsSummary } from '~/components/simulations/results/summary/simulation-needs-summary'
 import { TEpciCalculationResult, TEpciTotalCalculationResult, TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
+import { getEpciContours } from '~/server-only/simulation/get-epci-contours'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
 import type { SimulationPageProps } from '~/types/simulation-page-props'
 import { calculateFlowResultsForEpci } from '~/utils/calculation-helpers'
@@ -25,6 +26,10 @@ export default async function Resultats({ params }: SimulationPageProps) {
   const { id } = await params
   const { name, simulations: groupedSimulations } = await getGroupedSimulationWithResults(id)
   const simulation = groupedSimulations[id]
+
+  // Un seul appel pour toute la page : le résumé est rendu une fois par onglet EPCI, plus une fois
+  // pour l'onglet du bassin.
+  const contours = await getEpciContours(simulation.epcis.map((epci) => epci.code))
 
   const results = {
     badQuality: simulation.results.badQuality.total,
@@ -83,7 +88,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
       content: (
         <div key={epci.code} className="fr-container fr-flex fr-direction-column fr-flex-gap-8v">
           <SimulationSettingsDropdown simulation={simulation} epci={epci} />
-          <SimulationNeedsSummary projection={simulation.scenario.projection} results={epciResults} epci={epciData} />
+          <SimulationNeedsSummary contours={contours} projection={simulation.scenario.projection} results={epciResults} epci={epciData} />
           <SimulationDemographicBadHousingSummary
             simulationId={simulation.id}
             totalFlux={epciResults.totalFlux}
@@ -128,7 +133,12 @@ export default async function Resultats({ params }: SimulationPageProps) {
     content: (
       <div key="territory" className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
         <SimulationSettingsDropdown simulation={simulation} />
-        <SimulationNeedsSummary projection={simulation.scenario.projection} results={results} epcis={simulation.epcis} />
+        <SimulationNeedsSummary
+          contours={contours}
+          projection={simulation.scenario.projection}
+          results={results}
+          epcis={simulation.epcis}
+        />
 
         {/* <SimulationDemographicBadHousingSummary
           simulationId={simulation.id}

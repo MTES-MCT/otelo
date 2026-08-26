@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { randomUUID } from 'crypto'
 import { PrismaService } from '~/db/prisma.service'
+import { EpcisService } from '~/epcis/epcis.service'
 import { ResultsService } from '~/results/results.service'
+import { TEpciContour } from '~/schemas/epcis/epci-contour'
 
 @Injectable()
 export class ShareLinksService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly epcisService: EpcisService,
     private readonly resultsService: ResultsService,
   ) {}
 
@@ -50,5 +53,15 @@ export class ShareLinksService {
 
   async getResultsByToken(simulationId: string) {
     return this.resultsService.getGroupedResults(simulationId)
+  }
+
+  /** Contours des EPCI de la simulation partagée, pour la carte de la page publique. */
+  async getContoursByToken(simulationId: string): Promise<TEpciContour[]> {
+    const { epcis } = await this.prisma.simulation.findUniqueOrThrow({
+      where: { id: simulationId },
+      select: { epcis: { select: { code: true } } },
+    })
+
+    return this.epcisService.getContours(epcis.map(({ code }) => code))
   }
 }

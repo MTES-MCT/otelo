@@ -9,6 +9,7 @@ import { EpciGroupsModule } from '~/epci-groups/epci-groups.module'
 import { ResultsService } from '~/results/results.service'
 import { ScenariosModule } from '~/scenarios/scenarios.module'
 import { SimulationsService } from '~/simulations/simulations.service'
+import { BackfillEpciContoursCommand } from './commands/backfill-epci-contours.command'
 import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
 import { ImportBackupCommand } from './commands/import-backup.command'
 import { ImportCsvCommand } from './commands/import-csv.command'
@@ -32,6 +33,7 @@ import { ScalingoBackupService } from './services/scalingo-backup.service'
   ],
   providers: [
     ScalingoBackupService,
+    BackfillEpciContoursCommand,
     BackfillEpcisGeoCommand,
     ImportBackupCommand,
     ImportCsvCommand,
@@ -40,6 +42,13 @@ import { ScalingoBackupService } from './services/scalingo-backup.service'
     ResultsService,
     SimulationsService,
   ],
-  exports: [BackfillEpcisGeoCommand, ImportBackupCommand, ImportCsvCommand, RecalculateResultsCommand, UpdateUserTypesCommand],
+  exports: [
+    BackfillEpciContoursCommand,
+    BackfillEpcisGeoCommand,
+    ImportBackupCommand,
+    ImportCsvCommand,
+    RecalculateResultsCommand,
+    UpdateUserTypesCommand,
+  ],
 })
 export class CliModule {}

@@ -1,6 +1,7 @@
 import { createMock } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
 import { PrismaService } from '~/db/prisma.service'
+import { EpcisService } from '~/epcis/epcis.service'
 import { ResultsService } from '~/results/results.service'
 import { ShareLinksService } from './share-links.service'
 
@@ -17,6 +18,7 @@ describe('ShareLinksService', () => {
       providers: [
         ShareLinksService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: EpcisService, useValue: createMock<EpcisService>() },
         { provide: ResultsService, useValue: mockResultsService },
       ],
     }).compile()
