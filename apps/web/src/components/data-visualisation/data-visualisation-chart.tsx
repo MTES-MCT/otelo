@@ -2,6 +2,7 @@ import classNames from 'classnames'
 import { FC, ReactNode } from 'react'
 import { tss } from 'tss-react'
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
+import { AgePyramidChart } from '~/components/charts/data-visualisation/age-pyramid-chart'
 import { BadHousingChart } from '~/components/charts/data-visualisation/bad-housing-charts'
 import { HouseholdSizesChart } from '~/components/charts/data-visualisation/household-sizes-chart'
 import { LovacAccommodationEvolutionChart } from '~/components/charts/data-visualisation/lovac-evolution-charts'
@@ -11,6 +12,7 @@ import { ProjectionPopulationEvolutionChart } from '~/components/charts/data-vis
 import { RPAccommodationEvolutionChart } from '~/components/charts/data-visualisation/rp-accommodation-evolution-charts'
 import { SitadelChart } from '~/components/charts/data-visualisation/sitadel-chart'
 import { TAccommodationEvolution, TAccommodationLovacEvolution } from '~/schemas/accommodation-evolution'
+import { TAgePyramid } from '~/schemas/age-pyramid'
 import { THouseholdSizesChart } from '~/schemas/household-sizes'
 import { TDemographicProjectionEvolution, TInadequateHousing, TRPPopulationEvolution } from '~/schemas/population-evolution'
 import { TSitadel } from '~/schemas/sitadel'
@@ -24,6 +26,7 @@ export const DataVisualisationChart: FC<{
     | TInadequateHousing
     | TSitadel
     | THouseholdSizesChart
+    | TAgePyramid
   type: string | null
   source: string | null
 }> = ({ data, type, source }) => {
@@ -37,6 +40,7 @@ export const DataVisualisationChart: FC<{
     'logements-vacants': classes.buttonOffset,
     'mal-logement': classNames(classes.buttonOffset, classes.buttonLeft),
     sitadel: classes.buttonOffset,
+    'pyramide-des-ages': classes.buttonOffset,
   }
 
   const isProjectionPopulationEvolution = ['projection-population-evolution'].includes(type ?? '')
@@ -46,6 +50,7 @@ export const DataVisualisationChart: FC<{
   const isMalLogement = ['mal-logement'].includes(type ?? '')
   const isSitadel = ['sitadel'].includes(type ?? '')
   const isTailleMenages = ['taille-menages'].includes(type ?? '')
+  const isPyramideDesAges = ['pyramide-des-ages'].includes(type ?? '')
   let chartContent: ReactNode = null
 
   if (isPopulationEvolution) {
@@ -67,6 +72,8 @@ export const DataVisualisationChart: FC<{
     chartContent = <SitadelChart data={data as TSitadel} />
   } else if (isTailleMenages) {
     chartContent = <HouseholdSizesChart data={data as THouseholdSizesChart} />
+  } else if (isPyramideDesAges) {
+    chartContent = <AgePyramidChart data={data as TAgePyramid} />
   }
 
   if (!chartContent) return null

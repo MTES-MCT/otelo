@@ -14,6 +14,7 @@ import { BackfillEpciContoursCommand } from './commands/backfill-epci-contours.c
 import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
 import { ImportBackupCommand } from './commands/import-backup.command'
 import { ImportCsvCommand } from './commands/import-csv.command'
+import { ImportProjectionsCommand } from './commands/import-projections.command'
 import { RecalculateResultsCommand } from './commands/recalculate-results.command'
 import { SyncDocurbaCommand } from './commands/sync-docurba.command'
 import { UpdateUserTypesCommand } from './commands/update-user-types.command'
@@ -39,6 +40,7 @@ import { ScalingoBackupService } from './services/scalingo-backup.service'
     BackfillEpcisGeoCommand,
     ImportBackupCommand,
     ImportCsvCommand,
+    ImportProjectionsCommand,
     RecalculateResultsCommand,
     SyncDocurbaCommand,
     UpdateUserTypesCommand,
@@ -51,6 +53,7 @@ import { ScalingoBackupService } from './services/scalingo-backup.service'
     BackfillEpcisGeoCommand,
     ImportBackupCommand,
     ImportCsvCommand,
+    ImportProjectionsCommand,
     RecalculateResultsCommand,
     SyncDocurbaCommand,
     UpdateUserTypesCommand,
