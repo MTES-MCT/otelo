@@ -156,6 +156,80 @@ pnpm -F api cli import-csv --table homeless --csv ./data/homeless_rp.csv --csv .
 
 Les lignes sont matchées par la clé primaire de la table. Chaque CSV apporte ses colonnes, les valeurs non-vides ont priorité. Le résultat est un seul INSERT avec toutes les colonnes remplies.
 
+### Commande `import-projections`
+
+Charge les classeurs « Projections détaillées » Omphale — population et ménages, aux niveaux EPCI
+et bassin d'habitat — dans les six tables `projection_*`. Commande distincte d'`import-csv`, qui
+ne convient pas ici : les fichiers sont en XLSX (71 et 104 Mo), une feuille alimente une table
+après dépliage de colonnes, et `ON CONFLICT DO NOTHING` ferait d'un réimport correctif un no-op
+silencieux.
+
+```bash
+# Dry-run : compte, valide, n'écrit rien
+pnpm -F api cli import-projections \
+  --epci-file "./Projections_EPCI_indicateurs_final.xlsx" \
+  --bh-file   "./Projections_BH_indicateurs_final.xlsx" \
+  --millesime 2022
+
+# Écriture en base
+pnpm -F api cli import-projections --epci-file ... --bh-file ... --millesime 2022 --write
+
+# Reprise d'une seule feuille après un échec
+pnpm -F api cli import-projections --bh-file ... --millesime 2022 --only Menages_typologie --write
+```
+
+**Options :**
+
+| Option | Requis | Description |
+|--------|--------|-------------|
+| `--epci-file <path>` | l'un des deux | Classeur des projections au niveau EPCI |
+| `--bh-file <path>` | l'un des deux | Classeur des projections au niveau bassin d'habitat |
+| `--millesime <value>` | non | Millésime cible. **Doit exister** dans `data_pack_versions` (défaut : millésime actif) |
+| `--only <sheet>` | non | Limiter à une feuille (répétable) |
+| `--write` | non | Écrire en base (sans ce flag : dry-run) |
+| `--emit-zones-sql <path>` | non | Régénérer le bloc `VALUES` du référentiel de zones |
+| `--passage-file <path>` | avec `--emit-zones-sql` | `Table de passage EPCI - BH.xlsx` |
+
+**Prérequis :** les migrations `20260824100000_add_projection_zones` et
+`20260824100100_add_projection_indicators` doivent être appliquées. La première peuple
+`projection_zones` (561 zones) ; l'import échoue tant que cette table est vide, les mesures ayant
+une clé étrangère vers elle.
+
+**Comportement :**
+
+- Lecture en flux (`exceljs`), sans charger les fichiers en mémoire.
+- Idempotent : chaque feuille purge les lignes du couple millésime × niveau avant d'insérer. Un
+  réimport corrige donc réellement les données, et réimporter le seul classeur bassin ne touche
+  pas aux données EPCI.
+- Une zone absente de `projection_zones` ou une colonne de mesure non reconnue **font échouer**
+  l'import — rien n'est ignoré silencieusement.
+- Les deux lignes 2018 des bassins de Dordogne sont fusionnées en une ligne complète (voir
+  `projection-row-merger.ts`).
+- Le rapport de fin signale les zones non projetées (`ind_robust = 0`) et les colonnes restées
+  intégralement vides ou nulles.
+
+**Mise en production :** contrairement aux autres imports, on n'exporte pas de `.sql` à coller
+dans pgAdmin — la feuille âge × sexe représenterait environ 1 Go de SQL. La commande est lancée
+avec `--write` directement contre le `DATABASE_URL` de production (one-off Scalingo ou depuis un
+poste). Le `DELETE` ciblé rend l'opération rejouable sans risque.
+
+**Contrôles après import :** `psql "$DATABASE_URL" -f apps/api/prisma/checks/projections.sql`
+(volumétrie attendue, robustesse, cohérence entre feuilles, cas du Grand Paris et de la Dordogne).
+
+**Régénérer le référentiel de zones** — seulement si le découpage des bassins change :
+
+```bash
+pnpm -F api cli import-projections \
+  --epci-file ./epci.xlsx --bh-file ./bh.xlsx \
+  --passage-file "./Table de passage EPCI - BH.xlsx" \
+  --emit-zones-sql ./zones.sql
+```
+
+Le bloc produit est relu puis collé dans une migration : la table de passage n'est pas versionnée
+avec le code et n'existe ni sur la CI ni en production, alors que le déploiement joue
+`prisma migrate deploy`.
+
+
 ## Architecture technique
 
 ### Structure du monorepo
