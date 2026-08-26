@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
 import 'leaflet/dist/leaflet.css'
+import { CARTO_ATTRIBUTION, CARTO_TILE_URL } from '~/utils/carto-basemap'
 
 const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), { ssr: false })
@@ -165,10 +166,7 @@ export const SimulationNeedsSummaryMap = ({
       keyboard={false}
       zoomControl={false}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-      />
+      <TileLayer attribution={CARTO_ATTRIBUTION} url={CARTO_TILE_URL} />
       {geoJsonFeatures.map((feature, index) => {
         const style =
           isMultiMode && feature.properties.color
