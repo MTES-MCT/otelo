@@ -6,10 +6,28 @@ import { ColoredEpciData, EpciData, SimulationNeedsSummaryMap } from '~/componen
 import { formatNumber } from '~/utils/format-numbers'
 import styles from './simulation-needs-summary.module.css'
 
+/** Plus court que les 10 s d'undici : la carte est secondaire, la page ne doit pas attendre. */
+const FETCH_EPCI_TIMEOUT_MS = 5_000
+
+/**
+ * Les contours viennent de l'API Géo, hors de notre contrôle, et le rendu de la page de résultats
+ * est bloquant : une indisponibilité (`ConnectTimeoutError`, `ECONNREFUSED`) faisait tomber toute
+ * la page en 500. On absorbe donc l'échec ici — `showMap` masque la carte et le reste du résumé
+ * s'affiche normalement. Le contour d'un EPCI ne bouge pas d'un jour à l'autre : on le met en
+ * cache 24 h, ce qui évite d'appeler l'API à chaque affichage et fait passer les pannes courtes.
+ */
 const fetchEpci = async (epciCode: string): Promise<EpciData | null> => {
-  const response = await fetch(`https://geo.api.gouv.fr/epcis/${epciCode}?fields=nom,code,contour`)
-  if (!response.ok) return null
-  return response.json()
+  try {
+    const response = await fetch(`https://geo.api.gouv.fr/epcis/${epciCode}?fields=nom,code,contour`, {
+      next: { revalidate: 60 * 60 * 24 },
+      signal: AbortSignal.timeout(FETCH_EPCI_TIMEOUT_MS),
+    })
+    if (!response.ok) return null
+    return await response.json()
+  } catch (error) {
+    console.error(`Contour de l'EPCI ${epciCode} indisponible, carte masquée :`, error)
+    return null
+  }
 }
 
 type SimulationNeedsSummaryProps = {
