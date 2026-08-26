@@ -9,6 +9,7 @@ import { HostedService } from '~/hosted/hosted.service'
 import { HouseholdSizesService } from '~/household-sizes/household-sizes.service'
 import { NoAccommodationService } from '~/no-accommodation/no-accommodation.service'
 import { PhysicalInadequationService } from '~/physical-inadequation/physical-inadequation.service'
+import { AgePyramidService } from '~/projections/age-pyramid.service'
 import { RpInseeService } from '~/rp-insee/rp-insee.service'
 import { SitadelService } from '~/sitadel/sitadel.service'
 import { VacancyService } from '~/vacancy/vacancy.service'
@@ -19,12 +20,14 @@ describe('DataVisualisationService', () => {
   let dataPackVersionsService: jest.Mocked<DataPackVersionsService>
   let demographicEvolutionService: jest.Mocked<DemographicEvolutionService>
   let epcisService: jest.Mocked<EpcisService>
+  let agePyramidService: jest.Mocked<AgePyramidService>
 
   beforeEach(async () => {
     dataPackVersionsService = createMock<DataPackVersionsService>({
       getActive: jest.fn().mockResolvedValue({ millesime: '2024' }),
     })
     demographicEvolutionService = createMock<DemographicEvolutionService>()
+    agePyramidService = createMock<AgePyramidService>()
     epcisService = createMock<EpcisService>({
       getBassinEpcisByEpciCode: jest
         .fn()
@@ -43,6 +46,7 @@ describe('DataVisualisationService', () => {
         { provide: BadQualityService, useValue: createMock<BadQualityService>() },
         { provide: FinancialInadequationService, useValue: createMock<FinancialInadequationService>() },
         { provide: PhysicalInadequationService, useValue: createMock<PhysicalInadequationService>() },
+        { provide: AgePyramidService, useValue: agePyramidService },
         { provide: SitadelService, useValue: createMock<SitadelService>() },
         { provide: HouseholdSizesService, useValue: createMock<HouseholdSizesService>() },
         { provide: DataPackVersionsService, useValue: dataPackVersionsService },
@@ -67,5 +71,26 @@ describe('DataVisualisationService', () => {
       [{ code: '245901160', name: 'Test EPCI', region: '32', bassinName: 'Test bassin' }],
       '2024',
     )
+  })
+
+  it('routes the age pyramid before the bassin expansion', async () => {
+    await service.getDataByType({
+      epci: '200006682',
+      type: 'pyramide-des-ages',
+      populationType: 'central',
+    })
+
+    expect(agePyramidService.getAgePyramid).toHaveBeenCalledWith('200006682', 'central', undefined)
+    // La pyramide porte sur une seule zone de projection : élargir aux EPCI du bassin serait une
+    // requête inutile, et le mauvais périmètre.
+    expect(epcisService.getBassinEpcisByEpciCode).not.toHaveBeenCalled()
+  })
+
+  it('falls back to the central variant when populationType is missing or unknown', async () => {
+    await service.getDataByType({ epci: '200006682', type: 'pyramide-des-ages' })
+    expect(agePyramidService.getAgePyramid).toHaveBeenCalledWith('200006682', 'central', undefined)
+
+    await service.getDataByType({ epci: '200006682', type: 'pyramide-des-ages', populationType: 'moyenne' })
+    expect(agePyramidService.getAgePyramid).toHaveBeenLastCalledWith('200006682', 'central', undefined)
   })
 })

@@ -6,6 +6,7 @@ import { CliModule } from './cli.module'
 import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
 import { ImportBackupCommand } from './commands/import-backup.command'
 import { ImportCsvCommand } from './commands/import-csv.command'
+import { ImportProjectionsCommand } from './commands/import-projections.command'
 import { RecalculateResultsCommand } from './commands/recalculate-results.command'
 import { SyncDocurbaCommand } from './commands/sync-docurba.command'
 import { UpdateUserTypesCommand } from './commands/update-user-types.command'
@@ -58,6 +59,62 @@ async function bootstrap() {
         await command.execute({
           simulationId: options.simulationId,
           dryRun: !options.write,
+        })
+        await app.close()
+        process.exit(0)
+      } catch (error) {
+        console.error('✗ Erreur fatale:', error instanceof Error ? error.message : error)
+        await app.close()
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('import-projections')
+    .description(
+      [
+        'Importe les classeurs « Projections détaillées » Omphale (population et ménages) dans les tables projection_*.',
+        '',
+        'Par défaut, fonctionne en dry-run (aucune écriture en base).',
+        'Utiliser --write pour insérer en base.',
+        '',
+        'Le millésime doit exister dans data_pack_versions ; par défaut, le millésime actif est utilisé.',
+        'Les zones doivent avoir été créées par la migration du référentiel (table projection_zones).',
+        '',
+        "L'import est idempotent : chaque feuille purge les lignes du couple millésime × niveau avant insertion.",
+        'En cas d’échec en cours de route, relancer la seule feuille concernée avec --only.',
+        '',
+        'Exemples :',
+        '  pnpm -F api cli import-projections --epci-file ./Projections_EPCI_indicateurs_final.xlsx',
+        '  pnpm -F api cli import-projections --bh-file ./Projections_BH_indicateurs_final.xlsx --millesime 2022 --write',
+        '  pnpm -F api cli import-projections --bh-file ./bh.xlsx --only Menages_typologie --write',
+        '  pnpm -F api cli import-projections --epci-file ./epci.xlsx --bh-file ./bh.xlsx \\',
+        '      --passage-file "./Table de passage EPCI - BH.xlsx" --emit-zones-sql ./zones.sql',
+      ].join('\n'),
+    )
+    .option('--epci-file <path>', 'Classeur des projections au niveau EPCI')
+    .option('--bh-file <path>', "Classeur des projections au niveau bassin d'habitat")
+    .option('--millesime <value>', 'Millésime cible (défaut : millésime actif). Doit exister en base.')
+    .option(
+      '--only <sheet>',
+      'Limiter à une feuille (répétable) : Population_totale, Population_sexe, Population_age_sexe, Population_agegrp, Menages_totaux, Menages_typologie',
+      (val: string, prev: string[]) => prev.concat(val),
+      [] as string[],
+    )
+    .option('--write', 'Écrire en base (sans ce flag : dry-run)')
+    .option('--emit-zones-sql <path>', 'Générer le bloc VALUES du référentiel de zones au lieu d’importer')
+    .option('--passage-file <path>', 'Table de passage EPCI - BH.xlsx (requis avec --emit-zones-sql)')
+    .action(async (options) => {
+      try {
+        const command = app.get(ImportProjectionsCommand)
+        await command.execute({
+          epciFile: options.epciFile,
+          bhFile: options.bhFile,
+          millesime: options.millesime,
+          only: options.only,
+          write: options.write || false,
+          emitZonesSql: options.emitZonesSql,
+          passageFile: options.passageFile,
         })
         await app.close()
         process.exit(0)
