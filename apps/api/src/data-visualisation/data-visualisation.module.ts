@@ -9,6 +9,7 @@ import { HostedModule } from '~/hosted/hosted.module'
 import { HouseholdSizesModule } from '~/household-sizes/household-sizes.module'
 import { NoAccommodationModule } from '~/no-accommodation/no-accommodation.module'
 import { PhysicalInadequationModule } from '~/physical-inadequation/physical-inadequation.module'
+import { ProjectionsModule } from '~/projections/projections.module'
 import { RpInseeModule } from '~/rp-insee/rp-insee.module'
 import { SitadelModule } from '~/sitadel/sitadel.module'
 import { VacancyModule } from '~/vacancy/vacancy.module'
@@ -31,6 +32,7 @@ import { DataVisualisationService } from './data-visualisation.service'
     SitadelModule,
     HouseholdSizesModule,
     DataPackVersionsModule,
+    ProjectionsModule,
   ],
   providers: [DataVisualisationService],
   exports: [DataVisualisationService],

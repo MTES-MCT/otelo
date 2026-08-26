@@ -160,6 +160,10 @@ export const chartKeyColors = {
   secondaryAccommodation: dsfrRealColors.greenArchipel,
   vacant: dsfrRealColors.yellowMoutarde,
 
+  // Pyramide des âges. Paire contrôlée pour la vision des couleurs : ΔE protan 16,8, normal 15,3.
+  pyramidMen: dsfrRealColors.blueEcume,
+  pyramidWomen: dsfrRealColors.pinkTuile,
+
   centralB: dsfrRealColors.blueFrance,
   centralC: dsfrRealColors.greenEmeraude,
   centralH: dsfrRealColors.greenBourgeon,

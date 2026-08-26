@@ -27,6 +27,13 @@ model DataPackVersion {
   demographicEvolutionOmphale    DemographicEvolutionOmphale[]
   demographicEvolutionPopulation DemographicEvolutionPopulation[]
   householdSizes                 HouseholdSizes[]
+  projectionZoneMillesimes       ProjectionZoneMillesime[]
+  projectionPopulationTotals     ProjectionPopulationTotal[]
+  projectionPopulationBySex      ProjectionPopulationBySex[]
+  projectionPopulationByAgeSex   ProjectionPopulationByAgeSex[]
+  projectionPopulationByAgeGroup ProjectionPopulationByAgeGroup[]
+  projectionHouseholdTotals      ProjectionHouseholdTotal[]
+  projectionHouseholdByType      ProjectionHouseholdByType[]
 
   @@map("data_pack_versions")
 }
@@ -213,8 +220,9 @@ model Scenario {
 }
 
 model Bassin {
-  name  String @id @unique
-  epcis Epci[]
+  name            String           @id @unique
+  epcis           Epci[]
+  projectionZones ProjectionZone[]
 
   @@map("bassin")
 }
@@ -275,6 +283,7 @@ model Epci {
   neighborsFrom                     EPCINeighbor[]                      @relation("EPCINeighborFrom")
   neighborsTo                       EPCINeighbor[]                      @relation("EPCINeighborTo")
   noInseeProjection                 Boolean                             @default(false) @map("no_insee_projection")
+  projectionZones                   ProjectionZone[]
 
   @@map("epcis")
 }
@@ -956,4 +965,247 @@ model DocurbaFile {
   filename  String   @id
   content   Bytes
   updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Projections démographiques détaillées Omphale (EPCI + bassins d'habitat)
+//
+// Source : « Projections détaillées » — deux classeurs de 6 feuilles, l'un au niveau EPCI
+// (214 zones, les EPCI ≥ 50 000 hab. en 2018 — seuil de robustesse Omphale), l'autre au
+// niveau bassin d'habitat (347 zones). Les codes de zone des deux niveaux sont disjoints
+// par construction (SIREN à 9 chiffres vs `R11_01_23` / `Paris_23` / `ZZZZZZZZZ`), d'où
+// une table de mesures unique par feuille plutôt qu'un doublon par niveau.
+//
+// Les 9 scénarios (3 hypothèses de population × 3 hypothèses de cohabitation) reprennent
+// exactement le nommage de `demographic_evolution_omphale` et `household_sizes` :
+// `central_b/c/h`, `ph_b/c/h` (population haute), `pb_b/c/h` (population basse).
+// ---------------------------------------------------------------------------
+
+/// Niveau géographique d'une zone de projection Omphale.
+enum ProjectionZoneLevel {
+  EPCI
+  BH
+}
+
+enum ProjectionSex {
+  HOMME
+  FEMME
+}
+
+/// ⚠ Les tranches se RECOUVRENT : `85+` est inclus dans `65+`. Ce ne sont pas des parts
+/// sommables — le total se reconstitue avec MOINS_DE_18 + DE_18_A_29 + DE_30_A_44
+/// + DE_45_A_64 + PLUS_DE_65.
+enum ProjectionAgeGroup {
+  MOINS_DE_18 @map("<18")
+  DE_18_A_29  @map("18-29")
+  DE_30_A_44  @map("30-44")
+  DE_45_A_64  @map("45-64")
+  PLUS_DE_65  @map("65+")
+  PLUS_DE_85  @map("85+")
+}
+
+/// ⚠ `ENFANT` et `HORS_MENAGE` sont à 0 sur l'intégralité des deux fichiers source.
+/// Conservés par fidélité au source, à ne pas exposer comme des effectifs exploitables.
+enum ProjectionHouseholdType {
+  COUPLE
+  ENFANT
+  FAMILLE_MONOPARENTALE
+  HORS_MENAGE
+  MENAGE_COMPLEXE_2
+  MENAGE_COMPLEXE_3_PLUS @map("MENAGE_COMPLEXE_3+")
+  PERSONNE_SEULE
+}
+
+/// Référentiel des zones du fichier de projections détaillées.
+/// Non versionné : l'identité d'une zone (code + rattachement) est stable ; c'est
+/// `ProjectionZoneMillesime` qui porte ce qui varie d'un millésime à l'autre.
+model ProjectionZone {
+  code       String              @id
+  level      ProjectionZoneLevel
+  label      String
+  /// Renseigné pour les 214 zones EPCI et pour les 12 EPT du Grand Paris, qui existent
+  /// dans `epcis` sous les codes composites `200054781_T1` … `_T12`.
+  epciCode   String?             @map("epci_code")
+  /// Renseigné pour 346 des 347 zones BH. NULL pour `ZZZZZZZZZ` (zone résiduelle) seule.
+  bassinName String?             @map("bassin_name")
+
+  epci   Epci?   @relation(fields: [epciCode], references: [code])
+  bassin Bassin? @relation(fields: [bassinName], references: [name])
+
+  millesimes           ProjectionZoneMillesime[]
+  populationTotals     ProjectionPopulationTotal[]
+  populationBySex      ProjectionPopulationBySex[]
+  populationByAgeSex   ProjectionPopulationByAgeSex[]
+  populationByAgeGroup ProjectionPopulationByAgeGroup[]
+  householdTotals      ProjectionHouseholdTotal[]
+  householdByType      ProjectionHouseholdByType[]
+
+  @@index([level])
+  @@index([bassinName])
+  @@index([epciCode])
+  @@map("projection_zones")
+}
+
+/// Métadonnées de chargement d'une zone pour un millésime donné.
+model ProjectionZoneMillesime {
+  zoneCode  String  @map("zone_code")
+  millesime String
+  /// `ind_robust` de la source. false = zone hors seuil de robustesse Omphale : une seule
+  /// année (2018), valeur observée recopiée sur les 9 scénarios, AUCUNE projection.
+  isRobust  Boolean @map("is_robust")
+  firstYear Int     @map("first_year")
+  lastYear  Int     @map("last_year")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, millesime])
+  @@index([millesime])
+  @@map("projection_zone_millesimes")
+}
+
+/// Feuille `Population_totale`. Clé source : (ANNEE, ZONE).
+model ProjectionPopulationTotal {
+  zoneCode  String @map("zone_code")
+  year      Int
+  millesime String
+  // Nullable : les bassins R75_24-1_23 et R75_24-3_23 (Dordogne) n'ont pas de projection
+  // « population basse » au-delà de 2018 — cf. demographic_evolution_omphale.
+  centralB  Float? @map("central_b")
+  centralC  Float? @map("central_c")
+  centralH  Float? @map("central_h")
+  phB       Float? @map("ph_b")
+  phC       Float? @map("ph_c")
+  phH       Float? @map("ph_h")
+  pbB       Float? @map("pb_b")
+  pbC       Float? @map("pb_c")
+  pbH       Float? @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, millesime])
+  @@index([millesime])
+  @@map("projection_population_totals")
+}
+
+/// Feuille `Population_sexe`, dépliée : 18 colonnes source → 2 lignes × 9 colonnes.
+model ProjectionPopulationBySex {
+  zoneCode  String        @map("zone_code")
+  year      Int
+  sex       ProjectionSex
+  millesime String
+  centralB  Float?        @map("central_b")
+  centralC  Float?        @map("central_c")
+  centralH  Float?        @map("central_h")
+  phB       Float?        @map("ph_b")
+  phC       Float?        @map("ph_c")
+  phH       Float?        @map("ph_h")
+  pbB       Float?        @map("pb_b")
+  pbC       Float?        @map("pb_c")
+  pbH       Float?        @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, sex, millesime])
+  @@index([millesime])
+  @@map("projection_population_by_sex")
+}
+
+/// Feuille `Population_age_sexe`, dépliée : 18 colonnes source → 2 lignes × 9 colonnes.
+/// `age` va de 0 à 99, 99 regroupant « 99 ans et plus ».
+model ProjectionPopulationByAgeSex {
+  zoneCode  String        @map("zone_code")
+  year      Int
+  age       Int
+  sex       ProjectionSex
+  millesime String
+  centralB  Float?        @map("central_b")
+  centralC  Float?        @map("central_c")
+  centralH  Float?        @map("central_h")
+  phB       Float?        @map("ph_b")
+  phC       Float?        @map("ph_c")
+  phH       Float?        @map("ph_h")
+  pbB       Float?        @map("pb_b")
+  pbC       Float?        @map("pb_c")
+  pbH       Float?        @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, age, sex, millesime])
+  @@index([millesime])
+  @@map("projection_population_by_age_sex")
+}
+
+/// Feuille `Population_agegrp`.
+model ProjectionPopulationByAgeGroup {
+  zoneCode  String             @map("zone_code")
+  year      Int
+  ageGroup  ProjectionAgeGroup @map("age_group")
+  millesime String
+  centralB  Float?             @map("central_b")
+  centralC  Float?             @map("central_c")
+  centralH  Float?             @map("central_h")
+  phB       Float?             @map("ph_b")
+  phC       Float?             @map("ph_c")
+  phH       Float?             @map("ph_h")
+  pbB       Float?             @map("pb_b")
+  pbC       Float?             @map("pb_c")
+  pbH       Float?             @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, ageGroup, millesime])
+  @@index([millesime])
+  @@map("projection_population_by_age_group")
+}
+
+/// Feuille `Menages_totaux`.
+model ProjectionHouseholdTotal {
+  zoneCode  String @map("zone_code")
+  year      Int
+  millesime String
+  centralB  Float? @map("central_b")
+  centralC  Float? @map("central_c")
+  centralH  Float? @map("central_h")
+  phB       Float? @map("ph_b")
+  phC       Float? @map("ph_c")
+  phH       Float? @map("ph_h")
+  pbB       Float? @map("pb_b")
+  pbC       Float? @map("pb_c")
+  pbH       Float? @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, millesime])
+  @@index([millesime])
+  @@map("projection_household_totals")
+}
+
+/// Feuille `Menages_typologie`, dépliée : 63 colonnes source → 7 lignes × 9 colonnes.
+model ProjectionHouseholdByType {
+  zoneCode      String                  @map("zone_code")
+  year          Int
+  householdType ProjectionHouseholdType @map("household_type")
+  millesime     String
+  centralB      Float?                  @map("central_b")
+  centralC      Float?                  @map("central_c")
+  centralH      Float?                  @map("central_h")
+  phB           Float?                  @map("ph_b")
+  phC           Float?                  @map("ph_c")
+  phH           Float?                  @map("ph_h")
+  pbB           Float?                  @map("pb_b")
+  pbC           Float?                  @map("pb_c")
+  pbH           Float?                  @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, householdType, millesime])
+  @@index([millesime])
+  @@map("projection_household_by_type")
 }

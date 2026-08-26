@@ -9,7 +9,9 @@ import { HostedService } from '~/hosted/hosted.service'
 import { HouseholdSizesService } from '~/household-sizes/household-sizes.service'
 import { NoAccommodationService } from '~/no-accommodation/no-accommodation.service'
 import { PhysicalInadequationService } from '~/physical-inadequation/physical-inadequation.service'
+import { AgePyramidService } from '~/projections/age-pyramid.service'
 import { RpInseeService } from '~/rp-insee/rp-insee.service'
+import { type TAgePyramidPopulationType, ZAgePyramidPopulationType } from '~/schemas/data-visualisation/age-pyramid'
 import { TDataVisualisationQuery, TInadequateHousing } from '~/schemas/data-visualisation/data-visualisation'
 import { SitadelService } from '~/sitadel/sitadel.service'
 import { VacancyService } from '~/vacancy/vacancy.service'
@@ -29,6 +31,7 @@ export class DataVisualisationService {
     private readonly sitadelService: SitadelService,
     private readonly householdSizesService: HouseholdSizesService,
     private readonly dataPackVersionsService: DataPackVersionsService,
+    private readonly agePyramidService: AgePyramidService,
   ) {}
 
   async getInadequateHousing(epcis: TEpci[], millesime?: string): Promise<TInadequateHousing> {
@@ -74,6 +77,13 @@ export class DataVisualisationService {
 
   async getDataByType(query: TDataVisualisationQuery) {
     const { epci, type, populationType, source, millesime } = query
+
+    // Traité avant l'expansion au bassin : la pyramide porte sur une seule zone de projection,
+    // pas sur les EPCI voisins, et la résolution EPCI → zone lui est propre.
+    if (type === 'pyramide-des-ages') {
+      return this.agePyramidService.getAgePyramid(epci, parsePopulationType(populationType), millesime ?? undefined)
+    }
+
     const bassinEpcis = await this.epcisService.getBassinEpcisByEpciCode(epci)
     const epcis = bassinEpcis.map((epci) => ({
       code: epci.code,
@@ -117,4 +127,14 @@ export class DataVisualisationService {
         throw new Error('Invalid data visualisation type')
     }
   }
+}
+
+/**
+ * `populationType` arrive de la query string, donc en `string | undefined` : la page transmet
+ * « haute » par défaut, mais rien ne garantit la valeur. On retombe sur « central », le scénario
+ * de référence, plutôt que de lever — un libellé inattendu ne doit pas casser la page.
+ */
+function parsePopulationType(value?: string): TAgePyramidPopulationType {
+  const parsed = ZAgePyramidPopulationType.safeParse(value)
+  return parsed.success ? parsed.data : 'central'
 }

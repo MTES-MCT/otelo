@@ -11,6 +11,7 @@ export const DATA_TYPE_OPTIONS = [
   { label: 'Projection en population', value: 'projection-population-evolution' },
   { label: 'Projection en ménages', value: 'projection-menages-evolution' },
   { label: 'Taille des ménages', value: 'taille-menages' },
+  { label: 'Pyramide des âges', value: 'pyramide-des-ages' },
   { label: 'Résidences secondaires', value: 'residences-secondaires' },
   { label: 'Logements vacants', value: 'logements-vacants' },
   { label: 'Mal Logement', value: 'mal-logement' },
