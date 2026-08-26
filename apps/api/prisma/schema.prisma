@@ -253,8 +253,21 @@ model Epci {
   neighborsFrom                     EPCINeighbor[]                      @relation("EPCINeighborFrom")
   neighborsTo                       EPCINeighbor[]                      @relation("EPCINeighborTo")
   noInseeProjection                 Boolean                             @default(false) @map("no_insee_projection")
+  contour                           EpciContour?
 
   @@map("epcis")
+}
+
+/// Contour géographique de l'EPCI, recopié depuis l'API Géo par `cli backfill-epci-contours`.
+/// Table à part et non colonne d'`epcis` : les endpoints EPCI renvoient la ligne entière, et un
+/// contour pèse de 15 à 60 ko — il ne doit voyager que quand la carte le demande.
+model EpciContour {
+  epciCode  String   @id @map("epci_code")
+  contour   Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+  epci      Epci     @relation(fields: [epciCode], references: [code])
+
+  @@map("epci_contours")
 }
 
 model Simulation {

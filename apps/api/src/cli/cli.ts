@@ -3,6 +3,7 @@
 import { NestFactory } from '@nestjs/core'
 import { Command } from 'commander'
 import { CliModule } from './cli.module'
+import { BackfillEpciContoursCommand } from './commands/backfill-epci-contours.command'
 import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
 import { ImportBackupCommand } from './commands/import-backup.command'
 import { ImportCsvCommand } from './commands/import-csv.command'
@@ -177,6 +178,39 @@ async function bootstrap() {
       try {
         const command = app.get(BackfillEpcisGeoCommand)
         await command.execute({ dryRun: !options.write })
+        await app.close()
+        process.exit(0)
+      } catch (error) {
+        console.error('✗ Erreur fatale:', error instanceof Error ? error.message : error)
+        await app.close()
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('backfill-epci-contours')
+    .description(
+      [
+        "Récupère le contour géographique de chaque EPCI depuis l'API Géo et le stocke en base.",
+        '',
+        "Alimente la carte de la page de résultats, qui interrogeait auparavant l'API Géo à chaque",
+        "rendu. À lancer depuis un poste dont l'IP n'est pas limitée par l'API Géo (les conteneurs de",
+        'la plateforme le sont), en pointant DATABASE_URL sur la base cible via un tunnel.',
+        '',
+        "Par défaut, ne traite que les EPCI sans contour et n'écrit rien (dry-run).",
+        '',
+        'Exemples :',
+        '  pnpm -F api cli backfill-epci-contours                  # dry-run sur les EPCI sans contour',
+        '  pnpm -F api cli backfill-epci-contours --write          # écriture en base',
+        '  pnpm -F api cli backfill-epci-contours --write --force  # rafraîchit aussi les contours existants',
+      ].join('\n'),
+    )
+    .option('--write', 'Persister les contours en base (sans ce flag = dry-run)')
+    .option('--force', 'Rafraîchir aussi les EPCI qui ont déjà un contour')
+    .action(async (options) => {
+      try {
+        const command = app.get(BackfillEpciContoursCommand)
+        await command.execute({ dryRun: !options.write, force: options.force || false })
         await app.close()
         process.exit(0)
       } catch (error) {

@@ -6,30 +6,6 @@ import { ColoredEpciData, EpciData, SimulationNeedsSummaryMap } from '~/componen
 import { formatNumber } from '~/utils/format-numbers'
 import styles from './simulation-needs-summary.module.css'
 
-/** Plus court que les 10 s d'undici : la carte est secondaire, la page ne doit pas attendre. */
-const FETCH_EPCI_TIMEOUT_MS = 5_000
-
-/**
- * Les contours viennent de l'API Géo, hors de notre contrôle, et le rendu de la page de résultats
- * est bloquant : une indisponibilité (`ConnectTimeoutError`, `ECONNREFUSED`) faisait tomber toute
- * la page en 500. On absorbe donc l'échec ici — `showMap` masque la carte et le reste du résumé
- * s'affiche normalement. Le contour d'un EPCI ne bouge pas d'un jour à l'autre : on le met en
- * cache 24 h, ce qui évite d'appeler l'API à chaque affichage et fait passer les pannes courtes.
- */
-const fetchEpci = async (epciCode: string): Promise<EpciData | null> => {
-  try {
-    const response = await fetch(`https://geo.api.gouv.fr/epcis/${epciCode}?fields=nom,code,contour`, {
-      next: { revalidate: 60 * 60 * 24 },
-      signal: AbortSignal.timeout(FETCH_EPCI_TIMEOUT_MS),
-    })
-    if (!response.ok) return null
-    return await response.json()
-  } catch (error) {
-    console.error(`Contour de l'EPCI ${epciCode} indisponible, carte masquée :`, error)
-    return null
-  }
-}
-
 type SimulationNeedsSummaryProps = {
   projection: number
   results: {
@@ -51,9 +27,18 @@ type SimulationNeedsSummaryProps = {
     code: string
     name: string
   }>
+  /**
+   * Contours servis par notre API depuis `epci_contours`, récupérés une seule fois par la page.
+   * Ils étaient auparavant lus en direct sur geo.api.gouv.fr ici même, à chaque rendu et donc deux
+   * fois par EPCI (onglet du bassin + onglet de l'EPCI) : l'API Géo limite par IP et a fini par
+   * refuser nos connexions, la page attendant un timeout avant de masquer la carte.
+   *
+   * Un EPCI sans contour est simplement absent de la liste et `showMap` masque la carte.
+   */
+  contours?: EpciData[]
 }
 
-export const SimulationNeedsSummary = async ({ projection, results, epci, epcis }: SimulationNeedsSummaryProps) => {
+export const SimulationNeedsSummary = async ({ projection, results, epci, epcis, contours = [] }: SimulationNeedsSummaryProps) => {
   const { total } = results
   const { postpeakTotalStock, peakYear } = epci ?? {}
   const hasNewHousingNeeds = total > 0
@@ -70,14 +55,15 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis 
   let epciDataList: ColoredEpciData[] | undefined
 
   if (epci) {
-    epciData = await fetchEpci(epci.code)
+    epciData = contours.find((contour) => contour.code === epci.code) ?? null
   } else if (epcis && epcis.length > 0) {
-    const epciDataResults = await Promise.all(epcis.map((e) => fetchEpci(e.code)))
-
-    epciDataList = epciDataResults
-      .filter((data): data is EpciData => data !== null)
-      .map((data, index) => ({
-        ...data,
+    // On garde l'ordre des EPCI de la simulation : la couleur d'un EPCI doit être la même d'un
+    // affichage à l'autre, indépendamment de l'ordre de la réponse.
+    epciDataList = epcis
+      .map((e) => contours.find((contour) => contour.code === e.code))
+      .filter((contour): contour is EpciData => contour !== undefined)
+      .map((contour, index) => ({
+        ...contour,
         color: dsfrHighlightColors[index % dsfrHighlightColors.length],
       }))
   }

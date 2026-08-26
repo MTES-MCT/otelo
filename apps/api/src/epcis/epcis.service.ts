@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { TEpci } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
 import { Epci } from '~/generated/prisma/client'
+import { TEpciContour } from '~/schemas/epcis/epci-contour'
 
 @Injectable()
 export class EpcisService {
@@ -67,6 +68,23 @@ export class EpcisService {
     })
 
     return [...epcis.filter((e) => e.code === epciCode), ...epcis.filter((e) => e.code !== epciCode)]
+  }
+
+  /**
+   * Contours des EPCI demandés, pour la carte de la page de résultats. Les EPCI sans contour en base
+   * sont simplement absents de la réponse : l'appelant masque la carte plutôt que d'échouer.
+   */
+  async getContours(epciCodes: string[]): Promise<TEpciContour[]> {
+    const contours = await this.prisma.epciContour.findMany({
+      where: { epciCode: { in: epciCodes } },
+      select: { contour: true, epci: { select: { code: true, name: true } } },
+    })
+
+    return contours.map(({ contour, epci }) => ({
+      code: epci.code,
+      contour: contour as TEpciContour['contour'],
+      nom: epci.name,
+    }))
   }
 
   async getContiguousEpcis(epciCodes: string[]): Promise<Epci[]> {

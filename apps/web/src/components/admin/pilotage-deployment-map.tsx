@@ -5,6 +5,7 @@ import classNames from 'classnames'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { GeoJSON, MapContainer, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import type { EpciCoverageItem } from '~/hooks/use-pilotage-epcis-coverage'
+import { CARTO_ATTRIBUTION, CARTO_TILE_URL } from '~/utils/carto-basemap'
 import styles from './pilotage-deployment-map.module.css'
 
 export type MapColorMode = 'scenarios' | 'score' | 'exports'
@@ -228,10 +229,7 @@ export function PilotageDeploymentMap({
 
   return (
     <MapContainer center={FRANCE_CENTER} zoom={FRANCE_ZOOM} className="fr-height-full fr-width-full" zoomControl>
-      <TileLayer
-        attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-      />
+      <TileLayer attribution={CARTO_ATTRIBUTION} url={CARTO_TILE_URL} />
       <ResetViewButton />
       <FitBoundsController features={visibleFeatures} isFiltered={isFiltered} />
       {visibleFeatures.map((feature, i) => {
