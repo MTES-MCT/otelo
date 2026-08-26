@@ -40,4 +40,16 @@ export class ShareLinksController {
   async getSharedResults(@Req() req: RequestWithShareSimulationId) {
     return this.shareLinksService.getResultsByToken(req.shareSimulationId)
   }
+
+  /**
+   * Contours des EPCI de la simulation partagée, pour la carte. Passe par le token de partage
+   * plutôt que par `/epcis/contours`, qui demande une session.
+   */
+  @AllowAnonymous()
+  @UseGuards(ShareTokenGuard)
+  @Get('share/:token/contours')
+  @HttpCode(HttpStatus.OK)
+  async getSharedContours(@Req() req: RequestWithShareSimulationId) {
+    return this.shareLinksService.getContoursByToken(req.shareSimulationId)
+  }
 }

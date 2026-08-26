@@ -10,6 +10,7 @@ import { SimulationSecondaryVacantsAccommodationsSummary } from '~/components/si
 import { SimulationEpcisDetails } from '~/components/simulations/results/simulation-epcis-details'
 import { SimulationResultsTabs } from '~/components/simulations/results/simulation-results-tabs'
 import { SimulationNeedsSummary } from '~/components/simulations/results/summary/simulation-needs-summary'
+import { EpciData } from '~/components/simulations/results/summary/simulation-needs-summary-map'
 import { TEpciCalculationResult, TEpciTotalCalculationResult, TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
 import { TGroupedSimulationWithResults } from '~/schemas/simulation'
 import { calculateFlowResultsForEpci } from '~/utils/calculation-helpers'
@@ -25,12 +26,32 @@ async function getSharedResults(token: string): Promise<TGroupedSimulationWithRe
   return res.json()
 }
 
+/**
+ * Contours servis par notre API depuis `epci_contours`, via le token de partage : `/epcis/contours`
+ * demande une session, que cette page n'a pas. Un échec masque la carte sans faire tomber la page.
+ */
+async function getSharedContours(token: string): Promise<EpciData[]> {
+  try {
+    const res = await fetch(`${API_URL}/share/${token}/contours`, { cache: 'no-store' })
+    if (!res.ok) {
+      console.error(`Contours indisponibles (${res.status}), carte masquée`)
+      return []
+    }
+    return (await res.json()) as EpciData[]
+  } catch (error) {
+    console.error('Contours indisponibles, carte masquée :', error instanceof Error ? error.message : error)
+    return []
+  }
+}
+
 export default async function SharedResultsPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
   const { name, simulations: groupedSimulations } = await getSharedResults(token)
 
   const simulationIds = Object.keys(groupedSimulations)
   const simulation = groupedSimulations[simulationIds[0]]
+
+  const contours = await getSharedContours(token)
 
   const results = {
     badQuality: simulation.results.badQuality.total,
@@ -89,7 +110,7 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
     return {
       content: (
         <div key={epci.code} className="fr-container fr-flex fr-direction-column fr-flex-gap-8v">
-          <SimulationNeedsSummary projection={simulation.scenario.projection} results={epciResults} epci={epciData} />
+          <SimulationNeedsSummary contours={contours} projection={simulation.scenario.projection} results={epciResults} epci={epciData} />
           <SimulationDemographicBadHousingSummary
             simulationId={simulation.id}
             totalFlux={epciResults.totalFlux}
@@ -123,7 +144,12 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
   const bassinTab = {
     content: (
       <div key="territory" className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
-        <SimulationNeedsSummary projection={simulation.scenario.projection} results={results} epcis={simulation.epcis} />
+        <SimulationNeedsSummary
+          contours={contours}
+          projection={simulation.scenario.projection}
+          results={results}
+          epcis={simulation.epcis}
+        />
 
         <SimulationDemographicBadHousingSummary
           simulationId={simulation.id}
