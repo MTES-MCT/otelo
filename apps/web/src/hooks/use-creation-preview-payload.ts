@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { SimulationPreviewPayload } from '~/hooks/use-simulation-preview'
 
-export const useCreationPreviewPayload = (): { payload: SimulationPreviewPayload; enabled: boolean } => {
+export const useCreationPreviewPayload = (): { payload: SimulationPreviewPayload; enabled: boolean; epcis: string[] } => {
   const { rates } = useEpcisRates()
 
   const [queryStates] = useQueryStates({
@@ -41,5 +41,5 @@ export const useCreationPreviewPayload = (): { payload: SimulationPreviewPayload
     return { epcis: selectedEpcis, scenario, epciScenarios }
   }, [rates, selectedEpcis, queryStates.omphale, queryStates.projection, queryStates.millesime, queryStates.baseEpci])
 
-  return { payload, enabled: selectedEpcis.length > 0 }
+  return { epcis: selectedEpcis, payload, enabled: selectedEpcis.length > 0 }
 }

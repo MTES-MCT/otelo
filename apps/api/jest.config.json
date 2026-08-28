@@ -4,6 +4,8 @@
   "testRegex": ".*\\.spec\\.ts$",
   "moduleNameMapper": {
     "^@test/(.*)$": "<rootDir>/test/$1",
+    "^@shared$": "<rootDir>/../../packages/shared/src",
+    "^@shared/(.*)$": "<rootDir>/../../packages/shared/src/$1",
     "^~/(.*)$": "<rootDir>/src/$1"
   },
   "transform": {

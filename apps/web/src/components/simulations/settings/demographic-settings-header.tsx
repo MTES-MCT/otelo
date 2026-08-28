@@ -28,7 +28,6 @@ export const DemographicSettingsSelectEpci = ({ epcis }: { epcis?: string[] }) =
           onChange: (event) => setDisplayedEpci(event.target.value),
         }}
       >
-        <option value="all">Ensemble du territoire</option>
         {(options || []).map((option) => (
           <option key={option?.code} value={option?.code}>
             {option?.name}

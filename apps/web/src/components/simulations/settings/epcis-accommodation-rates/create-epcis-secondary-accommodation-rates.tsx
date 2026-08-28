@@ -1,12 +1,11 @@
 'use client'
 
-import { RiIconClassName } from '@codegouvfr/react-dsfr'
-import Tabs from '@codegouvfr/react-dsfr/Tabs'
 import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
 import { CreateSecondaryAccommodationRateInput } from '~/components/simulations/settings/create-secondary-accommodation-rate-input'
+import { EpciTabs } from '~/components/simulations/settings/epci-tabs'
 import { AllEpcisSecondaryRatesView } from '~/components/simulations/settings/epcis-accommodation-rates/all-epcis-secondary-rates-view'
 import ParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/parc-comparison-charts'
 import { SecondaryRatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/secondary-rates-toggle-switch'
@@ -76,18 +75,16 @@ export const CreateEpcisSecondaryAccommodationRates: FC<CreateEpcisAccomodationR
 
   const isAllMode = ratesMode === 'all' && !isPeakBeforeProjection
 
-  const tabs = epcis.map((epci) => ({
-    content: <TabChildren epci={epci.code} rates={rates} millesime={millesime ?? ''} />,
-    iconId: 'ri-road-map-line' as RiIconClassName,
-    label: epci.name,
-  }))
-
   return (
     <>
       <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
         <SecondaryRatesToggleSwitch disabled={isPeakBeforeProjection} />
       </div>
-      {isAllMode ? <AllEpcisSecondaryRatesView epcis={epcis} /> : <Tabs classes={{ panel: 'fr-background-default--grey' }} tabs={tabs} />}
+      {isAllMode ? (
+        <AllEpcisSecondaryRatesView epcis={epcis} />
+      ) : (
+        <EpciTabs epcis={epcis} renderTab={(epciCode) => <TabChildren epci={epciCode} rates={rates} millesime={millesime ?? ''} />} />
+      )}
     </>
   )
 }

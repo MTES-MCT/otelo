@@ -22,6 +22,7 @@ export default async function ModifySimulationLayout({ children, params }: Simul
   const baseEpci = simulation.epcis.find((epci) => epci.baseEpci) ?? simulation.epcis[0]
   const otherEpcisCount = simulation.epcis.length - 1
   const territoryLabel = baseEpci ? `${baseEpci.name}${otherEpcisCount > 0 ? ` + ${otherEpcisCount} EPCI` : ''}` : null
+  const epciOptions = simulation.epcis.map((epci) => ({ code: epci.code, name: epci.name }))
 
   const peakYears = simulation.results?.flowRequirement?.epcis?.reduce(
     (acc, epci) => {
@@ -50,7 +51,7 @@ export default async function ModifySimulationLayout({ children, params }: Simul
             </div>
 
             <WizardAside>
-              <ModificationEstimationCard territoryLabel={territoryLabel} />
+              <ModificationEstimationCard territoryLabel={territoryLabel} epciOptions={epciOptions} />
             </WizardAside>
           </div>
         </SimulationFormRatesProviderContextWrapper>
