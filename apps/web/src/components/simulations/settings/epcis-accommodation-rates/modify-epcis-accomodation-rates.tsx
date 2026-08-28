@@ -1,13 +1,12 @@
 'use client'
 
-import { RiIconClassName } from '@codegouvfr/react-dsfr'
 import Badge from '@codegouvfr/react-dsfr/Badge'
-import Tabs from '@codegouvfr/react-dsfr/Tabs'
 import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
+import { EpciTabs } from '~/components/simulations/settings/epci-tabs'
 import { ModifyAllEpcisRatesView } from '~/components/simulations/settings/epcis-accommodation-rates/modify-all-epcis-rates-view'
 import ModifyParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/modify-parc-comparison-charts'
 import { RatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/rates-toggle-switch'
@@ -97,18 +96,19 @@ export const ModifyEpcisAccommodationRates: FC<ModifyEpcisAccomodationRatesProps
 
   const isAllMode = ratesMode === 'all' && !isPeakBeforeProjection
 
-  const tabs = epcis.map((epci) => ({
-    content: <TabChildren epci={epci.code} rates={rates} millesime={simulationSettings.millesime} />,
-    iconId: 'ri-road-map-line' as RiIconClassName,
-    label: epci.name,
-  }))
-
   return (
     <>
       <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
         <RatesToggleSwitch disabled={isPeakBeforeProjection} />
       </div>
-      {isAllMode ? <ModifyAllEpcisRatesView /> : <Tabs classes={{ panel: 'fr-background-default--grey' }} tabs={tabs} />}
+      {isAllMode ? (
+        <ModifyAllEpcisRatesView />
+      ) : (
+        <EpciTabs
+          epcis={epcis}
+          renderTab={(epciCode) => <TabChildren epci={epciCode} rates={rates} millesime={simulationSettings.millesime} />}
+        />
+      )}
     </>
   )
 }

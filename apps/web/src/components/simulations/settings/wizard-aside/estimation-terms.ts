@@ -1,5 +1,5 @@
+import { EstimationBreakdown, EstimationTermKey } from '@shared'
 import { getStepIndex, WizardFlow, WizardStepSlug } from '~/components/simulations/settings/wizard-steps'
-import { EstimationBreakdown, EstimationTermKey } from '~/utils/estimation-breakdown'
 
 /**
  * Registre de lecture de la carte d'estimation : quel terme appartient à quel bloc, à partir de
@@ -56,6 +56,11 @@ export const ESTIMATION_TERMS: Record<EstimationTermKey, EstimationTerm> = {
     step: 'taux-cibles-logements-vacants',
     display: 'positive-only',
   },
+  fluidityReleased: {
+    label: 'Libération de logements vacants de courte durée',
+    step: 'taux-cibles-logements-vacants',
+    display: 'positive-only',
+  },
   secondaryDecrease: {
     label: 'Diminution du nombre de résidences secondaires',
     step: 'taux-cibles-residences-secondaires',
@@ -82,7 +87,7 @@ export const ESTIMATION_SECTIONS: EstimationSection[] = [
   {
     key: 'mobilisable',
     title: 'Logements mobilisables au sein du parc existant',
-    terms: ['vacancyRemobilised', 'secondaryDecrease', 'appearanceSurplus'],
+    terms: ['vacancyRemobilised', 'fluidityReleased', 'secondaryDecrease', 'appearanceSurplus'],
   },
 ]
 
@@ -110,7 +115,7 @@ export const isTermVisible = (
   flow: WizardFlow,
 ): boolean => {
   if (!isTermRevealed(key, currentSlug, flow)) return false
-  return ESTIMATION_TERMS[key].display === 'always' || Math.round(breakdown[key]) > 0
+  return ESTIMATION_TERMS[key].display === 'always' || Math.round(breakdown.values[key]) > 0
 }
 
 /** Somme des seuls termes révélés : la carte doit toujours s'additionner à l'écran. */
@@ -119,7 +124,7 @@ const sumRevealed = (
   breakdown: EstimationBreakdown,
   currentSlug: WizardStepSlug | undefined,
   flow: WizardFlow,
-): number => keys.filter((key) => isTermRevealed(key, currentSlug, flow)).reduce((sum, key) => sum + breakdown[key], 0)
+): number => keys.filter((key) => isTermRevealed(key, currentSlug, flow)).reduce((sum, key) => sum + breakdown.values[key], 0)
 
 export type EstimationTotals = {
   /** I) — besoin en logements supplémentaires */
@@ -153,5 +158,5 @@ export const getSectionTotal = (
 ): number | null => {
   const revealed = section.terms.filter((key) => isTermRevealed(key, currentSlug, flow))
   if (revealed.length === 0) return null
-  return revealed.reduce((sum, key) => sum + breakdown[key], 0)
+  return revealed.reduce((sum, key) => sum + breakdown.values[key], 0)
 }
