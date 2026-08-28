@@ -236,5 +236,110 @@ describe('NeedsCalculationService', () => {
       expect(result.vacantAccomodation).toBe(-72)
       expect(result.secondaryAccommodation).toBe(-15)
     })
+
+    it('should judge secondary residences on their own sign, not on the vacancy sign', async () => {
+      stockService.calculateStock.mockResolvedValue(makeStockRequirementsResults('200000001'))
+      stockService.calculateProrataStockByEpci.mockReturnValue({
+        total: 200,
+        prePeakTotal: 150,
+        postPeakTotal: 50,
+      })
+
+      flowService.calculate.mockResolvedValue({
+        epcis: [
+          {
+            code: '200000001',
+            data: { peakYear: 2031, parcEvolution: {}, housingNeeds: {}, surplusHousing: {} },
+            totals: {
+              demographicEvolution: 100,
+              renewalNeeds: 50,
+              // Résidences secondaires en hausse : aucun logement n'est libéré de ce côté...
+              secondaryResidenceAccomodationEvolution: 40,
+              housingNeeds: 200,
+              surplusHousing: 0,
+              vacantAccomodation: -82,
+              shortTermVacantAccomodation: -20,
+              // ... quand bien même la vacance longue, elle, se résorbe.
+              longTermVacantAccomodation: -62,
+            },
+            metadata: { max: 2041, min: 2021 },
+          },
+        ],
+      })
+
+      sitadelService.calculate.mockResolvedValue({ epcis: [] } as any)
+
+      const result = await service.calculate(makeSimulation())
+
+      expect(result.epcisTotals[0].vacantAccomodation).toBe(-62)
+      expect(result.epcisTotals[0].secondaryAccommodation).toBe(0)
+      expect(result.secondaryAccommodation).toBe(0)
+    })
+
+    it('should keep the total equal to the flux and stock of the EPCIs it retains', async () => {
+      stockService.calculateStock.mockResolvedValue(makeStockRequirementsResults('200000001'))
+      stockService.calculateProrataStockByEpci.mockReturnValue({
+        total: 200,
+        prePeakTotal: 150,
+        postPeakTotal: 50,
+      })
+
+      flowService.calculate.mockResolvedValue({
+        epcis: [
+          {
+            code: '200000001',
+            data: { peakYear: 2031, parcEvolution: {}, housingNeeds: {}, surplusHousing: {} },
+            totals: {
+              demographicEvolution: 100,
+              renewalNeeds: 50,
+              secondaryResidenceAccomodationEvolution: -10,
+              housingNeeds: 200,
+              surplusHousing: 0,
+              vacantAccomodation: -82,
+              shortTermVacantAccomodation: -20,
+              longTermVacantAccomodation: -62,
+            },
+            metadata: { max: 2041, min: 2021 },
+          },
+          {
+            // Flux très négatif : l'EPCI n'a aucun besoin de constructions neuves, il est écarté.
+            code: '200000002',
+            data: { peakYear: 2031, parcEvolution: {}, housingNeeds: {}, surplusHousing: {} },
+            totals: {
+              demographicEvolution: -500,
+              renewalNeeds: 0,
+              secondaryResidenceAccomodationEvolution: 0,
+              housingNeeds: 0,
+              surplusHousing: 0,
+              vacantAccomodation: 0,
+              shortTermVacantAccomodation: 0,
+              longTermVacantAccomodation: 0,
+            },
+            metadata: { max: 2041, min: 2021 },
+          },
+        ],
+      })
+
+      sitadelService.calculate.mockResolvedValue({ epcis: [] } as any)
+
+      const simulation = makeSimulation({
+        epcis: [
+          { code: '200000001', name: 'EPCI A', bassinName: null },
+          { code: '200000002', name: 'EPCI B', bassinName: null },
+        ],
+        scenario: makeScenario({
+          epciScenarios: [makeEpciScenario({ epciCode: '200000001' }), makeEpciScenario({ epciCode: '200000002' })],
+        }),
+      })
+
+      const result = await service.calculate(simulation)
+
+      // `totalStock` accumule les deux EPCI ; `total` et `totalFlux`, eux, ne comptent que le premier.
+      expect(result.totalStock).toBe(300)
+
+      const retainedStock = result.epcisTotals.filter((epci) => epci.total > 0).reduce((sum, epci) => sum + epci.prepeakTotalStock, 0)
+      expect(retainedStock).toBe(150)
+      expect(result.total).toBe(result.totalFlux + retainedStock)
+    })
   })
 })

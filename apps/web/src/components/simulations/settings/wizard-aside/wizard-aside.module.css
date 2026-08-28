@@ -122,3 +122,22 @@
   opacity: 0.6;
   transition: opacity 0.15s;
 }
+
+/* Sélecteur de portée : la colonne est étroite, le champ DSFR doit s'y plier. */
+.scopeSelect :global(.fr-select-group) {
+  margin-bottom: 0;
+}
+
+.scopeSelect :global(.fr-select) {
+  font-size: 0.75rem;
+  height: 2rem;
+  line-height: 1.25rem;
+  padding: 0 2rem 0 0.5rem;
+}
+
+/* Contrepartie alimentée par d'autres EPCI : dit pourquoi un terme et son jumeau coexistent. */
+.splitMention {
+  color: var(--text-mention-grey);
+  display: block;
+  font-style: italic;
+}

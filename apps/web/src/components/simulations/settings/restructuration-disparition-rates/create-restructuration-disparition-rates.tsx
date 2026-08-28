@@ -1,11 +1,10 @@
 'use client'
 
-import { RiIconClassName } from '@codegouvfr/react-dsfr'
-import Tabs from '@codegouvfr/react-dsfr/Tabs'
 import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
+import { EpciTabs } from '~/components/simulations/settings/epci-tabs'
 import styles from '~/components/simulations/settings/epcis-accommodation-rates/epcis-accommodation-rates.module.css'
 import { AllEpcisRestructurationRatesView } from '~/components/simulations/settings/restructuration-disparition-rates/all-epcis-restructuration-rates-view'
 import { CreateRestructurationDisparitionRatesInput } from '~/components/simulations/settings/restructuration-disparition-rates/create-restructuration-disparition-rates.input'
@@ -52,18 +51,19 @@ export const CreateRestructurationDisparitionRates: FC<CreateRestructurationDisp
 
   const isAllMode = ratesMode === 'all'
 
-  const tabs = epcis.map((epci) => ({
-    content: <TabChildren epci={epci.code} rates={rates} observedPeriodLabel={observedPeriodLabel} />,
-    iconId: 'ri-road-map-line' as RiIconClassName,
-    label: epci.name,
-  }))
-
   return (
     <>
       <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
         <RestructurationRatesToggleSwitch />
       </div>
-      {isAllMode ? <AllEpcisRestructurationRatesView /> : <Tabs classes={{ panel: 'fr-background-default--grey' }} tabs={tabs} />}
+      {isAllMode ? (
+        <AllEpcisRestructurationRatesView />
+      ) : (
+        <EpciTabs
+          epcis={epcis}
+          renderTab={(epciCode) => <TabChildren epci={epciCode} rates={rates} observedPeriodLabel={observedPeriodLabel} />}
+        />
+      )}
     </>
   )
 }

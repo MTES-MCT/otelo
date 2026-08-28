@@ -1,5 +1,6 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import { RiIconClassName } from '@codegouvfr/react-dsfr/fr/generatedFromCss/classNames'
+import { sumRenewalSurplus } from '@shared'
 import { SynthesisCnEvolutionChart } from '~/components/charts/synthesis-cn-evolution-chart'
 import { ScotInfoDrawer } from '~/components/simulations/docurba/scot-info-drawer'
 import { SimulationAnnualsNeedsSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs'
@@ -157,7 +158,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
         <SimulationSecondaryVacantsAccommodationsSummary
           results={results}
           projection={simulation.scenario.projection}
-          renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + Math.min(0, e.totals.renewalNeeds), 0)}
+          renewalNeeds={sumRenewalSurplus(simulation.results)}
         />
 
         {epcisFlowData.length > 1 && (
