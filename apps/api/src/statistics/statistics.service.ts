@@ -11,6 +11,35 @@ export class StatisticsService {
     return this.prisma.scenario.count()
   }
 
+  /**
+   * Compteurs transverses de l'espace d'administration : pastilles de la navigation
+   * et vue d'ensemble. Une seule requête pour toute la coquille, plutôt qu'un appel
+   * par rubrique.
+   */
+  async getAdminOverview() {
+    const [users, usersWithAccess, scenarios, simulations, feedbacks, epciGroups, activeShareLinks] = await Promise.all([
+      this.prisma.user.count({ where: { role: 'USER' } }),
+      this.prisma.user.count({ where: { role: 'USER', hasAccess: true } }),
+      this.prisma.scenario.count(),
+      this.prisma.simulation.count({ where: { deleted: null } }),
+      this.prisma.userFeedback.count(),
+      this.prisma.epciGroup.count({ where: { deleted: null } }),
+      this.prisma.simulationShareLink.count({ where: { active: true } }),
+    ])
+
+    return {
+      users,
+      usersWithAccess,
+      // Comptes créés en attente d'octroi d'accès : la file d'attente du mur d'engagement.
+      usersPending: users - usersWithAccess,
+      scenarios,
+      simulations,
+      feedbacks,
+      epciGroups,
+      activeShareLinks,
+    }
+  }
+
   async getAverageScenariosPerUser(): Promise<number> {
     const totalScenarios = await this.prisma.scenario.count()
     const totalUsers = await this.prisma.user.count()

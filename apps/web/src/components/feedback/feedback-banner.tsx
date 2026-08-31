@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { useFeedbackStatus } from '~/hooks/use-feedback-status'
 import { useSnoozeFeedback } from '~/hooks/use-snooze-feedback'
 import { useSubmitFeedback } from '~/hooks/use-submit-feedback'
+import { trackEvent } from '~/lib/tracking'
 import styles from './feedback-banner.module.css'
 
 const SNOOZE_KEY = 'otelo-feedback-snoozed'
@@ -65,10 +66,12 @@ export const FeedbackBanner: FC = () => {
   }
 
   const onSubmit = (data: TFeedbackForm) => {
+    trackEvent({ action: 'feedback', category: 'Engagement', name: 'envoi', value: data.rating })
     submitFeedback(data)
   }
 
   const handleSnooze = () => {
+    trackEvent({ action: 'feedback', category: 'Engagement', name: 'report' })
     snoozeFeedback(undefined, {
       onSuccess: () => {
         sessionStorage.setItem(SNOOZE_KEY, 'true')

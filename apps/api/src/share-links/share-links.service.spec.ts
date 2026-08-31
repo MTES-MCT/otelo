@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { PrismaService } from '~/db/prisma.service'
 import { EpcisService } from '~/epcis/epcis.service'
 import { ResultsService } from '~/results/results.service'
+import { SimulationChangesService } from '~/simulations/simulation-changes.service'
 import { ShareLinksService } from './share-links.service'
 
 describe('ShareLinksService', () => {
@@ -20,6 +21,7 @@ describe('ShareLinksService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EpcisService, useValue: createMock<EpcisService>() },
         { provide: ResultsService, useValue: mockResultsService },
+        { provide: SimulationChangesService, useValue: createMock<SimulationChangesService>() },
       ],
     }).compile()
 
@@ -146,6 +148,10 @@ describe('ShareLinksService', () => {
   })
 
   describe('getResultsByToken', () => {
+    beforeEach(() => {
+      mockPrismaService.simulationShareLink.updateMany = jest.fn().mockResolvedValue({ count: 1 })
+    })
+
     it('should delegate to ResultsService.getGroupedResults', async () => {
       const mockResults = { name: 'test', simulations: {} }
       mockResultsService.getGroupedResults = jest.fn().mockResolvedValue(mockResults)
@@ -154,6 +160,40 @@ describe('ShareLinksService', () => {
 
       expect(result).toEqual(mockResults)
       expect(mockResultsService.getGroupedResults).toHaveBeenCalledWith('sim-1')
+    })
+
+    it('should count the view', async () => {
+      mockResultsService.getGroupedResults = jest.fn().mockResolvedValue({})
+
+      await service.getResultsByToken('sim-1')
+
+      expect(mockPrismaService.simulationShareLink.updateMany).toHaveBeenCalledWith({
+        where: { simulationId: 'sim-1' },
+        data: { viewCount: { increment: 1 }, lastViewedAt: expect.any(Date) },
+      })
+    })
+
+    it('should still serve the results when counting the view fails', async () => {
+      const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      const mockResults = { name: 'test', simulations: {} }
+      mockPrismaService.simulationShareLink.updateMany = jest.fn().mockRejectedValue(new Error('db down'))
+      mockResultsService.getGroupedResults = jest.fn().mockResolvedValue(mockResults)
+
+      await expect(service.getResultsByToken('sim-1')).resolves.toEqual(mockResults)
+
+      consoleError.mockRestore()
+    })
+  })
+
+  describe('recordShareView', () => {
+    it('should never throw, so a failed counter cannot break the public page', async () => {
+      const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      mockPrismaService.simulationShareLink.updateMany = jest.fn().mockRejectedValue(new Error('db down'))
+
+      await expect(service.recordShareView('sim-1')).resolves.toBeUndefined()
+      expect(consoleError).toHaveBeenCalled()
+
+      consoleError.mockRestore()
     })
   })
 })

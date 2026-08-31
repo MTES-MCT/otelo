@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { Dropdown } from '~/components/common/dropdown'
 import ProfileInitials from '~/components/common/profile-image'
+import { ReportIssueButton } from '~/components/report-issue-button'
 import { signOut, useSession } from '~/lib/auth/client'
 
 export const QuickAccessItems: FC = () => {
@@ -14,6 +15,7 @@ export const QuickAccessItems: FC = () => {
   if (session) {
     const user = session.user
     return [
+      <ReportIssueButton key="report-issue" />,
       <Button
         iconId="fr-icon-arrow-right-line"
         className="fr-mb-0"
@@ -61,6 +63,7 @@ export const QuickAccessItems: FC = () => {
   }
 
   return [
+    <ReportIssueButton key="report-issue" />,
     <Button iconId="fr-icon-account-fill" linkProps={{ href: '/connexion' }} key="sign-in-button">
       S&apos;inscrire ou se connecter
     </Button>,

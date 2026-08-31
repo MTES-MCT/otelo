@@ -1,6 +1,6 @@
 jest.unmock('~/auth/better-auth')
 
-import { checkWhitelistBeforeCreate, updateLastLoginAt } from './better-auth'
+import { checkWhitelistBeforeCreate, recordLoginEvent, resolveLoginProvider, touchLoginEvent, updateLastLoginAt } from './better-auth'
 
 jest.mock('better-auth', () => ({
   betterAuth: jest.fn().mockReturnValue({
@@ -99,6 +99,122 @@ describe('better-auth hooks', () => {
         where: { id: 'user-123' },
         data: { lastLoginAt: expect.any(Date) },
       })
+    })
+  })
+
+  describe('resolveLoginProvider', () => {
+    it.each([
+      ['/oauth2/callback/proconnect', 'proconnect'],
+      ['/callback/proconnect', 'proconnect'],
+      ['/sign-in/email', 'credential'],
+      ['/sign-up/email', 'credential'],
+    ])('should resolve %s to %s', (path, expected) => {
+      expect(resolveLoginProvider(path)).toBe(expected)
+    })
+
+    it.each([[undefined], [null], ['']])('should return null when the path is %s', (path) => {
+      expect(resolveLoginProvider(path)).toBeNull()
+    })
+
+    it('should return null rather than guessing on an unknown path', () => {
+      expect(resolveLoginProvider('/some/unrelated/endpoint')).toBeNull()
+    })
+  })
+
+  describe('recordLoginEvent', () => {
+    const mockDb = {
+      user: { findUnique: jest.fn() },
+      loginEvent: { create: jest.fn(), updateMany: jest.fn() },
+    }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockDb.user.findUnique.mockResolvedValue({ region: 'Bretagne', type: 'DDT' })
+      mockDb.loginEvent.create.mockResolvedValue({})
+    })
+
+    it('should snapshot the user type and region at login time', async () => {
+      await recordLoginEvent(mockDb, { id: 'session-1', userId: 'user-123' }, '/sign-in/email')
+
+      expect(mockDb.loginEvent.create).toHaveBeenCalledWith({
+        data: {
+          provider: 'credential',
+          region: 'Bretagne',
+          sessionId: 'session-1',
+          userId: 'user-123',
+          userType: 'DDT',
+        },
+      })
+    })
+
+    it('should NOT record impersonated sessions', async () => {
+      await recordLoginEvent(mockDb, { id: 'session-1', impersonatedBy: 'admin-1', userId: 'user-123' }, '/sign-in/email')
+
+      expect(mockDb.loginEvent.create).not.toHaveBeenCalled()
+      expect(mockDb.user.findUnique).not.toHaveBeenCalled()
+    })
+
+    it('should skip when the session has no id', async () => {
+      await recordLoginEvent(mockDb, { userId: 'user-123' }, '/sign-in/email')
+
+      expect(mockDb.loginEvent.create).not.toHaveBeenCalled()
+    })
+
+    it('should record null snapshots when the user has no type nor region', async () => {
+      mockDb.user.findUnique.mockResolvedValue({ region: null, type: null })
+
+      await recordLoginEvent(mockDb, { id: 'session-1', userId: 'user-123' })
+
+      expect(mockDb.loginEvent.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ provider: null, region: null, userType: null }),
+      })
+    })
+
+    it('should never throw when the insert fails, so a login is never blocked', async () => {
+      const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      mockDb.loginEvent.create.mockRejectedValue(new Error('db down'))
+
+      await expect(recordLoginEvent(mockDb, { id: 'session-1', userId: 'user-123' })).resolves.toBeUndefined()
+      expect(consoleError).toHaveBeenCalled()
+
+      consoleError.mockRestore()
+    })
+  })
+
+  describe('touchLoginEvent', () => {
+    const mockDb = {
+      user: { findUnique: jest.fn() },
+      loginEvent: { create: jest.fn(), updateMany: jest.fn() },
+    }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockDb.loginEvent.updateMany.mockResolvedValue({ count: 1 })
+    })
+
+    it('should refresh lastSeenAt for the matching session', async () => {
+      await touchLoginEvent(mockDb, { id: 'session-1', userId: 'user-123' })
+
+      expect(mockDb.loginEvent.updateMany).toHaveBeenCalledWith({
+        where: { sessionId: 'session-1' },
+        data: { lastSeenAt: expect.any(Date) },
+      })
+    })
+
+    it('should use updateMany so a session predating the feature does not throw', async () => {
+      mockDb.loginEvent.updateMany.mockResolvedValue({ count: 0 })
+
+      await expect(touchLoginEvent(mockDb, { id: 'unknown-session', userId: 'user-123' })).resolves.toBeUndefined()
+    })
+
+    it('should never throw when the update fails', async () => {
+      const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      mockDb.loginEvent.updateMany.mockRejectedValue(new Error('db down'))
+
+      await expect(touchLoginEvent(mockDb, { id: 'session-1', userId: 'user-123' })).resolves.toBeUndefined()
+      expect(consoleError).toHaveBeenCalled()
+
+      consoleError.mockRestore()
     })
   })
 })

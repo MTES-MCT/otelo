@@ -1,0 +1,20 @@
+.wrapper {
+  overflow-x: auto;
+}
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortInactive {
+  opacity: 0.35;
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.selectedRow {
+  background-color: var(--background-action-low-blue-france) !important;
+}

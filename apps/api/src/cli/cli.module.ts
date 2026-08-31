@@ -8,6 +8,7 @@ import { PrismaModule } from '~/db/prisma.module'
 import { EpciGroupsModule } from '~/epci-groups/epci-groups.module'
 import { ResultsService } from '~/results/results.service'
 import { ScenariosModule } from '~/scenarios/scenarios.module'
+import { SimulationChangesService } from '~/simulations/simulation-changes.service'
 import { SimulationsService } from '~/simulations/simulations.service'
 import { BackfillEpciContoursCommand } from './commands/backfill-epci-contours.command'
 import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
@@ -41,6 +42,7 @@ import { ScalingoBackupService } from './services/scalingo-backup.service'
     UpdateUserTypesCommand,
     ResultsService,
     SimulationsService,
+    SimulationChangesService,
   ],
   exports: [
     BackfillEpciContoursCommand,

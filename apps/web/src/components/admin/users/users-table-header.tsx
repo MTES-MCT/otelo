@@ -6,7 +6,7 @@ import Input from '@codegouvfr/react-dsfr/Input'
 import { useQueryClient } from '@tanstack/react-query'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { tss } from 'tss-react'
-import { useExportCsvUsers } from '~/hooks/use-export-csv-users'
+import { useCsvExport } from '~/hooks/use-csv-export'
 import { useImportCsvUsers } from '~/hooks/use-import-csv-users'
 import { useSynchroDs } from '~/hooks/use-synchro-ds'
 
@@ -20,7 +20,7 @@ export const UsersTableHeader: FC<UsersTableHeaderProps> = ({ userCount, searchQ
   const queryClient = useQueryClient()
   const [inputValue, setInputValue] = useState(searchQuery ?? '')
   const { mutate, isPending } = useSynchroDs()
-  const { mutateAsync: exportCsv, isPending: isExporting } = useExportCsvUsers()
+  const { exportCsv, isPending: isExporting } = useCsvExport('/api/users/export/csv', 'export-utilisateurs.csv')
   const { mutateAsync: importCsv, isPending: isImporting } = useImportCsvUsers()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -74,7 +74,7 @@ export const UsersTableHeader: FC<UsersTableHeaderProps> = ({ userCount, searchQ
         />
         <div className={classes.usersCountContainer}>
           <div className={classes.iconWrapper}>
-            <span className={cx(classes.userIcon, fr.cx('fr-icon-user-fill'))}></span>
+            <span className={cx(classes.userIcon, 'fr-icon-user-fill')}></span>
           </div>
           <span className={classes.userCount}>{userCount} utilisateurs</span>
         </div>
@@ -87,7 +87,7 @@ export const UsersTableHeader: FC<UsersTableHeaderProps> = ({ userCount, searchQ
         <Button priority="secondary" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
           {isImporting ? 'Import en cours...' : 'Importer CSV'}
         </Button>
-        <Button priority="secondary" onClick={() => exportCsv()} disabled={isExporting}>
+        <Button priority="secondary" onClick={() => exportCsv({})} disabled={isExporting}>
           {isExporting ? 'Export en cours...' : 'Exporter CSV'}
         </Button>
         <Button onClick={handleSynchroDs} disabled={isPending}>

@@ -1,0 +1,32 @@
+.entry {
+  list-style: none;
+}
+
+.entry:first-child {
+  border-top: 0;
+}
+
+.diff {
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.diff th {
+  width: 45%;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  text-align: left;
+  font-weight: 400;
+}
+
+.diff td {
+  padding: 0.25rem 0.5rem;
+}
+
+/* La valeur précédente est barrée : le sens de lecture doit être évident sans lire l'en-tête. */
+.before {
+  text-decoration: line-through;
+}
+
+.arrow {
+  width: 1.5rem;
+}

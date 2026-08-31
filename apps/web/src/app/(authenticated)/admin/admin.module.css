@@ -1,0 +1,200 @@
+/* Le fond gris avec des cartes blanches donne son identité à l'espace d'administration :
+   le contenu métier d'Otelo, lui, est sur fond blanc. */
+
+.shell {
+  min-height: 100%;
+}
+
+.sidebar {
+  flex: 0 0 16rem;
+}
+
+.navSectionTitle {
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+}
+
+.navItem {
+  color: var(--text-default-grey);
+  background-color: transparent;
+}
+
+.navItem:hover {
+  background-color: var(--background-default-grey-hover);
+}
+
+.navItemActive {
+  color: var(--text-active-blue-france);
+  background-color: var(--background-action-low-blue-france);
+}
+
+.navBadge {
+  padding: 0 0.375rem;
+  border-radius: 0.625rem;
+  font-size: 0.6875rem;
+  line-height: 1.25rem;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 2rem;
+}
+
+.pageIcon {
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* DSFR ajoute une marge à droite de ses icônes : elle décentre la pastille. */
+.pageIconBadge::before {
+  margin-right: 0 !important;
+}
+
+.cardTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.exportEntryLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.statCard {
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.statCardBlue::before {
+  background-color: var(--background-action-high-blue-france);
+}
+
+.statCardGreen::before {
+  background-color: var(--background-flat-success);
+}
+
+.statCardOrange::before {
+  background-color: var(--background-flat-warning);
+}
+
+.statCardPurple::before {
+  background-color: var(--background-flat-info);
+}
+
+.statLabel {
+  letter-spacing: 0.03em;
+}
+
+.statValue {
+  font-size: 2rem;
+}
+
+/* Filigrane : lisible, mais jamais au point de concurrencer le chiffre. La teinte suit
+   la barre d'accent de la carte, sans quoi l'icône disparaît sur le fond blanc. */
+.statIcon {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  opacity: 0.35;
+}
+
+.statCardBlue .statIcon {
+  color: var(--background-action-high-blue-france);
+}
+
+.statCardGreen .statIcon {
+  color: var(--background-flat-success);
+}
+
+.statCardOrange .statIcon {
+  color: var(--background-flat-warning);
+}
+
+.statCardPurple .statIcon {
+  color: var(--background-flat-info);
+}
+
+.chip,
+.chipActive {
+  cursor: pointer;
+  color: var(--text-default-grey);
+  background-color: var(--background-default-grey);
+}
+
+.chip:hover {
+  background-color: var(--background-default-grey-hover);
+}
+
+.chipActive {
+  color: var(--text-inverted-blue-france);
+  background-color: var(--background-action-high-blue-france);
+  border: 1px solid var(--background-action-high-blue-france);
+}
+
+.dateInput {
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-bottom: 2px solid var(--border-plain-grey);
+  font-size: 0.875rem;
+  color: var(--text-default-grey);
+  background-color: var(--background-contrast-grey);
+}
+
+.chartContainer {
+  height: 300px;
+}
+
+.chartContainerTall {
+  height: 400px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    flex: 1 1 auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-default-grey);
+  }
+
+  .content {
+    padding: 1rem;
+  }
+
+  .grid2,
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}

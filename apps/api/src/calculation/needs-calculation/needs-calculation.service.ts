@@ -54,11 +54,11 @@ export class NeedsCalculationService {
       // Stock (mal-logement) is always accumulated regardless of construction needs
       totalStock += peakYear && peakYear > simulationMillesime ? epciTotalStock.prePeakTotal : epciTotalStock.total
 
-      const epciVacantAccomodation =
-        epciFlowRequirement.totals.longTermVacantAccomodation <= 0 ? epciFlowRequirement.totals.longTermVacantAccomodation : 0
+      // Volumes libérés par le parc : chaque terme se juge sur son propre signe, et par EPCI — un
+      // territoire peut voir sa vacance augmenter ici et se résorber là.
+      const epciVacantAccomodation = Math.min(0, epciFlowRequirement.totals.longTermVacantAccomodation)
 
-      const epciSecondaryAccommodation =
-        epciFlowRequirement.totals.longTermVacantAccomodation <= 0 ? epciFlowRequirement.totals.secondaryResidenceAccomodationEvolution : 0
+      const epciSecondaryAccommodation = Math.min(0, epciFlowRequirement.totals.secondaryResidenceAccomodationEvolution)
 
       if (epciConstructionsNeuves > 0) {
         vacantAccomodation += epciVacantAccomodation
