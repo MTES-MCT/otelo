@@ -15,6 +15,7 @@ import { useCreateSimulation } from '~/hooks/use-create-simulation'
 import { TInitSimulationDto, ZInitSimulationDto } from '~/schemas/simulation'
 import { parsePlanningDocumentName, parsePlanningDocumentType, parseUrbanismeDocAnswer } from '~/utils/epci-group-name'
 import { getOmphaleLabel } from '~/utils/omphale-label'
+import { clampProjectionYear, DEFAULT_PROJECTION_YEAR } from '~/utils/projection'
 
 export const CreateSimulationForm: FC = () => {
   const { classes } = useStyles()
@@ -42,6 +43,10 @@ export const CreateSimulationForm: FC = () => {
 
   // Use epcis from query states, or fall back to all EPCIs in rates if none specified
   const selectedEpcis = queryStates.epcis.length > 0 ? queryStates.epcis : Object.keys(rates)
+
+  // L'étape de cadrage temporel peut être court-circuitée (lien « refaire » depuis les résultats,
+  // URL bricolée) : on reborne ici pour ne jamais enregistrer une période nulle ou négative.
+  const projection = clampProjectionYear(queryStates.projection ?? DEFAULT_PROJECTION_YEAR, queryStates.millesime)
 
   const {
     register,
@@ -79,7 +84,7 @@ export const CreateSimulationForm: FC = () => {
           },
           {} as Record<string, TInitSimulationDto['scenario']['epcis'][string]>,
         ),
-        projection: (queryStates.projection as number) ?? 2030,
+        projection,
         demographicEvolutionOmphaleCustomIds: queryStates.demographicEvolutionOmphaleCustomIds,
       },
     },
@@ -115,7 +120,7 @@ export const CreateSimulationForm: FC = () => {
             iconId="ri-calendar-line"
             hintText="Année de projection"
             style={{ flex: 1 }}
-            nativeInputProps={{ value: queryStates.projection as number }}
+            nativeInputProps={{ value: projection }}
           />
         </div>
       </div>

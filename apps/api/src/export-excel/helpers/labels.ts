@@ -73,6 +73,8 @@ export const getOmphaleKey = (scenario: string) => {
       return 'centralB'
     case 'Central_C':
       return 'centralC'
+    case 'Central_H':
+      return 'centralH'
     case 'PH_B':
       return 'phB'
     case 'PH_C':

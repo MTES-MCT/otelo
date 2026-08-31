@@ -9,6 +9,7 @@ import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rate
 import { useCreateSimulation } from '~/hooks/use-create-simulation'
 import { TInitSimulationDto, ZInitSimulationDto } from '~/schemas/simulation'
 import { parsePlanningDocumentName, parsePlanningDocumentType, parseUrbanismeDocAnswer } from '~/utils/epci-group-name'
+import { clampProjectionYear, DEFAULT_PROJECTION_YEAR } from '~/utils/projection'
 
 const modal = createModal({
   id: 'scenario-naming-modal',
@@ -75,7 +76,8 @@ export const ScenarioNamingModal: FC = () => {
           },
           {} as Record<string, TInitSimulationDto['scenario']['epcis'][string]>,
         ),
-        projection: (queryStates.projection as number) ?? 2030,
+        // Reborné ici aussi : l'étape de cadrage temporel peut être court-circuitée.
+        projection: clampProjectionYear(queryStates.projection ?? DEFAULT_PROJECTION_YEAR, queryStates.millesime),
         demographicEvolutionOmphaleCustomIds: queryStates.demographicEvolutionOmphaleCustomIds,
       },
     },

@@ -1,7 +1,9 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Res } from '@nestjs/common'
 import { Response } from 'express'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { buildContentDisposition } from '~/common/utils/content-disposition'
 import { ExportExcelService } from '~/export-excel/export-excel.service'
+import { buildExportFilename } from '~/export-excel/helpers/export-filename'
 import { Prisma, Role } from '~/generated/prisma/client'
 
 @Controller('export-excel')
@@ -20,11 +22,8 @@ export class ExportExcelController {
     await this.exportExcelService.markAsExported(simulationId)
     const buffer = await workbook.xlsx.writeBuffer()
 
-    const mainEpciCode = simulation.scenario.epciScenarios.find((e) => e.baseEpci)?.epciCode
-    const filename = `Votre scenario Otelo - ${simulation.epcis.find((e) => e.code === mainEpciCode)?.name} - ${simulation.name}.xlsx`
-
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`)
+    res.setHeader('Content-Disposition', buildContentDisposition(buildExportFilename(simulation)))
     res.send(buffer)
   }
 }
