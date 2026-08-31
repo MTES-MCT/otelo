@@ -51,9 +51,11 @@ Statut : ✅ implémenté · ⏳ prévu.
 
 Clé de l'entonnoir : les six `WizardStepSlug` de `components/simulations/settings/wizard-steps.ts`. **Ne jamais dériver l'entonnoir des URLs** : l'état du wizard vit dans les paramètres d'URL via nuqs et `NextStepLink` les recopie d'une étape à l'autre.
 
+> ⛔ `wizard-steps.ts` et `wizard-step-tracker.tsx` arrivent avec le wizard, resté sur `dev` : les événements marqués ⛔ ci-dessous ne sont pas encore émis.
+
 | ID | Action | Name / Value | Statut |
 |---|---|---|---|
-| S1 | `etape wizard` | slug de l'étape | ✅ `components/simulations/settings/wizard-step-tracker.tsx` |
+| S1 | `etape wizard` | slug de l'étape | ⛔ `components/simulations/settings/wizard-step-tracker.tsx` (avec le wizard) |
 | S2 | `methode territoire` | `existing-group` / `bassin-habitat` / `custom-selection` | ⏳ |
 | S3 | `scenario population` | `basse` / `centrale` / `haute` | ⏳ |
 | S4 | `scenario omphale` | `Central_C`… (9 valeurs) | ✅ `hooks/use-create-simulation.ts` |
@@ -72,7 +74,7 @@ Clé de l'entonnoir : les six `WizardStepSlug` de `components/simulations/settin
 | R5 | `section resultats` | ancre de section | ⏳ |
 | R6 | `ouverture parametrage` | — | ⏳ |
 | R7 | `drawer scot` | value = nombre d'EPCI | ⏳ |
-| M1 | `etape modification demographique` | slug de l'étape | ✅ `components/simulations/settings/wizard-step-tracker.tsx` |
+| M1 | `etape modification demographique` | slug de l'étape | ⛔ `components/simulations/settings/wizard-step-tracker.tsx` (avec le wizard) |
 | M2 | `affiner mal-logement` | — | ⏳ |
 | M3 | `etape mal-logement` | slug de l'étape | ⏳ |
 | M4 | `validation parametrage` | `demographique` / `mal-logement` | ⏳ |
@@ -81,8 +83,8 @@ Clé de l'entonnoir : les six `WizardStepSlug` de `components/simulations/settin
 
 | ID | Catégorie | Action | Name / Value | Statut |
 |---|---|---|---|---|
-| A1 | Aide | `ouverture tutoriel` | slug de l'étape / `resultats`, value = nb de bulles | ✅ `tutorial/use-tutorial.ts` |
-| A2 | Aide | `fin tutoriel` | `termine` / `abandonne`, value = n° de bulle | ✅ `tutorial/use-tutorial.ts` |
+| A1 | Aide | `ouverture tutoriel` | slug de l'étape / `resultats`, value = nb de bulles | ⛔ `tutorial/use-tutorial.ts` (avec le mode tuto) |
+| A2 | Aide | `fin tutoriel` | `termine` / `abandonne`, value = n° de bulle | ⛔ `tutorial/use-tutorial.ts` (avec le mode tuto) |
 | A3 | Aide | `question guide` | ancre du guide | ⏳ |
 | A4 | Aide | `lien source de donnees` | ancre | ⏳ |
 | A5 | Aide | `ouverture faq` | libellé de la question | ⏳ |
