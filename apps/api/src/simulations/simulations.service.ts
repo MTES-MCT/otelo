@@ -18,6 +18,7 @@ import {
   TSimulationWithEpci,
   TSimulationWithEpciAndScenario,
 } from '~/schemas/simulations/simulation'
+import { computeScenarioDiff, SimulationChangesService } from './simulation-changes.service'
 
 interface CachedSimulationResultRow {
   simulationId: string
@@ -35,6 +36,7 @@ export class SimulationsService {
     private readonly scenariosService: ScenariosService,
     private readonly epciGroupsService: EpciGroupsService,
     private readonly accommodationRatesService: AccommodationRatesService,
+    private readonly simulationChangesService: SimulationChangesService,
   ) {}
 
   async hasUserAccessTo(id: string, userId: string): Promise<boolean> {
@@ -131,6 +133,14 @@ export class SimulationsService {
       if (!hasAccess) {
         throw new ForbiddenException()
       }
+
+      // Le groupe existe déjà : on ne peut qu'ajouter l'information, jamais la retirer.
+      if (data.worksOnPlanningDocument === true) {
+        await this.epciGroupsService.markWorksOnPlanningDocument(epciGroupId, userId, {
+          planningDocumentName: data.planningDocumentName,
+          planningDocumentType: data.planningDocumentType,
+        })
+      }
     }
 
     const scenario = await this.scenariosService.create(userId, data.scenario, data.millesime)
@@ -143,7 +153,7 @@ export class SimulationsService {
       epciGroupId = epciGroup.id
     }
 
-    return this.prismaService.simulation.create({
+    const simulation = await this.prismaService.simulation.create({
       data: {
         epcis: {
           connect: data.epci.map((epci) => ({ code: epci.code })),
@@ -154,18 +164,50 @@ export class SimulationsService {
         ...(epciGroupId && { epciGroup: { connect: { id: epciGroupId } } }),
       },
     })
+
+    await this.simulationChangesService.record({ simulationId: simulation.id, userId, action: 'simulation.created' })
+
+    return simulation
   }
 
-  async update(id: string, data: TUpdateSimulationDto): Promise<TSimulationWithEpciAndScenario> {
+  async update(id: string, data: TUpdateSimulationDto, userId?: string): Promise<TSimulationWithEpciAndScenario> {
+    // L'instantané doit être pris AVANT l'écriture : les paramètres sont écrasés en place,
+    // l'état précédent est irrécupérable ensuite.
+    const before = await this.simulationChangesService.getScenarioSnapshot(data.id)
+
     await this.scenariosService.update(data.id, data)
+
+    if (before) {
+      const changes = computeScenarioDiff(
+        { ...before, epciScenarios: before.epciScenarios },
+        {
+          ...data,
+          epciScenarios: Object.entries(data.epciScenarios ?? {}).map(([epciCode, rates]) => ({ ...rates, epciCode })),
+        },
+      )
+
+      await this.simulationChangesService.record({ simulationId: id, userId, action: 'scenario.updated', changes })
+    }
+
     return this.get(id)
   }
 
   async rename(userId: string, id: string, name: string): Promise<Simulation> {
-    return this.prismaService.simulation.update({
+    const before = await this.prismaService.simulation.findUnique({ where: { id, userId }, select: { name: true } })
+
+    const simulation = await this.prismaService.simulation.update({
       where: { id, userId },
       data: { name },
     })
+
+    await this.simulationChangesService.record({
+      simulationId: id,
+      userId,
+      action: 'simulation.renamed',
+      changes: [{ field: 'name', label: 'Nom du scénario', before: before?.name ?? null, after: name }],
+    })
+
+    return simulation
   }
 
   async delete(userId: string, id: string): Promise<Simulation> {
@@ -186,6 +228,8 @@ export class SimulationsService {
         })
       }
     }
+
+    await this.simulationChangesService.record({ simulationId: id, userId, action: 'simulation.deleted' })
 
     return simulation
   }
@@ -221,7 +265,7 @@ export class SimulationsService {
       originalMillesime,
     )
 
-    return this.prismaService.simulation.create({
+    const cloned = await this.prismaService.simulation.create({
       data: {
         name: data.name,
         epcis: {
@@ -232,9 +276,31 @@ export class SimulationsService {
         ...(originalSimulation.epciGroupId && { epciGroup: { connect: { id: originalSimulation.epciGroupId } } }),
       },
     })
+
+    await this.simulationChangesService.record({
+      simulationId: cloned.id,
+      userId,
+      action: 'simulation.cloned',
+      changes: [{ field: 'source', label: 'Scénario dupliqué depuis', before: originalSimulation.name, after: cloned.name }],
+    })
+
+    return cloned
   }
 
-  async actualize(userId: string, originalId: string, targetMillesime: string, name?: string): Promise<Simulation> {
+  /**
+   * Rejoue un scénario sur un millésime plus récent.
+   *
+   * Un EPCI dépourvu de taux dans le millésime cible est ignoré : le scénario cloné
+   * conserve alors les taux de l'ancien millésime, sans que rien ne le signale. Le
+   * rapport `actualization` rend cette actualisation partielle visible — auparavant
+   * l'opération renvoyait un succès indistinguable d'une actualisation complète.
+   */
+  async actualize(
+    userId: string,
+    originalId: string,
+    targetMillesime: string,
+    name?: string,
+  ): Promise<Simulation & { actualization: { total: number; updated: number; skippedEpcis: string[] } }> {
     const original = await this.prismaService.simulation.findUniqueOrThrow({
       where: { id: originalId, userId },
       include: {
@@ -265,6 +331,8 @@ export class SimulationsService {
       this.accommodationRatesService.getAccommodationRates(epciCodes.join(','), targetMillesime),
     ])
 
+    const skippedEpcis: string[] = []
+
     // Update each epciScenario with fresh rates, preserving user-applied reduction ratios
     await Promise.all(
       epciCodes.map((epciCode) => {
@@ -272,7 +340,10 @@ export class SimulationsService {
         const originalRaw = originalRawRates[epciCode]
         const originalEpci = original.scenario.epciScenarios.find((e) => e.epciCode === epciCode)
 
-        if (!fresh || !originalRaw || !originalEpci) return Promise.resolve()
+        if (!fresh || !originalRaw || !originalEpci) {
+          skippedEpcis.push(epciCode)
+          return Promise.resolve()
+        }
 
         const ratio = (stored: number, raw: number) => (raw > 0 ? stored / raw : 1)
 
@@ -290,7 +361,33 @@ export class SimulationsService {
       }),
     )
 
-    return cloned
+    await this.simulationChangesService.record({
+      simulationId: cloned.id,
+      userId,
+      action: 'simulation.actualized',
+      changes: [
+        { field: 'millesime', label: 'Millésime des données', before: original.scenario.millesime, after: targetMillesime },
+        ...(skippedEpcis.length > 0
+          ? [
+              {
+                field: 'epcis_ignores',
+                label: 'EPCI sans données dans le millésime cible (taux conservés)',
+                before: null,
+                after: skippedEpcis.join(', '),
+              },
+            ]
+          : []),
+      ],
+    })
+
+    return {
+      ...cloned,
+      actualization: {
+        total: epciCodes.length,
+        updated: epciCodes.length - skippedEpcis.length,
+        skippedEpcis,
+      },
+    }
   }
 
   /**
@@ -600,12 +697,35 @@ export class SimulationsService {
     }
   }
 
-  async markAsExported(simulationIds: string[], privilegedSimulationId?: string): Promise<void> {
+  /**
+   * Journalise une demande de PowerPoint dans `exports`.
+   *
+   * Les réponses déclaratives du formulaire (type de document, prochaine étape,
+   * période d'étude) sont persistées : c'est la seule information dont on dispose
+   * sur l'usage réel du livrable, et elle n'existait jusqu'ici que dans l'email
+   * envoyé à l'équipe.
+   */
+  async markAsExported(
+    simulationIds: string[],
+    options: {
+      privilegedSimulationId?: string
+      documentType?: string
+      nextStep?: string
+      periodStart?: number
+      periodEnd?: number
+    } = {},
+  ): Promise<void> {
+    const { documentType, nextStep, periodEnd, periodStart, privilegedSimulationId } = options
+
     await this.prismaService.export.createMany({
       data: simulationIds.map((simulationId) => ({
         type: 'POWERPOINT',
         simulationId,
         isPrivileged: privilegedSimulationId === simulationId,
+        documentType: documentType ?? null,
+        nextStep: nextStep ?? null,
+        periodStart: periodStart ?? null,
+        periodEnd: periodEnd ?? null,
       })),
     })
   }

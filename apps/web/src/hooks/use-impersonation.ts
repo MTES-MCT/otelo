@@ -34,7 +34,7 @@ export const useStopImpersonation = () => {
       return
     }
     toast.success('Retour au mode administrateur')
-    window.location.href = '/admin/gestion-des-utilisateurs'
+    window.location.href = '/admin/utilisateurs'
   }
 
   return { stopImpersonation, isPending }

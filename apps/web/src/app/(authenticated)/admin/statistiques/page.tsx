@@ -1,102 +1,104 @@
 'use client'
 
-import { fr } from '@codegouvfr/react-dsfr'
-import { Card } from '@codegouvfr/react-dsfr/Card'
+import Alert from '@codegouvfr/react-dsfr/Alert'
+import classNames from 'classnames'
+import styles from '~/app/(authenticated)/admin/admin.module.css'
+import { AdminPageHeader } from '~/components/admin/shared/admin-page-header'
+import { StatCard } from '~/components/admin/shared/stat-card'
 import StatisticsExportButtons from '~/components/admin/statistics-export-buttons'
 import { useStatistics } from '~/hooks/use-statistics'
 
-interface StatCardProps {
-  title: string
-  value: string | number
-  description: string
-  colClass?: string
-}
-
-function StatCard({ title, value, description }: StatCardProps) {
-  return (
-    <div className={fr.cx('fr-col-12', 'fr-col-md-6', 'fr-col-lg-4')}>
-      <Card
-        title={title}
-        titleAs="h3"
-        desc={
-          <>
-            <span className={fr.cx('fr-display--lg', 'fr-mb-0')} style={{ display: 'block' }}>
-              {value}
-            </span>
-            <span className={fr.cx('fr-text--sm')}>{description}</span>
-          </>
-        }
-      />
-    </div>
-  )
-}
-
 export default function StatistiquesPage() {
-  const { data: statistics, isLoading, error } = useStatistics()
-
-  if (isLoading) {
-    return (
-      <div className={fr.cx('fr-container', 'fr-py-10v')}>
-        <h1>Statistiques</h1>
-        <p>Chargement des statistiques...</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className={fr.cx('fr-container', 'fr-py-10v')}>
-        <h1>Statistiques</h1>
-        <div className={fr.cx('fr-alert', 'fr-alert--error')}>
-          <p>Erreur lors du chargement des statistiques</p>
-        </div>
-      </div>
-    )
-  }
+  const { data: statistics, error, isLoading } = useStatistics()
 
   return (
-    <div className={fr.cx('fr-container', 'fr-py-10v')}>
-      <div className="fr-flex fr-justify-content-space-between">
-        <h1>Statistiques</h1>
-        <StatisticsExportButtons />
+    <>
+      <AdminPageHeader
+        actions={<StatisticsExportButtons />}
+        icon="fr-icon-bar-chart-box-line"
+        subtitle="Volumes produits par l'outil : scénarios, territoires couverts, besoins estimés."
+        title="Statistiques métier"
+      />
+
+      {error && <Alert className="fr-mb-3w" description="Erreur lors du chargement des statistiques" severity="error" small />}
+
+      <div className={classNames('fr-mb-3w', styles.statsGrid)}>
+        <StatCard
+          accent="blue"
+          icon="fr-icon-file-text-line"
+          isLoading={isLoading}
+          label="Scénarios créés"
+          value={statistics?.totalScenarios ?? 0}
+        />
+        <StatCard
+          accent="purple"
+          icon="fr-icon-user-line"
+          isLoading={isLoading}
+          label="Moyenne par utilisateur"
+          value={statistics?.averageScenariosPerUser?.toFixed(2) ?? '0'}
+        />
+        <StatCard
+          accent="green"
+          hint="EPCI avec au moins un scénario sur 6 mois"
+          icon="fr-icon-map-pin-2-line"
+          isLoading={isLoading}
+          label="EPCI actifs"
+          value={statistics?.activeEpcisCount ?? 0}
+        />
+        <StatCard
+          accent="orange"
+          hint="Scénario créé sur 3 mois ou au moins un export"
+          icon="fr-icon-team-line"
+          isLoading={isLoading}
+          label="Utilisateurs actifs"
+          value={statistics?.usersWithExportedScenarios?.total ?? 0}
+        />
       </div>
 
-      <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters', 'fr-mt-5v')}>
-        <StatCard title="Scénarios créés" value={statistics?.totalScenarios || 0} description="Nombre total de scénarios" />
+      <h2 className="fr-h5">Exports réalisés</h2>
+      <div className={classNames('fr-mb-3w', styles.statsGrid)}>
         <StatCard
-          title="Moyenne par utilisateur"
-          value={statistics?.averageScenariosPerUser.toFixed(2) || 0}
-          description="Scénarios par utilisateur"
-        />
-        <StatCard title="EPCI actifs" value={statistics?.activeEpcisCount || 0} description="EPCI avec scénarios (6 derniers mois)" />
-        <StatCard
-          title="Utilisateurs actifs"
-          value={statistics?.usersWithExportedScenarios.total || 0}
-          description="Utilisateurs ayant créé une simulation dans les 3 derniers mois ou ayant exporté au moins un scénario"
+          accent="blue"
+          hint="Utilisateurs ayant exporté le paramétrage"
+          icon="fr-icon-file-download-line"
+          isLoading={isLoading}
+          label="Export Excel"
+          value={statistics?.usersWithExportedScenarios?.excel ?? 0}
         />
         <StatCard
-          title="Export Excel"
-          value={statistics?.usersWithExportedScenarios.excel || 0}
-          description="Utilisateurs ayant exporté le paramétrage"
-        />
-        <StatCard
-          title="Export Powerpoint"
-          value={statistics?.usersWithExportedScenarios.powerpoint || 0}
-          description="Utilisateurs ayant fait une demande d'export powerpoint"
+          accent="purple"
+          hint="Demandes de présentation PowerPoint"
+          icon="fr-icon-slideshow-line"
+          isLoading={isLoading}
+          label="Export PowerPoint"
+          value={statistics?.usersWithExportedScenarios?.powerpoint ?? 0}
         />
       </div>
 
-      <h2 className={fr.cx('fr-mt-8v')}>Statistiques des scénarios exportés</h2>
-
-      <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters', 'fr-mt-3v')}>
+      <h2 className="fr-h5">Volumes des scénarios exportés</h2>
+      <div className={styles.statsGrid}>
         <StatCard
-          title="Besoins en logements"
-          value={statistics?.totalHousingNeedsSum || 0}
-          description="Volume total sur l'ensemble des scénarios exportés"
+          accent="blue"
+          hint="Volume total sur les scénarios exportés"
+          isLoading={isLoading}
+          label="Besoins en logements"
+          value={statistics?.totalHousingNeedsSum ?? 0}
         />
-        <StatCard title="Lutte contre le mal-logement" value={statistics?.totalStockSum || 0} description="Volume total d'engagement" />
-        <StatCard title="Logements vacants" value={statistics?.totalVacantSum || 0} description="Volume de remobilisation" />
+        <StatCard
+          accent="orange"
+          hint="Volume total d'engagement"
+          isLoading={isLoading}
+          label="Lutte contre le mal-logement"
+          value={statistics?.totalStockSum ?? 0}
+        />
+        <StatCard
+          accent="green"
+          hint="Volume de remobilisation"
+          isLoading={isLoading}
+          label="Logements vacants"
+          value={statistics?.totalVacantSum ?? 0}
+        />
       </div>
-    </div>
+    </>
   )
 }

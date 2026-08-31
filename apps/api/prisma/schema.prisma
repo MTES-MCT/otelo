@@ -62,8 +62,27 @@ model User {
   scenarios                         Scenario[]
   simulations                       Simulation[]
   feedback                          UserFeedback?
+  loginEvents                       LoginEvent[]
+  simulationChanges                 SimulationChange[]
 
   @@map("users")
+}
+
+model LoginEvent {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  sessionId  String    @unique @map("session_id")
+  provider   String?
+  userType   UserType? @map("user_type")
+  region     String?
+  startedAt  DateTime  @default(now()) @map("started_at")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([startedAt])
+  @@index([userId, startedAt])
+  @@map("login_events")
 }
 
 model UserWhitelist {
@@ -124,23 +143,29 @@ model Export {
   type         ExportType
   id           String     @id @default(uuid())
   isPrivileged Boolean    @default(false) @map("is_privileged")
+  documentType String?    @map("document_type")
+  nextStep     String?    @map("next_step")
+  periodStart  Int?       @map("period_start")
+  periodEnd    Int?       @map("period_end")
   simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
 
+  @@index([createdAt])
   @@map("exports")
 }
 
 model ApiConsumer {
-  id           String       @id @default(uuid())
+  id           String                  @id @default(uuid())
   name         String
-  hashedKey    String       @unique @map("hashed_key")
-  encryptedKey String       @map("encrypted_key")
+  hashedKey    String                  @unique @map("hashed_key")
+  encryptedKey String                  @map("encrypted_key")
   prefix       String
-  active       Boolean      @default(true)
-  createdAt    DateTime     @default(now()) @map("created_at")
-  lastUsedAt   DateTime?    @map("last_used_at")
+  active       Boolean                 @default(true)
+  createdAt    DateTime                @default(now()) @map("created_at")
+  lastUsedAt   DateTime?               @map("last_used_at")
   scenarios    Scenario[]
   simulations  Simulation[]
   epciGroups   EpciGroup[]
+  dailyUsage   ApiConsumerUsageDaily[]
 
   @@map("api_consumers")
 }
@@ -288,18 +313,39 @@ model Simulation {
   apiConsumer              ApiConsumer?               @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
   epcis                    Epci[]                     @relation("EpciToSimulation")
   shareLink                SimulationShareLink?
+  changes                  SimulationChange[]
 
   deleted DateTime?
 
   @@map("simulations")
 }
 
-model SimulationShareLink {
+model SimulationChange {
   id           String   @id @default(uuid())
-  token        String   @unique @default(uuid())
-  simulationId String   @unique @map("simulation_id")
-  active       Boolean  @default(true)
+  simulationId String   @map("simulation_id")
+  userId       String?  @map("user_id")
+  userName     String?  @map("user_name")
+  action       String
+  /// [SimulationChangeSet]
+  changes      Json?
   createdAt    DateTime @default(now()) @map("created_at")
+
+  simulation Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  user       User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([simulationId, createdAt])
+  @@index([createdAt])
+  @@map("simulation_changes")
+}
+
+model SimulationShareLink {
+  id           String    @id @default(uuid())
+  token        String    @unique @default(uuid())
+  simulationId String    @unique @map("simulation_id")
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  viewCount    Int       @default(0) @map("view_count")
+  lastViewedAt DateTime? @map("last_viewed_at")
 
   simulation Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
 
@@ -709,17 +755,21 @@ enum NeighborCategory {
 }
 
 model EpciGroup {
-  id             String           @id @default(uuid())
-  name           String
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
-  userId         String?          @map("user_id")
-  apiConsumerId  String?          @map("api_consumer_id")
-  epciGroupEpcis EpciGroupEpcis[]
-  user           User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  apiConsumer    ApiConsumer?     @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
-  simulations    Simulation[]
-  deleted        DateTime?
+  id   String @id @default(uuid())
+  name String
+
+  worksOnPlanningDocument Boolean?              @map("works_on_planning_document")
+  planningDocumentType    PlanningDocumentType? @map("planning_document_type")
+  planningDocumentName    String?               @map("planning_document_name")
+  createdAt               DateTime              @default(now()) @map("created_at")
+  updatedAt               DateTime              @updatedAt @map("updated_at")
+  userId                  String?               @map("user_id")
+  apiConsumerId           String?               @map("api_consumer_id")
+  epciGroupEpcis          EpciGroupEpcis[]
+  user                    User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiConsumer             ApiConsumer?          @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
+  simulations             Simulation[]
+  deleted                 DateTime?
 
   @@map("epci_groups")
 }
@@ -798,10 +848,23 @@ model SimulationResultsHistory {
   simulationId String     @map("simulation_id")
   calculatedAt DateTime   @default(now()) @map("calculated_at")
   resultsJson  Json       @map("results_json")
+  durationMs   Int?       @map("duration_ms")
+  nbEpcis      Int?       @map("nb_epcis")
   simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
 
   @@index([simulationId, calculatedAt])
   @@map("simulation_results_history")
+}
+
+model ApiConsumerUsageDaily {
+  apiConsumerId String      @map("api_consumer_id")
+  day           DateTime    @db.Date
+  count         Int         @default(0)
+  apiConsumer   ApiConsumer @relation(fields: [apiConsumerId], references: [id], onDelete: Cascade)
+
+  @@id([apiConsumerId, day])
+  @@index([day])
+  @@map("api_consumer_usage_daily")
 }
 
 model HouseholdSizes {
@@ -841,6 +904,13 @@ model UserFeedback {
 enum FeedbackStatus {
   SNOOZED
   SUBMITTED
+}
+
+/// Document d'urbanisme sur lequel l'utilisateur déclare travailler, à l'étape « choix du territoire ».
+enum PlanningDocumentType {
+  PLH_PLUI
+  SCOT
+  AUTRES
 }
 
 enum Role {

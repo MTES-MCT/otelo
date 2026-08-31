@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useUpdateUserType } from '~/hooks/use-update-user-type'
 import { useSession } from '~/lib/auth/client'
+import { trackEvent } from '~/lib/tracking'
 import { TUpdateUserType, ZUpdateUserType } from '~/schemas/user'
 
 const USER_TYPE_OPTIONS = SELECTABLE_USER_TYPES.map((value) => ({
@@ -40,6 +41,7 @@ export function UserTypeSelectionModal() {
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
       await mutateAsync(data)
+      trackEvent({ action: 'selection type utilisateur', category: 'Authentification', name: data.type })
       // Hard navigate to get a fresh session and clear the selectType param
       window.location.href = '/tableaux-de-bord'
     } catch {

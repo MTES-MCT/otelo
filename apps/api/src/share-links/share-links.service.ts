@@ -4,6 +4,7 @@ import { PrismaService } from '~/db/prisma.service'
 import { EpcisService } from '~/epcis/epcis.service'
 import { ResultsService } from '~/results/results.service'
 import { TEpciContour } from '~/schemas/epcis/epci-contour'
+import { SimulationChangesService } from '~/simulations/simulation-changes.service'
 
 @Injectable()
 export class ShareLinksService {
@@ -11,6 +12,7 @@ export class ShareLinksService {
     private readonly prisma: PrismaService,
     private readonly epcisService: EpcisService,
     private readonly resultsService: ResultsService,
+    private readonly simulationChangesService: SimulationChangesService,
   ) {}
 
   async getShareStatus(simulationId: string) {
@@ -24,7 +26,7 @@ export class ShareLinksService {
     }
   }
 
-  async toggleShare(simulationId: string) {
+  async toggleShare(simulationId: string, userId?: string) {
     const existing = await this.prisma.simulationShareLink.findUnique({
       where: { simulationId },
     })
@@ -33,6 +35,7 @@ export class ShareLinksService {
       const link = await this.prisma.simulationShareLink.create({
         data: { simulationId },
       })
+      await this.simulationChangesService.record({ simulationId, userId, action: 'share.enabled' })
       return { active: true, token: link.token }
     }
 
@@ -41,6 +44,7 @@ export class ShareLinksService {
         where: { id: existing.id },
         data: { active: false },
       })
+      await this.simulationChangesService.record({ simulationId, userId, action: 'share.disabled' })
       return { active: false, token: null }
     }
 
@@ -48,10 +52,13 @@ export class ShareLinksService {
       where: { id: existing.id },
       data: { active: true, token: randomUUID() },
     })
+    await this.simulationChangesService.record({ simulationId, userId, action: 'share.enabled' })
     return { active: true, token: link.token }
   }
 
   async getResultsByToken(simulationId: string) {
+    void this.recordShareView(simulationId)
+
     return this.resultsService.getGroupedResults(simulationId)
   }
 
@@ -63,5 +70,19 @@ export class ShareLinksService {
     })
 
     return this.epcisService.getContours(epcis.map(({ code }) => code))
+  }
+
+  async recordShareView(simulationId: string) {
+    try {
+      await this.prisma.simulationShareLink.updateMany({
+        where: { simulationId },
+        data: {
+          viewCount: { increment: 1 },
+          lastViewedAt: new Date(),
+        },
+      })
+    } catch (error) {
+      console.error('[share-links] Failed to record share view', error)
+    }
   }
 }

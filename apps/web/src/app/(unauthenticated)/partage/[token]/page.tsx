@@ -1,5 +1,6 @@
 import { RiIconClassName } from '@codegouvfr/react-dsfr/fr/generatedFromCss/classNames'
 import { notFound } from 'next/navigation'
+import { SharedViewTracker } from '~/components/collaboration/shared-view-tracker'
 import { SimulationAnnualsNeedsSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs'
 import { SimulationBadHousing } from '~/components/simulations/results/bad-housing/simulation-bad-housing'
 import { SimulationDemographicBadHousingSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-summary'
@@ -171,6 +172,7 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
 
   return (
     <>
+      <SharedViewTracker />
       <div className="fr-container fr-direction-column fr-flex fr-flex-gap-8v fr-mb-4w">
         <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
       </div>

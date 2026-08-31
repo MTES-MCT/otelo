@@ -5,6 +5,7 @@ import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
 import { ScenariosService } from '~/scenarios/scenarios.service'
 import { TCloneSimulationDto } from '~/schemas/simulations/simulation'
+import { SimulationChangesService } from './simulation-changes.service'
 import { SimulationsService } from './simulations.service'
 
 describe('SimulationsService', () => {
@@ -23,6 +24,7 @@ describe('SimulationsService', () => {
         { provide: ScenariosService, useValue: mockScenariosService },
         { provide: EpciGroupsService, useValue: createMock<EpciGroupsService>() },
         { provide: AccommodationRatesService, useValue: createMock<AccommodationRatesService>() },
+        { provide: SimulationChangesService, useValue: createMock<SimulationChangesService>() },
       ],
     }).compile()
 

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { trackEvent } from '~/lib/tracking'
 import { TInitSimulationDto } from '~/schemas/simulation'
 
 interface CreateSimulationOptions {
@@ -28,9 +29,12 @@ export const useCreateSimulation = (options: CreateSimulationOptions = {}) => {
 
   const { isPending, mutateAsync } = useMutation({
     mutationFn: (initSimulationDto: TInitSimulationDto) => postSimulation(initSimulationDto),
-    onSuccess: (data) => {
+    onSuccess: (data, initSimulationDto) => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] })
       queryClient.invalidateQueries({ queryKey: ['feedback-status'] })
+
+      trackEvent({ action: 'scenario omphale', category: 'Simulation', name: initSimulationDto.scenario.b2_scenario })
+      trackEvent({ action: 'creation scenario', category: 'Simulation', value: initSimulationDto.epci.length })
 
       if (!options.redirectUri) {
         toast.success('Simulation créée avec succès.', {

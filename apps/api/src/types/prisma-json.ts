@@ -9,6 +9,16 @@ declare global {
       year: number
       value: number
     }[]
+
+    // Type for SimulationChange.changes field
+    type SimulationChangeSet = {
+      /** Nom du champ de scénario, ou `<codeEpci>.<champ>` pour un taux par territoire. */
+      field: string
+      label: string
+      epciCode?: string | null
+      before: unknown
+      after: unknown
+    }[]
   }
 }
 

@@ -44,8 +44,35 @@ export class ApiKeyGuard implements CanActivate {
         // fire and forget strat: silently ignore
       })
 
+    this.recordDailyUsage(consumer.id)
+
     request.apiConsumer = consumer
 
     return true
+  }
+
+  /**
+   * Incrémente le compteur journalier du consommateur.
+   *
+   * Un agrégat par jour plutôt qu'une ligne par requête : `lastUsedAt` seul ne dit pas
+   * combien d'appels sont passés, et journaliser chaque requête ferait grossir la base
+   * sans usage correspondant.
+   *
+   * Volontairement non attendu, et silencieux en cas d'échec : la mesure d'usage ne doit
+   * jamais empêcher un appel API légitime d'aboutir.
+   */
+  private recordDailyUsage(apiConsumerId: string): void {
+    const day = new Date()
+    day.setUTCHours(0, 0, 0, 0)
+
+    this.prisma.apiConsumerUsageDaily
+      .upsert({
+        where: { apiConsumerId_day: { apiConsumerId, day } },
+        create: { apiConsumerId, day, count: 1 },
+        update: { count: { increment: 1 } },
+      })
+      .catch(() => {
+        // fire and forget strat: silently ignore
+      })
   }
 }
