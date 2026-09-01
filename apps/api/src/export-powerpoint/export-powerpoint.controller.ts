@@ -1,5 +1,6 @@
 import { Body, Controller, ForbiddenException, HttpCode, HttpStatus, Logger, Post } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { Throttle } from '@nestjs/throttler'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { EmailService } from '~/email/email.service'
@@ -29,6 +30,7 @@ export class ExportPowerpointController {
   @AccessControl({
     roles: [Role.USER, Role.ADMIN],
   })
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
   @Post()
   @HttpCode(HttpStatus.OK)
   async requestPowerpoint(@User() user: TUser, @Body() data: TRequestPowerpoint) {

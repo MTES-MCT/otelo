@@ -144,6 +144,23 @@ model Verification {
   @@map("verifications")
 }
 
+/// Compteurs de limitation de débit de better-auth.
+///
+/// Stockage en base plutôt qu'en mémoire : les compteurs doivent être partagés entre
+/// les conteneurs et survivre à un redémarrage, sinon une attaque par force brute
+/// suffit à relancer l'API pour remettre le compteur à zéro.
+///
+/// `lastRequest` est un horodatage Unix en millisecondes (et non un `DateTime`) :
+/// c'est le format qu'attend better-auth, qui compare des entiers.
+model RateLimit {
+  id          String @id @default(uuid())
+  key         String @unique
+  count       Int
+  lastRequest BigInt @map("last_request")
+
+  @@map("rate_limits")
+}
+
 model Export {
   simulationId String     @map("simulation_id")
   createdAt    DateTime   @default(now()) @map("created_at")

@@ -1,4 +1,5 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Res } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import { Response } from 'express'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { buildContentDisposition } from '~/common/utils/content-disposition'
@@ -15,6 +16,7 @@ export class ExportExcelController {
     paramName: 'simulationId',
     roles: [Role.ADMIN, Role.USER],
   })
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @Get(':simulationId')
   @HttpCode(HttpStatus.OK)
   async exportScenario(@Param('simulationId') simulationId: string, @Res() res: Response) {
