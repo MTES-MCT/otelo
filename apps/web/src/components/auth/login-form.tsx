@@ -10,7 +10,7 @@ import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
 import { RedAsterisk } from '~/components/ui/red-asterisk'
-import { sendVerificationEmail, signIn } from '~/lib/auth/client'
+import { sendVerificationEmail, signIn, twoFactor } from '~/lib/auth/client'
 
 const loginSchema = z.object({
   email: z.string().email('Adresse email invalide'),
@@ -56,6 +56,21 @@ export const LoginForm: FC = () => {
           return
         }
         setAuthError('unknown')
+        return
+      }
+
+      /**
+       * Mot de passe correct, mais la session n'est pas encore ouverte : better-auth
+       * attend le code envoyé par e-mail. `result.data.user` est absent dans ce cas,
+       * les contrôles d'accès ci-dessous s'exécuteront après la seconde étape.
+       */
+      if ((result.data as { twoFactorRedirect?: boolean } | undefined)?.twoFactorRedirect) {
+        const sent = await twoFactor.sendOtp()
+        if (sent.error) {
+          setAuthError('two_factor_send_failed')
+          return
+        }
+        router.push('/connexion/double-authentification')
         return
       }
 
@@ -106,6 +121,8 @@ export const LoginForm: FC = () => {
       </>
     ),
     invalid_password: 'Email ou mot de passe incorrect',
+    two_factor_send_failed:
+      "Votre mot de passe est correct, mais l'envoi du code de connexion a échoué. Veuillez réessayer dans quelques instants.",
     unknown: 'Une erreur est survenue. Veuillez réessayer.',
   }
 
