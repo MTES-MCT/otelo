@@ -1,5 +1,6 @@
 import { Body, Controller, Logger, Post } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { Throttle } from '@nestjs/throttler'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 import { EmailService } from '~/email/email.service'
 import { TContactDto } from '~/schemas/email/email'
@@ -18,6 +19,7 @@ export class EmailController {
 
   @Post('contact')
   @AllowAnonymous()
+  @Throttle({ default: { ttl: 900_000, limit: 3 } })
   async contact(@Body() body: TContactDto) {
     const htmlContent = `
             <h1>Formulaire de Contact</h1>
