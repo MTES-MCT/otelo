@@ -6,7 +6,9 @@ if (process.env.NODE_ENV !== 'production') {
 import { PrismaPg } from '@prisma/adapter-pg'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
-import { admin, genericOAuth } from 'better-auth/plugins'
+import { createAuthMiddleware } from 'better-auth/api'
+import { generateRandomString, symmetricEncrypt } from 'better-auth/crypto'
+import { admin, genericOAuth, twoFactor } from 'better-auth/plugins'
 import { adminAc, userAc } from 'better-auth/plugins/admin/access'
 import { type Prisma, PrismaClient } from '~/generated/prisma/client'
 import type { UserType } from '~/generated/prisma/enums'
@@ -46,6 +48,141 @@ export async function sendBrevoTemplatedEmail(templateId: string, params: Record
   }
 }
 
+export async function sendTwoFactorCode(
+  db: {
+    user: {
+      findUnique: (args: {
+        where: { id: string }
+        select: { hasAccess: true; role: true }
+      }) => Promise<{ hasAccess: boolean; role: string } | null>
+    }
+  },
+  user: { id: string; email: string; name?: string | null },
+  otp: string,
+) {
+  /**
+   * Dernier verrou avant l'envoi : un compte en attente de validation ne reçoit rien.
+   *
+   * Le drapeau `twoFactorEnabled` suffit pour le parcours normal, mais `/two-factor/send-otp`
+   * accepte aussi les requêtes portant une session ouverte — le chemin prévu pour activer
+   * la double authentification depuis son compte. Un compte non validé, qui obtient bien
+   * une session (sans aucun droit), pouvait donc déclencher l'envoi en appelant l'endpoint
+   * directement. Constaté à l'exécution, pas supposé.
+   *
+   * Le contrôle est refait ici, au plus près de l'envoi, parce que c'est le seul endroit
+   * que tous les chemins d'appel traversent.
+   */
+  const account = await db.user.findUnique({ where: { id: user.id }, select: { hasAccess: true, role: true } })
+  if (!account || (!account.hasAccess && account.role !== 'ADMIN')) {
+    console.warn(`[two-factor] Code non envoyé : le compte ${user.email} n'a pas encore accès à Otelo`)
+    return
+  }
+
+  const baseUrl = process.env.CLIENT_BASE_URL || 'http://localhost:3000'
+  const verificationUrl = `${baseUrl}/connexion/double-authentification?code=${encodeURIComponent(otp)}`
+
+  await sendBrevoTemplatedEmail(
+    process.env.BREVO_TWO_FACTOR_TEMPLATE_ID!,
+    {
+      code: otp,
+      firstname: user.name?.split(' ')[0] || '',
+      resetPasswordUrl: `${baseUrl}/mot-de-passe-oublie`,
+      verificationUrl,
+    },
+    user.email,
+    'Votre code de connexion Otelo',
+  )
+}
+
+type TwoFactorUser = { id: string; hasAccess: boolean; role: string; twoFactorEnabled: boolean }
+
+type TwoFactorPrismaLike = {
+  user: {
+    findUnique: (args: {
+      where: { email: string }
+      select: { id: true; hasAccess: true; role: true; twoFactorEnabled: true }
+    }) => Promise<TwoFactorUser | null>
+    update: (args: { where: { id: string }; data: { twoFactorEnabled: boolean } }) => Promise<unknown>
+  }
+  twoFactor: {
+    findFirst: (args: { where: { userId: string } }) => Promise<unknown>
+    create: (args: { data: { secret: string; backupCodes: string; userId: string } }) => Promise<unknown>
+  }
+}
+
+/**
+ * Prépare la seconde authentification d'un compte, juste avant sa connexion.
+ *
+ * Fait deux choses, volontairement au même endroit puisqu'elles partagent la lecture
+ * du compte.
+ *
+ * 1. **Aligne `twoFactorEnabled` sur le droit d'accès.** Un compte qui n'a pas encore
+ *    été validé (Démarches Simplifiées ou administrateur) ne doit pas recevoir de code :
+ *    il ne pourra de toute façon rien faire de sa session, et l'e-mail ne ferait
+ *    qu'égarer une personne dont la demande est simplement en attente. En laissant le
+ *    drapeau à faux, l'étape de vérification ne se déclenche pas et le site l'oriente
+ *    vers la page d'accès non autorisé, qui porte l'acte d'engagement à télécharger.
+ *    Les administrateurs gardent l'accès même sans `hasAccess`, comme ailleurs dans
+ *    l'application.
+ *
+ *    Le contrôle vit ici plutôt qu'en amont de la vérification du mot de passe : refuser
+ *    avant révélerait, à qui saisit une adresse au hasard, si le compte existe et où il
+ *    en est de sa validation.
+ *
+ * 2. **Crée la ligne exigée par le plugin.** `/two-factor/verify-otp` refuse la
+ *    vérification avec `TWO_FACTOR_NOT_ENABLED` si le compte n'a pas de ligne dans cette
+ *    table — y compris pour le code envoyé par e-mail, qui pourtant ne s'en sert pas.
+ *    La créer à la volée, plutôt que par un rattrapage en base, couvre d'un seul geste
+ *    les comptes existants et les comptes à venir.
+ *
+ *    Le secret est aléatoire et chiffré : Otelo ne propose pas d'application
+ *    d'authentification, il n'est donc jamais lu. Les codes de secours sont une liste
+ *    vide, ce qui rend `/two-factor/verify-backup-code` inopérant par construction
+ *    plutôt que de laisser traîner des codes valables que personne n'a reçus.
+ *
+ * N'échoue jamais bruyamment : une erreur ici ne doit pas empêcher la connexion de
+ * s'engager, l'étape de vérification signalera le problème.
+ */
+export async function prepareTwoFactorForSignIn(db: TwoFactorPrismaLike, email: string, secret: string) {
+  try {
+    const user = await db.user.findUnique({
+      where: { email },
+      select: { hasAccess: true, id: true, role: true, twoFactorEnabled: true },
+    })
+    if (!user) {
+      return
+    }
+
+    const shouldRequireTwoFactor = user.hasAccess || user.role === 'ADMIN'
+
+    if (user.twoFactorEnabled !== shouldRequireTwoFactor) {
+      await db.user.update({
+        where: { id: user.id },
+        data: { twoFactorEnabled: shouldRequireTwoFactor },
+      })
+    }
+
+    if (!shouldRequireTwoFactor) {
+      return
+    }
+
+    const existing = await db.twoFactor.findFirst({ where: { userId: user.id } })
+    if (existing) {
+      return
+    }
+
+    await db.twoFactor.create({
+      data: {
+        backupCodes: '[]',
+        secret: await symmetricEncrypt({ data: generateRandomString(32), key: secret }),
+        userId: user.id,
+      },
+    })
+  } catch (error) {
+    console.error('[two-factor] Failed to prepare two-factor sign-in', error)
+  }
+}
+
 type PrismaLike = {
   userWhitelist: { findUnique: (args: { where: { email: string } }) => Promise<unknown> }
   user: { update: (args: { where: { id: string }; data: Record<string, unknown> }) => Promise<unknown> }
@@ -71,17 +208,26 @@ type SessionLike = {
   [key: string]: unknown
 }
 
-export async function checkWhitelistBeforeCreate(db: PrismaLike, user: { email: string; [key: string]: unknown }) {
+/**
+ * Prépare un compte à sa création : double authentification active, et accès immédiat
+ * si l'adresse figure sur la liste blanche.
+ *
+ * `twoFactorEnabled` est posé ici et non par un défaut de schéma : better-auth écrit
+ * explicitement la valeur déclarée par son plugin (`false`) au moment de l'insertion,
+ * ce qui court-circuite le défaut de la base. Sans ce hook, tout compte créé
+ * naîtrait sans seconde authentification — vérifié à l'exécution, pas déduit.
+ */
+export async function prepareUserBeforeCreate(db: PrismaLike, user: { email: string; [key: string]: unknown }) {
   const whitelist = await db.userWhitelist.findUnique({
     where: { email: user.email },
   })
-  if (whitelist) {
-    return {
-      data: {
-        ...user,
-        hasAccess: true,
-      },
-    }
+
+  return {
+    data: {
+      ...user,
+      twoFactorEnabled: true,
+      ...(whitelist ? { hasAccess: true } : {}),
+    },
   }
 }
 
@@ -236,6 +382,40 @@ export const auth = betterAuth({
         USER: userAc,
       },
     }),
+    /**
+     * Double authentification sur la connexion par mot de passe.
+     *
+     * Le plugin ne s'active que sur `/sign-in/email`, `/sign-in/username` et
+     * `/sign-in/phone-number` : ProConnect n'est pas concerné, sans réglage
+     * particulier. La session créée par la vérification du mot de passe est
+     * supprimée, et n'est recréée qu'après la saisie du code.
+     *
+     * `totpOptions.disable` : Otelo ne propose pas d'application d'authentification.
+     * Sans cela, better-auth interrogerait la table des secrets à chaque connexion
+     * pour un résultat toujours vide.
+     *
+     * `storeOTP: 'hashed'` : le code n'est jamais stocké en clair. Une lecture de la
+     * base ne permet donc pas de terminer une connexion en cours.
+     *
+     * Le cookie d'attente (15 min) survit volontairement au code (10 min) : une
+     * personne qui laisse expirer son code doit pouvoir en redemander un sans
+     * ressaisir son mot de passe.
+     */
+    twoFactor({
+      issuer: 'Otelo',
+      twoFactorCookieMaxAge: 60 * 15,
+      totpOptions: {
+        disable: true,
+      },
+      otpOptions: {
+        digits: 6,
+        period: 10,
+        storeOTP: 'hashed',
+        sendOTP: async ({ user, otp }) => {
+          await sendTwoFactorCode(prisma, user, otp)
+        },
+      },
+    }),
     genericOAuth({
       config: [
         {
@@ -357,10 +537,29 @@ export const auth = betterAuth({
       trustedProviders: ['proconnect'],
     },
   },
+  /**
+   * Prépare la seconde authentification avant que le mot de passe ne soit vérifié.
+   *
+   * Placé en amont plutôt qu'en aval : le plugin bascule vers l'étape de vérification
+   * dans son propre hook de sortie, la ligne doit donc déjà exister à ce moment-là.
+   */
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== '/sign-in/email') {
+        return
+      }
+
+      const email = (ctx.body as { email?: string } | undefined)?.email
+      if (email) {
+        await prepareTwoFactorForSignIn(prisma, email, process.env.BETTER_AUTH_SECRET || '')
+      }
+    }),
+  },
+
   databaseHooks: {
     user: {
       create: {
-        before: (user) => checkWhitelistBeforeCreate(prisma, user),
+        before: (user) => prepareUserBeforeCreate(prisma, user),
       },
     },
     session: {

@@ -1,4 +1,4 @@
-import { adminClient, genericOAuthClient, inferAdditionalFields } from 'better-auth/client/plugins'
+import { adminClient, genericOAuthClient, inferAdditionalFields, twoFactorClient } from 'better-auth/client/plugins'
 import { nextCookies } from 'better-auth/next-js'
 import { createAuthClient } from 'better-auth/react'
 
@@ -7,6 +7,10 @@ export const authClient = createAuthClient({
   plugins: [
     adminClient(),
     genericOAuthClient(),
+    // Aucune redirection automatique ici : le formulaire de connexion doit d'abord
+    // déclencher l'envoi du code, puis naviguer lui-même. Une redirection posée par
+    // le plugin partirait avant l'envoi.
+    twoFactorClient(),
     inferAdditionalFields({
       user: {
         firstname: { type: 'string', required: true },
@@ -21,6 +25,6 @@ export const authClient = createAuthClient({
   ],
 })
 
-export const { signIn, signUp, signOut, getSession, useSession, resetPassword, sendVerificationEmail } = authClient
+export const { signIn, signUp, signOut, getSession, useSession, resetPassword, sendVerificationEmail, twoFactor } = authClient
 
 export { authClient as auth }
