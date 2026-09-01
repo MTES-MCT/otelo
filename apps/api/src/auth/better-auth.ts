@@ -317,6 +317,40 @@ export const auth = betterAuth({
     expiresIn: 60 * 60, // 1 hour
     updateAge: 60 * 15, // Refresh session after 15 minutes of activity
   },
+
+  /**
+   * Limitation de débit sur les routes d'authentification.
+   *
+   * `storage: 'database'` plutôt que la mémoire (défaut) : les compteurs doivent être
+   * partagés entre conteneurs et survivre à un redémarrage. Avec un stockage mémoire,
+   * il suffit d'attendre un redéploiement — ou de viser un autre conteneur — pour
+   * repartir de zéro.
+   *
+   * Activée aussi hors production, sinon la règle n'est jamais exercée avant la mise
+   * en ligne : les plafonds sont assez hauts pour ne pas gêner le développement.
+   */
+  rateLimit: {
+    enabled: true,
+    storage: 'database',
+    // Plafond général : 100 appels par minute et par IP sur /api/auth/*.
+    // Large, car le client interroge la session à chaque navigation.
+    window: 60,
+    max: 100,
+    customRules: {
+      // Connexion par mot de passe : 5 essais par minute. Une personne qui se trompe
+      // deux fois n'est pas gênée ; un robot est arrêté net.
+      '/sign-in/email': { window: 60, max: 5 },
+      // Création de compte : limite l'inscription en masse d'adresses jetables.
+      '/sign-up/email': { window: 60, max: 3 },
+      // Envois d'e-mails : chaque appel déclenche un envoi réel via Brevo. Sans plafond,
+      // l'endpoint sert d'outil de harcèlement par e-mail contre une adresse tierce.
+      '/forget-password': { window: 300, max: 3 },
+      '/send-verification-email': { window: 300, max: 3 },
+      // Départ du parcours ProConnect : pas de secret à deviner ici, mais inutile
+      // d'autoriser des milliers de redirections.
+      '/sign-in/oauth2': { window: 60, max: 10 },
+    },
+  },
   account: {
     accountLinking: {
       enabled: true,
