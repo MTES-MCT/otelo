@@ -4,10 +4,10 @@ packages:
 
 catalog:
   '@biomejs/biome': 2.3.13
-  '@types/node': ^25
-  dayjs: ^1.11.19
+  '@types/node': ^25.9.5
+  dayjs: ^1.11.23
   typescript: ^5.9.3
-  zod: ^4.3.6
+  zod: ^4.5.4
 
 minimumReleaseAgeExclude:
   - '@thallesp/nestjs-better-auth'
