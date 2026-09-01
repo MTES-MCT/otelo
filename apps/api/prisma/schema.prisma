@@ -61,6 +61,12 @@ model User {
   type                              UserType?
   referent                          String?
   region                            String?
+  /// Active la double authentification sur la connexion par mot de passe.
+  ///
+  /// Vrai par défaut : la seconde étape ne concerne que `/sign-in/email`, jamais
+  /// ProConnect (qui apporte déjà sa propre garantie d'identité). Le drapeau peut
+  /// donc rester à vrai pour tout le monde sans gêner les agents connectés via l'État.
+  twoFactorEnabled                  Boolean                             @default(true) @map("two_factor_enabled")
   // Relations
   accounts                          Account[]
   sessions                          Session[]
@@ -71,8 +77,31 @@ model User {
   feedback                          UserFeedback?
   loginEvents                       LoginEvent[]
   simulationChanges                 SimulationChange[]
+  twoFactors                        TwoFactor[]
 
   @@map("users")
+}
+
+/// Table exigée par le plugin de double authentification de better-auth.
+///
+/// Otelo n'utilise que le code à usage unique envoyé par e-mail : cette table, qui
+/// stocke les secrets d'application d'authentification et les codes de secours, reste
+/// donc vide en pratique. Elle est créée parce que le plugin la déclare dans son schéma
+/// et l'interroge sur certaines routes ; l'omettre exposerait à une erreur d'exécution
+/// au premier appel d'une de ces routes.
+model TwoFactor {
+  id                      String    @id @default(uuid())
+  secret                  String
+  backupCodes             String    @map("backup_codes")
+  userId                  String    @map("user_id")
+  verified                Boolean   @default(true)
+  failedVerificationCount Int       @default(0) @map("failed_verification_count")
+  lockedUntil             DateTime? @map("locked_until")
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@index([userId])
+  @@map("two_factors")
 }
 
 model LoginEvent {
