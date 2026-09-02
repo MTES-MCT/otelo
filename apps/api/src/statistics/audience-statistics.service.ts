@@ -13,6 +13,7 @@ import {
 } from '@shared'
 import type { DateRange } from '~/common/utils/date-range'
 import { PrismaService } from '~/db/prisma.service'
+import { OWNER_IS_NOT_TEAM, ownerIsNotTeam } from './team'
 
 /** Postgres renvoie les agrégats numériques en `numeric`, que le driver mappe en string. */
 function toNumber(value: unknown): number {
@@ -59,8 +60,9 @@ export class AudienceStatisticsService {
         COUNT(DISTINCT user_id) AS active_users,
         COALESCE(SUM(EXTRACT(EPOCH FROM (last_seen_at - started_at))), 0) AS total_seconds,
         COALESCE(AVG(EXTRACT(EPOCH FROM (last_seen_at - started_at))), 0) AS avg_session_seconds
-      FROM login_events
+      FROM login_events le
       WHERE started_at >= ${from} AND started_at < ${toExclusive}
+        AND ${ownerIsNotTeam('le.user_id')}
       GROUP BY 1
       ORDER BY 1
     `
@@ -83,8 +85,9 @@ export class AudienceStatisticsService {
         COUNT(*) AS nb_connections,
         COUNT(DISTINCT user_id) AS active_users,
         COALESCE(AVG(EXTRACT(EPOCH FROM (last_seen_at - started_at))), 0) AS avg_session_seconds
-      FROM login_events
+      FROM login_events le
       WHERE started_at >= ${from} AND started_at < ${toExclusive}
+        AND ${ownerIsNotTeam('le.user_id')}
       GROUP BY 1
       ORDER BY 2 DESC
     `
@@ -106,8 +109,9 @@ export class AudienceStatisticsService {
         COUNT(DISTINCT user_id) AS unique_users,
         COALESCE(SUM(EXTRACT(EPOCH FROM (last_seen_at - started_at))), 0) AS total_seconds,
         COALESCE(AVG(EXTRACT(EPOCH FROM (last_seen_at - started_at))), 0) AS avg_session_seconds
-      FROM login_events
+      FROM login_events le
       WHERE started_at >= ${from} AND started_at < ${toExclusive}
+        AND ${ownerIsNotTeam('le.user_id')}
     `
 
     return {
@@ -129,10 +133,12 @@ export class AudienceStatisticsService {
     const [totals] = await this.prisma.$queryRaw<Array<{ links_created: bigint; total_views: string; never_viewed: bigint }>>`
       SELECT
         COUNT(*) AS links_created,
-        COALESCE(SUM(view_count), 0) AS total_views,
-        COUNT(*) FILTER (WHERE view_count = 0) AS never_viewed
-      FROM simulation_share_links
-      WHERE created_at >= ${from} AND created_at < ${toExclusive}
+        COALESCE(SUM(sl.view_count), 0) AS total_views,
+        COUNT(*) FILTER (WHERE sl.view_count = 0) AS never_viewed
+      FROM simulation_share_links sl
+      INNER JOIN simulations s ON s.id = sl.simulation_id
+      WHERE sl.created_at >= ${from} AND sl.created_at < ${toExclusive}
+        AND ${ownerIsNotTeam('s.user_id')}
     `
 
     const topShared = await this.prisma.$queryRaw<
@@ -158,13 +164,14 @@ export class AudienceStatisticsService {
       INNER JOIN simulations s ON s.id = sl.simulation_id
       LEFT JOIN users u ON u.id = s.user_id
       WHERE sl.created_at >= ${from} AND sl.created_at < ${toExclusive}
+        AND ${ownerIsNotTeam('s.user_id')}
       ORDER BY sl.view_count DESC, sl.created_at DESC
       LIMIT 10
     `
 
     const [activeLinks, simulationsCreated] = await Promise.all([
-      this.prisma.simulationShareLink.count({ where: { active: true } }),
-      this.prisma.simulation.count({ where: { createdAt: { gte: from, lt: toExclusive }, deleted: null } }),
+      this.prisma.simulationShareLink.count({ where: { active: true, simulation: OWNER_IS_NOT_TEAM } }),
+      this.prisma.simulation.count({ where: { createdAt: { gte: from, lt: toExclusive }, deleted: null, ...OWNER_IS_NOT_TEAM } }),
     ])
 
     const linksCreated = toNumber(totals?.links_created)
@@ -387,6 +394,7 @@ export class AudienceStatisticsService {
 
     const where = {
       createdAt: { gte: range.from, lt: range.toExclusive },
+      ...OWNER_IS_NOT_TEAM,
       ...(action ? { action } : {}),
       ...(search
         ? {

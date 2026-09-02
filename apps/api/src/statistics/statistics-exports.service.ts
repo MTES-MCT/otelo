@@ -4,6 +4,7 @@ import { csvBoolean, csvDate } from '~/common/utils/csv'
 import type { DateRange } from '~/common/utils/date-range'
 import { PrismaService } from '~/db/prisma.service'
 import { AudienceStatisticsService } from './audience-statistics.service'
+import { IS_ROLE_USER, OWNER_IS_NOT_TEAM, ownerIsNotTeam } from './team'
 
 /** Rend une valeur de paramètre lisible dans un tableur. */
 function formatChangeValue(value: unknown): string {
@@ -69,6 +70,7 @@ export class StatisticsExportsService {
       FROM login_events le
       INNER JOIN users u ON u.id = le.user_id
       WHERE le.started_at >= ${from} AND le.started_at < ${toExclusive}
+        AND u.role = 'USER'
       ORDER BY le.started_at DESC
     `
 
@@ -226,6 +228,7 @@ export class StatisticsExportsService {
       INNER JOIN simulations s ON s.id = sl.simulation_id
       LEFT JOIN users u ON u.id = s.user_id
       WHERE sl.created_at >= ${from} AND sl.created_at < ${toExclusive}
+        AND ${ownerIsNotTeam('s.user_id')}
       ORDER BY sl.view_count DESC, sl.created_at DESC
     `
 
@@ -276,6 +279,7 @@ export class StatisticsExportsService {
       INNER JOIN simulations s ON s.id = e.simulation_id
       LEFT JOIN users u ON u.id = s.user_id
       WHERE e.created_at >= ${from} AND e.created_at < ${toExclusive}
+        AND ${ownerIsNotTeam('s.user_id')}
       ORDER BY e.created_at DESC
     `
 
@@ -299,7 +303,7 @@ export class StatisticsExportsService {
     const rows = await this.prisma.userFeedback.findMany({
       // Les retours reportés (`SNOOZED`) n'ont ni note ni commentaire : les inclure
       // remplirait l'export de lignes vides.
-      where: { createdAt: { gte: from, lt: toExclusive }, status: 'SUBMITTED' },
+      where: { createdAt: { gte: from, lt: toExclusive }, status: 'SUBMITTED', user: IS_ROLE_USER },
       orderBy: { createdAt: 'desc' },
       include: { user: { select: { firstname: true, lastname: true, region: true, type: true } } },
     })
@@ -324,7 +328,7 @@ export class StatisticsExportsService {
    */
   async getSimulationChanges({ from, toExclusive }: DateRange) {
     const rows = await this.prisma.simulationChange.findMany({
-      where: { createdAt: { gte: from, lt: toExclusive } },
+      where: { createdAt: { gte: from, lt: toExclusive }, ...OWNER_IS_NOT_TEAM },
       orderBy: { createdAt: 'desc' },
       include: { simulation: { select: { name: true } } },
     })
@@ -367,6 +371,7 @@ export class StatisticsExportsService {
       INNER JOIN simulations s ON s.id = h.simulation_id
       WHERE h.calculated_at >= ${from} AND h.calculated_at < ${toExclusive}
         AND h.duration_ms IS NOT NULL
+        AND ${ownerIsNotTeam('s.user_id')}
       ORDER BY h.duration_ms DESC
     `
 
@@ -426,6 +431,7 @@ export class StatisticsExportsService {
       FROM epci_groups g
       LEFT JOIN users u ON u.id = g.user_id
       WHERE g.deleted IS NULL AND g.created_at >= ${from} AND g.created_at < ${toExclusive}
+        AND ${ownerIsNotTeam('g.user_id')}
       ORDER BY g.created_at DESC
     `
 

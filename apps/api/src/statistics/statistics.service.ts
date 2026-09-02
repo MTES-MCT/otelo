@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { TTemplateStatisticsRow } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
-import { Prisma } from '~/generated/prisma/client'
+import { FeedbackStatus, Prisma } from '~/generated/prisma/client'
+import { IS_ROLE_USER, OWNER_IS_NOT_TEAM, ownerIsNotTeam } from './team'
 
 @Injectable()
 export class StatisticsService {
   constructor(private prisma: PrismaService) {}
 
   async getTotalScenariosCount(): Promise<number> {
-    return this.prisma.scenario.count()
+    return this.prisma.scenario.count({ where: OWNER_IS_NOT_TEAM })
   }
 
   /**
@@ -20,11 +21,14 @@ export class StatisticsService {
     const [users, usersWithAccess, scenarios, simulations, feedbacks, epciGroups, activeShareLinks] = await Promise.all([
       this.prisma.user.count({ where: { role: 'USER' } }),
       this.prisma.user.count({ where: { role: 'USER', hasAccess: true } }),
-      this.prisma.scenario.count(),
-      this.prisma.simulation.count({ where: { deleted: null } }),
-      this.prisma.userFeedback.count(),
-      this.prisma.epciGroup.count({ where: { deleted: null } }),
-      this.prisma.simulationShareLink.count({ where: { active: true } }),
+      this.prisma.scenario.count({ where: OWNER_IS_NOT_TEAM }),
+      this.prisma.simulation.count({ where: { deleted: null, ...OWNER_IS_NOT_TEAM } }),
+      // Seuls les retours réellement déposés. La table porte aussi les « plus tard »
+      // (`SNOOZED`), qui ne sont pas des retours : les compter ici afficherait une
+      // pastille sans rapport avec la liste, qui elle ne montre que les `SUBMITTED`.
+      this.prisma.userFeedback.count({ where: { status: FeedbackStatus.SUBMITTED, user: IS_ROLE_USER } }),
+      this.prisma.epciGroup.count({ where: { deleted: null, ...OWNER_IS_NOT_TEAM } }),
+      this.prisma.simulationShareLink.count({ where: { active: true, simulation: OWNER_IS_NOT_TEAM } }),
     ])
 
     return {
@@ -41,8 +45,8 @@ export class StatisticsService {
   }
 
   async getAverageScenariosPerUser(): Promise<number> {
-    const totalScenarios = await this.prisma.scenario.count()
-    const totalUsers = await this.prisma.user.count()
+    const totalScenarios = await this.prisma.scenario.count({ where: OWNER_IS_NOT_TEAM })
+    const totalUsers = await this.prisma.user.count({ where: IS_ROLE_USER })
 
     if (totalUsers === 0) return 0
 
@@ -57,6 +61,7 @@ export class StatisticsService {
       where: {
         simulations: {
           some: {
+            ...OWNER_IS_NOT_TEAM,
             scenario: {
               createdAt: {
                 gte: sixMonthsAgo,
@@ -82,6 +87,7 @@ export class StatisticsService {
       where: {
         simulation: {
           exports: { some: { type: 'POWERPOINT' } },
+          ...OWNER_IS_NOT_TEAM,
         },
       },
       select: {
@@ -146,6 +152,7 @@ export class StatisticsService {
 
     const usersWithRecentSimulations = await this.prisma.user.findMany({
       where: {
+        ...IS_ROLE_USER,
         simulations: {
           some: {
             createdAt: {
@@ -161,6 +168,7 @@ export class StatisticsService {
 
     const usersWithExports = await this.prisma.user.findMany({
       where: {
+        ...IS_ROLE_USER,
         simulations: {
           some: {
             exports: {
@@ -180,12 +188,14 @@ export class StatisticsService {
       where: {
         type: 'POWERPOINT',
         isPrivileged: true,
+        simulation: OWNER_IS_NOT_TEAM,
       },
     })
 
     const excelCount = await this.prisma.export.count({
       where: {
         type: 'EXCEL',
+        simulation: OWNER_IS_NOT_TEAM,
       },
     })
     return { total: uniqueUserIds.size, powerpoint: powerpointCount, excel: excelCount }
@@ -228,6 +238,7 @@ export class StatisticsService {
           ) AS derniere_simulation
         FROM users u
         LEFT JOIN simulations s ON u.id = s.user_id
+        WHERE u.role = 'USER'
         GROUP BY u.id, u.firstname, u.lastname, u.email, u.type, u.last_login_at
       ),
       user_epcis AS (
@@ -358,12 +369,14 @@ export class StatisticsService {
   LEFT JOIN user_epcis_estimes uee ON uee.user_id = u.id
   LEFT JOIN user_exports ux ON ux.user_id = u.id
   LEFT JOIN user_exports_epcis uxe ON uxe.user_id = u.id
+  WHERE u.role = 'USER'
   ORDER BY u.lastname, u.firstname;
     `
   }
 
   async getResultsStats() {
     const results = await this.prisma.simulationResults.findMany({
+      where: { simulation: OWNER_IS_NOT_TEAM },
       include: {
         simulation: {
           select: { scenario: { select: { projection: true } } },
@@ -468,7 +481,7 @@ export class StatisticsService {
       beps.base_epci_code AS epci_base,
       COALESCE(scpbe.nb_simulations_base_epci, 0) AS nb_simulations_pour_ce_base_epci
     FROM users u
-    INNER JOIN simulations s ON u.id = s.user_id
+    INNER JOIN simulations s ON u.id = s.user_id AND u.role = 'USER'
     LEFT JOIN simulation_epcis se ON s.id = se.simulation_id
     LEFT JOIN simulation_exports sex ON s.id = sex.simulation_id
     LEFT JOIN base_epci_per_simulation beps ON s.id = beps.simulation_id
@@ -505,6 +518,7 @@ export class StatisticsService {
       INNER JOIN epci_scenarios es ON sc.id = es.scenario_id
       INNER JOIN epcis e ON es.epci_code = e.code
       WHERE u.type IS NOT NULL
+        AND u.role = 'USER'
       ${locationFilter}
       GROUP BY COALESCE(e.region_name, e.region), u.type
       ORDER BY COALESCE(e.region_name, e.region), u.type
@@ -528,7 +542,7 @@ export class StatisticsService {
       FROM simulation_results sr
       INNER JOIN simulations s ON sr.simulation_id = s.id AND s.deleted IS NULL
       INNER JOIN epcis e ON sr.epci_code = e.code
-      WHERE 1=1
+      WHERE ${ownerIsNotTeam('s.user_id')}
       ${locationFilter}
       GROUP BY COALESCE(e.region_name, e.region)
       ORDER BY COALESCE(e.region_name, e.region)
@@ -552,6 +566,7 @@ export class StatisticsService {
         INNER JOIN epci_scenarios es ON e.code = es.epci_code
         INNER JOIN scenarios sc ON es.scenario_id = sc.id
         INNER JOIN simulations s ON s.scenario_id = sc.id AND s.deleted IS NULL
+        WHERE ${ownerIsNotTeam('s.user_id')}
       ) active_e ON all_e.code = active_e.code
       WHERE 1=1
       ${region ? Prisma.sql`AND COALESCE(all_e.region_name, all_e.region) = ${region}` : Prisma.sql``}
@@ -567,6 +582,7 @@ export class StatisticsService {
       INNER JOIN epci_scenarios es ON e.code = es.epci_code
       INNER JOIN scenarios sc ON es.scenario_id = sc.id
       INNER JOIN simulations s ON s.scenario_id = sc.id AND s.deleted IS NULL
+      WHERE ${ownerIsNotTeam('s.user_id')}
       ORDER BY region
     `
 
@@ -577,6 +593,7 @@ export class StatisticsService {
       INNER JOIN scenarios sc ON es.scenario_id = sc.id
       INNER JOIN simulations s ON s.scenario_id = sc.id AND s.deleted IS NULL
       WHERE e.department_name IS NOT NULL
+        AND ${ownerIsNotTeam('s.user_id')}
       ORDER BY department
     `
 
@@ -590,13 +607,13 @@ export class StatisticsService {
       this.prisma.$queryRaw<Array<{ count: number }>>`
         SELECT COUNT(DISTINCT s.id)::int AS count
         FROM simulations s
-        WHERE s.deleted IS NULL
+        WHERE s.deleted IS NULL AND ${ownerIsNotTeam('s.user_id')}
       `,
       this.prisma.$queryRaw<Array<{ count: number }>>`
         SELECT COUNT(ex.id)::int AS count
         FROM exports ex
         INNER JOIN simulations s ON s.id = ex.simulation_id
-        WHERE s.deleted IS NULL
+        WHERE s.deleted IS NULL AND ${ownerIsNotTeam('s.user_id')}
       `,
     ])
     const totalScenarios = Number(totalScenariosRow?.count ?? 0)
@@ -672,7 +689,8 @@ export class StatisticsService {
       FROM epcis e
       LEFT JOIN epci_scenarios es ON e.code = es.epci_code
       LEFT JOIN scenarios sc ON es.scenario_id = sc.id
-      LEFT JOIN simulations sim ON sim.scenario_id = sc.id AND sim.deleted IS NULL ${typologyJoin}
+      LEFT JOIN simulations sim ON sim.scenario_id = sc.id AND sim.deleted IS NULL
+        AND ${ownerIsNotTeam('sim.user_id')} ${typologyJoin}
       LEFT JOIN simulation_results sr ON sr.epci_code = e.code AND sr.simulation_id = sim.id
       WHERE 1=1
       ${regionFilter}
@@ -733,6 +751,7 @@ export class StatisticsService {
       LEFT JOIN epci_scenarios es ON es.scenario_id = sc.id
       LEFT JOIN exports ex ON ex.simulation_id = sim.id
       WHERE sim.deleted IS NULL
+        AND u.role = 'USER'
       ${userFilter}
       ${typologyFilter}
       GROUP BY sim.id, sim.name, u.type, sim.created_at, sim.updated_at
@@ -778,6 +797,7 @@ export class StatisticsService {
       INNER JOIN epci_scenarios es ON sc.id = es.scenario_id
       INNER JOIN epcis e ON es.epci_code = e.code
       WHERE u.type IS NOT NULL
+        AND u.role = 'USER'
       ${locationFilter}
       GROUP BY COALESCE(e.region_name, e.region), u.type
       ORDER BY COALESCE(e.region_name, e.region), u.type
