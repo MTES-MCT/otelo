@@ -1,9 +1,5 @@
-// for dev purpose
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv/config')
-}
-
 import { PrismaPg } from '@prisma/adapter-pg'
+import { TWO_FACTOR_CODE_LENGTH } from '@shared'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { createAuthMiddleware } from 'better-auth/api'
@@ -56,14 +52,14 @@ export async function sendTwoFactorCode(
     user: {
       findUnique: (args: {
         where: { id: string }
-        select: { hasAccess: true; role: true }
-      }) => Promise<{ hasAccess: boolean; role: string } | null>
+        select: { firstname: true; hasAccess: true; role: true }
+      }) => Promise<{ firstname: string | null; hasAccess: boolean; role: string } | null>
     }
   },
-  user: { id: string; email: string; name?: string | null },
+  user: { id: string; email: string },
   otp: string,
 ) {
-  const account = await db.user.findUnique({ where: { id: user.id }, select: { hasAccess: true, role: true } })
+  const account = await db.user.findUnique({ where: { id: user.id }, select: { firstname: true, hasAccess: true, role: true } })
   if (!account || (!account.hasAccess && account.role !== 'ADMIN')) {
     console.warn(`[two-factor] Code non envoyé : le compte ${user.email} n'a pas encore accès à Otelo`)
     return
@@ -76,7 +72,7 @@ export async function sendTwoFactorCode(
     env.BREVO_TWO_FACTOR_TEMPLATE_ID,
     {
       code: otp,
-      firstname: user.name?.split(' ')[0] || '',
+      firstname: account.firstname ?? '',
       resetPasswordUrl: `${baseUrl}/mot-de-passe-oublie`,
       verificationUrl,
     },
@@ -352,9 +348,11 @@ export const auth = betterAuth({
 
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
+      const account = await prisma.user.findUnique({ where: { id: user.id }, select: { firstname: true } })
+
       await sendBrevoTemplatedEmail(
         env.BREVO_EMAIL_VERIFICATION_TEMPLATE_ID,
-        { firstname: user.name?.split(' ')[0] || '', confirmationUrl: url },
+        { firstname: account?.firstname ?? '', confirmationUrl: url },
         user.email,
         'Vérification de votre inscription sur Otelo',
       )
@@ -395,7 +393,7 @@ export const auth = betterAuth({
         disable: true,
       },
       otpOptions: {
-        digits: 6,
+        digits: TWO_FACTOR_CODE_LENGTH,
         period: 10,
         storeOTP: 'hashed',
         sendOTP: async ({ user, otp }) => {
@@ -513,6 +511,21 @@ export const auth = betterAuth({
       // l'endpoint sert d'outil de harcèlement par e-mail contre une adresse tierce.
       '/forget-password': { window: 300, max: 3 },
       '/send-verification-email': { window: 300, max: 3 },
+      /**
+       * Renvoi du code de connexion : même raison — un appel, un e-mail Brevo — et une
+       * seconde, propre à la double authentification.
+       *
+       * Le plugin n'accorde que cinq essais par code (`allowedAttempts`, valeur par
+       * défaut de better-auth). Sans plafond sur l'envoi, ce compteur ne borne rien :
+       * il suffit de redemander un code pour repartir à zéro, et le plafond général de
+       * 100 appels par minute laisse alors des centaines d'essais par minute contre un
+       * secret à six chiffres. Avec cette règle, la fenêtre tombe à quinze essais par
+       * tranche de cinq minutes.
+       *
+       * À garder d'accord avec `RESEND_COOLDOWN_SECONDS`, côté web, qui n'est qu'un
+       * confort d'interface : c'est cette règle-ci qui protège.
+       */
+      '/two-factor/send-otp': { window: 300, max: 3 },
       // Départ du parcours ProConnect : pas de secret à deviner ici, mais inutile
       // d'autoriser des milliers de redirections.
       '/sign-in/oauth2': { window: 60, max: 10 },

@@ -29,7 +29,7 @@ jest.mock('~/generated/prisma/client', () => ({ PrismaClient: jest.fn() }))
 
 describe('better-auth hooks', () => {
   describe('sendTwoFactorCode', () => {
-    const user = { email: 'agent@test.com', id: 'user-1', name: 'Camille Martin' }
+    const user = { email: 'agent@test.com', id: 'user-1' }
     let fetchSpy: jest.SpyInstance
 
     beforeEach(() => {
@@ -44,7 +44,7 @@ describe('better-auth hooks', () => {
     const dbWith = (account: unknown) => ({ user: { findUnique: jest.fn().mockResolvedValue(account) } })
 
     it('should send the link and the code to an account with access', async () => {
-      await sendTwoFactorCode(dbWith({ hasAccess: true, role: 'USER' }), user, '482917')
+      await sendTwoFactorCode(dbWith({ firstname: 'Camille', hasAccess: true, role: 'USER' }), user, '482917')
 
       expect(fetchSpy).toHaveBeenCalledTimes(1)
       const body = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string)
@@ -58,17 +58,30 @@ describe('better-auth hooks', () => {
       })
     })
 
+    /**
+     * Le prénom vient de la colonne `firstname`, pas d'un découpage de `name` sur la
+     * première espace : ce découpage amputait « Marie Claire » en « Marie », et se
+     * trompait complètement pour les comptes ProConnect, où `name` concatène le prénom
+     * et le nom d'usage.
+     */
+    it('should take the first name from the model, spaces included', async () => {
+      await sendTwoFactorCode(dbWith({ firstname: 'Marie Claire', hasAccess: true, role: 'USER' }), user, '482917')
+
+      const body = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.params.firstname).toBe('Marie Claire')
+    })
+
     // `/two-factor/send-otp` accepte aussi les requêtes portant une session ouverte :
     // un compte non validé, qui en obtient une sans aucun droit, pouvait déclencher
     // l'envoi en appelant l'endpoint directement.
     it('should send nothing to an account still awaiting validation', async () => {
-      await sendTwoFactorCode(dbWith({ hasAccess: false, role: 'USER' }), user, '482917')
+      await sendTwoFactorCode(dbWith({ firstname: 'Camille', hasAccess: false, role: 'USER' }), user, '482917')
 
       expect(fetchSpy).not.toHaveBeenCalled()
     })
 
     it('should send to an admin even without hasAccess', async () => {
-      await sendTwoFactorCode(dbWith({ hasAccess: false, role: 'ADMIN' }), user, '482917')
+      await sendTwoFactorCode(dbWith({ firstname: 'Camille', hasAccess: false, role: 'ADMIN' }), user, '482917')
 
       expect(fetchSpy).toHaveBeenCalledTimes(1)
     })
