@@ -7,9 +7,6 @@ export const authClient = createAuthClient({
   plugins: [
     adminClient(),
     genericOAuthClient(),
-    // Aucune redirection automatique ici : le formulaire de connexion doit d'abord
-    // déclencher l'envoi du code, puis naviguer lui-même. Une redirection posée par
-    // le plugin partirait avant l'envoi.
     twoFactorClient(),
     inferAdditionalFields({
       user: {

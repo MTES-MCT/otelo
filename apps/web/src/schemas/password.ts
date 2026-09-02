@@ -1,3 +1,4 @@
+import { TWO_FACTOR_CODE_LENGTH } from '@shared'
 import z from 'zod'
 
 export const ZForgotPasswordSchema = z.object({
@@ -18,3 +19,9 @@ export const ZResetPassword = z
   })
 
 export type TResetPassword = z.infer<typeof ZResetPassword>
+
+export const ZTwoFactorCode = z.object({
+  code: z.string().regex(new RegExp(`^\\d{${TWO_FACTOR_CODE_LENGTH}}$`), `Le code comporte ${TWO_FACTOR_CODE_LENGTH} chiffres.`),
+})
+
+export type TTwoFactorCode = z.infer<typeof ZTwoFactorCode>

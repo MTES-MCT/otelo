@@ -1,86 +1,42 @@
 import { Logger } from '@nestjs/common'
+import { z } from 'zod'
 import { env } from '~/config/env'
 
 /**
  * Adresses des intermédiaires réseau autorisés à annoncer l'adresse du visiteur.
- *
- * Valeurs par défaut : les adresses de sortie de la plateforme d'hébergement en région
- * osc-fr1, obtenues par `dig +short egress.osc-fr1.scalingo.com`. Elles peuvent changer,
- * avec un préavis annoncé de 30 jours — d'où la surcharge par `TRUSTED_PROXY_IPS`, qui
- * permet d'y répondre sans redéployer.
- *
- * Limite connue, à ne pas oublier : ces adresses sont **mutualisées entre tous les
- * clients de la région**, pas propres à Otelo. Un tiers hébergé sur la même plateforme
- * en sort donc lui aussi, et pourrait annoncer une adresse de son choix. La protection
- * reste très supérieure à l'absence de cloisonnement, mais ce n'est pas une frontière de
- * sécurité : la refermer suppose une adresse de sortie dédiée.
  */
-const DEFAULT_TRUSTED_PROXIES = '171.33.105.206/32,171.33.92.211/32'
 
-export const TRUSTED_PROXIES: string[] = (env.TRUSTED_PROXY_IPS ?? DEFAULT_TRUSTED_PROXIES)
-  .split(',')
+export const TRUSTED_PROXIES: string[] = env.TRUSTED_PROXY_IPS.split(',')
   .map((entry) => entry.trim())
   .filter(Boolean)
 
+// `::ffff:88.10.10.10` et `88.10.10.10` désignent la même machine — Node annonce l'une
+// ou l'autre selon la pile réseau — et les distinguer ferait deux compteurs pour un seul
+// visiteur.
+const IPV4_MAPPED = /^::ffff:/i
+const unwrapIpv4 = (value: string): string => (IPV4_MAPPED.test(value) ? value.slice(7) : value)
+
+const ZIpv4 = z.ipv4()
+const isIpv4 = (value: string): boolean => ZIpv4.safeParse(value).success
+
 /**
- * Octets d'une adresse IPv4, ou `null` si la valeur n'en est pas une.
+ * Adresse exacte portée par une entrée de la liste, ou `null` si l'entrée est illisible.
  *
- * Les formes IPv4 encapsulées en IPv6 (`::ffff:88.10.10.10`) sont dépliées : elles
- * désignent la même machine, et les traiter séparément ferait deux compteurs pour un
- * seul visiteur. Une adresse IPv6 véritable renvoie `null` : elle ne peut de toute façon
- * pas appartenir à un réseau IPv4, et sera donc retenue telle quelle comme adresse de
- * visiteur.
+ * Le suffixe `/32` est toléré : `.env.example` a publié les adresses sous cette forme,
+ * elles sont donc renseignées telles quelles sur les environnements déployés. Les
+ * refuser viderait la liste au redémarrage suivant, et tous les visiteurs partageraient
+ * alors le compteur de l'intermédiaire, sans le moindre signal. Toute autre longueur de
+ * préfixe est en revanche refusée : une plage n'a pas de sens pour des adresses de
+ * sortie fixes, et la traiter comme une adresse exacte ferait taire une entrée qui ne
+ * protège personne.
  */
-function toIpv4Bytes(value: string): number[] | null {
-  const candidate = value.toLowerCase().startsWith('::ffff:') ? value.slice(7) : value
-  const parts = candidate.split('.')
+const toTrustedAddress = (entry: string): string | null => {
+  const address = entry.endsWith('/32') ? entry.slice(0, -3) : entry
 
-  if (parts.length !== 4) {
-    return null
-  }
-
-  const bytes = parts.map((part) => (/^\d{1,3}$/.test(part) ? Number(part) : Number.NaN))
-
-  return bytes.every((byte) => byte >= 0 && byte <= 255) ? bytes : null
+  return isIpv4(address) ? address : null
 }
 
-type Cidr = { bytes: number[]; prefix: number }
-
-const PARSED_TRUSTED_PROXIES: Cidr[] = TRUSTED_PROXIES.map((entry) => {
-  const [address, prefixPart] = entry.split('/')
-  const bytes = toIpv4Bytes(address)
-
-  if (!bytes) {
-    return null
-  }
-
-  if (prefixPart === undefined) {
-    return { bytes, prefix: 32 }
-  }
-
-  const prefix = /^\d{1,2}$/.test(prefixPart) ? Number(prefixPart) : Number.NaN
-
-  return prefix >= 0 && prefix <= 32 ? { bytes, prefix } : null
-}).filter((entry): entry is Cidr => entry !== null)
-
-function isTrustedProxy(value: string): boolean {
-  const bytes = toIpv4Bytes(value)
-
-  if (!bytes) {
-    return false
-  }
-
-  return PARSED_TRUSTED_PROXIES.some(({ bytes: netBytes, prefix }) => {
-    for (let bit = 0; bit < prefix; bit += 8) {
-      const index = bit >> 3
-      const mask = (0xff << (8 - Math.min(8, prefix - bit))) & 0xff
-      if ((bytes[index] & mask) !== (netBytes[index] & mask)) {
-        return false
-      }
-    }
-    return true
-  })
-}
+const TRUSTED_PROXY_ADDRESSES = new Set(TRUSTED_PROXIES.map(toTrustedAddress).filter((address) => address !== null))
 
 /**
  * Adresse du visiteur, déduite d'une chaîne `X-Forwarded-For`.
@@ -111,19 +67,14 @@ export function resolveClientIp(forwardedFor: string | string[] | undefined | nu
     .filter(Boolean)
 
   for (let index = chain.length - 1; index >= 0; index--) {
-    const address = chain[index]
+    const address = unwrapIpv4(chain[index])
 
-    if (isTrustedProxy(address)) {
+    if (TRUSTED_PROXY_ADDRESSES.has(address)) {
       continue
     }
 
-    const ipv4 = toIpv4Bytes(address)
-    if (ipv4) {
-      return ipv4.join('.')
-    }
-
-    // Adresse IPv6 : retenue telle quelle, faute de pouvoir appartenir à un réseau IPv4.
-    return address.includes(':') ? address : null
+    // Une IPv6 est retenue telle quelle ; toute autre forme est illisible.
+    return isIpv4(address) || address.includes(':') ? address : null
   }
 
   return null
@@ -161,20 +112,14 @@ export function resolveThrottlerTracker(request: { headers?: Record<string, unkn
     logger.warn(
       `Adresse du visiteur non résolue : x-forwarded-for="${String(forwardedFor).slice(0, 200)}". ` +
         `Intermédiaires déclarés : ${TRUSTED_PROXIES.join(', ')}. ` +
-        `Vérifier \`dig +short egress.osc-fr1.scalingo.com\` et la variable TRUSTED_PROXY_IPS.`,
+        `Vérifier la variable TRUSTED_PROXY_IPS.`,
     )
   }
 
   return request.ip ?? 'unknown'
 }
 
-/** Entrées de `TRUSTED_PROXIES` qu'aucun des deux limiteurs ne saurait interpréter. Doit rester vide. */
+/** Entrées de `TRUSTED_PROXIES` que ce module ne sait pas lire. Doit rester vide. */
 export function invalidTrustedProxies(): string[] {
-  return TRUSTED_PROXIES.filter((entry) => {
-    const [address, prefixPart] = entry.split('/')
-    if (!toIpv4Bytes(address)) {
-      return true
-    }
-    return prefixPart !== undefined && !(/^\d{1,2}$/.test(prefixPart) && Number(prefixPart) <= 32)
-  })
+  return TRUSTED_PROXIES.filter((entry) => toTrustedAddress(entry) === null)
 }

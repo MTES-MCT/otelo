@@ -30,6 +30,7 @@ Object.assign(process.env, {
   OAUTH_PROCONNECT_CLIENT_ID: 'client-proconnect',
   OAUTH_PROCONNECT_CLIENT_SECRET: 'secret-proconnect',
   OAUTH_PROCONNECT_ISSUER: 'https://proconnect.test',
+  TRUSTED_PROXY_IPS: '8.8.8.8,8.8.8.4',
 })
 
 jest.mock('~/auth/better-auth', () => ({
