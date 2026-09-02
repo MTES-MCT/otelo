@@ -61,6 +61,8 @@ model User {
   type                              UserType?
   referent                          String?
   region                            String?
+
+  twoFactorEnabled                  Boolean                             @default(true) @map("two_factor_enabled")
   // Relations
   accounts                          Account[]
   sessions                          Session[]
@@ -71,8 +73,24 @@ model User {
   feedback                          UserFeedback?
   loginEvents                       LoginEvent[]
   simulationChanges                 SimulationChange[]
+  twoFactors                        TwoFactor[]
 
   @@map("users")
+}
+
+model TwoFactor {
+  id                      String    @id @default(uuid())
+  secret                  String
+  backupCodes             String    @map("backup_codes")
+  userId                  String    @map("user_id")
+  verified                Boolean   @default(true)
+  failedVerificationCount Int       @default(0) @map("failed_verification_count")
+  lockedUntil             DateTime? @map("locked_until")
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@index([userId])
+  @@map("two_factors")
 }
 
 model LoginEvent {

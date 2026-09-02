@@ -1,4 +1,4 @@
-import { adminClient, genericOAuthClient, inferAdditionalFields } from 'better-auth/client/plugins'
+import { adminClient, genericOAuthClient, inferAdditionalFields, twoFactorClient } from 'better-auth/client/plugins'
 import { nextCookies } from 'better-auth/next-js'
 import { createAuthClient } from 'better-auth/react'
 
@@ -7,6 +7,7 @@ export const authClient = createAuthClient({
   plugins: [
     adminClient(),
     genericOAuthClient(),
+    twoFactorClient(),
     inferAdditionalFields({
       user: {
         firstname: { type: 'string', required: true },
@@ -21,6 +22,6 @@ export const authClient = createAuthClient({
   ],
 })
 
-export const { signIn, signUp, signOut, getSession, useSession, resetPassword, sendVerificationEmail } = authClient
+export const { signIn, signUp, signOut, getSession, useSession, resetPassword, sendVerificationEmail, twoFactor } = authClient
 
 export { authClient as auth }

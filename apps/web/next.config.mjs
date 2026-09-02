@@ -12,6 +12,13 @@ import { fileURLToPath } from 'node:url'
 
 const monorepoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
+const normalizeApiBaseUrl = (rawUrl) => {
+  const trimmed = rawUrl.replace(/\/+$/, '')
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`
+}
+
+const apiBaseUrl = normalizeApiBaseUrl(process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:4200')
+
 /**
  * Origine d'une URL de configuration, ou `null` si la variable est absente ou invalide.
  * Sert à n'ouvrir la CSP que vers les services réellement configurés.
@@ -111,7 +118,7 @@ const nextConfig = {
     return [
       {
         source: '/api/auth/:path*',
-        destination: `${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:4200'}/api/auth/:path*`,
+        destination: `${apiBaseUrl}/auth/:path*`,
       },
     ]
   },

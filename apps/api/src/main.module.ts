@@ -7,7 +7,8 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { auth } from '~/auth/better-auth'
 import { BassinModule } from '~/bassin/bassin.module'
 import { AuthorizationGuard } from '~/common/guards/authorization.guard'
-import envRessources from '~/config/environment'
+import { env } from '~/config/env'
+import { resolveThrottlerTracker } from '~/config/trusted-proxies'
 import { CronModule } from '~/cron/cron.module'
 import { PrismaModule } from '~/db/prisma.module'
 import { ExportExcelModule } from '~/export-excel/export-excel.module'
@@ -53,19 +54,31 @@ import { VacancyModule } from './vacancy/vacancy.module'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [envRessources],
+      load: [() => env],
     }),
     // Better Auth module - provides global AuthGuard with @AllowAnonymous() and @OptionalAuth() decorators
     BetterAuthModule.forRoot({ auth }),
-    // Plafond général sur l'API. Les routes /api/auth/* ont leur propre limiteur,
-    // configuré dans better-auth.ts : celui-ci ne les voit pas.
-    ThrottlerModule.forRoot([
-      {
-        name: 'default',
-        ttl: 60_000,
-        limit: 300,
-      },
-    ]),
+    /**
+     * Plafond général sur l'API. Les routes /api/auth/* ont leur propre limiteur,
+     * configuré dans better-auth.ts : celui-ci ne les voit pas.
+     *
+     * `getTracker` remplace le comptage par défaut (`req.ip`, dérivé de `trust proxy`).
+     * Il lit la chaîne `X-Forwarded-For` directement, avec la même règle que
+     * better-auth : les deux limiteurs comptent ainsi à l'identique, et aucun des deux
+     * ne dépend de l'adresse interne depuis laquelle le routeur de la plateforme ouvre
+     * la connexion — une valeur non documentée dont dépendrait sinon tout le
+     * cloisonnement.
+     */
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          name: 'default',
+          ttl: 60_000,
+          limit: 300,
+        },
+      ],
+      getTracker: (request) => resolveThrottlerTracker(request as { headers?: Record<string, unknown>; ip?: string }),
+    }),
     PrismaModule,
     ScenariosModule,
     UsersModule,

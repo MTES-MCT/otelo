@@ -4,6 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import helmet from 'helmet'
 import { cleanupOpenApiDoc } from 'nestjs-zod'
+import { env } from '~/config/env'
 import { ExternalModule } from '~/external/external.module'
 import { MainModule } from '~/main.module'
 
@@ -12,16 +13,28 @@ const bootstrap = async () => {
   const globalPrefix = 'api'
 
   /**
-   * Fait confiance au dernier intermédiaire (le routeur de la plateforme) pour
-   * déterminer l'IP appelante.
+   * Détermine l'adresse du visiteur derrière les intermédiaires réseau.
    *
    * Sans cela, `req.ip` vaut l'adresse du proxy et non celle du visiteur : tous les
    * appels partagent alors un unique compteur de débit, et les plafonds se retournent
    * contre les utilisateurs légitimes — trois envois du formulaire de contact, quels
    * qu'en soient les auteurs, bloqueraient le formulaire pour tout le monde.
    *
-   * La valeur `1` plutôt que `true` est délibérée : elle ne retient que le saut ajouté
-   * par le proxy, seule partie de `X-Forwarded-For` qu'un client ne peut pas falsifier.
+   * On déclare la liste des intermédiaires de confiance plutôt qu'un nombre de sauts :
+   * un compte fixe devient faux dès que la chaîne s'allonge, et il est ici partagé avec
+   * better-auth, qui n'accepte qu'une liste. Le parcours est le même de part et d'autre :
+   * de droite à gauche, on saute les intermédiaires connus, on retient la première
+   * adresse non fiable.
+   *
+   * Ce réglage ne gouverne plus le comptage du débit : celui-ci passe désormais par
+   * `getTracker` (voir main.module.ts), qui lit l'en-tête directement. La distinction
+   * compte, car Express fait entrer dans la chaîne l'adresse du pair qui ouvre la
+   * connexion — celle du routeur de la plateforme, interne et non documentée. S'y fier
+   * imposait de deviner son plan d'adressage, et un mauvais pari y faisait retomber tous
+   * les visiteurs sur un compteur commun, sans le moindre signal.
+   *
+   * Il reste utile pour `req.protocol` et `req.secure`, qui décrivent la connexion
+   * d'origine et non son auteur.
    */
   app.set('trust proxy', 1)
 
@@ -70,10 +83,6 @@ const bootstrap = async () => {
   /**
    * En-têtes de sécurité HTTP.
    *
-   * L'API ne rend pas de pages : la CSP y a peu d'effet, sauf pour Swagger, servi par
-   * cette même application. Les valeurs par défaut de Helmet bloquent ses styles et son
-   * script embarqués, d'où une politique explicite qui les autorise et rien d'autre.
-   *
    * `crossOriginResourcePolicy` est desserré à `cross-origin` : le site est sur un autre
    * domaine que l'API, et la valeur par défaut (`same-origin`) bloquerait le
    * téléchargement des exports Excel et PowerPoint.
@@ -104,12 +113,12 @@ const bootstrap = async () => {
   )
 
   app.enableCors({
-    origin: process.env.CLIENT_BASE_URL || 'http://localhost:3000',
+    origin: env.CLIENT_BASE_URL,
     credentials: true,
   })
 
   app.setGlobalPrefix(globalPrefix)
-  const port = process.env.PORT || 3000
+  const port = env.PORT
   await app.listen(port)
 
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`)

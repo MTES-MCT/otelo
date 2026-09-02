@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import * as puppeteer from 'puppeteer'
+import { env } from '~/config/env'
 import { TResults } from '~/schemas/results/results'
 import { chartKeyColors } from './colors'
 
@@ -28,7 +29,7 @@ export class ChartGenerationService {
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--single-process', '--no-zygote'],
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      executablePath: env.PUPPETEER_EXECUTABLE_PATH,
     })
 
     const page = await browser.newPage()
