@@ -5,7 +5,6 @@ import { env } from '~/config/env'
 /**
  * Adresses des intermédiaires réseau autorisés à annoncer l'adresse du visiteur.
  */
-
 export const TRUSTED_PROXIES: string[] = env.TRUSTED_PROXY_IPS.split(',')
   .map((entry) => entry.trim())
   .filter(Boolean)
@@ -18,25 +17,86 @@ const unwrapIpv4 = (value: string): string => (IPV4_MAPPED.test(value) ? value.s
 
 const ZIpv4 = z.ipv4()
 const isIpv4 = (value: string): boolean => ZIpv4.safeParse(value).success
+const toIpv4Bytes = (value: string): number[] | null => (isIpv4(value) ? value.split('.').map(Number) : null)
+
+type Cidr = { bytes: number[]; prefix: number }
 
 /**
- * Adresse exacte portée par une entrée de la liste, ou `null` si l'entrée est illisible.
+ * Entrée de la liste, lue comme une adresse et une longueur de préfixe.
  *
- * Le suffixe `/32` est toléré : `.env.example` a publié les adresses sous cette forme,
- * elles sont donc renseignées telles quelles sur les environnements déployés. Les
- * refuser viderait la liste au redémarrage suivant, et tous les visiteurs partageraient
- * alors le compteur de l'intermédiaire, sans le moindre signal. Toute autre longueur de
- * préfixe est en revanche refusée : une plage n'a pas de sens pour des adresses de
- * sortie fixes, et la traiter comme une adresse exacte ferait taire une entrée qui ne
- * protège personne.
+ * Les plages sont acceptées, et elles sont nécessaires : le routeur d'entrée de la
+ * plateforme se présente depuis un réseau interne dont l'adresse change d'un conteneur
+ * à l'autre (`10.0.0.93`, `10.0.0.228`…). Une adresse exacte y serait juste le temps
+ * d'un déploiement, puis fausse en silence.
+ *
+ * Sans longueur de préfixe, l'entrée désigne une adresse exacte — `/32`. C'est la
+ * lecture que fait better-auth, qui reçoit cette liste telle quelle : les deux limiteurs
+ * doivent interpréter la variable à l'identique, sans quoi un même visiteur se verrait
+ * attribuer deux identités selon la route.
  */
-const toTrustedAddress = (entry: string): string | null => {
-  const address = entry.endsWith('/32') ? entry.slice(0, -3) : entry
+const parseCidr = (entry: string): Cidr | null => {
+  const parts = entry.split('/')
 
-  return isIpv4(address) ? address : null
+  if (parts.length > 2) {
+    return null
+  }
+
+  const bytes = toIpv4Bytes(parts[0])
+
+  if (!bytes) {
+    return null
+  }
+
+  if (parts.length === 1) {
+    return { bytes, prefix: 32 }
+  }
+
+  const prefix = /^\d{1,2}$/.test(parts[1]) ? Number(parts[1]) : Number.NaN
+
+  return prefix >= 0 && prefix <= 32 ? { bytes, prefix } : null
 }
 
-const TRUSTED_PROXY_ADDRESSES = new Set(TRUSTED_PROXIES.map(toTrustedAddress).filter((address) => address !== null))
+const matchesCidr = (bytes: number[], cidr: Cidr): boolean => {
+  let remaining = cidr.prefix
+
+  for (let index = 0; index < 4 && remaining > 0; index++) {
+    const mask = remaining >= 8 ? 0xff : (0xff << (8 - remaining)) & 0xff
+
+    if ((bytes[index] & mask) !== (cidr.bytes[index] & mask)) {
+      return false
+    }
+
+    remaining -= 8
+  }
+
+  return true
+}
+
+const TRUSTED_PROXY_CIDRS = TRUSTED_PROXIES.map(parseCidr).filter((cidr) => cidr !== null)
+
+const isTrustedHop = (address: string): boolean => {
+  const bytes = toIpv4Bytes(address)
+
+  return bytes !== null && TRUSTED_PROXY_CIDRS.some((cidr) => matchesCidr(bytes, cidr))
+}
+
+/**
+ * Réseaux privés (RFC 1918), boucle locale et lien-local.
+ *
+ * Une adresse de visiteur prise dans l'un d'eux ne vient pas d'Internet : c'est le
+ * routeur de la plateforme qui a été retenu, faute d'être déclaré. Le compteur devient
+ * alors commun à tous les visiteurs, et c'est la seule défaillance de ce module qui ne
+ * produise ni erreur ni chaîne non résolue — d'où le contrôle explicite plus bas.
+ */
+const PRIVATE_RANGES = ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '127.0.0.0/8', '169.254.0.0/16']
+  .map(parseCidr)
+  .filter((cidr) => cidr !== null)
+
+const isPrivateAddress = (address: string): boolean => {
+  const bytes = toIpv4Bytes(address)
+
+  return bytes !== null && PRIVATE_RANGES.some((cidr) => matchesCidr(bytes, cidr))
+}
 
 /**
  * Adresse du visiteur, déduite d'une chaîne `X-Forwarded-For`.
@@ -69,7 +129,7 @@ export function resolveClientIp(forwardedFor: string | string[] | undefined | nu
   for (let index = chain.length - 1; index >= 0; index--) {
     const address = unwrapIpv4(chain[index])
 
-    if (TRUSTED_PROXY_ADDRESSES.has(address)) {
+    if (isTrustedHop(address)) {
       continue
     }
 
@@ -81,8 +141,17 @@ export function resolveClientIp(forwardedFor: string | string[] | undefined | nu
 }
 
 const logger = new Logger('ClientIp')
-const UNRESOLVED_LOG_INTERVAL_MS = 300_000
-let lastUnresolvedLogAt = 0
+const MISCONFIGURATION_LOG_INTERVAL_MS = 300_000
+let lastMisconfigurationLogAt = 0
+
+const warnThrottled = (message: string): void => {
+  if (Date.now() - lastMisconfigurationLogAt <= MISCONFIGURATION_LOG_INTERVAL_MS) {
+    return
+  }
+
+  lastMisconfigurationLogAt = Date.now()
+  logger.warn(`${message} Intermédiaires déclarés : ${TRUSTED_PROXIES.join(', ') || '(aucun)'}. Vérifier TRUSTED_PROXY_IPS.`)
+}
 
 /**
  * Identifiant de comptage du limiteur de débit NestJS.
@@ -93,27 +162,30 @@ let lastUnresolvedLogAt = 0
  * ferait retomber tous les visiteurs sur un compteur commun le jour où cet adressage
  * change, et **sans aucun signal**.
  *
- * Le repli sur `req.ip` conserve le comportement antérieur plutôt que de bloquer, mais
- * il est bruyant : better-auth ne signale son propre repli qu'une fois par processus, ce
- * qui ne constitue pas une alerte exploitable. Ici l'anomalie se répète tant qu'elle
- * dure, et le message porte la chaîne fautive — donc la nouvelle adresse de sortie si
- * c'est la cause.
+ * Deux anomalies sont signalées, toutes deux ramenées à une même cause — une liste
+ * d'intermédiaires fausse — et toutes deux limitées à un message par tranche de cinq
+ * minutes, pour rester lisibles dans un journal de plateforme :
+ *
+ *   - la chaîne ne se résout pas : repli sur `req.ip`, comportement antérieur conservé
+ *     plutôt que de bloquer ;
+ *   - la chaîne se résout sur une adresse privée : ce n'est pas un visiteur, c'est
+ *     l'intermédiaire lui-même, retenu faute d'être déclaré. Rien d'autre ne le
+ *     signalerait, et le plafond de débit devient alors commun à tout le trafic.
  */
 export function resolveThrottlerTracker(request: { headers?: Record<string, unknown>; ip?: string }): string {
   const forwardedFor = request.headers?.['x-forwarded-for'] as string | string[] | undefined
   const clientIp = resolveClientIp(forwardedFor)
 
   if (clientIp) {
+    if (isPrivateAddress(clientIp)) {
+      warnThrottled(`Adresse de visiteur privée : "${clientIp}", issue de x-forwarded-for="${String(forwardedFor).slice(0, 200)}".`)
+    }
+
     return clientIp
   }
 
-  if (forwardedFor && Date.now() - lastUnresolvedLogAt > UNRESOLVED_LOG_INTERVAL_MS) {
-    lastUnresolvedLogAt = Date.now()
-    logger.warn(
-      `Adresse du visiteur non résolue : x-forwarded-for="${String(forwardedFor).slice(0, 200)}". ` +
-        `Intermédiaires déclarés : ${TRUSTED_PROXIES.join(', ')}. ` +
-        `Vérifier la variable TRUSTED_PROXY_IPS.`,
-    )
+  if (forwardedFor) {
+    warnThrottled(`Adresse du visiteur non résolue : x-forwarded-for="${String(forwardedFor).slice(0, 200)}".`)
   }
 
   return request.ip ?? 'unknown'
@@ -121,5 +193,5 @@ export function resolveThrottlerTracker(request: { headers?: Record<string, unkn
 
 /** Entrées de `TRUSTED_PROXIES` que ce module ne sait pas lire. Doit rester vide. */
 export function invalidTrustedProxies(): string[] {
-  return TRUSTED_PROXIES.filter((entry) => toTrustedAddress(entry) === null)
+  return TRUSTED_PROXIES.filter((entry) => parseCidr(entry) === null)
 }

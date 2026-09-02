@@ -60,12 +60,25 @@ describe('TRUSTED_PROXIES', () => {
   })
 
   /**
-   * Les adresses de sortie sont des IPv4 fixes : une plage n'aurait pas de sens ici, et
-   * la laisser passer comme une adresse exacte ferait taire une entrée qui ne protège
-   * personne. Elle doit donc être signalée, au même titre qu'une adresse malformée.
+   * Les plages sont indispensables, pas tolérées : le routeur d'entrée de la plateforme
+   * se présente depuis un réseau interne dont l'adresse change d'un conteneur à l'autre.
+   * Une liste réduite aux adresses exactes serait juste le temps d'un déploiement.
    */
-  it('should report a network range as unreadable', () => {
-    expect(loadModule('10.0.0.0/24').invalidTrustedProxies()).toEqual(['10.0.0.0/24'])
+  it('should accept a network range', () => {
+    const { invalidTrustedProxies, resolveClientIp } = loadModule('10.0.0.0/8')
+
+    expect(invalidTrustedProxies()).toEqual([])
+    expect(resolveClientIp('88.120.4.7, 10.0.0.228')).toBe('88.120.4.7')
+    expect(resolveClientIp('88.120.4.7, 10.0.0.93')).toBe('88.120.4.7')
+  })
+
+  /**
+   * Une plage ne doit pas déborder au-delà de son préfixe, sans quoi elle accorderait
+   * la confiance à des adresses publiques quelconques.
+   */
+  it('should not trust an address outside the declared range', () => {
+    expect(loadModule('10.0.0.0/24').resolveClientIp('88.120.4.7, 10.0.1.5')).toBe('10.0.1.5')
+    expect(loadModule('10.0.0.0/24').resolveClientIp('88.120.4.7, 10.0.0.5')).toBe('88.120.4.7')
   })
 
   /**
