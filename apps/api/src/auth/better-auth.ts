@@ -10,6 +10,8 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { generateRandomString, symmetricEncrypt } from 'better-auth/crypto'
 import { admin, genericOAuth, twoFactor } from 'better-auth/plugins'
 import { adminAc, userAc } from 'better-auth/plugins/admin/access'
+import { TRUSTED_PROXIES } from '~/config/trusted-proxies'
+import { isTwoFactorBypassed } from '~/config/two-factor-bypass'
 import { type Prisma, PrismaClient } from '~/generated/prisma/client'
 import type { UserType } from '~/generated/prisma/enums'
 
@@ -60,18 +62,6 @@ export async function sendTwoFactorCode(
   user: { id: string; email: string; name?: string | null },
   otp: string,
 ) {
-  /**
-   * Dernier verrou avant l'envoi : un compte en attente de validation ne reçoit rien.
-   *
-   * Le drapeau `twoFactorEnabled` suffit pour le parcours normal, mais `/two-factor/send-otp`
-   * accepte aussi les requêtes portant une session ouverte — le chemin prévu pour activer
-   * la double authentification depuis son compte. Un compte non validé, qui obtient bien
-   * une session (sans aucun droit), pouvait donc déclencher l'envoi en appelant l'endpoint
-   * directement. Constaté à l'exécution, pas supposé.
-   *
-   * Le contrôle est refait ici, au plus près de l'envoi, parce que c'est le seul endroit
-   * que tous les chemins d'appel traversent.
-   */
   const account = await db.user.findUnique({ where: { id: user.id }, select: { hasAccess: true, role: true } })
   if (!account || (!account.hasAccess && account.role !== 'ADMIN')) {
     console.warn(`[two-factor] Code non envoyé : le compte ${user.email} n'a pas encore accès à Otelo`)
@@ -153,7 +143,12 @@ export async function prepareTwoFactorForSignIn(db: TwoFactorPrismaLike, email: 
       return
     }
 
-    const shouldRequireTwoFactor = user.hasAccess || user.role === 'ADMIN'
+    /**
+     * La dispense s'applique après le contrôle d'accès, jamais à sa place : un compte
+     * de test doit rester soumis aux mêmes droits que les autres. Elle ne retire que la
+     * seconde étape — le mot de passe reste exigé.
+     */
+    const shouldRequireTwoFactor = (user.hasAccess || user.role === 'ADMIN') && !isTwoFactorBypassed(email)
 
     if (user.twoFactorEnabled !== shouldRequireTwoFactor) {
       await db.user.update({
@@ -581,6 +576,26 @@ export const auth = betterAuth({
     useSecureCookies: process.env.NODE_ENV === 'production',
     crossSubDomainCookies: {
       enabled: process.env.NODE_ENV === 'production',
+    },
+    /**
+     * Sans cette liste, better-auth refuse toute chaîne `X-Forwarded-For` comportant
+     * plus d'une adresse — le jeton de gauche étant falsifiable par le client. Il
+     * retombe alors sur un compteur unique partagé par tous les visiteurs, et les
+     * plafonds se retournent contre les utilisateurs légitimes.
+     *
+     * Avec la liste, la chaîne est parcourue de droite à gauche : les sauts de
+     * confiance sont ignorés et la première adresse non fiable est retenue. Comme le
+     * routeur de la plateforme ajoute l'adresse réelle du pair en fin de chaîne, une
+     * adresse forgée par un appelant direct ne peut pas être retenue.
+     *
+     * `ipAddressHeaders` reste volontairement au défaut (`x-forwarded-for`).
+     * L'ordre compte : better-auth retient le premier en-tête qui résout. Ajouter
+     * `x-real-ip` en tête donnerait, sur les routes d'auth relayées par le site,
+     * l'adresse du conteneur web — soit de nouveau un compteur unique, mais cette
+     * fois sans le moindre avertissement.
+     */
+    ipAddress: {
+      trustedProxies: TRUSTED_PROXIES,
     },
   },
 })
