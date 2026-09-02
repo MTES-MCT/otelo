@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form'
 import z from 'zod'
 import { RedAsterisk } from '~/components/ui/red-asterisk'
 import { sendVerificationEmail, signIn, twoFactor } from '~/lib/auth/client'
+import { postLoginDestination } from '~/lib/auth/post-login-destination'
 
 const loginSchema = z.object({
   email: z.string().email('Adresse email invalide'),
@@ -74,15 +75,7 @@ export const LoginForm: FC = () => {
         return
       }
 
-      const user = result.data?.user as { hasAccess?: boolean; role?: string; type?: string } | undefined
-      if (user && !user.hasAccess && user.role !== 'ADMIN') {
-        router.push('/unauthorized')
-        return
-      }
-
-      // Success - redirect to dashboard (with type selection if needed)
-      const userType = user?.type
-      router.push(userType ? '/tableaux-de-bord' : '/tableaux-de-bord?selectType')
+      router.push(postLoginDestination(result.data?.user))
     } catch (error) {
       console.error('Error signing in', error)
       setAuthError('unknown')
@@ -121,8 +114,7 @@ export const LoginForm: FC = () => {
       </>
     ),
     invalid_password: 'Email ou mot de passe incorrect',
-    two_factor_send_failed:
-      "Votre mot de passe est correct, mais l'envoi du code de connexion a échoué. Veuillez réessayer dans quelques instants.",
+    two_factor_send_failed: "L'envoi du code de connexion a échoué. Veuillez réessayer dans quelques instants.",
     unknown: 'Une erreur est survenue. Veuillez réessayer.',
   }
 

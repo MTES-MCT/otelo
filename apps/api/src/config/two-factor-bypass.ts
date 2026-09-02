@@ -15,9 +15,7 @@ import { env } from '~/config/env'
  * première. Le mot de passe reste exigé, ainsi que la validation d'accès. Un compte
  * dispensé est donc protégé comme il l'était avant l'introduction de la double
  * authentification — pas moins, mais pas plus.
- *
  */
-
 export const TWO_FACTOR_BYPASS_EMAILS: string[] = env.TWO_FACTOR_BYPASS_EMAILS.split(',')
   .map((entry) => entry.trim().toLowerCase())
   .filter(Boolean)

@@ -4,8 +4,7 @@ import { TwoFactorForm } from '~/components/auth/two-factor-form'
 export const metadata: Metadata = {
   title: 'Confirmation de connexion - Otelo',
   description: 'Confirmez votre connexion à Otelo.',
-  // La page porte un code à usage unique dans son adresse : elle n'a rien à faire
-  // dans un index de moteur de recherche.
+  // do not index
   robots: { index: false, follow: false },
 }
 
