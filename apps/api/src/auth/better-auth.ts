@@ -507,8 +507,19 @@ export const auth = betterAuth({
       '/sign-in/email': { window: 60, max: 5 },
       // Création de compte : limite l'inscription en masse d'adresses jetables.
       '/sign-up/email': { window: 60, max: 3 },
-      // Envois d'e-mails : chaque appel déclenche un envoi réel via Brevo. Sans plafond,
-      // l'endpoint sert d'outil de harcèlement par e-mail contre une adresse tierce.
+      /**
+       * Envois d'e-mails : chaque appel déclenche un envoi réel via Brevo. Sans plafond,
+       * l'endpoint sert d'outil de harcèlement par e-mail contre une adresse tierce.
+       *
+       * Les deux noms de la réinitialisation sont déclarés. C'est `/request-password-reset`
+       * qu'appelle le site (`authClient.requestPasswordReset`), et lui seul qui protège
+       * quelque chose aujourd'hui ; `/forget-password` est l'ancien nom, conservé pour
+       * qu'un client resté dessus ne se retrouve pas hors plafond. Une règle porte sur un
+       * chemin exact : mal l'orthographier ne produit aucune erreur, elle s'applique
+       * simplement à une route que personne n'appelle — et l'envoi réel retombe alors sur
+       * le plafond général, soit cent e-mails par minute vers une adresse choisie.
+       */
+      '/request-password-reset': { window: 300, max: 3 },
       '/forget-password': { window: 300, max: 3 },
       '/send-verification-email': { window: 300, max: 3 },
       /**
