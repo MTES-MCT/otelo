@@ -1,11 +1,10 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto'
+import { env } from '~/config/env'
 
 const ALGORITHM = 'aes-256-gcm'
 
 function getEncryptionKey(): Buffer {
-  const secret = process.env.API_KEY_ENCRYPTION_SECRET
-  if (!secret) throw new Error('API_KEY_ENCRYPTION_SECRET is not set')
-  return scryptSync(secret, 'otelo-salt', 32)
+  return scryptSync(env.API_KEY_ENCRYPTION_SECRET, 'otelo-salt', 32)
 }
 
 export function encrypt(plaintext: string): string {

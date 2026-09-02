@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common'
+import { env } from '~/config/env'
 
 /**
  * Adresses des intermédiaires réseau autorisés à annoncer l'adresse du visiteur.
@@ -16,7 +17,7 @@ import { Logger } from '@nestjs/common'
  */
 const DEFAULT_TRUSTED_PROXIES = '171.33.105.206/32,171.33.92.211/32'
 
-export const TRUSTED_PROXIES: string[] = (process.env.TRUSTED_PROXY_IPS ?? DEFAULT_TRUSTED_PROXIES)
+export const TRUSTED_PROXIES: string[] = (env.TRUSTED_PROXY_IPS ?? DEFAULT_TRUSTED_PROXIES)
   .split(',')
   .map((entry) => entry.trim())
   .filter(Boolean)
