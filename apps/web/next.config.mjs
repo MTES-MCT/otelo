@@ -13,6 +13,26 @@ import { fileURLToPath } from 'node:url'
 const monorepoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 /**
+ * Base de l'API, quelle que soit la forme donnée à `NEXT_PUBLIC_AUTH_API_URL`.
+ *
+ * La variable est renseignée tantôt avec le préfixe `/api` (voir `.env.dist`), tantôt
+ * sans (voir `.env.local`). Concaténer `/api/auth/...` sans précaution produit alors
+ * `/api/api/auth/...` et casse silencieusement toute l'authentification.
+ *
+ * Cette règle doit rester identique à `normalizeApiBaseUrl` dans
+ * `src/lib/auth/server.ts` : les deux construisent des URL vers la même API, l'un pour
+ * les appels du navigateur relayés ici, l'autre pour les appels du serveur. Elle est
+ * dupliquée plutôt que partagée parce que ce fichier de configuration est chargé avant
+ * toute compilation TypeScript.
+ */
+const normalizeApiBaseUrl = (rawUrl) => {
+  const trimmed = rawUrl.replace(/\/+$/, '')
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`
+}
+
+const apiBaseUrl = normalizeApiBaseUrl(process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:4200')
+
+/**
  * Origine d'une URL de configuration, ou `null` si la variable est absente ou invalide.
  * Sert à n'ouvrir la CSP que vers les services réellement configurés.
  */
@@ -111,7 +131,7 @@ const nextConfig = {
     return [
       {
         source: '/api/auth/:path*',
-        destination: `${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:4200'}/api/auth/:path*`,
+        destination: `${apiBaseUrl}/auth/:path*`,
       },
     ]
   },

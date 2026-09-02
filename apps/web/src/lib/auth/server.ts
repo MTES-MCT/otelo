@@ -1,5 +1,5 @@
 import type { UserType } from '@shared'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 const DEFAULT_API_ORIGIN = 'http://localhost:4200'
 
@@ -18,18 +18,43 @@ function buildApiUrl(path: string): string {
   return `${resolveApiBaseUrl()}${normalizedPath}`
 }
 
-function buildHeaders(options: RequestInit, cookieHeader?: string): Headers {
-  const headers = new Headers(options.headers)
+/**
+ * Chaîne `X-Forwarded-For` reçue par ce serveur.
+ *
+ * Sans ce relais, l'API ne voit que l'adresse du conteneur web : tous les visiteurs
+ * partagent alors un même compteur de débit sur l'ensemble des routes qui transitent
+ * par ce fichier — formulaire de contact et exports compris. On retransmet la chaîne
+ * telle quelle ; le routeur de la plateforme y ajoutera l'adresse de ce conteneur en
+ * fin de chaîne, ce qui permet à l'API de remonter jusqu'au visiteur.
+ *
+ * `headers()` lève hors contexte de requête (rendu statique) : on renvoie alors `null`
+ * plutôt que de faire échouer l'appel, la perte d'adresse étant moins grave qu'une
+ * page en erreur.
+ */
+export async function getForwardedFor(): Promise<string | null> {
+  try {
+    return (await headers()).get('x-forwarded-for')
+  } catch {
+    return null
+  }
+}
+
+function buildHeaders(options: RequestInit, cookieHeader?: string, forwardedFor?: string | null): Headers {
+  const requestHeaders = new Headers(options.headers)
 
   if (cookieHeader) {
-    headers.set('cookie', cookieHeader)
+    requestHeaders.set('cookie', cookieHeader)
   }
 
-  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
-    headers.set('Content-Type', 'application/json')
+  if (forwardedFor) {
+    requestHeaders.set('x-forwarded-for', forwardedFor)
   }
 
-  return headers
+  if (!requestHeaders.has('Content-Type') && !(options.body instanceof FormData)) {
+    requestHeaders.set('Content-Type', 'application/json')
+  }
+
+  return requestHeaders
 }
 
 interface SessionUser {
@@ -67,9 +92,15 @@ export async function getSession(): Promise<Session | null> {
   try {
     const cookieHeader = cookieStore.toString()
 
+    // Cette route n'utilise pas `buildHeaders` : l'en-tête d'adresse doit donc y être
+    // ajouté séparément, sans quoi la route la plus appelée de toutes resterait sur un
+    // compteur partagé.
+    const forwardedFor = await getForwardedFor()
+
     const response = await fetch(buildApiUrl('/auth/get-session'), {
       headers: {
         cookie: cookieHeader,
+        ...(forwardedFor ? { 'x-forwarded-for': forwardedFor } : {}),
       },
       cache: 'no-store',
     })
@@ -101,16 +132,19 @@ export async function getCookieHeader(): Promise<string> {
  */
 export async function authFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const cookieHeader = await getCookieHeader()
+  const forwardedFor = await getForwardedFor()
 
   return fetch(buildApiUrl(path), {
     ...options,
-    headers: buildHeaders(options, cookieHeader),
+    headers: buildHeaders(options, cookieHeader, forwardedFor),
   })
 }
 
 export async function unauthFetch(path: string, options: RequestInit = {}): Promise<Response> {
+  const forwardedFor = await getForwardedFor()
+
   return fetch(buildApiUrl(path), {
     ...options,
-    headers: buildHeaders(options),
+    headers: buildHeaders(options, undefined, forwardedFor),
   })
 }
