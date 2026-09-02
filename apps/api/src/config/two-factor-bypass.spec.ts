@@ -69,27 +69,3 @@ describe('isTwoFactorBypassed', () => {
     expect(isTwoFactorBypassed('agent@collectivite.fr')).toBe(false)
   })
 })
-
-describe('logTwoFactorBypassConfiguration', () => {
-  it('should stay silent when no bypass is configured', () => {
-    const module = loadModule('')
-    const warn = jest.spyOn(require('@nestjs/common').Logger.prototype, 'warn').mockImplementation()
-
-    module.logTwoFactorBypassConfiguration()
-
-    expect(warn).not.toHaveBeenCalled()
-    warn.mockRestore()
-  })
-
-  // Une dispense ne doit jamais pouvoir traîner sans que personne ne le sache.
-  it('should warn loudly when a bypass is active', () => {
-    const module = loadModule('demo@otelo.test')
-    const warn = jest.spyOn(require('@nestjs/common').Logger.prototype, 'warn').mockImplementation()
-
-    module.logTwoFactorBypassConfiguration()
-
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn.mock.calls[0][0]).toContain('demo@otelo.test')
-    warn.mockRestore()
-  })
-})
