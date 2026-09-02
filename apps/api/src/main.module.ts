@@ -7,7 +7,7 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { auth } from '~/auth/better-auth'
 import { BassinModule } from '~/bassin/bassin.module'
 import { AuthorizationGuard } from '~/common/guards/authorization.guard'
-import envRessources from '~/config/environment'
+import { loadEnvConfig } from '~/config/env'
 import { resolveThrottlerTracker } from '~/config/trusted-proxies'
 import { CronModule } from '~/cron/cron.module'
 import { PrismaModule } from '~/db/prisma.module'
@@ -54,7 +54,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [envRessources],
+      load: [loadEnvConfig],
     }),
     // Better Auth module - provides global AuthGuard with @AllowAnonymous() and @OptionalAuth() decorators
     BetterAuthModule.forRoot({ auth }),

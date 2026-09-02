@@ -17,7 +17,6 @@ jest.mock('better-auth', () => ({
   }),
 }))
 jest.mock('better-auth/adapters/prisma', () => ({ prismaAdapter: jest.fn() }))
-// Modules ESM purs : sans ces doublures, Jest échoue au chargement du fichier testé.
 jest.mock('better-auth/api', () => ({ createAuthMiddleware: (fn: unknown) => fn }))
 jest.mock('better-auth/crypto', () => ({
   generateRandomString: jest.fn(() => 'secret-aleatoire'),
@@ -35,17 +34,11 @@ describe('better-auth hooks', () => {
 
     beforeEach(() => {
       jest.clearAllMocks()
-      process.env.EMAIL_ENABLED = 'true'
-      process.env.BREVO_API_URL = 'https://brevo.test/send'
-      process.env.BREVO_API_KEY = 'cle'
-      process.env.BREVO_TWO_FACTOR_TEMPLATE_ID = '42'
-      process.env.CLIENT_BASE_URL = 'https://otelo.test'
       fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true, text: async () => '' } as Response)
     })
 
     afterEach(() => {
       fetchSpy.mockRestore()
-      process.env.EMAIL_ENABLED = 'false'
     })
 
     const dbWith = (account: unknown) => ({ user: { findUnique: jest.fn().mockResolvedValue(account) } })

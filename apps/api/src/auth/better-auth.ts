@@ -10,31 +10,32 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { generateRandomString, symmetricEncrypt } from 'better-auth/crypto'
 import { admin, genericOAuth, twoFactor } from 'better-auth/plugins'
 import { adminAc, userAc } from 'better-auth/plugins/admin/access'
+import { env } from '~/config/env'
 import { TRUSTED_PROXIES } from '~/config/trusted-proxies'
 import { isTwoFactorBypassed } from '~/config/two-factor-bypass'
 import { type Prisma, PrismaClient } from '~/generated/prisma/client'
 import type { UserType } from '~/generated/prisma/enums'
 
 const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: env.DATABASE_URL,
 })
 const prisma = new PrismaClient({ adapter })
 
-const PROCONNECT_ISSUER = process.env.OAUTH_PROCONNECT_ISSUER || ''
+const PROCONNECT_ISSUER = env.OAUTH_PROCONNECT_ISSUER
 
 export async function sendBrevoTemplatedEmail(templateId: string, params: Record<string, string>, to: string, subject: string) {
   // Guard: never send real emails outside production unless explicitly opted in.
   // Set EMAIL_ENABLED=true to force real sending in dev (e.g. to test a template).
-  if (process.env.NODE_ENV !== 'production' && process.env.EMAIL_ENABLED !== 'true') {
+  if (process.env.NODE_ENV !== 'production' && env.EMAIL_ENABLED !== 'true') {
     console.log(`[Brevo:skipped] templateId=${templateId} to=${to} subject="${subject}" params=${JSON.stringify(params)}`)
     return
   }
 
-  const response = await fetch(process.env.BREVO_API_URL!, {
+  const response = await fetch(env.BREVO_API_URL, {
     method: 'POST',
     headers: {
       accept: 'application/json',
-      'api-key': process.env.BREVO_API_KEY!,
+      'api-key': env.BREVO_API_KEY,
       'content-type': 'application/json',
     },
     body: JSON.stringify({
@@ -68,11 +69,11 @@ export async function sendTwoFactorCode(
     return
   }
 
-  const baseUrl = process.env.CLIENT_BASE_URL || 'http://localhost:3000'
+  const baseUrl = env.CLIENT_BASE_URL
   const verificationUrl = `${baseUrl}/connexion/double-authentification?code=${encodeURIComponent(otp)}`
 
   await sendBrevoTemplatedEmail(
-    process.env.BREVO_TWO_FACTOR_TEMPLATE_ID!,
+    env.BREVO_TWO_FACTOR_TEMPLATE_ID,
     {
       code: otp,
       firstname: user.name?.split(' ')[0] || '',
@@ -107,13 +108,7 @@ type TwoFactorPrismaLike = {
  * du compte.
  *
  * 1. **Aligne `twoFactorEnabled` sur le droit d'accès.** Un compte qui n'a pas encore
- *    été validé (Démarches Simplifiées ou administrateur) ne doit pas recevoir de code :
- *    il ne pourra de toute façon rien faire de sa session, et l'e-mail ne ferait
- *    qu'égarer une personne dont la demande est simplement en attente. En laissant le
- *    drapeau à faux, l'étape de vérification ne se déclenche pas et le site l'oriente
- *    vers la page d'accès non autorisé, qui porte l'acte d'engagement à télécharger.
- *    Les administrateurs gardent l'accès même sans `hasAccess`, comme ailleurs dans
- *    l'application.
+ *    été validé (Démarches Simplifiées ou administrateur) ne doit pas recevoir de code.
  *
  *    Le contrôle vit ici plutôt qu'en amont de la vérification du mot de passe : refuser
  *    avant révélerait, à qui saisit une adresse au hasard, si le compte existe et où il
@@ -168,6 +163,7 @@ export async function prepareTwoFactorForSignIn(db: TwoFactorPrismaLike, email: 
 
     await db.twoFactor.create({
       data: {
+        // we do not want any backup codes, since it will be otp
         backupCodes: '[]',
         secret: await symmetricEncrypt({ data: generateRandomString(32), key: secret }),
         userId: user.id,
@@ -320,11 +316,11 @@ export const auth = betterAuth({
     provider: 'postgresql',
   }),
 
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: env.BETTER_AUTH_URL,
   basePath: '/api/auth',
-  secret: process.env.BETTER_AUTH_SECRET,
+  secret: env.BETTER_AUTH_SECRET,
 
-  trustedOrigins: [process.env.CLIENT_BASE_URL || 'http://localhost:3000'],
+  trustedOrigins: [env.CLIENT_BASE_URL],
 
   emailAndPassword: {
     enabled: true,
@@ -338,14 +334,14 @@ export const auth = betterAuth({
       if (!account) {
         const urlWithEmail = `${url}&email=${encodeURIComponent(user.email)}`
         await sendBrevoTemplatedEmail(
-          process.env.BREVO_IMPORT_USER_TEMPLATE_ID!,
+          env.BREVO_IMPORT_USER_TEMPLATE_ID,
           { resetUrl: urlWithEmail, email: user.email },
           user.email,
           'Bienvenue sur Otelo - Créez votre mot de passe',
         )
       } else {
         await sendBrevoTemplatedEmail(
-          process.env.BREVO_PASSWORD_RESET_TEMPLATE_ID!,
+          env.BREVO_PASSWORD_RESET_TEMPLATE_ID,
           { resetUrl: url },
           user.email,
           'Réinitialisation de votre mot de passe Otelo',
@@ -357,7 +353,7 @@ export const auth = betterAuth({
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
       await sendBrevoTemplatedEmail(
-        process.env.BREVO_EMAIL_VERIFICATION_TEMPLATE_ID!,
+        env.BREVO_EMAIL_VERIFICATION_TEMPLATE_ID,
         { firstname: user.name?.split(' ')[0] || '', confirmationUrl: url },
         user.email,
         'Vérification de votre inscription sur Otelo',
@@ -378,19 +374,15 @@ export const auth = betterAuth({
       },
     }),
     /**
-     * Double authentification sur la connexion par mot de passe.
+     * 2fa enabled on email / pass login
      *
-     * Le plugin ne s'active que sur `/sign-in/email`, `/sign-in/username` et
-     * `/sign-in/phone-number` : ProConnect n'est pas concerné, sans réglage
-     * particulier. La session créée par la vérification du mot de passe est
-     * supprimée, et n'est recréée qu'après la saisie du code.
+     * ProConnect isn't connected.
      *
      * `totpOptions.disable` : Otelo ne propose pas d'application d'authentification.
      * Sans cela, better-auth interrogerait la table des secrets à chaque connexion
      * pour un résultat toujours vide.
      *
-     * `storeOTP: 'hashed'` : le code n'est jamais stocké en clair. Une lecture de la
-     * base ne permet donc pas de terminer une connexion en cours.
+     * `storeOTP: 'hashed'` : le code n'est jamais stocké en clair.
      *
      * Le cookie d'attente (15 min) survit volontairement au code (10 min) : une
      * personne qui laisse expirer son code doit pouvoir en redemander un sans
@@ -416,8 +408,8 @@ export const auth = betterAuth({
         {
           providerId: 'proconnect',
           discoveryUrl: `${PROCONNECT_ISSUER}/api/v2/.well-known/openid-configuration`,
-          clientId: process.env.OAUTH_PROCONNECT_CLIENT_ID || '',
-          clientSecret: process.env.OAUTH_PROCONNECT_CLIENT_SECRET || '',
+          clientId: env.OAUTH_PROCONNECT_CLIENT_ID,
+          clientSecret: env.OAUTH_PROCONNECT_CLIENT_SECRET,
           scopes: ['openid', 'given_name', 'usual_name', 'email'],
           pkce: true,
           getUserInfo: async ({ accessToken }) => {
@@ -546,7 +538,7 @@ export const auth = betterAuth({
 
       const email = (ctx.body as { email?: string } | undefined)?.email
       if (email) {
-        await prepareTwoFactorForSignIn(prisma, email, process.env.BETTER_AUTH_SECRET || '')
+        await prepareTwoFactorForSignIn(prisma, email, env.BETTER_AUTH_SECRET)
       }
     }),
   },

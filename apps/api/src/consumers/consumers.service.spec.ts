@@ -8,10 +8,6 @@ describe('ConsumersService', () => {
   let service: ConsumersService
   let mockPrismaService: jest.Mocked<PrismaService>
 
-  beforeAll(() => {
-    process.env.API_KEY_ENCRYPTION_SECRET = 'test-secret-for-unit-tests'
-  })
-
   beforeEach(async () => {
     mockPrismaService = createMock<PrismaService>()
 

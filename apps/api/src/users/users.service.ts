@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { auth } from '~/auth/better-auth'
+import { env } from '~/config/env'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma, UserType } from '~/generated/prisma/client'
 import { TUpdateUserType } from '~/schemas/users/update-user'
@@ -195,7 +196,7 @@ export class UsersService {
         await auth.api.requestPasswordReset({
           body: {
             email: row.email.toLowerCase().trim(),
-            redirectTo: `${process.env.CLIENT_BASE_URL}/modification-mot-de-passe`,
+            redirectTo: `${env.CLIENT_BASE_URL}/modification-mot-de-passe`,
           },
         })
       } catch (error) {

@@ -4,7 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import helmet from 'helmet'
 import { cleanupOpenApiDoc } from 'nestjs-zod'
-import { logTwoFactorBypassConfiguration } from '~/config/two-factor-bypass'
+import { env } from '~/config/env'
 import { ExternalModule } from '~/external/external.module'
 import { MainModule } from '~/main.module'
 
@@ -83,10 +83,6 @@ const bootstrap = async () => {
   /**
    * En-têtes de sécurité HTTP.
    *
-   * L'API ne rend pas de pages : la CSP y a peu d'effet, sauf pour Swagger, servi par
-   * cette même application. Les valeurs par défaut de Helmet bloquent ses styles et son
-   * script embarqués, d'où une politique explicite qui les autorise et rien d'autre.
-   *
    * `crossOriginResourcePolicy` est desserré à `cross-origin` : le site est sur un autre
    * domaine que l'API, et la valeur par défaut (`same-origin`) bloquerait le
    * téléchargement des exports Excel et PowerPoint.
@@ -117,15 +113,13 @@ const bootstrap = async () => {
   )
 
   app.enableCors({
-    origin: process.env.CLIENT_BASE_URL || 'http://localhost:3000',
+    origin: env.CLIENT_BASE_URL,
     credentials: true,
   })
 
   app.setGlobalPrefix(globalPrefix)
-  const port = process.env.PORT || 3000
+  const port = env.PORT
   await app.listen(port)
-
-  logTwoFactorBypassConfiguration()
 
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`)
 }
