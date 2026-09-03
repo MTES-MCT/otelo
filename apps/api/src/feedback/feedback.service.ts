@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '~/db/prisma.service'
 import { FeedbackStatus } from '~/generated/prisma/client'
+import { Role } from '~/generated/prisma/enums'
 import { TSubmitFeedback } from '~/schemas/feedback/submit-feedback'
 
 @Injectable()
@@ -39,6 +40,7 @@ export class FeedbackService {
     return this.prisma.userFeedback.findMany({
       where: {
         status: FeedbackStatus.SUBMITTED,
+        user: { role: Role.USER },
         ...(startDate || endDate
           ? {
               createdAt: {

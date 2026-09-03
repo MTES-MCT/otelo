@@ -2,6 +2,7 @@ import { createMock } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
 import { PrismaService } from '~/db/prisma.service'
 import { FeedbackStatus } from '~/generated/prisma/client'
+import { Role } from '~/generated/prisma/enums'
 import { FeedbackService } from './feedback.service'
 
 describe('FeedbackService', () => {
@@ -139,7 +140,7 @@ describe('FeedbackService', () => {
   })
 
   describe('findAllSubmitted', () => {
-    it('should return all submitted feedbacks without date filter', async () => {
+    it('should return submitted feedbacks from users without date filter', async () => {
       const mockFeedbacks = [
         { id: 'fb-1', rating: 5, comment: 'Super', user: { email: 'a@b.com' } },
         { id: 'fb-2', rating: 3, comment: null, user: { email: 'c@d.com' } },
@@ -149,7 +150,7 @@ describe('FeedbackService', () => {
       const result = await service.findAllSubmitted()
       expect(result).toEqual(mockFeedbacks)
       expect(prismaService.userFeedback.findMany).toHaveBeenCalledWith({
-        where: { status: FeedbackStatus.SUBMITTED },
+        where: { status: FeedbackStatus.SUBMITTED, user: { role: Role.USER } },
         include: { user: { select: { email: true } } },
         orderBy: { createdAt: 'desc' },
       })
@@ -162,6 +163,7 @@ describe('FeedbackService', () => {
       expect(prismaService.userFeedback.findMany).toHaveBeenCalledWith({
         where: {
           status: FeedbackStatus.SUBMITTED,
+          user: { role: Role.USER },
           createdAt: {
             gte: new Date('2025-01-01'),
             lte: new Date('2025-12-31'),
@@ -179,6 +181,7 @@ describe('FeedbackService', () => {
       expect(prismaService.userFeedback.findMany).toHaveBeenCalledWith({
         where: {
           status: FeedbackStatus.SUBMITTED,
+          user: { role: Role.USER },
           createdAt: {
             gte: new Date('2025-06-01'),
           },
