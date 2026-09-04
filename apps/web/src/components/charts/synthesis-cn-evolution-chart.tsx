@@ -232,7 +232,7 @@ export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ 
                   })()}
                 </>
               ) : (
-                <Bar name="Besoins en logements" dataKey="total" fill={getChartColor('housingNeeds')} barSize={8} />
+                <Bar name="Besoins en constructions neuves" dataKey="total" fill={getChartColor('housingNeeds')} barSize={8} />
               )}
 
               <Tooltip content={<CustomTooltip />} />

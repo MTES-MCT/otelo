@@ -171,7 +171,9 @@ export const AccommodationContructionEvolutionChart: FC<AccommodationContruction
             {showStartedHousing && (
               <Bar name="Logements commencés (Sit@del2)" dataKey="startedHousing" fill={getChartColor('startedHousing')} barSize={8} />
             )}
-            {hasHousingNeeds && <Bar name="Besoins en logements" dataKey="housingNeeds" fill={getChartColor('housingNeeds')} barSize={8} />}
+            {hasHousingNeeds && (
+              <Bar name="Besoins en constructions neuves" dataKey="housingNeeds" fill={getChartColor('housingNeeds')} barSize={8} />
+            )}
             {hasSurplusHousing && (
               <Bar name="Logements excédentaires" dataKey="surplusHousing" fill={getChartColor('surplusHousing')} barSize={8} />
             )}
