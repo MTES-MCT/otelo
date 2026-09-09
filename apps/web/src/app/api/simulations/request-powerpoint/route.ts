@@ -15,7 +15,8 @@ export async function POST(request: Request) {
   })
 
   if (!res.ok) {
-    return NextResponse.json({ error: 'Failed to request powerpoint' }, { status: res.status })
+    const details = await res.json().catch(() => ({ error: 'Failed to request powerpoint' }))
+    return NextResponse.json(details, { status: res.status })
   }
 
   const data = await res.json()

@@ -25,6 +25,7 @@
     "declarationMap": false,
     "paths": {
       "~/*": ["./src/*"],
+      "@test/*": ["./test/*"],
       "@shared": ["../../packages/shared/src"],
       "@shared/*": ["../../packages/shared/src/*"]
     }

@@ -37,6 +37,8 @@ export const ZRequestPowerpoint = z
     epci: ZPowerpointEpci.optional(),
     epcis: z.array(ZPowerpointEpci).optional(),
     privilegedSimulationProjection: z.number().optional(),
+
+    replacesRequestId: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     const startYear = parseInt(data.periodStart)

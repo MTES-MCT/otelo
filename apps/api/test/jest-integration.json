@@ -1,0 +1,21 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../",
+  "testRegex": ".*\\.integration-spec\\.ts$",
+  "moduleNameMapper": {
+    "^@test/(.*)$": "<rootDir>/test/$1",
+    "^@shared$": "<rootDir>/../../packages/shared/src",
+    "^@shared/(.*)$": "<rootDir>/../../packages/shared/src/$1",
+    "^~/(.*)$": "<rootDir>/src/$1"
+  },
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest",
+    "^.+\\.mjs$": "ts-jest"
+  },
+  "transformIgnorePatterns": ["node_modules/(?!(better-auth|better-call|@thallesp|\\.pnpm/(better-auth|better-call|@thallesp)))"],
+  "testEnvironment": "node",
+  "clearMocks": true,
+  "setupFiles": ["<rootDir>/test/jest-setup.ts", "<rootDir>/test/integration-env.ts"],
+  "globalSetup": "<rootDir>/test/integration-setup.ts",
+  "maxWorkers": 1
+}

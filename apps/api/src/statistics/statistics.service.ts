@@ -187,11 +187,14 @@ export class StatisticsService {
     // Une demande peut porter plusieurs scénarios. Le marqueur is_privileged
     // n'est pas fiable dans l'historique : il peut manquer ou apparaître deux fois.
     // Les lignes d'un même createMany partagent l'utilisateur et l'horodatage.
+    // Une demande remplacée à la demande de l'utilisateur n'est pas un livrable :
+    // elle reste en base pour l'historique mais ne doit pas gonfler le compteur.
     const [powerpointCount] = await this.prisma.$queryRaw<Array<{ count: bigint }>>`
       SELECT COUNT(DISTINCT (s.user_id, e.created_at)) AS count
       FROM exports e
       JOIN simulations s ON s.id = e.simulation_id
       WHERE e.type = 'POWERPOINT'
+        AND e.superseded_at IS NULL
         AND ${ownerIsNotTeam('s.user_id')}
     `
 

@@ -19,6 +19,7 @@ import Link from 'next/link'
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { GenericCard } from '~/components/common/generic-card/generic-card'
+import { TPowerpointDuplicateCheck, TPowerpointDuplicateReason, useCheckPowerpointDuplicate } from '~/hooks/use-check-powerpoint-duplicate'
 import { useRequestPowerpoint } from '~/hooks/use-request-powerpoint'
 import { TRequestPowerpoint, ZRequestPowerpoint } from '~/schemas/export'
 import { TSimulationWithRelations } from '~/schemas/simulation'
@@ -32,6 +33,17 @@ type TableauDeBordProps = {
   userEmail: string
 }
 
+const reasonLabel = (reason: TPowerpointDuplicateReason, windowMinutes: number): string => {
+  switch (reason) {
+    case 'RECENT':
+      return `vous avez fait une demande sur ce territoire il y a moins de ${windowMinutes} minutes`
+    case 'SAME_DAY':
+      return "vous avez déjà fait une demande sur ce territoire aujourd'hui"
+    case 'SAME_SCENARIOS_AND_TERRITORY':
+      return 'les scénarios et le territoire demandés sont exactement les mêmes'
+  }
+}
+
 const modalActions = createModal({
   id: 'form-confirmation-modal',
   isOpenedByDefault: false,
@@ -40,6 +52,9 @@ const modalActions = createModal({
 export function TableauDeBord({ simulations, groupName, userEmail }: TableauDeBordProps) {
   const notEnoughSimulations = simulations.length < 3
   const { mutateAsync, isError, isSuccess, isPending, error, progressMessage } = useRequestPowerpoint()
+  const { checkDuplicate, isChecking } = useCheckPowerpointDuplicate()
+  const [duplicateCheck, setDuplicateCheck] = React.useState<TPowerpointDuplicateCheck | null>(null)
+  const previousRequest = duplicateCheck?.previousRequest ?? null
 
   // Extract unique EPCIs from all simulations
   const uniqueEpcis = Array.from(new Map(simulations.flatMap((sim) => sim.epcis).map((epci) => [epci.code, epci])).values())
@@ -83,9 +98,10 @@ export function TableauDeBord({ simulations, groupName, userEmail }: TableauDeBo
 
   const onRequestPowerpoint = async (data: TRequestPowerpoint) => {
     try {
-      await mutateAsync(data)
+      await mutateAsync({ ...data, replacesRequestId: previousRequest?.requestId })
       modalActions.close()
       reset()
+      setDuplicateCheck(null)
     } catch (error) {
       // Keep modal open to show error, don't reset form
       console.error('PowerPoint request failed:', error)
@@ -96,7 +112,21 @@ export function TableauDeBord({ simulations, groupName, userEmail }: TableauDeBo
     await handleSubmit(onRequestPowerpoint)()
   }
 
-  const handleModalOpen = () => {
+  // La recherche d'une demande récente précède l'ouverture de la modale : c'est
+  // elle qui décide si l'on demande une simple confirmation ou un remplacement.
+  const handleModalOpen = async () => {
+    setDuplicateCheck(null)
+    try {
+      const { epci: selectedEpci, epcis: selectedEpcis, selectedSimulations: simulationIds } = getValues()
+      const epciCodes =
+        selectedEpcis && selectedEpcis.length > 0 ? selectedEpcis.map((item) => item.code) : selectedEpci ? [selectedEpci.code] : []
+
+      setDuplicateCheck(await checkDuplicate({ selectedSimulations: simulationIds, epciCodes }))
+    } catch (error) {
+      // Confort d'affichage seulement : si la vérification échoue, l'API refusera
+      // de toute façon une demande en doublon qui n'aurait pas été confirmée.
+      console.error('Duplicate check failed:', error)
+    }
     modalActions.open()
   }
 
@@ -446,8 +476,8 @@ export function TableauDeBord({ simulations, groupName, userEmail }: TableauDeBo
             )}
 
             <div className={styles.actions}>
-              <Button type="button" onClick={() => handleModalOpen()} disabled={notEnoughSimulations || !isValid}>
-                Recevoir le powerpoint éditable
+              <Button type="button" onClick={() => handleModalOpen()} disabled={notEnoughSimulations || !isValid || isChecking}>
+                {isChecking ? 'Vérification en cours...' : 'Recevoir le powerpoint éditable'}
               </Button>
             </div>
 
@@ -459,22 +489,52 @@ export function TableauDeBord({ simulations, groupName, userEmail }: TableauDeBo
       </div>
 
       <modalActions.Component
-        title="Confirmation d'envoi du powerpoint"
+        title={previousRequest ? 'Vous avez déjà demandé un export similaire' : "Confirmation d'envoi du powerpoint"}
         buttons={[
           {
             doClosesModal: true,
-            children: 'Annuler',
+            children: previousRequest ? 'Non, annuler ma demande' : 'Annuler',
             disabled: isPending,
           },
           {
             doClosesModal: false,
-            children: isPending ? progressMessage || 'Génération en cours...' : "Confirmer l'envoi",
+            children: isPending
+              ? progressMessage || 'Génération en cours...'
+              : previousRequest
+                ? 'Oui, remplacer ma demande précédente'
+                : "Confirmer l'envoi",
             onClick: onConfirmAction,
             disabled: isPending,
           },
         ]}
       >
         <div>
+          {previousRequest && (
+            <Alert
+              className={fr.cx('fr-mb-4w')}
+              severity="warning"
+              title="Une demande similaire existe déjà"
+              description={
+                <>
+                  <p>
+                    Vous avez réalisé une demande d'export le{' '}
+                    <strong>{dayjs(previousRequest.requestedAt).format('DD/MM/YYYY à HH:mm')}</strong>.
+                  </p>
+                  <ul>
+                    {previousRequest.reasons.map((reason) => (
+                      <li key={reason}>{reasonLabel(reason, duplicateCheck?.windowMinutes ?? 0)}</li>
+                    ))}
+                  </ul>
+                  <p>
+                    Demande précédente : {previousRequest.documentType ?? 'type non renseigné'}
+                    {previousRequest.epciNames.length > 0 ? ` — ${previousRequest.epciNames.join(', ')}` : ''}
+                    {previousRequest.simulationNames.length > 0 ? ` — ${previousRequest.simulationNames.join(', ')}` : ''}
+                  </p>
+                  <p>Souhaitez-vous la remplacer par celle-ci ? L'équipe Otelo ne traitera alors que la nouvelle demande.</p>
+                </>
+              }
+            />
+          )}
           <div>
             <strong>Email: </strong>
             <Tag>{userEmail}</Tag>

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config'
 import { AccommodationRatesModule } from '~/accommodation-rates/accommodation-rates.module'
 import { NeedsCalculationModule } from '~/calculation/needs-calculation/needs-calculation.module'
 import { DataVisualisationModule } from '~/data-visualisation/data-visualisation.module'
+import { PrismaModule } from '~/db/prisma.module'
 import { DemographicEvolutionModule } from '~/demographic-evolution/demographic-evolution.module'
 import { DemographicEvolutionCustomModule } from '~/demographic-evolution-custom/demographic-evolution-custom.module'
 import { EmailModule } from '~/email/email.module'
@@ -15,13 +16,15 @@ import { RpInseeModule } from '~/rp-insee/rp-insee.module'
 import { SimulationsModule } from '~/simulations/simulations.module'
 import { ExportPowerpointController } from './export-powerpoint.controller'
 import { ExportPowerpointService } from './export-powerpoint.service'
+import { PowerpointRequestsService } from './powerpoint-requests.service'
 
 @Module({
   controllers: [ExportPowerpointController],
-  providers: [ExportPowerpointService],
-  exports: [ExportPowerpointService],
+  providers: [ExportPowerpointService, PowerpointRequestsService],
+  exports: [ExportPowerpointService, PowerpointRequestsService],
   imports: [
     ExportExcelModule,
+    PrismaModule,
     ConfigModule,
     EmailModule,
     ZipModule,

@@ -25,7 +25,8 @@
     "postinstall": "[ \"$BUILD_TARGET\" = \"@otelo/api\" ] && prisma generate && npx puppeteer browsers install chrome || true",
     "prisma": "prisma",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:integration": "jest --config ./test/jest-integration.json --runInBand"
   },
   "dependencies": {
     "@golevelup/ts-jest": "^0.7.0",

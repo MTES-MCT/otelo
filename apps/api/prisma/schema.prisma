@@ -189,9 +189,25 @@ model Export {
   nextStep     String?    @map("next_step")
   periodStart  Int?       @map("period_start")
   periodEnd    Int?       @map("period_end")
-  simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  /// Identifiant partagé par toutes les lignes issues d'une même demande : un
+  /// POST /export-powerpoint crée une ligne par scénario sélectionné (jusqu'à 3).
+  /// Sans lui, une « demande » ne se reconstitue qu'en regroupant sur created_at,
+  /// ce qui rend impossible de compter ou de remplacer une demande de façon fiable.
+  requestId String @default(uuid()) @map("request_id")
+
+  epciCodes String[] @map("epci_codes")
+
+  /// Renseignés lorsque l'utilisateur a explicitement remplacé cette demande par
+  /// une demande ultérieure sur le même territoire
+  supersededAt          DateTime? @map("superseded_at")
+  supersededByRequestId String?   @map("superseded_by_request_id")
+
+  simulation Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
+  @@index([requestId])
+  @@index([supersededAt])
   @@map("exports")
 }
 

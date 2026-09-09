@@ -63,6 +63,7 @@ const ZEnv = z.object({
   // module qui les consomme, avec l'explication qui va avec.
   PUPPETEER_EXECUTABLE_PATH: optional(),
   TWO_FACTOR_BYPASS_EMAILS: withDefault(''),
+  EXPORT_DUPLICATE_WINDOW_MINUTES: blankAsMissing(z.coerce.number().int().positive().default(30)),
   EPCI_NEIGHBORS_ALLOWED_EMAILS: withDefault(''),
 
   // Sauvegardes Scalingo, lues par la ligne de commande uniquement.
