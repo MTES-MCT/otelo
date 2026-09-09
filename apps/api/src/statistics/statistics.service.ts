@@ -184,10 +184,13 @@ export class StatisticsService {
 
     const uniqueUserIds = new Set([...usersWithRecentSimulations.map((user) => user.id), ...usersWithExports.map((user) => user.id)])
 
+    // Une demande remplacée à la demande de l'utilisateur n'est pas un livrable :
+    // elle reste en base pour l'historique mais ne doit pas gonfler le compteur.
     const powerpointCount = await this.prisma.export.count({
       where: {
         type: 'POWERPOINT',
         isPrivileged: true,
+        supersededAt: null,
         simulation: OWNER_IS_NOT_TEAM,
       },
     })

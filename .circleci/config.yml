@@ -9,6 +9,15 @@ executors:
     docker:
       - image: cimg/node:24.11.1
 
+  node_with_database:
+    docker:
+      - image: cimg/node:24.11.1
+      - image: cimg/postgres:16.4
+        environment:
+          POSTGRES_USER: otelo
+          POSTGRES_PASSWORD: otelo
+          POSTGRES_DB: otelo-test
+
 parameters:
   lockfile:
     type: string
@@ -29,6 +38,9 @@ workflows:
           requires:
             - prepare_workspace_dependencies
       - test_api:
+          requires:
+            - prepare_workspace_dependencies
+      - test_api_integration:
           requires:
             - prepare_workspace_dependencies
       - build_api:
@@ -76,6 +88,29 @@ jobs:
       - run:
           name: 'Test API'
           command: pnpm -F api test
+
+  test_api_integration:
+    executor: node_with_database
+    environment:
+      INTEGRATION_DATABASE_URL: 'postgresql://otelo:otelo@localhost:5432/otelo-test'
+    steps:
+      - checkout
+      - install_dependencies
+      - prisma_generate
+      - run:
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: 'Wait for database'
+          command: |
+            for _ in $(seq 1 30); do
+              nc -z localhost 5432 && exit 0
+              sleep 1
+            done
+            echo 'Postgres injoignable après 30 s' && exit 1
+      - run:
+          name: 'Integration tests API'
+          command: pnpm -F api test:integration
 
   build_api:
     executor: node

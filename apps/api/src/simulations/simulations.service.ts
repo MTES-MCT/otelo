@@ -699,37 +699,4 @@ export class SimulationsService {
       peakYear: peakYearMax,
     }
   }
-
-  /**
-   * Journalise une demande de PowerPoint dans `exports`.
-   *
-   * Les réponses déclaratives du formulaire (type de document, prochaine étape,
-   * période d'étude) sont persistées : c'est la seule information dont on dispose
-   * sur l'usage réel du livrable, et elle n'existait jusqu'ici que dans l'email
-   * envoyé à l'équipe.
-   */
-  async markAsExported(
-    simulationIds: string[],
-    options: {
-      privilegedSimulationId?: string
-      documentType?: string
-      nextStep?: string
-      periodStart?: number
-      periodEnd?: number
-    } = {},
-  ): Promise<void> {
-    const { documentType, nextStep, periodEnd, periodStart, privilegedSimulationId } = options
-
-    await this.prismaService.export.createMany({
-      data: simulationIds.map((simulationId) => ({
-        type: 'POWERPOINT',
-        simulationId,
-        isPrivileged: privilegedSimulationId === simulationId,
-        documentType: documentType ?? null,
-        nextStep: nextStep ?? null,
-        periodStart: periodStart ?? null,
-        periodEnd: periodEnd ?? null,
-      })),
-    })
-  }
 }
