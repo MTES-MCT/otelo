@@ -1,10 +1,14 @@
 import { BadRequestException } from '@nestjs/common'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
+import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 
 dayjs.extend(utc)
+dayjs.extend(timezone)
 dayjs.extend(customParseFormat)
+
+const FRANCE_TIMEZONE = 'Europe/Paris'
 
 export const DEFAULT_RANGE_DAYS = 30
 
@@ -49,4 +53,8 @@ export function resolveDateRange(from?: string, to?: string): DateRange {
 
 export function formatRangeForFilename({ from, toExclusive }: DateRange): string {
   return `${dayjs.utc(from).format(ISO_DATE_FORMAT)}_${dayjs.utc(toExclusive).subtract(1, 'day').format(ISO_DATE_FORMAT)}`
+}
+
+export function startOfDayInFrance(reference: Date = new Date()): Date {
+  return dayjs(reference).tz(FRANCE_TIMEZONE).startOf('day').toDate()
 }

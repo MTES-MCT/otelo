@@ -272,6 +272,9 @@ export const ZRequestPowerpointDto = z.object({
     .refine((val) => parseInt(val) <= 2050, { message: "L'année de fin ne peut pas être supérieure à 2050" }),
   epci: ZPowerpointEpci.optional(),
   epcis: z.array(ZPowerpointEpci).optional(),
+  /// Identifiant de la demande que celle-ci remplace, quand l'utilisateur a
+  /// confirmé le remplacement dans la modale. Absent pour une première demande.
+  replacesRequestId: z.string().optional(),
 })
 
 export const ZRequestPowerpoint = ZRequestPowerpointDto.superRefine((data, ctx) => {
@@ -347,3 +350,14 @@ export const ZPowerpointData = ZRequestPowerpointDto.omit({ epcis: true }).exten
   username: z.string(),
 })
 export type TPowerpointData = z.infer<typeof ZPowerpointData>
+
+export const ZCheckPowerpointRequest = z.object({
+  selectedSimulations: z
+    .array(z.string())
+    .min(1, { message: 'Veuillez sélectionner au moins 1 simulation' })
+    .max(3, { message: 'Vous ne pouvez sélectionner que 3 simulations maximum' }),
+  /// Codes des EPCI demandés. Vide tant que l'utilisateur n'a pas choisi son
+  /// territoire : le contrôle « même territoire » est alors simplement inopérant.
+  epciCodes: z.array(z.string()).default([]),
+})
+export type TCheckPowerpointRequest = z.infer<typeof ZCheckPowerpointRequest>
