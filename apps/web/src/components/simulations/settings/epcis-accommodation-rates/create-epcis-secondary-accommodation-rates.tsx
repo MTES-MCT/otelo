@@ -77,7 +77,10 @@ export const CreateEpcisSecondaryAccommodationRates: FC<CreateEpcisAccomodationR
 
   return (
     <>
-      <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
+      <div
+        className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}
+        {...tutorialAnchor('secondary-toggle')}
+      >
         <SecondaryRatesToggleSwitch disabled={isPeakBeforeProjection} />
       </div>
       {isAllMode ? (

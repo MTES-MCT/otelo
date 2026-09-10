@@ -4,7 +4,7 @@ import { type Driver, driver } from 'driver.js'
 import 'driver.js/dist/driver.css'
 import { type RefObject, useCallback, useEffect, useRef } from 'react'
 import { trackEvent } from '~/lib/tracking'
-import { type TutorialStep, tutorialStepSelector } from './tutorial-content'
+import { type TutorialAnchor, type TutorialStep, tutorialSelector, tutorialStepSelector } from './tutorial-content'
 import './tutorial.css'
 
 /**
@@ -27,6 +27,10 @@ const isVisible = (element: HTMLElement): boolean => {
  */
 const resolveTarget = (step: TutorialStep): HTMLElement | null =>
   Array.from(document.querySelectorAll<HTMLElement>(tutorialStepSelector(step))).find(isVisible) ?? null
+
+/** Condition d'affichage d'une étape qui dépend d'un autre élément que sa cible. */
+const isAnchorVisible = (anchor: TutorialAnchor): boolean =>
+  Array.from(document.querySelectorAll<HTMLElement>(tutorialSelector(anchor))).some(isVisible)
 
 /**
  * Pilote le mode tuto de l'écran courant.
@@ -81,6 +85,7 @@ export const useTutorial = (
     // n'ignore pas une ancre absente : il affiche un popover orphelin centré. On résout
     // donc en amont pour que la progression annoncée corresponde aux bulles montrées.
     const reachable = steps
+      .filter((step) => step.visibleWith === undefined || isAnchorVisible(step.visibleWith))
       .map((step) => ({ step, initial: resolveTarget(step) }))
       .filter((entry): entry is typeof entry & { initial: HTMLElement } => Boolean(entry.initial))
 

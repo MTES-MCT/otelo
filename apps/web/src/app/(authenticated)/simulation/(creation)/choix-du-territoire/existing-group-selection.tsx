@@ -2,6 +2,7 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { EpciGroupSelect } from './epci-group-select'
 import { UrbanismeDocQuestion } from './urbanisme-doc-question'
 
@@ -36,7 +37,7 @@ export const ExistingGroupSelection = () => {
       />
       {/* Le nom vient du groupe sauvegardé : la question ne sert ici qu'à mettre le groupe à jour. */}
       {epciGroupId && (
-        <div className={fr.cx('fr-px-3w', 'fr-pb-3w')}>
+        <div className={fr.cx('fr-px-3w', 'fr-pb-3w')} {...tutorialAnchor('urbanisme-doc')}>
           <UrbanismeDocQuestion />
         </div>
       )}

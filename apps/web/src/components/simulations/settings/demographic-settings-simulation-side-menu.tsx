@@ -10,6 +10,7 @@ import {
   DemographicSettingsGuideTag,
   DemographicTargetTag,
 } from '~/components/simulations/creation-guide/demographic-settings-creation-guide-tag'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useEpcis } from '~/hooks/use-epcis'
 import { DemographicSettingsSimulationSideMenuStepNumber } from './demographic-settings-simulation-side-menu-step-number'
 import { DemographicSettingsSimulationSideMenuTitle } from './demographic-settings-simulation-side-menu-title'
@@ -52,7 +53,7 @@ export default function DemographicSettingsSimulationSideMenu() {
   }))
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} {...tutorialAnchor('side-menu')}>
       {demographicSteps.map((step, index) => (
         <React.Fragment key={index}>
           <div className={styles.stepContainer}>

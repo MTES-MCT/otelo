@@ -95,7 +95,7 @@ export const SimulationNeedsSummary = async ({ projection, results, epci, epcis,
             </div>
           )}
           {!!epci && epci.peakYear < projection && postpeakTotalStock && (
-            <div className="fr-mb-2w">
+            <div className="fr-mb-2w" {...tutorialAnchor('results-peak-year')}>
               {peakYear === 2021 ? (
                 <p className="fr-text--sm">
                   Le scénario démographique choisi conduit le territoire à atteindre son pic de ménages dès&nbsp;

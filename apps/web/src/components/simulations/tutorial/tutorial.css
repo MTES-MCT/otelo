@@ -36,6 +36,12 @@
   line-height: 1.5rem;
 }
 
+/* Mise en avant reprise du référentiel métier. Graisse fixée ici plutôt que laissée au
+   reset ambiant : le popover est monté hors de l'arbre React, en fin de <body>. */
+.otelo-tutorial-popover .driver-popover-description strong {
+  font-weight: 700;
+}
+
 .otelo-tutorial-popover .driver-popover-close-btn {
   width: 28px;
   height: 24px;
@@ -81,18 +87,35 @@
   text-shadow: none;
 }
 
-.otelo-tutorial-popover .driver-popover-footer-btn:hover {
+.otelo-tutorial-popover .driver-popover-footer-btn:hover,
+.otelo-tutorial-popover .driver-popover-footer-btn:focus {
   background-color: var(--background-alt-blue-france);
 }
 
-/* Bouton primaire DSFR. */
-.otelo-tutorial-popover .driver-popover-next-btn {
+/**
+ * Bouton primaire DSFR.
+ *
+ * Les deux classes sont chaînées (0,3,0) au lieu d'un simple descendant (0,2,0) : driver.css
+ * groupe `:hover` et `:focus` sur `.driver-popover-footer-btn`, à la même spécificité que la
+ * forme descendante, et l'ordre d'injection des feuilles par Next suffit alors à lui donner
+ * raison. Le focus est le cas qui fait mal — driver.js le pose sur « Suivant » à chaque
+ * étape : le bouton virait au gris clair sous son texte blanc, donc illisible en permanence.
+ * `color` est réaffirmée dans chaque état pour ne jamais laisser du blanc sur du clair.
+ */
+.otelo-tutorial-popover .driver-popover-footer-btn.driver-popover-next-btn {
   background-color: var(--background-action-high-blue-france);
   color: var(--text-inverted-grey);
 }
 
-.otelo-tutorial-popover .driver-popover-next-btn:hover {
+.otelo-tutorial-popover .driver-popover-footer-btn.driver-popover-next-btn:hover,
+.otelo-tutorial-popover .driver-popover-footer-btn.driver-popover-next-btn:focus {
   background-color: var(--background-action-high-blue-france-hover);
+  color: var(--text-inverted-grey);
+}
+
+.otelo-tutorial-popover .driver-popover-footer-btn.driver-popover-next-btn:active {
+  background-color: var(--background-action-high-blue-france-active);
+  color: var(--text-inverted-grey);
 }
 
 .otelo-tutorial-popover:focus-visible,

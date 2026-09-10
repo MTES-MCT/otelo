@@ -4,6 +4,7 @@ import { fr } from '@codegouvfr/react-dsfr'
 import React from 'react'
 import { useBadHousingSettings } from '~/app/(authenticated)/simulation/[id]/modifier/mal-logement/simulation-scenario-bad-housing-modification-provider'
 import { BadHousingSettingsCreationGuideTag } from '~/components/simulations/creation-guide/bad-housing-settings-creation-guide-tag'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import styles from '../../simulation-side-menu.module.css'
 
 type BadHousingSettingsSimulationSideMenuProps = {
@@ -51,7 +52,7 @@ export default function BadHousingSettingsSimulationSideMenu({ id }: BadHousingS
     },
   ]
   return (
-    <nav className={fr.cx('fr-col-md-3')}>
+    <nav className={fr.cx('fr-col-md-3')} {...tutorialAnchor('bad-housing-side-menu')}>
       <div className={styles.container}>
         {badHousingSteps.map((step, index) => (
           <React.Fragment key={index}>
