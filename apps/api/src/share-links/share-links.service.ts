@@ -56,10 +56,33 @@ export class ShareLinksService {
     return { active: true, token: link.token }
   }
 
+  private static toPublicSimulation(simulation: Record<string, unknown>): Record<string, unknown> {
+    const { userId, datasourceId, epciCode, scenarioId, epciGroupId, deleted, apiConsumerId, scenario, ...publicFields } = simulation
+
+    const {
+      id: _scenarioId,
+      userId: _scenarioUserId,
+      apiConsumerId: _scenarioConsumerId,
+      ...publicScenario
+    } = (scenario ?? {}) as Record<string, unknown>
+
+    return { ...publicFields, scenario: publicScenario }
+  }
+
   async getResultsByToken(simulationId: string) {
     void this.recordShareView(simulationId)
 
-    return this.resultsService.getGroupedResults(simulationId)
+    const grouped = await this.resultsService.getGroupedResults(simulationId)
+
+    return {
+      ...grouped,
+      simulations: Object.fromEntries(
+        Object.entries(grouped?.simulations ?? {}).map(([id, simulation]) => [
+          id,
+          ShareLinksService.toPublicSimulation(simulation as unknown as Record<string, unknown>),
+        ]),
+      ),
+    }
   }
 
   /** Contours des EPCI de la simulation partagée, pour la carte de la page publique. */

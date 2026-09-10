@@ -174,11 +174,17 @@ export class SimulationsService {
   }
 
   async update(id: string, data: TUpdateSimulationDto, userId?: string): Promise<TSimulationWithEpciAndScenario> {
+    // Depuis l'URL, jamais depuis le corps : le contrôle d'accès porte sur `id`.
+    const { scenarioId } = await this.prismaService.simulation.findUniqueOrThrow({
+      where: { id },
+      select: { scenarioId: true },
+    })
+
     // L'instantané doit être pris AVANT l'écriture : les paramètres sont écrasés en place,
     // l'état précédent est irrécupérable ensuite.
-    const before = await this.simulationChangesService.getScenarioSnapshot(data.id)
+    const before = await this.simulationChangesService.getScenarioSnapshot(scenarioId)
 
-    await this.scenariosService.update(data.id, data)
+    await this.scenariosService.update(scenarioId, data)
 
     if (before) {
       const changes = computeScenarioDiff(

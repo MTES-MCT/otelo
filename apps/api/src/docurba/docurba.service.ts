@@ -23,6 +23,10 @@ type AggregatedUrbanisme = Pick<DocurbaEpciResult, 'documentType' | 'approvalYea
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const BACKGROUND_TIMEOUT_MS = 3000
+/** Le `Promise.race` libère la requête entrante mais pas la sortante : sans ce délai, les sockets s'accumulent. */
+const GEO_API_TIMEOUT_MS = 5000
+/** Les clés viennent de l'appelant, et les résultats `null` sont mis en cache eux aussi. */
+const MAX_CACHE_ENTRIES = 5000
 const COMMUNE_CODE_COLS = ['code_insee', 'code_commune', 'commune_code']
 
 /**
@@ -199,7 +203,9 @@ export class DocurbaService implements OnModuleInit {
       if (localCommune) {
         firstCode = localCommune
       } else {
-        const geoRes = await fetch(`https://geo.api.gouv.fr/epcis/${epciCode}/communes?fields=code&limit=5`)
+        const geoRes = await fetch(`https://geo.api.gouv.fr/epcis/${encodeURIComponent(epciCode)}/communes?fields=code&limit=5`, {
+          signal: AbortSignal.timeout(GEO_API_TIMEOUT_MS),
+        })
         if (!geoRes.ok) return null
         const geoCommunes: Array<{ code: string }> = await geoRes.json()
         if (!geoCommunes || geoCommunes.length === 0) return null
@@ -215,6 +221,15 @@ export class DocurbaService implements OnModuleInit {
     }
   }
 
+  /** `Map` conserve l'ordre d'insertion : sa première clé est la plus ancienne. */
+  private cacheResult(epciCode: string, result: DocurbaEpciResult | null): void {
+    if (this.epciCache.size >= MAX_CACHE_ENTRIES && !this.epciCache.has(epciCode)) {
+      const oldest = this.epciCache.keys().next()
+      if (!oldest.done) this.epciCache.delete(oldest.value)
+    }
+    this.epciCache.set(epciCode, { result, cachedAt: Date.now() })
+  }
+
   async getForEpci(epciCode: string): Promise<DocurbaEpciResult | null> {
     const cached = this.epciCache.get(epciCode)
     if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) return cached.result
@@ -223,7 +238,7 @@ export class DocurbaService implements OnModuleInit {
     if (!promise) {
       promise = this.computeForEpci(epciCode)
         .then((result) => {
-          this.epciCache.set(epciCode, { result, cachedAt: Date.now() })
+          this.cacheResult(epciCode, result)
           return result
         })
         .finally(() => this.epciInFlight.delete(epciCode))

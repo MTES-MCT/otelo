@@ -22,16 +22,21 @@ import * as Papa from 'papaparse'
 import { z } from 'zod'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
+import { sendCsv } from '~/common/utils/csv'
+import { ACCEPTED_CSV_MIMETYPES } from '~/common/utils/csv-upload'
 import { Role } from '~/generated/prisma/enums'
 import { TUpdateUserType } from '~/schemas/users/update-user'
 import { TUser } from '~/schemas/users/user'
 import { resolveUserTypeLabel } from '~/users/user-type.utils'
+import { UpdateUserTypeDto } from '~/users/users.dto'
 import { UsersService } from '~/users/users.service'
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ExcludeOpenApi()
   @AccessControl({
     roles: [Role.ADMIN],
   })
@@ -51,6 +56,7 @@ export class UsersController {
     )
   }
 
+  @ExcludeOpenApi()
   @AccessControl({
     roles: [Role.ADMIN],
   })
@@ -60,6 +66,7 @@ export class UsersController {
     return this.usersService.search(q ?? '')
   }
 
+  @ExcludeOpenApi()
   @AccessControl({
     roles: [Role.ADMIN],
   })
@@ -81,23 +88,34 @@ export class UsersController {
     }))
 
     const dateStr = dayjs().format('DD-MM-YYYY')
-    const filename = `export-utilisateurs-${dateStr}.csv`
 
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
-
-    const csvData = Papa.unparse(data, {
-      header: true,
-      delimiter: ';',
-    })
-
-    res.send(csvData)
+    sendCsv(res, data, `export-utilisateurs-${dateStr}.csv`)
   }
 
+  @ExcludeOpenApi()
   @AccessControl({
     roles: [Role.ADMIN],
   })
   @Post('import/csv')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10 Mo
+        // Les avis de sécurité sur multer portent sur des corps multipart forgés.
+        files: 1,
+        fields: 10,
+        parts: 11,
+      },
+      // Avant que multer bufferise le fichier. `mimetype` est déclaratif, donc falsifiable.
+      fileFilter: (_req, file, callback) => {
+        if (!ACCEPTED_CSV_MIMETYPES.includes(file.mimetype)) {
+          callback(new BadRequestException('Le fichier doit être un CSV'), false)
+          return
+        }
+        callback(null, true)
+      },
+    }),
+  )
   @HttpCode(HttpStatus.OK)
   async importCsv(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
@@ -169,6 +187,7 @@ export class UsersController {
     }
   }
 
+  @ExcludeOpenApi()
   @AccessControl({
     roles: [Role.ADMIN],
   })
@@ -183,7 +202,7 @@ export class UsersController {
   })
   @HttpCode(HttpStatus.OK)
   @Patch(':id')
-  async updateType(@User() user: TUser, @Body() userType: TUpdateUserType) {
+  async updateType(@User() user: TUser, @Body() userType: UpdateUserTypeDto) {
     return this.usersService.updateType(user.id, userType)
   }
 

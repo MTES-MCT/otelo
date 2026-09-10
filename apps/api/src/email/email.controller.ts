@@ -2,8 +2,9 @@ import { Body, Controller, Logger, Post } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Throttle } from '@nestjs/throttler'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
+import escapeHtml from 'escape-html'
+import { ContactDto } from '~/email/email.dto'
 import { EmailService } from '~/email/email.service'
-import { TContactDto } from '~/schemas/email/email'
 
 @Controller('email')
 export class EmailController {
@@ -20,14 +21,20 @@ export class EmailController {
   @Post('contact')
   @AllowAnonymous()
   @Throttle({ default: { ttl: 900_000, limit: 3 } })
-  async contact(@Body() body: TContactDto) {
+  async contact(@Body() body: ContactDto) {
+    const firstname = escapeHtml(body.firstname)
+    const lastname = escapeHtml(body.lastname)
+    const email = escapeHtml(body.email)
+    const subject = escapeHtml(body.subject)
+    const message = escapeHtml(body.message)
+
     const htmlContent = `
             <h1>Formulaire de Contact</h1>
-            <p><strong>Prénom :</strong> ${body.firstname}</p>
-            <p><strong>Nom :</strong> ${body.lastname}</p>
-            <p><strong>Email :</strong> ${body.email}</p>
-            <p><strong>Objet :</strong> ${body.subject}</p>
-            <p><strong>Message :</strong> ${body.message}</p>
+            <p><strong>Prénom :</strong> ${firstname}</p>
+            <p><strong>Nom :</strong> ${lastname}</p>
+            <p><strong>Email :</strong> ${email}</p>
+            <p><strong>Objet :</strong> ${subject}</p>
+            <p><strong>Message :</strong> ${message}</p>
         `
     try {
       await this.emailService.sendEmail({

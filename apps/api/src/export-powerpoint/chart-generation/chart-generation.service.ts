@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common'
-import * as puppeteer from 'puppeteer'
+import { jsonForScript } from '~/common/utils/json-for-script'
 import { env } from '~/config/env'
 import { TResults } from '~/schemas/results/results'
+import { chartJsScriptTag } from './chart-runtime'
 import { chartKeyColors } from './colors'
 
 // todo: use zod schema instead and type it in the export-powerpoint calculators
@@ -26,6 +27,7 @@ export class ChartGenerationService {
 
   async generateChartImage(chartConfig: ChartConfig): Promise<Buffer> {
     this.logger.verbose(`Generating chart image for ${chartConfig.type}`)
+    const puppeteer = (await import('puppeteer')).default
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--single-process', '--no-zygote'],
@@ -134,12 +136,12 @@ export class ChartGenerationService {
               <canvas id="myChart"></canvas>
           </div>
 
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          ${chartJsScriptTag()}
 
           <script>
               const ctx = document.getElementById('myChart');
 
-              const demographicData = ${JSON.stringify(chartConfig.data)};
+              const demographicData = ${jsonForScript(chartConfig.data)};
               
               const chart = new Chart(ctx, {
                   type: 'line',
@@ -197,8 +199,8 @@ export class ChartGenerationService {
                                   text: 'Évolution'
                               },
                               beginAtZero: false,
-                              min: ${JSON.stringify(chartConfig.metadata?.min)},
-                              max: ${JSON.stringify(chartConfig.metadata?.max)}
+                              min: ${jsonForScript(chartConfig.metadata?.min)},
+                              max: ${jsonForScript(chartConfig.metadata?.max)}
                           }
                       },
                       plugins: {
@@ -294,8 +296,8 @@ export class ChartGenerationService {
       strokeWidth: line.strokeWidth ?? 2,
     }))
 
-    const menagesDataJson = JSON.stringify(menagesData)
-    const datasetsConfigJson = JSON.stringify(datasetsConfig)
+    const menagesDataJson = jsonForScript(menagesData)
+    const datasetsConfigJson = jsonForScript(datasetsConfig)
     const yAxisMin = typeof metadata?.min === 'number' ? metadata.min : null
     const yAxisMax = typeof metadata?.max === 'number' ? metadata.max : null
 
@@ -328,14 +330,14 @@ export class ChartGenerationService {
             <canvas id="menagesChart"></canvas>
           </div>
 
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          ${chartJsScriptTag()}
           <script>
             const ctx = document.getElementById('menagesChart')
 
             const menagesData = ${menagesDataJson};
             const datasetsConfig = ${datasetsConfigJson};
-            const yAxisMin = ${JSON.stringify(yAxisMin)};
-            const yAxisMax = ${JSON.stringify(yAxisMax)};
+            const yAxisMin = ${jsonForScript(yAxisMin)};
+            const yAxisMax = ${jsonForScript(yAxisMax)};
 
             const datasets = datasetsConfig.map((config, index) => ({
               label: config.label,
@@ -499,11 +501,11 @@ export class ChartGenerationService {
             <canvas id="badHousingChart"></canvas>
           </div>
 
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          ${chartJsScriptTag()}
           <script>
             const ctx = document.getElementById('badHousingChart')
-            const labels = ${JSON.stringify(labels)};
-            const datasets = ${JSON.stringify(datasets)};
+            const labels = ${jsonForScript(labels)};
+            const datasets = ${jsonForScript(datasets)};
 
             new Chart(ctx, {
               type: 'bar',
@@ -626,15 +628,15 @@ export class ChartGenerationService {
             <canvas id="comparisonChart"></canvas>
           </div>
 
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          ${chartJsScriptTag()}
           <script>
             const ctx = document.getElementById('comparisonChart')
-            const labels = ${JSON.stringify(labels)};
-            const housingNeedsValues = ${JSON.stringify(housingNeedsValues)};
-            const populationValues = ${JSON.stringify(populationValues)};
-            const selectedScenario = ${JSON.stringify(selectedScenario)};
-            const scenarioLabels = ${JSON.stringify(scenarioLabels)};
-            const scenarioColors = ${JSON.stringify(scenarioColors)};
+            const labels = ${jsonForScript(labels)};
+            const housingNeedsValues = ${jsonForScript(housingNeedsValues)};
+            const populationValues = ${jsonForScript(populationValues)};
+            const selectedScenario = ${jsonForScript(selectedScenario)};
+            const scenarioLabels = ${jsonForScript(scenarioLabels)};
+            const scenarioColors = ${jsonForScript(scenarioColors)};
 
             new Chart(ctx, {
               type: 'bar',
@@ -825,11 +827,11 @@ export class ChartGenerationService {
             <canvas id="barChart"></canvas>
           </div>
 
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          ${chartJsScriptTag()}
           <script>
             // Line Chart
             const lineCtx = document.getElementById('lineChart')
-            const lineDatasets = ${JSON.stringify(lineDatasets)}
+            const lineDatasets = ${jsonForScript(lineDatasets)}
 
             new Chart(lineCtx, {
               type: 'line',
@@ -887,7 +889,7 @@ export class ChartGenerationService {
 
             // Bar Chart
             const barCtx = document.getElementById('barChart')
-            const barData = ${JSON.stringify(barChart)}
+            const barData = ${jsonForScript(barChart)}
 
             new Chart(barCtx, {
               type: 'bar',
@@ -1042,10 +1044,10 @@ export class ChartGenerationService {
             <canvas id="annualNeedsChart"></canvas>
           </div>
 
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          ${chartJsScriptTag()}
           <script>
             const ctx = document.getElementById('annualNeedsChart')
-            const mergedData = ${JSON.stringify(mergedData)}
+            const mergedData = ${jsonForScript(mergedData)}
             const horizon = ${horizon}
             const maxValue = ${maxValue}
 
@@ -1216,11 +1218,11 @@ export class ChartGenerationService {
             <canvas id="comparisonChart"></canvas>
           </div>
 
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          ${chartJsScriptTag()}
           <script>
             const ctx = document.getElementById('comparisonChart')
-            const datasets = ${JSON.stringify(datasets)}
-            const years = ${JSON.stringify(sortedYears)}
+            const datasets = ${jsonForScript(datasets)}
+            const years = ${jsonForScript(sortedYears)}
             const maxValue = ${maxValue}
 
             new Chart(ctx, {

@@ -30,7 +30,6 @@ const ZEnv = z.object({
   CLIENT_BASE_URL: isProduction ? required() : withDefault('http://localhost:3000'),
 
   // Secrets
-  API_KEY_ENCRYPTION_SECRET: required(),
   BETTER_AUTH_SECRET: required(),
   DATABASE_URL: required(),
 
@@ -46,6 +45,9 @@ const ZEnv = z.object({
   EMAIL_SENDER_NAME: required(),
   // Hors production, l'envoi réel n'a lieu que sur demande explicite.
   EMAIL_ENABLED: withDefault('false'),
+  // Affiche les secrets (code 2FA, jetons) dans le log des courriels non envoyés.
+  // Poste de développement uniquement.
+  EMAIL_DEBUG_SECRETS: withDefault('false'),
 
   // Identité (ProConnect)
   OAUTH_PROCONNECT_CLIENT_ID: required(),

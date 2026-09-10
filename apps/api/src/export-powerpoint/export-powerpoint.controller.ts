@@ -2,11 +2,12 @@ import { Body, ConflictException, Controller, ForbiddenException, HttpCode, Http
 import { ConfigService } from '@nestjs/config'
 import { Throttle } from '@nestjs/throttler'
 import dayjs from 'dayjs'
+import escapeHtml from 'escape-html'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { EmailService } from '~/email/email.service'
 import { ExportExcelService } from '~/export-excel/export-excel.service'
-import { CheckPowerpointRequestDto } from '~/export-powerpoint/export-powerpoint.dto'
+import { CheckPowerpointRequestDto, RequestPowerpointDto } from '~/export-powerpoint/export-powerpoint.dto'
 import { ExportPowerpointService } from '~/export-powerpoint/export-powerpoint.service'
 import {
   PowerpointRequestsService,
@@ -15,7 +16,6 @@ import {
 } from '~/export-powerpoint/powerpoint-requests.service'
 import { Role } from '~/generated/prisma/enums'
 import { TEmailDto } from '~/schemas/email/email'
-import { TRequestPowerpoint } from '~/schemas/export-powerpoint/export-powerpoint'
 import { TUser } from '~/schemas/users/user'
 import { SimulationsService } from '~/simulations/simulations.service'
 
@@ -70,7 +70,7 @@ export class ExportPowerpointController {
   @Throttle({ default: { ttl: 60_000, limit: 5 } })
   @Post()
   @HttpCode(HttpStatus.OK)
-  async requestPowerpoint(@User() user: TUser, @Body() data: TRequestPowerpoint) {
+  async requestPowerpoint(@User() user: TUser, @Body() data: RequestPowerpointDto) {
     const { nextStep, resultDate, selectedSimulations, privilegedSimulation, epcis, epci, documentType, periodStart, periodEnd } = data
 
     const hasAccess = await this.simulationsService.hasUserAccessToAll(selectedSimulations, user.id)
@@ -140,24 +140,24 @@ export class ExportPowerpointController {
     const htmlContent = `
       ${replaceable ? this.replacementNoticeHtml(replaceable) : ''}
       <h1>Demande de PowerPoint</h1>
-      <p><strong>Email de l'utilisateur:</strong> ${user.email}</p>
-      <p><strong>Type de document:</strong> ${documentType}</p>
-      <p><strong>Année de début et fin de document:</strong> ${periodStart} - ${periodEnd}</p> 
-      <p><strong>Prochaine étape:</strong> ${nextStep}</p>
+      <p><strong>Email de l'utilisateur:</strong> ${escapeHtml(user.email)}</p>
+      <p><strong>Type de document:</strong> ${escapeHtml(documentType)}</p>
+      <p><strong>Année de début et fin de document:</strong> ${escapeHtml(periodStart)} - ${escapeHtml(periodEnd)}</p>
+      <p><strong>Prochaine étape:</strong> ${escapeHtml(nextStep)}</p>
       <p><strong>Date du résultat:</strong> ${new Date(resultDate).toLocaleDateString('fr-FR')}</p>
-      ${privilegedSim ? `<p><strong>Scénario privilégié:</strong> ${privilegedSim.name}</p>` : ''}
+      ${privilegedSim ? `<p><strong>Scénario privilégié:</strong> ${escapeHtml(privilegedSim.name)}</p>` : ''}
       <p><strong>Simulations sélectionnées:</strong></p>
       <ul>
-        ${simulations.map((sim) => `<li>${sim.name}</li>`).join('')}
+        ${simulations.map((sim) => `<li>${escapeHtml(sim.name)}</li>`).join('')}
       </ul>
       <p><strong>EPCI(s) demandé(s):</strong></p>
       ${
         !!epcis && epcis.length > 0
           ? `<ul>
-        ${epcis.map((epciItem) => `<li>${epciItem.name} - ${epciItem.code}</li>`).join('')}
+        ${epcis.map((epciItem) => `<li>${escapeHtml(epciItem.name)} - ${escapeHtml(epciItem.code)}</li>`).join('')}
       </ul>`
           : epci
-            ? `<ul><li>${epci.name} - ${epci.code}</li></ul>`
+            ? `<ul><li>${escapeHtml(epci.name)} - ${escapeHtml(epci.code)}</li></ul>`
             : ''
       }
     `
@@ -218,7 +218,7 @@ export class ExportPowerpointController {
         <p style="margin: 8px 0 0;">
           Doublon détecté sur : ${previous.reasons.map((reason) => this.reasonLabel(reason)).join(' ; ')}.
         </p>
-        <p style="margin: 8px 0 0;">${this.replacedSummary(previous)}.</p>
+        <p style="margin: 8px 0 0;">${escapeHtml(this.replacedSummary(previous))}.</p>
       </div>
     `
   }
