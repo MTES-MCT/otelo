@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common'
 import * as Papa from 'papaparse'
 import { z } from 'zod'
 import { PrismaService } from '~/db/prisma.service'
@@ -14,11 +14,22 @@ export class DemographicEvolutionCustomService {
   constructor(private readonly prisma: PrismaService) {}
 
   async upsert(userId: string, data: TCreateDemographicEvolutionCustomDto) {
-    // Check if a record already exists
+    if (data.scenarioId) {
+      const ownsScenario = await this.prisma.scenario.findFirst({
+        where: { id: data.scenarioId, userId },
+        select: { id: true },
+      })
+
+      if (!ownsScenario) {
+        throw new ForbiddenException('Accès refusé à ce scénario')
+      }
+    }
+
     const existing = await this.prisma.demographicEvolutionOmphaleCustom.findFirst({
       where: {
         epciCode: data.epciCode,
         scenarioId: data.scenarioId || null,
+        userId,
       },
     })
 

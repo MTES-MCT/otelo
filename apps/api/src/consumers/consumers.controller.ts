@@ -1,11 +1,14 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
 import { Role } from '~/generated/prisma/client'
+import { CreateConsumerDto, UpdateConsumerDto } from './consumers.dto'
 import { ConsumersService } from './consumers.service'
 
 @ApiTags('Admin - Consommateurs')
 @Controller('admin/consumers')
+@ExcludeOpenApi()
 export class ConsumersController {
   constructor(private readonly consumersService: ConsumersService) {}
 
@@ -14,7 +17,7 @@ export class ConsumersController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Créer un consommateur API' })
   @ApiResponse({ status: 201, description: 'Consommateur cree avec la cle API (affichee une seule fois)' })
-  async create(@Body() body: { name: string }) {
+  async create(@Body() body: CreateConsumerDto) {
     return this.consumersService.create({ name: body.name })
   }
 
@@ -38,7 +41,7 @@ export class ConsumersController {
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Modifier un consommateur API (nom, activation)' })
-  async update(@Param('id') id: string, @Body() body: { name?: string; active?: boolean }) {
+  async update(@Param('id') id: string, @Body() body: UpdateConsumerDto) {
     return this.consumersService.update(id, {
       name: body.name,
       active: body.active,
@@ -51,15 +54,6 @@ export class ConsumersController {
   @ApiOperation({ summary: 'Supprimer un consommateur API' })
   async delete(@Param('id') id: string) {
     return this.consumersService.delete(id)
-  }
-
-  @AccessControl({ roles: [Role.ADMIN] })
-  @Get(':id/key')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Voir la clé API d'un consommateur" })
-  @ApiResponse({ status: 200, description: 'Clé API déchiffrée' })
-  async getKey(@Param('id') id: string) {
-    return this.consumersService.getKey(id)
   }
 
   @AccessControl({ roles: [Role.ADMIN] })

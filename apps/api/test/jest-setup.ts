@@ -10,7 +10,6 @@
  * requête sortante, l'origine du problème se lit dans le message.
  */
 Object.assign(process.env, {
-  API_KEY_ENCRYPTION_SECRET: 'test-secret-for-unit-tests',
   BETTER_AUTH_SECRET: 'test-better-auth-secret',
   BREVO_API_KEY: 'cle',
   BREVO_API_URL: 'https://brevo.test/send',

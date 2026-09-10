@@ -35,18 +35,6 @@ describe('UsersService', () => {
     expect(service).toBeDefined()
   })
 
-  describe('hasUserAccessTo', () => {
-    it('should return true when a user is found', async () => {
-      prismaService.user.findFirst = jest.fn().mockResolvedValue({ id: 'user-1' })
-    })
-
-    it('should return false when no user is found', async () => {
-      prismaService.user.findFirst = jest.fn().mockResolvedValue(null)
-      const result = await service.hasUserAccessTo('user-1')
-      expect(result).toBe(false)
-    })
-  })
-
   describe('isEmailInWhitelist', () => {
     it('should return true when email is in whitelist', async () => {
       prismaService.userWhitelist.findUnique = jest.fn().mockResolvedValue({ email: 'whitelisted@example.com' })

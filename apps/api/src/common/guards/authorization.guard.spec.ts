@@ -170,4 +170,44 @@ describe('AuthorizationGuard', () => {
     const result = await guard.canActivate(context)
     expect(result).toBe(true)
   })
+
+  /** La règle est « rôle *ou* type de compte » : le pilotage s'ouvre aux agents DREAL. */
+  describe('autorisation par type de compte', () => {
+    const withUser = (user: Record<string, unknown>, modelAccess: TModelAccess) => {
+      const context = createMock<ExecutionContext>()
+      mockGetSession.mockResolvedValueOnce({ user, session: {} })
+      mockReflector.getAllAndOverride.mockReturnValueOnce(modelAccess)
+      return context
+    }
+
+    const pilotage: TModelAccess = { roles: ['ADMIN'], userTypes: ['DREAL'] }
+
+    it('should allow a user whose type is listed even without the role', async () => {
+      const context = withUser({ role: 'USER', hasAccess: true, type: 'DREAL' }, pilotage)
+      authService.hasRole.mockReturnValue(false)
+
+      expect(await guard.canActivate(context)).toBe(true)
+    })
+
+    it('should refuse a user with neither the role nor a listed type', async () => {
+      const context = withUser({ role: 'USER', hasAccess: true, type: 'Collectivite' }, pilotage)
+      authService.hasRole.mockReturnValue(false)
+
+      expect(await guard.canActivate(context)).toBe(false)
+    })
+
+    it('should keep refusing on role alone when no type is listed', async () => {
+      const context = withUser({ role: 'USER', hasAccess: true, type: 'DREAL' }, { roles: ['ADMIN'] })
+      authService.hasRole.mockReturnValue(false)
+
+      expect(await guard.canActivate(context)).toBe(false)
+    })
+
+    it('should refuse a user with no type at all', async () => {
+      const context = withUser({ role: 'USER', hasAccess: true, type: null }, pilotage)
+      authService.hasRole.mockReturnValue(false)
+
+      expect(await guard.canActivate(context)).toBe(false)
+    })
+  })
 })

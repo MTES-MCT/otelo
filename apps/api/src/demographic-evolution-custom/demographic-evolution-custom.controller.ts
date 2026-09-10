@@ -15,6 +15,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { ACCEPTED_CSV_MIMETYPES } from '~/common/utils/csv-upload'
 import { DataPackVersionsService } from '~/data-pack-versions/data-pack-versions.service'
 import { Role } from '~/generated/prisma/enums'
 import { ZCreateDemographicEvolutionCustomDto } from '~/schemas/demographic-evolution-custom/demographic-evolution-custom'
@@ -35,7 +36,17 @@ export class DemographicEvolutionCustomController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB max file size
+        fileSize: 10 * 1024 * 1024, // 10 Mo
+        files: 1,
+        fields: 10,
+        parts: 11,
+      },
+      fileFilter: (_req, file, callback) => {
+        if (!ACCEPTED_CSV_MIMETYPES.includes(file.mimetype)) {
+          callback(new BadRequestException('Le fichier doit être un CSV'), false)
+          return
+        }
+        callback(null, true)
       },
     }),
   )

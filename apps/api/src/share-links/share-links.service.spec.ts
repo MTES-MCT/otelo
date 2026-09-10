@@ -196,4 +196,63 @@ describe('ShareLinksService', () => {
       consoleError.mockRestore()
     })
   })
+
+  describe('getResultsByToken', () => {
+    it('should not expose internal identifiers to an anonymous visitor', async () => {
+      mockResultsService.getGroupedResults = jest.fn().mockResolvedValue({
+        name: "Dossier d'études",
+        simulations: {
+          'sim-1': {
+            id: 'sim-1',
+            name: 'Scénario haut',
+            userId: 'user-victime',
+            datasourceId: 'ds-1',
+            epciCode: '200069672',
+            scenarioId: 'scenario-victime',
+            epciGroupId: 'group-1',
+            deleted: null,
+            epcis: [{ code: '200069672', name: 'CA Le Grand Chalon' }],
+            scenario: { id: 'scenario-victime', userId: 'user-victime', projection: 2030, millesime: '2021' },
+            results: {},
+          },
+        },
+      })
+
+      const response = await service.getResultsByToken('sim-1')
+      const serialized = JSON.stringify(response)
+
+      expect(serialized).not.toContain('user-victime')
+      expect(serialized).not.toContain('scenario-victime')
+      expect(serialized).not.toContain('ds-1')
+      expect(serialized).not.toContain('group-1')
+    })
+
+    it('should keep what the public page actually renders', async () => {
+      mockResultsService.getGroupedResults = jest.fn().mockResolvedValue({
+        name: "Dossier d'études",
+        simulations: {
+          'sim-1': {
+            id: 'sim-1',
+            name: 'Scénario haut',
+            userId: 'user-1',
+            epcis: [{ code: '200069672', name: 'CA Le Grand Chalon' }],
+            scenario: { id: 's-1', projection: 2030, millesime: '2021' },
+            results: { total: 42 },
+          },
+        },
+      })
+
+      const response = (await service.getResultsByToken('sim-1')) as {
+        name: string
+        simulations: Record<string, { name: string; scenario: Record<string, unknown>; results: unknown; epcis: unknown }>
+      }
+
+      expect(response.name).toBe("Dossier d'études")
+      expect(response.simulations['sim-1'].name).toBe('Scénario haut')
+      expect(response.simulations['sim-1'].scenario.projection).toBe(2030)
+      expect(response.simulations['sim-1'].scenario.millesime).toBe('2021')
+      expect(response.simulations['sim-1'].results).toEqual({ total: 42 })
+      expect(response.simulations['sim-1'].epcis).toEqual([{ code: '200069672', name: 'CA Le Grand Chalon' }])
+    })
+  })
 })

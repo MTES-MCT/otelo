@@ -6,6 +6,7 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { generateRandomString, symmetricEncrypt } from 'better-auth/crypto'
 import { admin, genericOAuth, twoFactor } from 'better-auth/plugins'
 import { adminAc, userAc } from 'better-auth/plugins/admin/access'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { env } from '~/config/env'
 import { TRUSTED_PROXIES } from '~/config/trusted-proxies'
 import { isTwoFactorBypassed } from '~/config/two-factor-bypass'
@@ -19,11 +20,43 @@ const prisma = new PrismaClient({ adapter })
 
 const PROCONNECT_ISSUER = env.OAUTH_PROCONNECT_ISSUER
 
+/**
+ * À ne pas confondre avec `OAUTH_PROCONNECT_ISSUER`, qui n'est que l'hôte : la
+ * revendication `iss` des jetons porte `https://<hôte>/api/v2`.
+ */
+const PROCONNECT_OIDC_ISSUER = `${PROCONNECT_ISSUER}/api/v2`
+
+/** Construit une seule fois : `jose` garde les clés en cache et gère leur rotation. */
+const proconnectJwks = createRemoteJWKSet(new URL(`${PROCONNECT_OIDC_ISSUER}/jwks`))
+
+/**
+ * Restreints aux clés asymétriques publiées par ProConnect. Sans liste explicite, un
+ * jeton en `HS256` serait vérifié avec une clé publique traitée comme secret partagé.
+ */
+const PROCONNECT_SIGNING_ALGORITHMS = ['ES256', 'RS256']
+
+/**
+ * Liste blanche et non noire : un paramètre ajouté plus tard sera masqué par défaut.
+ * `resetPasswordUrl` est l'adresse fixe du formulaire, sans jeton — à ne pas confondre
+ * avec `resetUrl`.
+ */
+const LOGGABLE_EMAIL_PARAMS = new Set(['email', 'firstname', 'resetPasswordUrl'])
+
+function describeEmailParams(params: Record<string, string>): string {
+  const entries = Object.keys(params)
+    .sort()
+    .map((key) => (LOGGABLE_EMAIL_PARAMS.has(key) ? `${key}=${JSON.stringify(params[key])}` : `${key}=<masqué>`))
+  return `{ ${entries.join(', ')} }`
+}
+
 export async function sendBrevoTemplatedEmail(templateId: string, params: Record<string, string>, to: string, subject: string) {
   // Guard: never send real emails outside production unless explicitly opted in.
   // Set EMAIL_ENABLED=true to force real sending in dev (e.g. to test a template).
   if (process.env.NODE_ENV !== 'production' && env.EMAIL_ENABLED !== 'true') {
-    console.log(`[Brevo:skipped] templateId=${templateId} to=${to} subject="${subject}" params=${JSON.stringify(params)}`)
+    // Masqués par défaut, y compris hors production. En local, EMAIL_DEBUG_SECRETS=true
+    // rétablit l'affichage : sans le code 2FA, impossible de se connecter.
+    const description = env.EMAIL_DEBUG_SECRETS === 'true' ? JSON.stringify(params) : describeEmailParams(params)
+    console.log(`[Brevo:skipped] templateId=${templateId} to=${to} subject="${subject}" params=${description}`)
     return
   }
 
@@ -405,26 +438,41 @@ export const auth = betterAuth({
       config: [
         {
           providerId: 'proconnect',
-          discoveryUrl: `${PROCONNECT_ISSUER}/api/v2/.well-known/openid-configuration`,
+          discoveryUrl: `${PROCONNECT_OIDC_ISSUER}/.well-known/openid-configuration`,
           clientId: env.OAUTH_PROCONNECT_CLIENT_ID,
           clientSecret: env.OAUTH_PROCONNECT_CLIENT_SECRET,
           scopes: ['openid', 'given_name', 'usual_name', 'email'],
           pkce: true,
           getUserInfo: async ({ accessToken }) => {
-            // ProConnect returns a JWT in userinfo endpoint
-            const res = await fetch(`${PROCONNECT_ISSUER}/api/v2/userinfo`, {
+            // ProConnect renvoie un JWT signé, et non du JSON, sur son endpoint userinfo.
+            const res = await fetch(`${PROCONNECT_OIDC_ISSUER}/userinfo`, {
               headers: { Authorization: `Bearer ${accessToken}` },
             })
+
+            if (!res.ok) {
+              throw new Error(`ProConnect userinfo a répondu ${res.status}`)
+            }
+
             const jwt = await res.text()
-            // Decode JWT payload (second part)
-            const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64').toString())
+
+            // Ce jeton devient l'identité du compte, et `accountLinking` le rattache à un
+            // compte existant de même adresse : il ne peut pas être lu sans être vérifié.
+            const { payload } = await jwtVerify(jwt, proconnectJwks, {
+              algorithms: PROCONNECT_SIGNING_ALGORITHMS,
+              audience: env.OAUTH_PROCONNECT_CLIENT_ID,
+              issuer: PROCONNECT_OIDC_ISSUER,
+            })
+
+            const givenName = (payload.given_name as string) ?? ''
+            const usualName = (payload.usual_name as string) ?? ''
+
             return {
-              id: payload.sub,
-              email: payload.email?.toLowerCase(),
-              name: `${payload.given_name || ''} ${payload.usual_name || ''}`.trim(),
+              id: payload.sub as string,
+              email: (payload.email as string | undefined)?.toLowerCase(),
+              name: `${givenName} ${usualName}`.trim(),
               emailVerified: true,
-              firstname: payload.given_name,
-              lastname: payload.usual_name,
+              firstname: givenName,
+              lastname: usualName,
             }
           },
         },

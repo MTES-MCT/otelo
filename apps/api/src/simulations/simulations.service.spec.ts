@@ -297,4 +297,23 @@ describe('SimulationsService', () => {
       expect(mockPrismaService.epciGroup.update).not.toHaveBeenCalled()
     })
   })
+
+  /** La cible de l'écriture vient de la simulation vérifiée par le guard, jamais du corps. */
+  describe('update', () => {
+    it('should write to the scenario of the simulation named in the URL', async () => {
+      mockPrismaService.simulation.findUniqueOrThrow = jest.fn().mockResolvedValue({ scenarioId: 'scenario-a-moi' })
+      const changes = createMock<SimulationChangesService>()
+      ;(service as unknown as { simulationChangesService: SimulationChangesService }).simulationChangesService = changes
+      ;(changes.getScenarioSnapshot as jest.Mock).mockResolvedValue(null)
+      service.get = jest.fn().mockResolvedValue({ id: 'ma-simulation' })
+
+      await service.update('ma-simulation', { projection: 2050 } as never, 'user-1')
+
+      expect(mockPrismaService.simulation.findUniqueOrThrow).toHaveBeenCalledWith({
+        where: { id: 'ma-simulation' },
+        select: { scenarioId: true },
+      })
+      expect(mockScenariosService.update).toHaveBeenCalledWith('scenario-a-moi', { projection: 2050 })
+    })
+  })
 })

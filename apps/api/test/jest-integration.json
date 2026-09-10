@@ -12,7 +12,7 @@
     "^.+\\.(t|j)s$": "ts-jest",
     "^.+\\.mjs$": "ts-jest"
   },
-  "transformIgnorePatterns": ["node_modules/(?!(better-auth|better-call|@thallesp|\\.pnpm/(better-auth|better-call|@thallesp)))"],
+  "transformIgnorePatterns": ["node_modules/(?!(better-auth|better-call|@thallesp|jose|\\.pnpm/(better-auth|better-call|@thallesp|jose)))"],
   "testEnvironment": "node",
   "clearMocks": true,
   "setupFiles": ["<rootDir>/test/jest-setup.ts", "<rootDir>/test/integration-env.ts"],

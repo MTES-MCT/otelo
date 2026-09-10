@@ -1,6 +1,7 @@
 import { BadRequestException, Controller, Get, Param, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
 import { sendCsv } from '~/common/utils/csv'
 import { type DateRange, formatRangeForFilename, resolveDateRange } from '~/common/utils/date-range'
 import { Role } from '~/generated/prisma/enums'
@@ -80,6 +81,7 @@ const DATASETS: Record<string, DatasetDefinition> = {
 export const EXPORT_DATASET_KEYS = Object.keys(DATASETS)
 
 @Controller('statistics/exports')
+@ExcludeOpenApi()
 export class StatisticsExportsController {
   constructor(private readonly statisticsExportsService: StatisticsExportsService) {}
 

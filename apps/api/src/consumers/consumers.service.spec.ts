@@ -39,10 +39,12 @@ describe('ConsumersService', () => {
       expect(result.key).toMatch(/^otelo_[a-f0-9]{64}$/)
       expect(result.prefix).toBeDefined()
       expect(mockPrismaService.apiConsumer.create).toHaveBeenCalledWith({
+        data: expect.not.objectContaining({ encryptedKey: expect.anything() }),
+      })
+      expect(mockPrismaService.apiConsumer.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           name: 'Test Consumer',
           hashedKey: expect.any(String),
-          encryptedKey: expect.any(String),
           prefix: expect.any(String),
         }),
       })
@@ -81,39 +83,6 @@ describe('ConsumersService', () => {
       mockPrismaService.apiConsumer.findUnique = jest.fn().mockResolvedValue(null)
 
       await expect(service.get('non-existent')).rejects.toThrow(NotFoundException)
-    })
-  })
-
-  describe('getKey', () => {
-    it('should return the decrypted key', async () => {
-      // First create to get a valid encrypted key
-      mockPrismaService.apiConsumer.create = jest.fn().mockImplementation(({ data }) =>
-        Promise.resolve({
-          id: '1',
-          name: 'Consumer',
-          prefix: data.prefix,
-          active: true,
-          createdAt: new Date(),
-          hashedKey: data.hashedKey,
-          encryptedKey: data.encryptedKey,
-        }),
-      )
-
-      const created = await service.create({ name: 'Consumer' })
-
-      mockPrismaService.apiConsumer.findUnique = jest.fn().mockResolvedValue({
-        encryptedKey: mockPrismaService.apiConsumer.create.mock.calls[0][0].data.encryptedKey,
-      })
-
-      const result = await service.getKey('1')
-
-      expect(result.key).toBe(created.key)
-    })
-
-    it('should throw NotFoundException when consumer not found', async () => {
-      mockPrismaService.apiConsumer.findUnique = jest.fn().mockResolvedValue(null)
-
-      await expect(service.getKey('non-existent')).rejects.toThrow(NotFoundException)
     })
   })
 
@@ -169,7 +138,6 @@ describe('ConsumersService', () => {
         where: { id: '1' },
         data: expect.objectContaining({
           hashedKey: expect.any(String),
-          encryptedKey: expect.any(String),
           prefix: expect.any(String),
         }),
         select: expect.any(Object),

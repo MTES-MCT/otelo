@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Query } from '@nestjs/common'
-import { TEpci } from '@shared'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
+import { CreateEpciDto, UpdateEpciDto } from '~/epcis/epcis.dto'
 import { EpcisService } from '~/epcis/epcis.service'
 import { Epci } from '~/generated/prisma/client'
 import { Role } from '~/generated/prisma/enums'
@@ -59,22 +60,24 @@ export class EpcisController {
     }
   }
 
+  @ExcludeOpenApi()
   @AccessControl({
     roles: [Role.ADMIN],
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createEpci(@Body() data: TEpci): Promise<Epci> {
+  async createEpci(@Body() data: CreateEpciDto): Promise<Epci> {
     return await this.epcisService.create(data)
   }
 
+  @ExcludeOpenApi()
   @AccessControl({
     paramName: 'code',
     roles: [Role.ADMIN],
   })
   @Put(':code')
   @HttpCode(HttpStatus.ACCEPTED)
-  async updateEpci(@Param('code') code: string, @Body() data: Partial<Epci>): Promise<Epci> {
+  async updateEpci(@Param('code') code: string, @Body() data: UpdateEpciDto): Promise<Epci> {
     try {
       return await this.epcisService.put(code, data)
     } catch (error) {
@@ -82,6 +85,7 @@ export class EpcisController {
     }
   }
 
+  @ExcludeOpenApi()
   @AccessControl({
     paramName: 'code',
     roles: [Role.ADMIN],

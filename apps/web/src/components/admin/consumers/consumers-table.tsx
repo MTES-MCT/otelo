@@ -7,7 +7,6 @@ import dayjs from 'dayjs'
 import { FC, useState } from 'react'
 import { type ApiConsumer } from '~/hooks/use-consumers'
 import { useDeleteConsumer } from '~/hooks/use-delete-consumer'
-import { useGetConsumerKey } from '~/hooks/use-get-consumer-key'
 import { useRegenerateConsumerKey } from '~/hooks/use-regenerate-consumer-key'
 import { useUpdateConsumer } from '~/hooks/use-update-consumer'
 
@@ -36,8 +35,6 @@ export const ConsumersTable: FC<ConsumersTableProps> = ({ consumers, onEdit }) =
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [keyConsumerId, setKeyConsumerId] = useState<string | null>(null)
   const [keyConsumerName, setKeyConsumerName] = useState<string>('')
-
-  const { data: keyData, isLoading: isLoadingKey } = useGetConsumerKey(keyConsumerId)
 
   const handleDelete = (id: string) => {
     setDeletingId(id)
@@ -79,8 +76,7 @@ export const ConsumersTable: FC<ConsumersTableProps> = ({ consumers, onEdit }) =
     updateConsumer({ id: consumer.id, active: !consumer.active })
   }
 
-  const displayedKey = regeneratedKey ?? keyData?.key
-  const isNewKey = !!regeneratedKey
+  const displayedKey = regeneratedKey
 
   const columns: ColumnDef<ApiConsumer>[] = [
     {
@@ -202,51 +198,54 @@ export const ConsumersTable: FC<ConsumersTableProps> = ({ consumers, onEdit }) =
       </deleteModal.Component>
 
       <keyModal.Component title={`Clé API — ${keyConsumerName}`}>
-        {isNewKey && (
-          <div
-            className="fr-p-2w fr-mb-2w"
-            style={{
-              background: 'var(--background-contrast-info)',
-              borderRadius: '4px',
-              borderLeft: '4px solid var(--border-plain-info)',
-            }}
-          >
-            <p className="fr-text--sm fr-mb-0">Nouvelle clé générée. Copiez-la maintenant.</p>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div className="fr-input-group" style={{ flex: 1, marginBottom: 0 }}>
-            {isLoadingKey && !displayedKey ? (
-              <input className="fr-input" type="text" value="Chargement..." readOnly style={{ fontFamily: 'monospace' }} />
-            ) : (
-              <input
-                className="fr-input"
-                type={keyVisible ? 'text' : 'password'}
-                value={displayedKey ?? ''}
-                readOnly
-                style={{ fontFamily: 'monospace' }}
-              />
-            )}
-          </div>
-          <Button
-            size="small"
-            priority="tertiary no outline"
-            onClick={() => setKeyVisible((v) => !v)}
-            iconId={keyVisible ? 'ri-eye-off-line' : 'ri-eye-line'}
-            title={keyVisible ? 'Masquer' : 'Afficher'}
-          />
-          {displayedKey && (
-            <Button
-              size="small"
-              priority="secondary"
-              onClick={() => handleCopy(displayedKey)}
-              iconId={copied ? 'ri-check-line' : 'ri-clipboard-line'}
+        {displayedKey ? (
+          <>
+            <div
+              className="fr-p-2w fr-mb-2w"
+              style={{
+                background: 'var(--background-contrast-info)',
+                borderRadius: '4px',
+                borderLeft: '4px solid var(--border-plain-info)',
+              }}
             >
-              {copied ? 'Copié !' : 'Copier'}
-            </Button>
-          )}
-        </div>
+              <p className="fr-text--sm fr-mb-0">
+                Nouvelle clé générée. <strong>Copiez-la maintenant</strong> : elle ne sera plus affichée.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="fr-input-group" style={{ flex: 1, marginBottom: 0 }}>
+                <input
+                  className="fr-input"
+                  type={keyVisible ? 'text' : 'password'}
+                  value={displayedKey}
+                  readOnly
+                  style={{ fontFamily: 'monospace' }}
+                />
+              </div>
+              <Button
+                size="small"
+                priority="tertiary no outline"
+                onClick={() => setKeyVisible((v) => !v)}
+                iconId={keyVisible ? 'ri-eye-off-line' : 'ri-eye-line'}
+                title={keyVisible ? 'Masquer' : 'Afficher'}
+              />
+              <Button
+                size="small"
+                priority="secondary"
+                onClick={() => handleCopy(displayedKey)}
+                iconId={copied ? 'ri-check-line' : 'ri-clipboard-line'}
+              >
+                {copied ? 'Copié !' : 'Copier'}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <p className="fr-text--sm">
+            Seule l'empreinte de la clé est conservée : elle ne peut pas être réaffichée. Si le consommateur l'a perdue, régénérez-en une et
+            transmettez-la-lui.
+          </p>
+        )}
 
         <div
           className="fr-p-2w fr-mt-2w"

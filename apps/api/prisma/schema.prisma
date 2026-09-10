@@ -42,25 +42,25 @@ model DataPackVersion {
 }
 
 model User {
-  id                                String                              @id @default(uuid())
-  email                             String                              @unique
-  name                              String
-  image                             String?
-  emailVerified                     Boolean                             @default(false)
-  createdAt                         DateTime                            @default(now()) @map("created_at")
-  updatedAt                         DateTime                            @updatedAt @map("updated_at")
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  image         String?
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
   // Custom fields
-  firstname                         String
-  lastname                          String
-  role                              Role                                @default(USER)
-  banned                            Boolean                             @default(false)
-  banReason                         String?                             @map("ban_reason")
-  lastLoginAt                       DateTime                            @default(now()) @map("last_login_at")
-  hasAccess                         Boolean                             @default(false)
-  engaged                           Boolean                             @default(false)
-  type                              UserType?
-  referent                          String?
-  region                            String?
+  firstname     String
+  lastname      String
+  role          Role      @default(USER)
+  banned        Boolean   @default(false)
+  banReason     String?   @map("ban_reason")
+  lastLoginAt   DateTime  @default(now()) @map("last_login_at")
+  hasAccess     Boolean   @default(false)
+  engaged       Boolean   @default(false)
+  type          UserType?
+  referent      String?
+  region        String?
 
   twoFactorEnabled                  Boolean                             @default(true) @map("two_factor_enabled")
   // Relations
@@ -212,18 +212,18 @@ model Export {
 }
 
 model ApiConsumer {
-  id           String                  @id @default(uuid())
-  name         String
-  hashedKey    String                  @unique @map("hashed_key")
-  encryptedKey String                  @map("encrypted_key")
-  prefix       String
-  active       Boolean                 @default(true)
-  createdAt    DateTime                @default(now()) @map("created_at")
-  lastUsedAt   DateTime?               @map("last_used_at")
-  scenarios    Scenario[]
-  simulations  Simulation[]
-  epciGroups   EpciGroup[]
-  dailyUsage   ApiConsumerUsageDaily[]
+  id          String                  @id @default(uuid())
+  name        String
+  /// Empreinte SHA-256 : la clé en clair n'est jamais stockée. Perdue, elle se régénère.
+  hashedKey   String                  @unique @map("hashed_key")
+  prefix      String
+  active      Boolean                 @default(true)
+  createdAt   DateTime                @default(now()) @map("created_at")
+  lastUsedAt  DateTime?               @map("last_used_at")
+  scenarios   Scenario[]
+  simulations Simulation[]
+  epciGroups  EpciGroup[]
+  dailyUsage  ApiConsumerUsageDaily[]
 
   @@map("api_consumers")
 }
@@ -857,7 +857,8 @@ model DemographicEvolutionOmphaleCustom {
   scenario   Scenario? @relation(fields: [scenarioId], references: [id])
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([epciCode, scenarioId])
+  /// Le propriétaire fait partie de la clé. Un index partiel couvre le cas `scenarioId IS NULL`.
+  @@unique([userId, epciCode, scenarioId], map: "demographic_evolution_omphale_custom_user_epci_scenario_key")
   @@map("demographic_evolution_omphale_custom")
 }
 
