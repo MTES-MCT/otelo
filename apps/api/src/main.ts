@@ -38,10 +38,14 @@ const bootstrap = async () => {
    */
   app.set('trust proxy', 1)
 
-  // Swagger complet (tous les endpoints)
+  /**
+   * Swagger : les routes d'administration en sont absentes, via `@ExcludeOpenApi()`. Le
+   * document est servi hors pipeline Nest, donc sans garde : c'est son contenu, et non
+   * son accès, qui le rend publiable.
+   */
   const fullConfig = new DocumentBuilder()
     .setTitle('Otelo - API interne')
-    .setDescription("Documentation complete de l'API Otelo (endpoints internes + externes).")
+    .setDescription("Documentation de l'API Otelo. Les routes d'administration en sont exclues.")
     .setVersion('1.0')
     .addBearerAuth({
       type: 'http',

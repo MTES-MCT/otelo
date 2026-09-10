@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
-import { authFetch, getSession } from '~/lib/auth/server'
+import { requireAdmin } from '~/lib/api/admin-proxy'
+import { authFetch } from '~/lib/auth/server'
 
 export async function GET() {
-  const session = await getSession()
-
-  if (!session || session.user.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = await requireAdmin()
+  if (denied) return denied
 
   const res = await authFetch('/statistics/simulations')
 

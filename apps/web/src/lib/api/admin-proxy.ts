@@ -21,20 +21,46 @@ function buildQuery(request: Request, extraParams: readonly string[] = []): stri
 }
 
 /**
- * Relaie un endpoint d'administration de l'API NestJS, avec le contrôle de rôle côté Next.
+ * Refuse la requête si la session n'est pas celle d'un administrateur.
+ *
+ * Renvoie la réponse d'erreur à retourner telle quelle, ou `null` pour laisser passer.
+ * Destiné aux routes que les helpers ci-dessous ne couvrent pas — écritures, envois de
+ * fichiers — pour que le contrôle de rôle s'écrive partout de la même façon.
  *
  * L'API refait le même contrôle : ce garde-fou évite surtout un aller-retour réseau
- * inutile et une fuite de la forme des erreurs de l'API vers le navigateur.
- *
- * Seuls les paramètres attendus sont propagés : on ne relaie jamais l'URL entrante
- * telle quelle vers un service interne.
+ * inutile, et évite qu'une régression côté API expose des données personnelles à tout
+ * compte connecté.
  */
-export async function proxyAdminJson(path: string, request: Request, extraParams: readonly string[] = []) {
+export async function requireAdmin(): Promise<NextResponse | null> {
   const session = await getSession()
 
   if (!session || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  return null
+}
+
+export async function requirePilotageAccess(): Promise<NextResponse | null> {
+  const session = await getSession()
+
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const isAdmin = session.user.role === 'ADMIN'
+  const isRegionalAgent = session.user.type === 'DREAL' && !!session.user.region
+
+  if (!isAdmin && !isRegionalAgent) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  return null
+}
+
+export async function proxyAdminJson(path: string, request: Request, extraParams: readonly string[] = []) {
+  const denied = await requireAdmin()
+  if (denied) return denied
 
   const response = await authFetch(`${path}${buildQuery(request, extraParams)}`)
 
@@ -52,11 +78,8 @@ export async function proxyAdminJson(path: string, request: Request, extraParams
  * les accents à l'ouverture dans Excel.
  */
 export async function proxyAdminCsv(path: string, request: Request, extraParams: readonly string[] = []) {
-  const session = await getSession()
-
-  if (!session || session.user.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = await requireAdmin()
+  if (denied) return denied
 
   const response = await authFetch(`${path}${buildQuery(request, extraParams)}`)
 

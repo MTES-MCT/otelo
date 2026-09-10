@@ -400,4 +400,104 @@ describe('better-auth hooks', () => {
       consoleError.mockRestore()
     })
   })
+
+  /** Quand l'envoi est désactivé, le contenu du courriel part dans les logs. */
+  describe('sendBrevoTemplatedEmail, envoi désactivé', () => {
+    const initialEmailEnabled = process.env.EMAIL_ENABLED
+    const initialDebugSecrets = process.env.EMAIL_DEBUG_SECRETS
+
+    /** Tous les paramètres passés par les quatre appelants du module. */
+    const params = {
+      code: '482917',
+      confirmationUrl: 'https://otelo.test/verifier?token=jeton-de-verification',
+      email: 'agent@collectivite.fr',
+      firstname: 'Camille',
+      resetPasswordUrl: 'https://otelo.test/mot-de-passe-oublie',
+      resetUrl: 'https://otelo.test/reinitialiser?token=jeton-de-reinitialisation',
+      verificationUrl: 'https://otelo.test/connexion/double-authentification?code=482917',
+    }
+
+    const skippedLog = async (debugSecrets?: string) => {
+      jest.resetModules()
+      process.env.EMAIL_ENABLED = 'false'
+      if (debugSecrets === undefined) {
+        delete process.env.EMAIL_DEBUG_SECRETS
+      } else {
+        process.env.EMAIL_DEBUG_SECRETS = debugSecrets
+      }
+
+      const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+      const fetchSpy = jest.spyOn(global, 'fetch')
+
+      const { sendBrevoTemplatedEmail } = require('./better-auth')
+      await sendBrevoTemplatedEmail('7', params, 'agent@collectivite.fr', 'Votre code de connexion Otelo')
+
+      expect(fetchSpy).not.toHaveBeenCalled()
+      const line = consoleLog.mock.calls[0][0] as string
+      consoleLog.mockRestore()
+      fetchSpy.mockRestore()
+      return line
+    }
+
+    const restore = (key: string, value: string | undefined) => {
+      if (value === undefined) {
+        delete process.env[key]
+      } else {
+        process.env[key] = value
+      }
+    }
+
+    afterAll(() => {
+      restore('EMAIL_ENABLED', initialEmailEnabled)
+      restore('EMAIL_DEBUG_SECRETS', initialDebugSecrets)
+      jest.resetModules()
+    })
+
+    it('should never log a secret by default', async () => {
+      const line = await skippedLog()
+
+      expect(line).not.toContain('482917')
+      expect(line).not.toContain('jeton-de-reinitialisation')
+      expect(line).not.toContain('jeton-de-verification')
+      expect(line).toContain('code=<masqué>')
+      expect(line).toContain('resetUrl=<masqué>')
+      expect(line).toContain('confirmationUrl=<masqué>')
+      expect(line).toContain('verificationUrl=<masqué>')
+    })
+
+    /** `resetPasswordUrl` est l'adresse fixe du formulaire, sans jeton. */
+    it('should keep the metadata needed to make the log useful', async () => {
+      const line = await skippedLog()
+
+      expect(line).toContain('templateId=7')
+      expect(line).toContain('to=agent@collectivite.fr')
+      expect(line).toContain('firstname="Camille"')
+      expect(line).toContain('resetPasswordUrl="https://otelo.test/mot-de-passe-oublie"')
+    })
+
+    /** Sans cette sortie, impossible de se connecter en local : aucun courriel n'est envoyé. */
+    it('should show everything when a developer opts in explicitly', async () => {
+      const line = await skippedLog('true')
+
+      expect(line).toContain('482917')
+      expect(line).toContain('jeton-de-reinitialisation')
+    })
+
+    /** Liste blanche : un paramètre ajouté plus tard est masqué par défaut. */
+    it('should mask a parameter it has never seen', async () => {
+      jest.resetModules()
+      process.env.EMAIL_ENABLED = 'false'
+      delete process.env.EMAIL_DEBUG_SECRETS
+      const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+
+      const { sendBrevoTemplatedEmail } = require('./better-auth')
+      await sendBrevoTemplatedEmail('9', { invitationToken: 'jeton-a-venir' }, 'agent@collectivite.fr', 'Sujet')
+
+      const line = consoleLog.mock.calls[0][0] as string
+      consoleLog.mockRestore()
+
+      expect(line).not.toContain('jeton-a-venir')
+      expect(line).toContain('invitationToken=<masqué>')
+    })
+  })
 })

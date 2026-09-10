@@ -39,13 +39,6 @@ export class UsersService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async hasUserAccessTo(email: string): Promise<boolean> {
-    const user = await this.prisma.user.findFirst({
-      where: { email },
-    })
-    return !!user && (user.role === 'ADMIN' || user.hasAccess)
-  }
-
   async isEmailInWhitelist(email: string): Promise<boolean> {
     const whitelistEntry = await this.prisma.userWhitelist.findUnique({
       where: { email },

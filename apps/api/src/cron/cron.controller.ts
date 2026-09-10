@@ -1,9 +1,11 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
 import { CronService } from '~/cron/cron.service'
 import { Role } from '~/generated/prisma/enums'
 
 @Controller('cron')
+@ExcludeOpenApi()
 export class CronController {
   constructor(private readonly cronService: CronService) {}
 

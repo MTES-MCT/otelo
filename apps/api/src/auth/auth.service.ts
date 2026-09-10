@@ -35,8 +35,4 @@ export class AuthService {
 
     return false
   }
-
-  async hasAccess(email: string) {
-    return this.usersService.hasUserAccessTo(email)
-  }
 }

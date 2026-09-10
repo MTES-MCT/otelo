@@ -56,13 +56,17 @@ export const ZScenario = ZCommonDateFields.extend({
 
 export type TScenario = z.infer<typeof ZScenario>
 
-export const ZInitScenario = ZCommonDateFields.extend({
+export const ZInitScenario = z.object({
   b2_scenario: z.string(),
   epcis: z.record(
     z.string(),
     z.object({
       b2_tx_rs: z.number().optional(),
       b2_tx_vacance: z.number().optional(),
+      b2_tx_vacance_longue: z.number().optional(),
+      b2_tx_vacance_courte: z.number().optional(),
+      b2_tx_restructuration: z.number().optional(),
+      b2_tx_disparition: z.number().optional(),
       baseEpci: z.boolean(),
     }),
   ),
@@ -72,13 +76,37 @@ export const ZInitScenario = ZCommonDateFields.extend({
 
 export type TInitScenario = z.infer<typeof ZInitScenario>
 
+/**
+ * Taux par EPCI dans une *mise à jour*, indexés par code EPCI.
+ *
+ * `ZScenario.epciScenarios` est un tableau — la forme lue en base. En écriture, les deux
+ * API attendent un objet indexé, que `ScenariosService.update` parcourt.
+ */
+export const ZEpciScenarioRatesUpdate = z.record(
+  z.string(),
+  z.object({
+    b2_tx_disparition: z.number().optional(),
+    b2_tx_restructuration: z.number().optional(),
+    b2_tx_rs: z.number().optional(),
+    b2_tx_vacance: z.number().optional(),
+    b2_tx_vacance_longue: z.number().optional(),
+    b2_tx_vacance_courte: z.number().optional(),
+  }),
+)
+
 export const ZUpdateSimulationDto = ZScenario.omit({
   b17_motif: true,
   createdAt: true,
+  // Le contrôle d'accès porte sur l'identifiant de l'URL : une cible dans le corps
+  // permettrait d'écrire dans le scénario d'autrui.
+  id: true,
   isConfidential: true,
   updatedAt: true,
   demographicEvolutionOmphaleCustom: true,
+  epciScenarios: true,
 })
+  .partial()
+  .extend({ epciScenarios: ZEpciScenarioRatesUpdate.optional() })
 
 export type TUpdateSimulationDto = z.infer<typeof ZUpdateSimulationDto>
 
@@ -92,21 +120,7 @@ export const ZExternalUpdateScenario = ZScenario.omit({
   epciScenarios: true,
 })
   .partial()
-  .extend({
-    epciScenarios: z
-      .record(
-        z.string(),
-        z.object({
-          b2_tx_disparition: z.number().optional(),
-          b2_tx_restructuration: z.number().optional(),
-          b2_tx_rs: z.number().optional(),
-          b2_tx_vacance: z.number().optional(),
-          b2_tx_vacance_longue: z.number().optional(),
-          b2_tx_vacance_courte: z.number().optional(),
-        }),
-      )
-      .optional(),
-  })
+  .extend({ epciScenarios: ZEpciScenarioRatesUpdate.optional() })
 
 export type TExternalUpdateScenario = z.infer<typeof ZExternalUpdateScenario>
 

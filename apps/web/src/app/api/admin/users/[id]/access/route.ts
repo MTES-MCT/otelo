@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authFetch, getSession } from '~/lib/auth/server'
+import { requireAdmin } from '~/lib/api/admin-proxy'
+import { authFetch } from '~/lib/auth/server'
 import type { IdRouteParams } from '~/types/simulation-page-props'
 
 export async function PATCH(request: NextRequest, { params }: IdRouteParams) {
-  const { id } = await params
-  const session = await getSession()
+  const denied = await requireAdmin()
+  if (denied) return denied
 
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { id } = await params
 
   const body = await request.json()
 

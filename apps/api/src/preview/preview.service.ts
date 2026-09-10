@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { ForbiddenException, Injectable } from '@nestjs/common'
 import { NeedsCalculationService } from '~/calculation/needs-calculation/needs-calculation.service'
 import { PrismaService } from '~/db/prisma.service'
 import { B11Etablissement, B15Surocc } from '~/generated/prisma/client'
@@ -65,6 +65,11 @@ export class PreviewService {
     let epciCodes: string[]
 
     if (dto.simulationId) {
+      const owns = await this.simulationsService.hasUserAccessTo(dto.simulationId, userId)
+      if (!owns) {
+        throw new ForbiddenException('Accès refusé à cette simulation')
+      }
+
       const persisted = await this.simulationsService.get(dto.simulationId)
       baseScenario = persisted.scenario
       epciCodes = dto.epcis && dto.epcis.length > 0 ? dto.epcis : persisted.epcis.map((e) => e.code)

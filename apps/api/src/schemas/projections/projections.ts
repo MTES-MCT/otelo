@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { commaSeparated } from '~/schemas/query'
 
 /** Première et dernière année couvertes par les classeurs de projections. */
 export const PROJECTION_FIRST_YEAR = 2018
@@ -50,20 +51,6 @@ export const ZProjectionHouseholdType = z.enum([
   'MENAGE_COMPLEXE_3_PLUS',
   'PERSONNE_SEULE',
 ])
-
-/** Liste séparée par des virgules dans la query string. */
-function commaSeparated<T extends z.ZodTypeAny>(item: T, max: number) {
-  return z.preprocess(
-    (value) =>
-      typeof value === 'string'
-        ? value
-            .split(',')
-            .map((entry) => entry.trim())
-            .filter((entry) => entry !== '')
-        : value,
-    z.array(item).min(1).max(max),
-  )
-}
 
 export const ZProjectionZonesQuery = z.object({
   level: ZProjectionZoneLevel.optional().describe('Filtre sur le niveau géographique'),

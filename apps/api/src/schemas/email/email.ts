@@ -20,11 +20,11 @@ export const ZEmailDto = z.object({
 export type TEmailDto = z.infer<typeof ZEmailDto>
 
 export const ZContactDto = z.object({
-  firstname: z.string().min(1),
-  lastname: z.string().min(1),
-  email: z.email(),
-  subject: z.string().min(1),
-  message: z.string().min(1),
+  firstname: z.string().min(1).max(100),
+  lastname: z.string().min(1).max(100),
+  email: z.email().max(254),
+  subject: z.string().min(1).max(200),
+  message: z.string().min(1).max(5000),
 })
 
 export type TContactDto = z.infer<typeof ZContactDto>

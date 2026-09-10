@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { createHash, randomBytes } from 'crypto'
-import { decrypt, encrypt } from '~/common/utils/encryption'
 import { PrismaService } from '~/db/prisma.service'
 
 @Injectable()
@@ -10,14 +9,12 @@ export class ConsumersService {
   async create(data: { name: string }) {
     const rawKey = `otelo_${randomBytes(32).toString('hex')}`
     const hashedKey = createHash('sha256').update(rawKey).digest('hex')
-    const encryptedKey = encrypt(rawKey)
     const prefix = rawKey.slice(6, 14)
 
     const consumer = await this.prisma.apiConsumer.create({
       data: {
         name: data.name,
         hashedKey,
-        encryptedKey,
         prefix,
       },
     })
@@ -66,19 +63,6 @@ export class ConsumersService {
     return consumer
   }
 
-  async getKey(id: string) {
-    const consumer = await this.prisma.apiConsumer.findUnique({
-      where: { id },
-      select: { encryptedKey: true },
-    })
-
-    if (!consumer) {
-      throw new NotFoundException('Consumer not found')
-    }
-
-    return { key: decrypt(consumer.encryptedKey) }
-  }
-
   async update(id: string, data: { name?: string; active?: boolean }) {
     await this.get(id)
     return this.prisma.apiConsumer.update({
@@ -105,12 +89,11 @@ export class ConsumersService {
 
     const rawKey = `otelo_${randomBytes(32).toString('hex')}`
     const hashedKey = createHash('sha256').update(rawKey).digest('hex')
-    const encryptedKey = encrypt(rawKey)
     const prefix = rawKey.slice(6, 14)
 
     const consumer = await this.prisma.apiConsumer.update({
       where: { id },
-      data: { hashedKey, encryptedKey, prefix },
+      data: { hashedKey, prefix },
       select: {
         id: true,
         name: true,

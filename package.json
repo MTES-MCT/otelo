@@ -23,6 +23,12 @@
   "pnpm": {
     "ignoredBuiltDependencies": [
       "esbuild"
-    ]
+    ],
+    "overrides": {
+      "@prisma/config>deepmerge-ts": "8.0.0",
+      "exceljs>uuid": "11.1.1",
+      "tsup>esbuild": "0.28.1",
+      "multer": ">=2.3.0"
+    }
   }
 }

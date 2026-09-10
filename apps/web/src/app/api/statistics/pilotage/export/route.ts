@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authFetch, getSession } from '~/lib/auth/server'
+import { requirePilotageAccess } from '~/lib/api/admin-proxy'
+import { authFetch } from '~/lib/auth/server'
 
 export async function GET(request: NextRequest) {
-  const session = await getSession()
-
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = await requirePilotageAccess()
+  if (denied) return denied
 
   const params = new URLSearchParams()
   const region = request.nextUrl.searchParams.get('region')

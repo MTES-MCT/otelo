@@ -106,7 +106,11 @@ export const ZGroupedSimulationWithResults = z.object({
 export type TGroupedSimulationWithResults = z.infer<typeof ZGroupedSimulationWithResults>
 
 // Lenient scenario schema for preview endpoint — numeric fields may arrive as strings (e.g. via URL query state).
-const ZPreviewScenario = ZScenario.partial().extend({
+/**
+ * Scénario d'une prévisualisation : tout est optionnel, l'écran n'envoie que ce qui vient
+ * d'être modifié. `createdAt`/`updatedAt` sont retirés — `z.date()` refuse une chaîne ISO.
+ */
+const ZPreviewScenario = ZScenario.omit({ createdAt: true, updatedAt: true }).partial().extend({
   b1_horizon_resorption: z.coerce.number().optional(),
   b11_part_etablissement: z.coerce.number().optional(),
   b12_cohab_interg_subie: z.coerce.number().optional(),
@@ -126,14 +130,20 @@ const ZPreviewEpciScenario = ZEpciScenario.partial().extend({
   b2_tx_vacance_longue: z.coerce.number().optional(),
 })
 
-export const ZPreviewSimulationDto = z
-  .object({
-    simulationId: z.string().optional(),
-    epcis: z.array(z.string()).optional(),
-    scenario: ZPreviewScenario.optional(),
-    epciScenarios: z.record(z.string(), ZPreviewEpciScenario).optional(),
-  })
-  .refine((d) => d.simulationId || (d.epcis && d.epcis.length > 0), {
-    message: 'simulationId ou au moins un EPCI doit être fourni',
-  })
+const ZPreviewSimulationBody = z.object({
+  simulationId: z.string().optional(),
+  epcis: z.array(z.string()).optional(),
+  scenario: ZPreviewScenario.optional(),
+  epciScenarios: z.record(z.string(), ZPreviewEpciScenario).optional(),
+})
+
+export const ZPreviewSimulationDto = ZPreviewSimulationBody.refine((d) => d.simulationId || (d.epcis && d.epcis.length > 0), {
+  message: 'simulationId ou au moins un EPCI doit être fourni',
+})
+
+/**
+ * Corps de `POST /simulations/:simulationId/preview`. Sans le `refine`, dont la condition
+ * est déjà satisfaite par le paramètre d'URL.
+ */
+export const ZPreviewForSimulationBody = ZPreviewSimulationBody.omit({ simulationId: true })
 export type TPreviewSimulationDto = z.infer<typeof ZPreviewSimulationDto>

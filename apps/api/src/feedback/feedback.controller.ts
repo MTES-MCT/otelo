@@ -1,9 +1,10 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
 import { Role } from '~/generated/prisma/enums'
-import { TSubmitFeedback } from '~/schemas/feedback/submit-feedback'
 import { TUser } from '~/schemas/users/user'
+import { SubmitFeedbackDto } from './feedback.dto'
 import { FeedbackService } from './feedback.service'
 
 @Controller('feedback')
@@ -24,7 +25,7 @@ export class FeedbackController {
   })
   @HttpCode(HttpStatus.OK)
   @Post('submit')
-  async submit(@User() user: TUser, @Body() body: TSubmitFeedback) {
+  async submit(@User() user: TUser, @Body() body: SubmitFeedbackDto) {
     return this.feedbackService.submit(user.id, body)
   }
 
@@ -37,6 +38,7 @@ export class FeedbackController {
     return this.feedbackService.snooze(user.id)
   }
 
+  @ExcludeOpenApi()
   @AccessControl({
     roles: [Role.ADMIN],
   })
