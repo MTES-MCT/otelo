@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { useEffect, useState } from 'react'
 import { AutocompleteInput } from '~/components/simulations/autocomplete/autocomplete-input'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useEpciGroupNamePrefill } from '~/hooks/use-epci-group-name-prefill'
 import { useEpcis } from '~/hooks/use-epcis'
 import { GeoApiCommuneResult, GeoApiEpciResult } from '~/hooks/use-geoapi-search'
@@ -63,17 +64,19 @@ export const BassinHabitatSelection = ({ bassinEpcis, hasUrbanismeDocError }: Ba
     <>
       <h3 className="fr-h5">Choisir un Bassin d'Habitat</h3>
       <p className="fr-text--sm fr-hint-text">Recherchez un EPCI pour sélectionner automatiquement son bassin d'habitat</p>
-      <AutocompleteInput
-        searchCategory="territoire"
-        label="Rechercher un EPCI"
-        onClick={onSelectEpci}
-        hintText="Saisissez le nom de l'EPCI pour charger automatiquement tous les EPCI de son bassin d'habitat."
-        defaultValue={baseEpciData?.name}
-      />
+      <div {...tutorialAnchor('epci-search')}>
+        <AutocompleteInput
+          searchCategory="territoire"
+          label="Rechercher un EPCI"
+          onClick={onSelectEpci}
+          hintText="Saisissez le nom de l'EPCI pour charger automatiquement tous les EPCI de son bassin d'habitat."
+          defaultValue={baseEpciData?.name}
+        />
+      </div>
 
       {selectedEpcis && selectedEpcis.length > 0 && (
         <>
-          <div className="fr-py-5w">
+          <div className="fr-py-5w" {...tutorialAnchor('selected-epcis')}>
             {isBassinHabitat && (
               <Alert
                 description="Les EPCI du bassin d'habitat ont été automatiquement sélectionnés et ne peuvent pas être modifiés."
@@ -90,10 +93,14 @@ export const BassinHabitatSelection = ({ bassinEpcis, hasUrbanismeDocError }: Ba
             </ul>
           </div>
 
-          <UrbanismeDocQuestion hasError={hasUrbanismeDocError} />
+          <div {...tutorialAnchor('urbanisme-doc')}>
+            <UrbanismeDocQuestion hasError={hasUrbanismeDocError} />
+          </div>
 
           <hr className="fr-mt-3w" />
-          <EpciGroupNameInput value={epciGroupName || ''} />
+          <div {...tutorialAnchor('epci-group-name')}>
+            <EpciGroupNameInput value={epciGroupName || ''} />
+          </div>
           <div className="fr-mt-2w">
             <Alert
               description="Les résultats de votre simulation seront donnés à l'échelle de l'EPCI ou à l'échelle du bassin d'habitat."

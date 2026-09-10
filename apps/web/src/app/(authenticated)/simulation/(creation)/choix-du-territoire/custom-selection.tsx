@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { useState } from 'react'
 import { AutocompleteInput } from '~/components/simulations/autocomplete/autocomplete-input'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useEpciGroupNamePrefill } from '~/hooks/use-epci-group-name-prefill'
 import { useEpcis } from '~/hooks/use-epcis'
 import { GeoApiCommuneResult, GeoApiEpciResult } from '~/hooks/use-geoapi-search'
@@ -54,20 +55,22 @@ export const CustomSelection = ({ bassinEpcis, hasUrbanismeDocError }: CustomSel
   return (
     <>
       <h3 className="fr-h5">Créer une sélection personnalisée</h3>
-      <AutocompleteInput
-        searchCategory="territoire"
-        label="Rechercher un EPCI"
-        onClick={onSelectEpci}
-        hintText="Saisissez le nom de l'EPCI du territoire concerné, ou par défaut, vous pouvez saisir le nom de la commune ou son code postal."
-        defaultValue={baseEpciData?.name}
-      />
+      <div {...tutorialAnchor('epci-search')}>
+        <AutocompleteInput
+          searchCategory="territoire"
+          label="Rechercher un EPCI"
+          onClick={onSelectEpci}
+          hintText="Saisissez le nom de l'EPCI du territoire concerné, ou par défaut, vous pouvez saisir le nom de la commune ou son code postal."
+          defaultValue={baseEpciData?.name}
+        />
+      </div>
 
       {selectedEpcis && selectedEpcis.length > 0 && (
         <>
           <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
             <div className="fr-col-md-9">
               {!isEditing && (
-                <div className="fr-py-5w">
+                <div className="fr-py-5w" {...tutorialAnchor('selected-epcis')}>
                   Les territoires inclus dans la simulation sont :
                   <ul>
                     {selectedEpcis?.map((epci) => (
@@ -91,10 +94,14 @@ export const CustomSelection = ({ bassinEpcis, hasUrbanismeDocError }: CustomSel
 
           {isEditing && <ContiguousEpcisCheckboxes epcis={bassinEpcis} />}
 
-          <UrbanismeDocQuestion hasError={hasUrbanismeDocError} />
+          <div {...tutorialAnchor('urbanisme-doc')}>
+            <UrbanismeDocQuestion hasError={hasUrbanismeDocError} />
+          </div>
 
           <hr className="fr-mt-3w" />
-          <EpciGroupNameInput value={epciGroupName || ''} />
+          <div {...tutorialAnchor('epci-group-name')}>
+            <EpciGroupNameInput value={epciGroupName || ''} />
+          </div>
           <div className="fr-mt-2w">
             <Alert
               description="Les résultats de votre simulation seront donnés à l'échelle de l'EPCI ou à l'échelle du bassin d'habitat."

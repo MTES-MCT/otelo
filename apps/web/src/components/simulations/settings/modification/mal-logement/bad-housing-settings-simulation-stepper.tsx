@@ -4,6 +4,7 @@ import { fr } from '@codegouvfr/react-dsfr'
 import Stepper from '@codegouvfr/react-dsfr/Stepper'
 import { usePathname } from 'next/navigation'
 import { FC, useMemo } from 'react'
+import { BadHousingTutorialButton } from '~/components/simulations/tutorial/bad-housing-tutorial-button'
 
 export const BadHousingSettingsSimulationStepper: FC = () => {
   const pathname = usePathname()
@@ -73,7 +74,12 @@ export const BadHousingSettingsSimulationStepper: FC = () => {
       className={fr.cx('fr-my-2w', 'fr-px-2w', 'fr-py-0-5v', 'fr-p-md-4w')}
       style={{ background: fr.colors.decisions.background.default.grey.default }}
     >
-      <Stepper {...stepperProps} />
+      <div className="fr-flex fr-flex-gap-4v" style={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Stepper {...stepperProps} />
+        </div>
+        <BadHousingTutorialButton />
+      </div>
     </div>
   )
 }

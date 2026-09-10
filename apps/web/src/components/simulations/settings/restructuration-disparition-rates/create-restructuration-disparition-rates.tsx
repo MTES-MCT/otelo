@@ -9,7 +9,9 @@ import styles from '~/components/simulations/settings/epcis-accommodation-rates/
 import { AllEpcisRestructurationRatesView } from '~/components/simulations/settings/restructuration-disparition-rates/all-epcis-restructuration-rates-view'
 import { CreateRestructurationDisparitionRatesInput } from '~/components/simulations/settings/restructuration-disparition-rates/create-restructuration-disparition-rates.input'
 import { RestructurationRatesToggleSwitch } from '~/components/simulations/settings/restructuration-disparition-rates/restructuration-rates-toggle-switch'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
+import { getObservedRatesPeriodLabel } from '~/utils/projection'
 
 interface CreateRestructurationDisparitionRatesProps {
   epcis: Array<{ code: string; name: string; region: string }>
@@ -21,18 +23,13 @@ interface TabChildrenProps {
   observedPeriodLabel: string
 }
 
-const getObservedRatesPeriodLabel = (millesime?: string): string => {
-  const year = Number(millesime)
-  return Number.isFinite(year) && year >= 2022 ? '2015 et 2022' : '2015 et 2021'
-}
-
 const TabChildren: FC<TabChildrenProps> = ({ epci, rates, observedPeriodLabel }) => {
   const epciRates = rates?.[epci]
   if (!epciRates) return null
 
   return (
     <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-      <span className="fr-text-mention--grey fr-mb-5v">
+      <span className="fr-text-mention--grey fr-mb-5v" {...tutorialAnchor('observed-rates-note')}>
         Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre {observedPeriodLabel}.
       </span>
       <CreateRestructurationDisparitionRatesInput epci={epci} />
@@ -53,7 +50,10 @@ export const CreateRestructurationDisparitionRates: FC<CreateRestructurationDisp
 
   return (
     <>
-      <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
+      <div
+        className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}
+        {...tutorialAnchor('restructuration-toggle')}
+      >
         <RestructurationRatesToggleSwitch />
       </div>
       {isAllMode ? (

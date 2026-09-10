@@ -52,7 +52,9 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
                   taux en {millesime} sur ce territoire est de <strong>{(Number(epciRates.longTermVacancyRate) * 100).toFixed(2)}%</strong>.
                 </p>
               </div>
-              <CreateVacancyAccommodationRatesInput epci={epci} />
+              <div {...tutorialAnchor('long-term-vacancy-input')}>
+                <CreateVacancyAccommodationRatesInput epci={epci} />
+              </div>
               <div className="fr-flex fr-direction-column fr-flex-gap-2v" {...tutorialAnchor('short-term-vacancy-rate')}>
                 <div className="fr-flex fr-flex-gap-2v">
                   <span className="fr-text--medium">Vacance de courte durée</span>
@@ -69,7 +71,10 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
         </div>
       </div>
       {!isLockedByMillesime && (
-        <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
+        <div
+          className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between"
+          {...tutorialAnchor('vacancy-parc-chart')}
+        >
           <ParcsComparisonCharts epci={epci} targetYear={targetYear} withSecondaryAccommodation={false} />
         </div>
       )}
@@ -92,7 +97,10 @@ export const CreateEpcisAccommodationRates: FC<CreateEpcisAccomodationRatesProps
 
   return (
     <>
-      <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
+      <div
+        className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}
+        {...tutorialAnchor('vacancy-toggle')}
+      >
         <RatesToggleSwitch disabled={isPeakBeforeProjection} />
       </div>
       {isAllMode ? (

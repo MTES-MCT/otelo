@@ -16,6 +16,7 @@ import { SimulationEpcisDetails } from '~/components/simulations/results/simulat
 import { SimulationResultsTabs } from '~/components/simulations/results/simulation-results-tabs'
 import { SimulationNeedsSummary } from '~/components/simulations/results/summary/simulation-needs-summary'
 import { ResultsTutorialButton } from '~/components/simulations/tutorial/results-tutorial-button'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { TEpciCalculationResult, TEpciTotalCalculationResult, TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
 import { getEpciContours } from '~/server-only/simulation/get-epci-contours'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
@@ -129,6 +130,8 @@ export default async function Resultats({ params }: SimulationPageProps) {
       tabId: epci.code,
     }
   })
+  const peakYearsByEpci = Object.fromEntries(simulation.results.flowRequirement.epcis.map((epci) => [epci.code, epci.data.peakYear]))
+
   const epcisFlowData = simulation.epcis.map((epci) => ({
     code: epci.code,
     name: epci.name,
@@ -188,7 +191,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
       <div className="fr-container fr-direction-column fr-flex fr-flex-gap-8v">
         <div className="fr-flex fr-flex-gap-4v fr-align-items-center fr-justify-content-space-between">
           <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
-          <ResultsTutorialButton />
+          <ResultsTutorialButton peakYears={peakYearsByEpci} />
         </div>
         <div className="fr-col-md-12 fr-flex fr-direction-column fr-direction-sm-row fr-align-items-center fr-mb-4w">
           <div className="fr-col-md-8 fr-mb-2w fr-mb-md-0">
@@ -204,7 +207,9 @@ export default async function Resultats({ params }: SimulationPageProps) {
               >
                 Élaborer un autre scénario
               </Button>
-              <ExportExcelSimulationButton id={id} />
+              <div {...tutorialAnchor('results-export')}>
+                <ExportExcelSimulationButton id={id} />
+              </div>
             </div>
           </div>
         </div>

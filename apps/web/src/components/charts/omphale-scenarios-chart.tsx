@@ -17,6 +17,7 @@ import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { OmphaleScenariosSelection } from '~/components/charts/omphale-scenarios-selection'
 import { UploadDemographicEvolutionCustom } from '~/components/charts/upload-demographic-evolution-custom'
 import { DemographicSettingsSelectEpci } from '~/components/simulations/settings/demographic-settings-header'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useDemographicEvolutionCustom } from '~/hooks/use-demographic-evolution-custom'
 import { useEpcis } from '~/hooks/use-epcis'
 import { TOmphaleDemographicEvolution, TOmphaleEvolution } from '~/schemas/demographic-evolution'
@@ -295,7 +296,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
       )}
       <DemographicSettingsSelectEpci epcis={epcisProps ?? queryStates.epcis} />
       <ChartDownloadButton />
-      <div className={classes.chartContainer}>
+      <div className={classes.chartContainer} {...tutorialAnchor('omphale-chart')}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart width={500} height={300} data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />

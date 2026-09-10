@@ -14,6 +14,7 @@ import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { PopulationScenariosCustomTooltip } from '~/components/charts/population-scenarios-custom-tooltip'
 import { PopulationScenariosSelection } from '~/components/charts/population-scenarios-selection'
 import { DemographicSettingsSelectEpci } from '~/components/simulations/settings/demographic-settings-header'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { TPopulationDemographicEvolution, TPopulationEvolution } from '~/schemas/demographic-evolution'
 import { roundPopulation } from '~/utils/round-chart-axis'
 import { sPluriel } from '~/utils/sPluriel'
@@ -150,7 +151,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
       <DemographicSettingsSelectEpci epcis={epcis ?? queryStates.epcis} />
       <ChartDownloadButton />
 
-      <div className={classes.chartContainer}>
+      <div className={classes.chartContainer} {...tutorialAnchor('population-chart')}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart width={500} height={300} data={data}>
             <CartesianGrid strokeDasharray="3 3" />

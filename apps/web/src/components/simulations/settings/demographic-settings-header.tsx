@@ -6,6 +6,7 @@ import classNames from 'classnames'
 import { parseAsString, useQueryState, useQueryStates } from 'nuqs'
 import { useRef } from 'react'
 import { tss } from 'tss-react'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useEpcis } from '~/hooks/use-epcis'
 
 type DemographicSettingsHeaderProps = {
@@ -19,7 +20,7 @@ export const DemographicSettingsSelectEpci = ({ epcis }: { epcis?: string[] }) =
 
   const [displayedEpci, setDisplayedEpci] = useQueryState('epciChart', parseAsString)
   return (
-    <div className="fr-flex fr-justify-content-end fr-align-items-end fr-flex-gap-2v">
+    <div className="fr-flex fr-justify-content-end fr-align-items-end fr-flex-gap-2v" {...tutorialAnchor('territory-chart-select')}>
       <span className="fr-text--sm fr-mb-0">Territoire affiché :</span>
       <Select
         label={undefined}
