@@ -13,11 +13,8 @@ export default async function TemporalChoicePage() {
 
   return (
     <>
-      <div
-        className="fr-flex fr-direction-column fr-background-default--grey fr-p-2w fr-pt-md-3w fr-pb-md-5w fr-px-md-5w fr-border-top shadow"
-        {...tutorialAnchor('projection-period')}
-      >
-        <div className="fr-mb-4w">
+      <div className="fr-flex fr-direction-column fr-background-default--grey fr-p-2w fr-pt-md-3w fr-pb-md-5w fr-px-md-5w fr-border-top shadow">
+        <div className="fr-mb-4w" {...tutorialAnchor('millesime-select')}>
           <SelectMillesimeModal />
         </div>
         <SelectProjectionPeriod />

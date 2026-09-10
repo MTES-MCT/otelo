@@ -26,7 +26,7 @@ export const SimulationAnnualsNeedsSummary = ({
   }
   return (
     <div className="fr-background-default--grey shadow" {...tutorialAnchor('results-annual-needs')}>
-      <div className="fr-py-8w fr-px-5w">
+      <div className="fr-py-8w fr-px-5w" {...(hasSurplusHousing ? tutorialAnchor('results-surplus-housing') : {})}>
         <ChartDownloadWrapper fileName="besoins-annualises">
           <AccommodationContructionEvolutionChart
             sitadelResults={sitadelResults}

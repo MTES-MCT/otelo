@@ -3,6 +3,7 @@
 import { Range } from '@codegouvfr/react-dsfr/Range'
 import { useQueryState } from 'nuqs'
 import { FC, useEffect } from 'react'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { clampProjectionYear, DEFAULT_PROJECTION_YEAR, getMinProjectionYear, MAX_PROJECTION_YEAR } from '~/utils/projection'
 
 export const SelectProjectionPeriod: FC = () => {
@@ -21,13 +22,15 @@ export const SelectProjectionPeriod: FC = () => {
 
   return (
     <>
-      <Range
-        label="Faites glisser le curseur pour établir l'horizon de temps du scénario."
-        max={MAX_PROJECTION_YEAR}
-        min={minYear}
-        nativeInputProps={{ onChange: (e) => setProjection(e.target.value), value: projectionValue }}
-      />
-      <p className="fr-text--sm fr-mt-1w fr-text-mention--grey">
+      <div {...tutorialAnchor('projection-range')}>
+        <Range
+          label="Faites glisser le curseur pour établir l'horizon de temps du scénario."
+          max={MAX_PROJECTION_YEAR}
+          min={minYear}
+          nativeInputProps={{ onChange: (e) => setProjection(e.target.value), value: projectionValue }}
+        />
+      </div>
+      <p className="fr-text--sm fr-mt-1w fr-text-mention--grey" {...tutorialAnchor('projection-period-label')}>
         Période de projection : 1er janvier {millesime} au 1er janvier {projectionValue}
       </p>
     </>

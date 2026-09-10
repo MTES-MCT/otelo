@@ -97,7 +97,11 @@ export const SimulationSettingsDropdown = ({ simulation, epci }: { simulation: T
           <Button priority="secondary" size="small" linkProps={{ href: `/simulation/${simulation.id}/modifier/cadrage-temporel` }}>
             Modifier
           </Button>
-          {isOwner && <ShareSimulationModal simulationId={simulation.id} simulationName={simulation.name ?? 'Simulation'} />}
+          {isOwner && (
+            <div {...tutorialAnchor('results-share')}>
+              <ShareSimulationModal simulationId={simulation.id} simulationName={simulation.name ?? 'Simulation'} />
+            </div>
+          )}
         </div>
         {/* we will reenable it sooner or later */}
         {/* <SimulationSettingsPresentationMode /> */}

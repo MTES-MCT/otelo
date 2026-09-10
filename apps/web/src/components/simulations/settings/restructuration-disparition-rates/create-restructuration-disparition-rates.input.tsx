@@ -125,23 +125,26 @@ export const CreateRestructurationDisparitionRatesInput: FC<CreateRestructuratio
           )}
         </div>
       </div>
-      <CallOut
-        className="fr-mt-2w"
-        title={
-          <Badge severity="new" noIcon small>
-            <span className={classNames(classes.badgeIcon, 'ri-lightbulb-line fr-mr-1v')} />
-            <span className="fr-text--uppercase">Clé de lecture</span>
-          </Badge>
-        }
-      >
-        <>
-          <span>
-            Le rythme de renouvellement urbain impliquerait une{' '}
-            <strong>{restructuringRate > disappearanceRate ? 'diminution' : 'hausse'}</strong> du besoin en logements supplémentaires à
-            hauteur de <strong>{urbanRenewalAccommodationsTotal}</strong> logements par an.
-          </span>
-        </>
-      </CallOut>
+      {/* Le CallOut du DSFR n'accepte pas d'attribut arbitraire : l'ancre passe par un wrapper. */}
+      <div {...tutorialAnchor('renewal-reading-key')}>
+        <CallOut
+          className="fr-mt-2w"
+          title={
+            <Badge severity="new" noIcon small>
+              <span className={classNames(classes.badgeIcon, 'ri-lightbulb-line fr-mr-1v')} />
+              <span className="fr-text--uppercase">Clé de lecture</span>
+            </Badge>
+          }
+        >
+          <>
+            <span>
+              Le rythme de renouvellement urbain impliquerait une{' '}
+              <strong>{restructuringRate > disappearanceRate ? 'diminution' : 'hausse'}</strong> du besoin en logements supplémentaires à
+              hauteur de <strong>{urbanRenewalAccommodationsTotal}</strong> logements par an.
+            </span>
+          </>
+        </CallOut>
+      </div>
     </div>
   )
 }

@@ -2,6 +2,7 @@
 
 import Alert from '@codegouvfr/react-dsfr/Alert'
 import { FC } from 'react'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 
 interface PeakYearHorizonAlertProps {
   peakYear: number | null
@@ -15,7 +16,7 @@ export const PeakYearHorizonAlert: FC<PeakYearHorizonAlertProps> = ({ peakYear, 
   const isLockedByMillesime = millesime !== undefined && millesime !== null && peakYear <= millesime
 
   return (
-    <div className="fr-py-2w fr-pt-2w">
+    <div className="fr-py-2w fr-pt-2w" {...tutorialAnchor('peak-year-alert')}>
       <Alert
         severity="info"
         small
