@@ -6,6 +6,7 @@ import classNames from 'classnames'
 import { usePathname } from 'next/navigation'
 import { FC, useMemo } from 'react'
 import { TutorialButton } from '~/components/simulations/tutorial/tutorial-button'
+import styles from './stepper-with-tutorial.module.css'
 import { getFlowFromPathname, getSlugFromPathname, getStepsForFlow } from './wizard-steps'
 
 export const DemographicSettingsSimulationStepper: FC = () => {
@@ -30,12 +31,12 @@ export const DemographicSettingsSimulationStepper: FC = () => {
       className={classNames('fr-px-2w fr-py-0-5v fr-px-md-4w fr-pt-md-4w shadow', !isRatesPath && 'fr-pb-5w')}
       style={{ background: fr.colors.decisions.background.default.grey.default }}
     >
-      <div className="fr-flex fr-flex-gap-4v" style={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <Stepper currentStep={currentStep} stepCount={stepCount} title={title} />
-          {description && <div className="fr-text--sm fr-text-mention--grey fr-mb-0">{description}</div>}
+      <div className={styles.stepper}>
+        <Stepper currentStep={currentStep} stepCount={stepCount} title={title} />
+        {description && <div className="fr-text--sm fr-text-mention--grey fr-mb-0">{description}</div>}
+        <div className={styles.tutorialButton}>
+          <TutorialButton />
         </div>
-        <TutorialButton />
       </div>
     </div>
   )
