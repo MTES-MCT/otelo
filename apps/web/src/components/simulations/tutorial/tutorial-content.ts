@@ -240,7 +240,7 @@ const buildCreationContent = ({ millesime, peakYear, projection }: TutorialConte
       anchor: 'next-step',
       title: "Passer à l'étape suivante",
       description:
-        "<strong>Pourquoi le bouton est-il grisé ?</strong> Il s'active une fois le territoire sélectionné, la question sur le document d'urbanisme répondue, et le groupe nommé. Le nom doit être libre : s'il est déjà porté par un de vos groupes, le passage à l'étape suivante reste bloqué.",
+        "<strong>Pourquoi le bouton est-il grisé ?</strong> Il s'active une fois le territoire sélectionné, la question sur le document d'urbanisme répondue, et le groupe nommé. Si le nom saisi est déjà porté par un de vos groupes, rien ne bloque : le scénario sera simplement rattaché à ce groupe.",
       side: 'top',
       align: 'end',
     },

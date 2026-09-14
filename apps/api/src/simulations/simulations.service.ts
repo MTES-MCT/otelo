@@ -133,14 +133,19 @@ export class SimulationsService {
       if (!hasAccess) {
         throw new ForbiddenException()
       }
+    } else if (data.epciGroupName) {
+      // Un nom déjà porté par un groupe de l'utilisateur rattache la simulation à ce groupe plutôt
+      // que d'en créer un homonyme : c'est ce que l'écran de choix du territoire annonce.
+      epciGroupId = (await this.epciGroupsService.findByName(userId, data.epciGroupName))?.id
+    }
 
-      // Le groupe existe déjà : on ne peut qu'ajouter l'information, jamais la retirer.
-      if (data.worksOnPlanningDocument === true) {
-        await this.epciGroupsService.markWorksOnPlanningDocument(epciGroupId, userId, {
-          planningDocumentName: data.planningDocumentName,
-          planningDocumentType: data.planningDocumentType,
-        })
-      }
+    // Sur un groupe existant — désigné ou retrouvé par son nom — on ne peut qu'ajouter l'information,
+    // jamais la retirer.
+    if (epciGroupId && data.worksOnPlanningDocument === true) {
+      await this.epciGroupsService.markWorksOnPlanningDocument(epciGroupId, userId, {
+        planningDocumentName: data.planningDocumentName,
+        planningDocumentType: data.planningDocumentType,
+      })
     }
 
     const scenario = await this.scenariosService.create(userId, data.scenario, data.millesime)

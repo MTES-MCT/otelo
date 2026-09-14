@@ -72,6 +72,27 @@ describe('EpciGroupsService', () => {
     })
   })
 
+  describe('findByName', () => {
+    it('should look up a live group owned by the user, ignoring case and surrounding spaces', async () => {
+      mockPrismaService.epciGroup.findFirst = jest.fn().mockResolvedValue({ id: 'group-1' })
+
+      const result = await service.findByName('user-1', '  scot du grand périgueux  ')
+
+      expect(mockPrismaService.epciGroup.findFirst).toHaveBeenCalledWith({
+        where: { userId: 'user-1', deleted: null, name: { equals: 'scot du grand périgueux', mode: 'insensitive' } },
+        select: { id: true },
+        orderBy: { createdAt: 'desc' },
+      })
+      expect(result).toEqual({ id: 'group-1' })
+    })
+
+    it('should return null when no group carries that name', async () => {
+      mockPrismaService.epciGroup.findFirst = jest.fn().mockResolvedValue(null)
+
+      await expect(service.findByName('user-1', 'CA Le Grand Périgueux')).resolves.toBeNull()
+    })
+  })
+
   describe('markWorksOnPlanningDocument', () => {
     beforeEach(() => {
       mockPrismaService.epciGroup.updateMany = jest.fn().mockResolvedValue({ count: 1 })
