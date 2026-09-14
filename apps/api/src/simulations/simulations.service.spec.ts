@@ -186,6 +186,8 @@ describe('SimulationsService', () => {
       jest.clearAllMocks()
       mockScenariosService.create = jest.fn().mockResolvedValue({ id: 'scenario-1' })
       mockPrismaService.simulation.create = jest.fn().mockResolvedValue({ id: 'simulation-1' })
+      // Par défaut aucun homonyme : les tests qui en veulent un le déclarent explicitement.
+      mockEpciGroupsService.findByName = jest.fn().mockResolvedValue(null)
     })
 
     it('should forward the planning document when creating a new group', async () => {
@@ -235,6 +237,47 @@ describe('SimulationsService', () => {
       await service.create(userId, buildInitSimulation({ epciGroupId: 'group-1', worksOnPlanningDocument: answer }))
 
       expect(mockEpciGroupsService.markWorksOnPlanningDocument).not.toHaveBeenCalled()
+    })
+
+    it('should attach the simulation to the group already carrying that name instead of creating a twin', async () => {
+      mockEpciGroupsService.findByName = jest.fn().mockResolvedValue({ id: 'group-1' })
+
+      await service.create(userId, buildInitSimulation({ epciGroupName: 'SCoT du Grand Périgueux' }))
+
+      expect(mockEpciGroupsService.findByName).toHaveBeenCalledWith(userId, 'SCoT du Grand Périgueux')
+      expect(mockEpciGroupsService.create).not.toHaveBeenCalled()
+      expect(mockPrismaService.simulation.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ epciGroup: { connect: { id: 'group-1' } } }) }),
+      )
+    })
+
+    it('should mark the group found by name with the document the user declared', async () => {
+      mockEpciGroupsService.findByName = jest.fn().mockResolvedValue({ id: 'group-1' })
+
+      await service.create(
+        userId,
+        buildInitSimulation({
+          epciGroupName: 'SCoT du Grand Périgueux',
+          worksOnPlanningDocument: true,
+          planningDocumentType: 'SCOT',
+          planningDocumentName: null,
+        }),
+      )
+
+      expect(mockEpciGroupsService.markWorksOnPlanningDocument).toHaveBeenCalledWith('group-1', userId, {
+        planningDocumentType: 'SCOT',
+        planningDocumentName: null,
+      })
+    })
+
+    it('should not look up a name when the group is explicitly designated', async () => {
+      mockEpciGroupsService.hasUserAccessTo = jest.fn().mockResolvedValue(true)
+      mockEpciGroupsService.findByName = jest.fn()
+
+      await service.create(userId, buildInitSimulation({ epciGroupId: 'group-1', epciGroupName: 'SCoT du Grand Périgueux' }))
+
+      expect(mockEpciGroupsService.findByName).not.toHaveBeenCalled()
+      expect(mockEpciGroupsService.create).not.toHaveBeenCalled()
     })
   })
 

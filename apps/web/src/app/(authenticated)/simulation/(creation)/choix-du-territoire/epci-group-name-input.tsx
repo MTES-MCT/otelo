@@ -1,5 +1,6 @@
 'use client'
 
+import Alert from '@codegouvfr/react-dsfr/Alert'
 import Input from '@codegouvfr/react-dsfr/Input'
 import { parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
@@ -16,22 +17,33 @@ export const EpciGroupNameInput: FC<EpciGroupNameInputProps> = ({ value }) => {
   })
   const { data: groups } = useEpciGroups()
 
-  const isGroupNameTaken = groups?.some((group) => group.name.toLowerCase() === value.toLowerCase()) || false
+  // Même normalisation que côté serveur, qui rattache la simulation au groupe homonyme au lieu d'en créer un second.
+  const normalized = value.trim().toLowerCase()
+  const matchedGroup = normalized ? groups?.find((group) => group.name.trim().toLowerCase() === normalized) : undefined
 
   return (
-    <Input
-      label="Nom du groupe EPCI"
-      hintText="Donnez un nom à cette sélection d'EPCI pour la réutiliser plus tard"
-      state={isGroupNameTaken ? 'error' : 'default'}
-      stateRelatedMessage={isGroupNameTaken ? 'Ce nom est déjà utilisé par un autre groupe' : undefined}
-      nativeInputProps={{
-        value,
-        // Seul point de bascule auto → manuel : dès que l'utilisateur tape, le préremplissage ne réécrit plus.
-        onChange: (e) => {
-          setQueryStates({ epciGroupName: e.target.value, epciGroupNameAuto: null })
-        },
-        placeholder: 'Ex: Métropole du Grand Paris Est',
-      }}
-    />
+    <>
+      <Input
+        label="Nom du groupe EPCI"
+        hintText="Donnez un nom à cette sélection d'EPCI pour la réutiliser plus tard"
+        nativeInputProps={{
+          value,
+          // Seul point de bascule auto → manuel : dès que l'utilisateur tape, le préremplissage ne réécrit plus.
+          onChange: (e) => {
+            setQueryStates({ epciGroupName: e.target.value, epciGroupNameAuto: null })
+          },
+          placeholder: 'Ex: Métropole du Grand Paris Est',
+        }}
+      />
+      {matchedGroup && (
+        <div className="fr-mt-2w">
+          <Alert
+            description={`Un groupe « ${matchedGroup.name} » existe déjà : votre scénario y sera rattaché et pourra être comparé aux autres scénarios de ce groupe.`}
+            severity="info"
+            small
+          />
+        </div>
+      )}
+    </>
   )
 }

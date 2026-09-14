@@ -51,8 +51,6 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
   const scotEpcis = (selectedEpcis ?? []).map(({ code, name }) => ({ code, name }))
   const hasSelectedEpcis = scotEpcis.length > 0
 
-  const isGroupNameTaken = groups?.some((group) => group.name.toLowerCase() === epciGroupName?.toLowerCase()) || false
-
   // Le document d'urbanisme conditionne le nom proposé : la question est obligatoire partout sauf sur
   // un groupe existant, qui porte déjà son nom et n'utilise la réponse que pour enrichir le groupe.
   const isUrbanismeDocRequired = selectedMethod !== 'existing-group'
@@ -60,8 +58,7 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
   const isUrbanismeDocAnswered =
     urbanismeDoc === 'non' || (urbanismeDoc === 'oui' && !!docType && (docType !== 'plh-plui' || !!urbanismeDocName?.trim()))
 
-  const canGoNextStep =
-    hasEpcis && !!(epciGroupName || epciGroupId) && !isGroupNameTaken && (!isUrbanismeDocRequired || isUrbanismeDocAnswered)
+  const canGoNextStep = hasEpcis && !!(epciGroupName || epciGroupId) && (!isUrbanismeDocRequired || isUrbanismeDocAnswered)
   const hasUrbanismeDocError = territoireTouched === 'true' && isUrbanismeDocRequired && !isUrbanismeDocAnswered
   const href = '/simulation/cadrage-temporel'
 
