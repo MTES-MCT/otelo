@@ -3,7 +3,7 @@
 import { RiIconClassName } from '@codegouvfr/react-dsfr'
 import Tabs from '@codegouvfr/react-dsfr/Tabs'
 import { parseAsString, useQueryState } from 'nuqs'
-import { FC, ReactNode } from 'react'
+import { FC, Fragment, ReactNode } from 'react'
 
 type EpciTabsProps = {
   epcis: Array<{ code: string; name: string }>
@@ -38,7 +38,7 @@ export const EpciTabs: FC<EpciTabsProps> = ({ epcis, renderTab }) => {
         tabId: epci.code,
       }))}
     >
-      {renderTab(selectedTabId)}
+      <Fragment key={selectedTabId}>{renderTab(selectedTabId)}</Fragment>
     </Tabs>
   )
 }

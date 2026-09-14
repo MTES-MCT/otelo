@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { TEpci } from '@shared'
+import { ALL_EPCIS_KEY, TEpci } from '@shared'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'
 import { TDemographicProjectionDataTable } from '~/schemas/data-visualisation/data-visualisation'
@@ -13,6 +13,12 @@ import {
   TDemographicMenagesMaxYearsByEpci,
   TDemographicPopulationMaxYearsByEpci,
 } from '~/schemas/demographic-evolution/demographic-evolution'
+import { aggregateAcrossEpcis } from './aggregate-across-epcis'
+
+// Les scénarios agrégeables de chaque série. Séparés des schémas Zod : l'agrégation doit énumérer
+// les colonnes de valeurs, en laissant `year` de côté.
+const OMPHALE_SCENARIO_KEYS = ['centralB', 'centralC', 'centralH', 'phB', 'phC', 'phH', 'pbB', 'pbC', 'pbH'] as const
+const POPULATION_SCENARIO_KEYS = ['basse', 'central', 'haute'] as const
 
 const createProjectionPopulationTableData = (
   results: Array<{ data: TDemographicEvolutionByEpci[]; epci: { code: string; name: string } }>,
@@ -182,59 +188,9 @@ export class DemographicEvolutionService {
       return acc
     }, {} as TDemographicEvolutionMenagesByEpciRecord)
 
-    // Compute 'all' key: sum values across all EPCIs for each year
-    const allYearsMap = new Map<
-      number,
-      { centralB: number; centralC: number; centralH: number; phB: number; phC: number; phH: number; pbB: number; pbC: number; pbH: number }
-    >()
-
-    ;(Object.values(groupedByEpci) as Array<{ data: TDemographicEvolutionMenagesByEpci[] }>).forEach(({ data }) => {
-      data.forEach((item) => {
-        const existing = allYearsMap.get(item.year)
-        if (existing) {
-          existing.centralB += item.centralB ?? 0
-          existing.centralC += item.centralC ?? 0
-          existing.centralH += item.centralH ?? 0
-          existing.phB += item.phB ?? 0
-          existing.phC += item.phC ?? 0
-          existing.phH += item.phH ?? 0
-          existing.pbB += item.pbB ?? 0
-          existing.pbC += item.pbC ?? 0
-          existing.pbH += item.pbH ?? 0
-        } else {
-          allYearsMap.set(item.year, {
-            centralB: item.centralB ?? 0,
-            centralC: item.centralC ?? 0,
-            centralH: item.centralH ?? 0,
-            phB: item.phB ?? 0,
-            phC: item.phC ?? 0,
-            phH: item.phH ?? 0,
-            pbB: item.pbB ?? 0,
-            pbC: item.pbC ?? 0,
-            pbH: item.pbH ?? 0,
-          })
-        }
-      })
-    })
-
-    const allData = Array.from(allYearsMap.entries())
-      .sort(([a], [b]) => a - b)
-      .map(([year, values]) => ({ year, ...values }))
-
-    let allMin = Infinity
-    let allMax = -Infinity
-    allData.forEach((item) => {
-      Object.entries(item).forEach(([key, value]) => {
-        if (key !== 'year') {
-          allMin = Math.min(allMin, value)
-          allMax = Math.max(allMax, value)
-        }
-      })
-    })
-
-    groupedByEpci['all'] = {
-      data: allData,
-      metadata: { max: allMax, min: allMin },
+    const allOmphale = aggregateAcrossEpcis(groupedByEpci, OMPHALE_SCENARIO_KEYS)
+    if (allOmphale) {
+      groupedByEpci[ALL_EPCIS_KEY] = allOmphale
     }
 
     return groupedByEpci
@@ -291,44 +247,9 @@ export class DemographicEvolutionService {
       return acc
     }, {} as TDemographicEvolutionPopulationByEpciRecord)
 
-    // Compute 'all' key: sum values across all EPCIs for each year
-    const allYearsMap = new Map<number, { central: number; haute: number; basse: number }>()
-
-    ;(Object.values(groupedByEpci) as Array<{ data: TDemographicEvolutionByEpci[] }>).forEach(({ data }) => {
-      data.forEach((item) => {
-        const existing = allYearsMap.get(item.year)
-        if (existing) {
-          existing.central += item.central ?? 0
-          existing.haute += item.haute ?? 0
-          existing.basse += item.basse ?? 0
-        } else {
-          allYearsMap.set(item.year, {
-            central: item.central ?? 0,
-            haute: item.haute ?? 0,
-            basse: item.basse ?? 0,
-          })
-        }
-      })
-    })
-
-    const allData = Array.from(allYearsMap.entries())
-      .sort(([a], [b]) => a - b)
-      .map(([year, values]) => ({ year, ...values }))
-
-    let allMin = Infinity
-    let allMax = -Infinity
-    allData.forEach((item) => {
-      Object.entries(item).forEach(([key, value]) => {
-        if (key !== 'year') {
-          allMin = Math.min(allMin, value as number)
-          allMax = Math.max(allMax, value as number)
-        }
-      })
-    })
-
-    groupedByEpci['all'] = {
-      data: allData,
-      metadata: { max: allMax, min: allMin },
+    const allPopulation = aggregateAcrossEpcis(groupedByEpci, POPULATION_SCENARIO_KEYS)
+    if (allPopulation) {
+      groupedByEpci[ALL_EPCIS_KEY] = allPopulation
     }
 
     return groupedByEpci

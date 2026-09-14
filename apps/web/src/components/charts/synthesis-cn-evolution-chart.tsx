@@ -7,6 +7,7 @@ import { Bar, ComposedChart, Legend, ReferenceLine, ResponsiveContainer, Tooltip
 import { dsfrHighlightColors, dsfrRealColors, getChartColor } from '~/components/charts/data-visualisation/colors'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
+import { formatNumber } from '~/utils/format-numbers'
 import styles from './synthesis-cn-evolution-chart.module.css'
 
 interface EpciFlowData {
@@ -169,7 +170,7 @@ export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ 
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={mergedData}>
               <XAxis dataKey="year" />
-              <YAxis domain={[0, maxValue]} allowDecimals={false} />
+              <YAxis domain={[0, maxValue]} allowDecimals={false} width="auto" tickFormatter={formatNumber} />
 
               <ReferenceLine
                 x={horizon}

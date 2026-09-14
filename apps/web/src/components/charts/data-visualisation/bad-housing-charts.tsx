@@ -270,7 +270,7 @@ export const BadHousingChart: FC<BadHousingChartProps> = ({ data }) => {
           <BarChart width={500} height={300} data={dataToDisplay}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis />
+            <YAxis width="auto" tickFormatter={formatNumber} />
             <Tooltip content={customTooltip} />
             <Bar dataKey="noAccommodation" name="Sans logement" fill={getChartColor('noAccommodation')} />
             <Bar dataKey="hosted" name="Hébergés" fill={getChartColor('hosted')} />

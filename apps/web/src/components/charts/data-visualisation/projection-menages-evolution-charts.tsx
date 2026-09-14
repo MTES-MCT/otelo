@@ -225,6 +225,8 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
 
               {epcisLinearChart.length > 0 && (
                 <YAxis
+                  width="auto"
+                  tickFormatter={formatNumber}
                   domain={(() => {
                     const allMetadata = epcisLinearChart.map((epci) => chartData.linearChart[epci].metadata)
                     const minValues = allMetadata.map((m) => m.min)
@@ -298,7 +300,7 @@ export const ProjectionMenagesEvolutionChart: FC<ProjectionMenagesEvolutionChart
             <BarChart width={730} height={600} data={barChartData} margin={{ left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="period" ticks={[firstPeriod, '2030-2040', '2040-2050']} />
-              <YAxis />
+              <YAxis width="auto" tickFormatter={formatNumber} />
               <Tooltip
                 content={(props) => {
                   const { active, payload, label } = props

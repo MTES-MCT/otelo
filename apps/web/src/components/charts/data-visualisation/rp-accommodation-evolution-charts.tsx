@@ -160,6 +160,8 @@ export const RPAccommodationEvolutionChart: FC<RPAccommodationEvolutionChart> = 
 
               {epcisLinearChart.length > 0 && (
                 <YAxis
+                  width="auto"
+                  tickFormatter={formatNumber}
                   dataKey={linearDataKey}
                   domain={(() => {
                     const allMetadata = epcisLinearChart.map((epci) => chartData.linearChart[epci].metadata)
@@ -197,7 +199,7 @@ export const RPAccommodationEvolutionChart: FC<RPAccommodationEvolutionChart> = 
               <XAxis dataKey="name" textAnchor="end" interval={0} tick={{ fontSize: 12 }}>
                 <Label value={barChartTitle} position="bottom" />
               </XAxis>
-              <YAxis />
+              <YAxis width="auto" tickFormatter={formatNumber} />
               <Tooltip content={customBarTooltip} />
               {periods.map((p) => (
                 <Bar key={p} dataKey={p} name={p} fill={getChartColor(p as Parameters<typeof getChartColor>[0])} />

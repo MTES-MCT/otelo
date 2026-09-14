@@ -5,6 +5,7 @@ import { ComponentProps, FC, useState } from 'react'
 import { Bar, ComposedChart, Legend, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { dsfrRealColors, getChartColor } from '~/components/charts/data-visualisation/colors'
 import { TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
+import { formatNumber } from '~/utils/format-numbers'
 import styles from './accommodation-construction-evolution-chart.module.css'
 
 interface TooltipPayloadItem {
@@ -147,7 +148,7 @@ export const AccommodationContructionEvolutionChart: FC<AccommodationContruction
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={mergedData}>
             <XAxis dataKey="year" />
-            <YAxis domain={[0, maxValue]} allowDecimals={false} />
+            <YAxis domain={[0, maxValue]} allowDecimals={false} width="auto" tickFormatter={formatNumber} />
 
             <ReferenceLine
               x={horizon}

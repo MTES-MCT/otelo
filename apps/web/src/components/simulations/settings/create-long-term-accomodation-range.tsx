@@ -1,5 +1,5 @@
 import { Range } from '@codegouvfr/react-dsfr/Range'
-import { FC, useEffect } from 'react'
+import { FC } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { useCreationPeakYears } from '~/hooks/use-simulation-peak-years'
 
@@ -18,16 +18,9 @@ export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRange
   const currentRates = rates[epci]
   const defaultEpciRates = defaultRates[epci]
 
+  // Le défaut de réduction est posé pour tous les EPCI par `useDefaultLongTermVacancyReduction`,
+  // au-dessus des onglets : ce champ ne fait que lire et écrire la valeur courante.
   if (!currentRates || !defaultEpciRates) return null
-
-  useEffect(() => {
-    const reductionAmount = (15 / 100) * defaultEpciRates?.longTermVacancyRate
-    const longTermRate = defaultEpciRates?.longTermVacancyRate - reductionAmount
-
-    updateRates(epci, {
-      longTermVacancyRate: longTermRate,
-    })
-  }, [])
 
   const getCurrentRangeValue = (): number => {
     if (currentRates?.longTermVacancyRate === undefined || !defaultEpciRates?.longTermVacancyRate) return 0
