@@ -3,6 +3,7 @@
 import Badge from '@codegouvfr/react-dsfr/Badge'
 import Button from '@codegouvfr/react-dsfr/Button'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
+import { ALL_EPCIS_KEY } from '@shared'
 import classNames from 'classnames'
 import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC, useEffect } from 'react'
@@ -15,7 +16,9 @@ import { PopulationScenariosCustomTooltip } from '~/components/charts/population
 import { PopulationScenariosSelection } from '~/components/charts/population-scenarios-selection'
 import { DemographicSettingsSelectEpci } from '~/components/simulations/settings/demographic-settings-header'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
+import { useChartTerritory } from '~/hooks/use-chart-territory'
 import { TPopulationDemographicEvolution, TPopulationEvolution } from '~/schemas/demographic-evolution'
+import { formatNumber } from '~/utils/format-numbers'
 import { roundPopulation } from '~/utils/round-chart-axis'
 import { sPluriel } from '~/utils/sPluriel'
 
@@ -64,7 +67,9 @@ const getGroupAvailablePopulationScenarios = (
   demographicEvolution: TPopulationDemographicEvolution,
   millesime: number | null,
 ): TPopulationScenarioKey[] => {
-  const entries = Object.values(demographicEvolution)
+  const entries = Object.entries(demographicEvolution)
+    .filter(([code]) => code !== ALL_EPCIS_KEY)
+    .map(([, entry]) => entry)
   if (entries.length === 0) return []
   return (['haute', 'central', 'basse'] as const).filter((key) =>
     entries.every((entry) => getAvailablePopulationScenarios(entry.data, millesime).includes(key)),
@@ -79,11 +84,10 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
     projection: parseAsString,
     scenario: parseAsString,
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
-    epciChart: parseAsString,
   })
 
-  const selectedEpci = queryStates.epciChart ?? queryStates.epcis[0]
-  const selectedData = selectedEpci ? demographicEvolution[selectedEpci] : null
+  const { dataKey: territoryKey, isAggregated } = useChartTerritory(epcis ?? queryStates.epcis)
+  const selectedData = territoryKey ? demographicEvolution[territoryKey] : null
 
   // Disponibilité calculée sur l'ensemble du bassin (intersection), pas sur le
   // seul EPCI affiché : un scénario n'est sélectionnable que s'il existe pour
@@ -107,8 +111,9 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
       <DemographicSettingsSelectEpci epcis={epcis ?? queryStates.epcis} />
       <div className="fr-flex fr-justify-content-center fr-align-items-center fr-my-4w">
         <div>
-          Aucune donnée disponible pour cet EPCI. Pour pouvoir choisir un scénario de projection, veuillez sélectionner un autre EPCI dans
-          la liste.
+          {isAggregated
+            ? "Aucune donnée de projection n'est disponible pour l'ensemble du territoire. Sélectionnez un EPCI dans la liste pour consulter sa trajectoire."
+            : 'Aucune donnée disponible pour cet EPCI. Pour pouvoir choisir un scénario de projection, veuillez sélectionner un autre EPCI dans la liste.'}
         </div>
       </div>
     </>
@@ -194,7 +199,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
               }}
             />
             <XAxis dataKey="year" />
-            <YAxis domain={[metadata.min, metadata.max]} tickFormatter={(value) => roundPopulation(value).toString()} />
+            <YAxis domain={[metadata.min, metadata.max]} tickFormatter={(value) => formatNumber(roundPopulation(value))} width="auto" />
             <Tooltip content={<PopulationScenariosCustomTooltip basePopulation={basePopulation} />} />
           </LineChart>
         </ResponsiveContainer>

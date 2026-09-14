@@ -18,6 +18,7 @@ import { OmphaleScenariosSelection } from '~/components/charts/omphale-scenarios
 import { UploadDemographicEvolutionCustom } from '~/components/charts/upload-demographic-evolution-custom'
 import { DemographicSettingsSelectEpci } from '~/components/simulations/settings/demographic-settings-header'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
+import { useChartTerritory } from '~/hooks/use-chart-territory'
 import { useDemographicEvolutionCustom } from '~/hooks/use-demographic-evolution-custom'
 import { useEpcis } from '~/hooks/use-epcis'
 import { TOmphaleDemographicEvolution, TOmphaleEvolution } from '~/schemas/demographic-evolution'
@@ -162,12 +163,12 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
     population: parseAsString,
     projection: parseAsString,
     peakYear: parseAsString,
-    epciChart: parseAsString.withDefault(''),
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
     demographicEvolutionOmphaleCustomIds: parseAsArrayOf(parseAsString).withDefault([]),
   })
-  const currentEpci = queryStates.epciChart || queryStates.epcis[0]
-  const evolution = demographicEvolution[currentEpci]
+  const { dataKey: territoryKey, focusedEpciCode, isAggregated } = useChartTerritory(epcisProps ?? queryStates.epcis)
+  const currentEpci = focusedEpciCode ?? ''
+  const evolution = territoryKey ? demographicEvolution[territoryKey] : undefined
   const [chartData, setChartData] = useState<TOmphaleEvolutionWithCustom[]>(evolution?.data ?? [])
   const [isUsingCustomData, setIsUsingCustomData] = useState(false)
 
@@ -175,7 +176,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
   const { data: allCustomData = [] } = useDemographicEvolutionCustom(queryStates.demographicEvolutionOmphaleCustomIds, millesime)
 
   // Find custom data that matches the current EPCI and scenario (if provided)
-  const customDataEpci = allCustomData.find((data) => data.epciCode === currentEpci) || null
+  const customDataEpci = isAggregated ? null : (allCustomData.find((data) => data.epciCode === currentEpci) ?? null)
 
   // Transform custom data to match the chart format if available
   useEffect(() => {
@@ -185,14 +186,14 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
         evolution?.data.map((item) => {
           const yearCustomData = customDataEpci.data.find((d) => d.year === item.year)
           return { ...item, custom: yearCustomData?.value || 0 }
-        }),
+        }) ?? [],
       )
       setIsUsingCustomData(true)
     } else {
-      setChartData(evolution?.data)
+      setChartData(evolution?.data ?? [])
       setIsUsingCustomData(false)
     }
-  }, [customDataEpci, currentEpci])
+  }, [customDataEpci, territoryKey])
   const { data: epcis } = useEpcis([currentEpci])
   const currentEpciData = epcis?.[0]
   const currentEpciName = currentEpciData?.name || ''
@@ -239,9 +240,11 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
   )
 
   useEffect(() => {
+    // Le pic de la courbe agrégée n'est le pic d'aucun EPCI : on laisse `peakYear` tel quel.
+    if (isAggregated) return
     const validPeakYear = maxYear && maxYear > Number(millesime || '2021') ? maxYear : null
     savePeakYear(validPeakYear)
-  }, [maxYear, millesime, savePeakYear])
+  }, [isAggregated, maxYear, millesime, savePeakYear])
 
   const onDeleteCustomData = async () => {
     if (!customDataEpci?.id) return
@@ -269,8 +272,9 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
         <DemographicSettingsSelectEpci epcis={epcisProps ?? queryStates.epcis} />
         <div className="fr-flex fr-justify-content-center fr-align-items-center fr-my-4w">
           <div>
-            Aucune donnée disponible pour cet EPCI. Pour pouvoir choisir un scénario de décohabitation, veuillez sélectionner un autre EPCI
-            dans la liste.
+            {isAggregated
+              ? "Aucune donnée de projection n'est disponible pour l'ensemble du territoire. Sélectionnez un EPCI dans la liste pour consulter sa trajectoire."
+              : 'Aucune donnée disponible pour cet EPCI. Pour pouvoir choisir un scénario de décohabitation, veuillez sélectionner un autre EPCI dans la liste.'}
           </div>
         </div>
       </>
@@ -280,7 +284,15 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
   return (
     <>
       <OmphaleScenariosSelection />
-      <UploadDemographicEvolutionCustom epciCode={currentEpci} scenarioId={scenarioId} />
+      {!isAggregated && <UploadDemographicEvolutionCustom epciCode={currentEpci} scenarioId={scenarioId} />}
+      {isAggregated && allCustomData.length > 0 && (
+        <Alert
+          description="Les données démographiques personnalisées que vous avez importées ne sont pas reprises dans la courbe de l'ensemble du territoire. Sélectionnez l'EPCI concerné pour les visualiser."
+          severity="info"
+          small
+          className={fr.cx('fr-mb-2w')}
+        />
+      )}
       {isUsingCustomData && (
         <Button iconId="fr-icon-delete-line" onClick={onDeleteCustomData} priority="tertiary" size="small" className={fr.cx('fr-mt-1w')}>
           Supprimer les données personnalisées
@@ -346,8 +358,9 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
             <Tooltip content={<OmphaleScenariosTooltip basePopulation={basePopulation as TOmphaleEvolutionWithCustom} />} />
 
             <YAxis
-              domain={[evolution?.metadata.min, evolution?.metadata.max]}
-              tickFormatter={(value) => roundPopulation(value).toString()}
+              domain={[evolution?.metadata.min ?? 'auto', evolution?.metadata.max ?? 'auto']}
+              tickFormatter={(value) => formatNumber(roundPopulation(value))}
+              width="auto"
             />
           </LineChart>
         </ResponsiveContainer>

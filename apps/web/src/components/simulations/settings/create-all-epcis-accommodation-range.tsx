@@ -3,6 +3,7 @@
 import { Range } from '@codegouvfr/react-dsfr/Range'
 import { FC, useEffect, useState } from 'react'
 import { RateSettings, useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
+import { applyLongTermVacancyReduction, DEFAULT_LONG_TERM_VACANCY_REDUCTION_PERCENT } from '~/hooks/use-default-long-term-vacancy-reduction'
 
 interface CreateAllEpcisAccommodationRangeProps {
   targetYear: number | null
@@ -10,11 +11,11 @@ interface CreateAllEpcisAccommodationRangeProps {
 
 export const CreateAllEpcisAccommodationRange: FC<CreateAllEpcisAccommodationRangeProps> = ({ targetYear }) => {
   const { defaultRates, updateAllRates } = useEpcisRates()
-  const [reductionPercent, setReductionPercent] = useState(15)
+  const [reductionPercent, setReductionPercent] = useState(DEFAULT_LONG_TERM_VACANCY_REDUCTION_PERCENT)
 
-  // Apply default 15% reduction on mount
+  // Apply default reduction on mount
   useEffect(() => {
-    applyReductionToAllEpcis(15)
+    applyReductionToAllEpcis(DEFAULT_LONG_TERM_VACANCY_REDUCTION_PERCENT)
   }, [])
 
   const applyReductionToAllEpcis = (rangeValue: number) => {
@@ -22,8 +23,7 @@ export const CreateAllEpcisAccommodationRange: FC<CreateAllEpcisAccommodationRan
 
     Object.keys(defaultRates).forEach((epciId) => {
       const epciDefaultRate = defaultRates[epciId].longTermVacancyRate
-      const reductionAmount = (rangeValue / 100) * epciDefaultRate
-      newRatesPerEpci[epciId] = { longTermVacancyRate: epciDefaultRate - reductionAmount }
+      newRatesPerEpci[epciId] = { longTermVacancyRate: applyLongTermVacancyReduction(epciDefaultRate, rangeValue) }
     })
 
     updateAllRates(newRatesPerEpci)

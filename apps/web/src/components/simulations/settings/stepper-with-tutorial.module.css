@@ -1,11 +1,3 @@
-/*
- * Le bouton d'aide est sorti du flux pour que la barre de progression du stepper occupe
- * toute la largeur du bloc.
- *
- * `position: relative` est posé ici et non via `fr-position-relative` : cette classe
- * utilitaire n'existe pas dans le CSS du DSFR, le bouton s'ancrerait alors à un ancêtre
- * positionné quelconque, hors de l'encart.
- */
 .stepper {
   position: relative;
 }
