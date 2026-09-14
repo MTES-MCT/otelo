@@ -18,12 +18,6 @@ export class EpciGroupsService {
     }))
   }
 
-  /**
-   * Retrouve le groupe de l'utilisateur portant ce nom, insensible à la casse et aux espaces de bord.
-   *
-   * Aucune contrainte d'unicité n'existe en base : d'anciens homonymes peuvent coexister. On retient le
-   * plus récent, cohérent avec l'ordre d'affichage de `findAll`.
-   */
   async findByName(userId: string, name: string): Promise<{ id: string } | null> {
     return this.prisma.epciGroup.findFirst({
       where: { userId, deleted: null, name: { equals: name.trim(), mode: 'insensitive' } },

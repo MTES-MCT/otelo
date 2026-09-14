@@ -2,7 +2,7 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import { Select } from '@codegouvfr/react-dsfr/Select'
-import { EstimationBreakdown, EstimationTermKey, isTermSplitAcrossEpcis } from '@shared'
+import { ALL_EPCIS_KEY, EstimationBreakdown, EstimationTermKey, isTermSplitAcrossEpcis } from '@shared'
 import classNames from 'classnames'
 import { usePathname } from 'next/navigation'
 import { FC } from 'react'
@@ -19,8 +19,6 @@ import {
   isTermVisible,
 } from './estimation-terms'
 import styles from './wizard-aside.module.css'
-
-export const ALL_EPCIS_SCOPE = 'all'
 
 type EstimationCardProps = {
   /** `null` tant que la projection démographique n'est pas choisie : l'enveloppe reste, les chiffres non. */
@@ -76,11 +74,11 @@ export const EstimationCard: FC<EstimationCardProps> = ({
             label={undefined}
             nativeSelectProps={{
               'aria-label': "Territoire sur lequel porte l'estimation",
-              value: scopedEpciCode ?? ALL_EPCIS_SCOPE,
-              onChange: (event) => onScopeChange?.(event.target.value === ALL_EPCIS_SCOPE ? null : event.target.value),
+              value: scopedEpciCode ?? ALL_EPCIS_KEY,
+              onChange: (event) => onScopeChange?.(event.target.value === ALL_EPCIS_KEY ? null : event.target.value),
             }}
           >
-            <option value={ALL_EPCIS_SCOPE}>Ensemble du territoire</option>
+            <option value={ALL_EPCIS_KEY}>Ensemble du territoire</option>
             {epciOptions?.map((epci) => (
               <option key={epci.code} value={epci.code}>
                 {epci.name}

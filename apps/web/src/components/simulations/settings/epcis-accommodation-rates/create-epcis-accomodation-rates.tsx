@@ -14,6 +14,7 @@ import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-yea
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
+import { useDefaultLongTermVacancyReduction } from '~/hooks/use-default-long-term-vacancy-reduction'
 import { useCreationPeakYears } from '~/hooks/use-simulation-peak-years'
 import styles from './epcis-accommodation-rates.module.css'
 
@@ -88,6 +89,9 @@ export const CreateEpcisAccommodationRates: FC<CreateEpcisAccomodationRatesProps
   const { data: rates } = useAccommodationRatesByEpci(epcisCodes, millesime ?? undefined)
   const [ratesMode] = useQueryState('vacantRates', parseAsString)
   const { minPeakYear, projection } = useCreationPeakYears()
+
+  // Le défaut s'applique à tous les EPCI, y compris ceux dont l'onglet n'est jamais ouvert.
+  useDefaultLongTermVacancyReduction()
 
   const isPeakBeforeProjection = minPeakYear !== null && projection !== null && minPeakYear < projection
 

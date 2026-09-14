@@ -30,3 +30,5 @@ export const ZDemographicEvolutionOmphaleCustomBase = z.object({
 })
 
 export type TDemographicEvolutionOmphaleCustomBase = z.infer<typeof ZDemographicEvolutionOmphaleCustomBase>
+
+export const ALL_EPCIS_KEY = 'all'
