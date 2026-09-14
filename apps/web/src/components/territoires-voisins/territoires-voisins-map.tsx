@@ -4,8 +4,8 @@ import { TEpciGeoData, TEpciNeighborWithGeo } from '@shared'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useMemo, useRef } from 'react'
-import { GeoJSON, MapContainer, TileLayer, Tooltip, useMap } from 'react-leaflet'
-import { CARTO_ATTRIBUTION, CARTO_TILE_URL } from '~/utils/carto-basemap'
+import { GeoJSON, MapContainer, Tooltip, useMap } from 'react-leaflet'
+import { IgnBasemapLayer } from '~/components/map/ign-basemap-layer'
 
 export interface TerritoiresVoisinsMapProps {
   epci: TEpciGeoData | null
@@ -84,7 +84,7 @@ export const TerritoiresVoisinsMap = ({ epci, neighbors, onTerritoryClick }: Ter
 
   return (
     <MapContainer key={mapKey} center={FRANCE_CENTER} zoom={FRANCE_ZOOM} style={{ height: '100%', width: '100%' }} zoomControl={true}>
-      <TileLayer attribution={CARTO_ATTRIBUTION} url={CARTO_TILE_URL} />
+      <IgnBasemapLayer />
       <FitBoundsController epci={epci} neighbors={neighbors} />
       {neighborFeatures.map((feature) => (
         <NeighborLayer key={feature.properties.code} feature={feature} onTerritoryClick={onTerritoryClick} />

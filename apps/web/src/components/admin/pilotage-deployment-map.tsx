@@ -3,9 +3,9 @@
 import 'leaflet/dist/leaflet.css'
 import classNames from 'classnames'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
-import { GeoJSON, MapContainer, TileLayer, Tooltip, useMap } from 'react-leaflet'
+import { GeoJSON, MapContainer, Tooltip, useMap } from 'react-leaflet'
+import { IgnBasemapLayer } from '~/components/map/ign-basemap-layer'
 import type { EpciCoverageItem } from '~/hooks/use-pilotage-epcis-coverage'
-import { CARTO_ATTRIBUTION, CARTO_TILE_URL } from '~/utils/carto-basemap'
 import styles from './pilotage-deployment-map.module.css'
 
 export type MapColorMode = 'scenarios' | 'score' | 'exports'
@@ -229,7 +229,7 @@ export function PilotageDeploymentMap({
 
   return (
     <MapContainer center={FRANCE_CENTER} zoom={FRANCE_ZOOM} className="fr-height-full fr-width-full" zoomControl>
-      <TileLayer attribution={CARTO_ATTRIBUTION} url={CARTO_TILE_URL} />
+      <IgnBasemapLayer />
       <ResetViewButton />
       <FitBoundsController features={visibleFeatures} isFiltered={isFiltered} />
       {visibleFeatures.map((feature, i) => {

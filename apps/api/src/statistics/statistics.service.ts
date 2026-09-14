@@ -184,13 +184,16 @@ export class StatisticsService {
 
     const uniqueUserIds = new Set([...usersWithRecentSimulations.map((user) => user.id), ...usersWithExports.map((user) => user.id)])
 
-    const powerpointCount = await this.prisma.export.count({
-      where: {
-        type: 'POWERPOINT',
-        isPrivileged: true,
-        simulation: OWNER_IS_NOT_TEAM,
-      },
-    })
+    // Une demande peut porter plusieurs scénarios. Le marqueur is_privileged
+    // n'est pas fiable dans l'historique : il peut manquer ou apparaître deux fois.
+    // Les lignes d'un même createMany partagent l'utilisateur et l'horodatage.
+    const [powerpointCount] = await this.prisma.$queryRaw<Array<{ count: bigint }>>`
+      SELECT COUNT(DISTINCT (s.user_id, e.created_at)) AS count
+      FROM exports e
+      JOIN simulations s ON s.id = e.simulation_id
+      WHERE e.type = 'POWERPOINT'
+        AND ${ownerIsNotTeam('s.user_id')}
+    `
 
     const excelCount = await this.prisma.export.count({
       where: {
@@ -198,7 +201,7 @@ export class StatisticsService {
         simulation: OWNER_IS_NOT_TEAM,
       },
     })
-    return { total: uniqueUserIds.size, powerpoint: powerpointCount, excel: excelCount }
+    return { total: uniqueUserIds.size, powerpoint: Number(powerpointCount.count), excel: excelCount }
   }
 
   async getUserStats(): Promise<

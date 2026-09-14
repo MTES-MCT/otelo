@@ -3,11 +3,12 @@
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
 import 'leaflet/dist/leaflet.css'
-import { CARTO_ATTRIBUTION, CARTO_TILE_URL } from '~/utils/carto-basemap'
 
 const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), { ssr: false })
 const GeoJSON = dynamic(() => import('react-leaflet').then((mod) => mod.GeoJSON), { ssr: false })
+const IgnBasemapLayer = dynamic(() => import('~/components/map/ign-basemap-layer').then((mod) => mod.IgnBasemapLayer), {
+  ssr: false,
+})
 
 interface GeoJSONPolygon {
   type: 'Polygon'
@@ -166,7 +167,7 @@ export const SimulationNeedsSummaryMap = ({
       keyboard={false}
       zoomControl={false}
     >
-      <TileLayer attribution={CARTO_ATTRIBUTION} url={CARTO_TILE_URL} />
+      <IgnBasemapLayer />
       {geoJsonFeatures.map((feature, index) => {
         const style =
           isMultiMode && feature.properties.color
