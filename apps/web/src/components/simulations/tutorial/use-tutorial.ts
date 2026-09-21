@@ -76,9 +76,9 @@ export const useTutorial = (
   // des constantes de module, l'identité des étapes ne change donc qu'avec l'écran.
   useEffect(() => teardown, [steps, teardown])
 
-  const start = useCallback(() => {
+  const start = useCallback((): boolean => {
     if (!steps?.length) {
-      return
+      return false
     }
 
     // driver.js calcule « x sur y » sur la longueur totale des étapes fournies, et
@@ -90,7 +90,7 @@ export const useTutorial = (
       .filter((entry): entry is typeof entry & { initial: HTMLElement } => Boolean(entry.initial))
 
     if (!reachable.length) {
-      return
+      return false
     }
 
     teardown()
@@ -158,6 +158,8 @@ export const useTutorial = (
     observerRef.current.observe(document.body)
 
     instance.drive()
+
+    return true
   }, [steps, teardown, triggerRef, trackingName])
 
   return { hasTutorial: Boolean(steps?.length), start }

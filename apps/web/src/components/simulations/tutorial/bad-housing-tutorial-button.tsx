@@ -12,5 +12,5 @@ import { TutorialTrigger } from './tutorial-trigger'
  * ancres absentes de l'écran courant sont filtrées au démarrage.
  */
 export const BadHousingTutorialButton: FC = () => (
-  <TutorialTrigger label="Besoin d'aide sur cette étape" steps={BAD_HOUSING_TUTORIAL_CONTENT} trackingName="mal-logement" />
+  <TutorialTrigger label="Guide de prise en main" steps={BAD_HOUSING_TUTORIAL_CONTENT} trackingName="mal-logement" />
 )

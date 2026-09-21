@@ -1,8 +1,8 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
-import { FC, useMemo } from 'react'
+import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryState, useQueryStates } from 'nuqs'
+import { FC, useCallback, useMemo } from 'react'
 import { useCreationPeakYears } from '~/hooks/use-simulation-peak-years'
 import { getFlowFromPathname, getSlugFromPathname, type WizardStepSlug } from '../settings/wizard-steps'
 import { getCreationTutorialSteps, type TutorialContext } from './tutorial-content'
@@ -23,17 +23,32 @@ const useScenarioContext = (): TutorialContext => {
   return { millesime, projection }
 }
 
-const StepTutorialButton: FC<{ slug: WizardStepSlug; context: TutorialContext }> = ({ slug, context }) => {
+type StepTutorialButtonProps = {
+  slug: WizardStepSlug
+  context: TutorialContext
+  autoStart: boolean
+  onAutoStartSettled: () => void
+}
+
+const StepTutorialButton: FC<StepTutorialButtonProps> = ({ slug, context, autoStart, onAutoStartSettled }) => {
   const { millesime, peakYear, projection } = context
   // `useTutorial` referme le tuto dès que l'identité des étapes change : sans mémoïsation, un
   // simple re-rendu suffirait à faire disparaître le popover ouvert.
   const steps = useMemo(() => getCreationTutorialSteps(slug, { millesime, peakYear, projection }), [slug, millesime, peakYear, projection])
 
-  return <TutorialTrigger label="Besoin d'aide sur cette étape" steps={steps} trackingName={slug} />
+  return (
+    <TutorialTrigger
+      label="Guide de prise en main"
+      steps={steps}
+      trackingName={slug}
+      autoStart={autoStart}
+      onAutoStartSettled={onAutoStartSettled}
+    />
+  )
 }
 
 /** Variante des étapes de taux cibles : le pic de ménages est celui du territoire affiché. */
-const PeakAwareTutorialButton: FC<{ slug: WizardStepSlug; context: TutorialContext }> = ({ slug, context }) => {
+const PeakAwareTutorialButton: FC<StepTutorialButtonProps> = ({ slug, context, autoStart, onAutoStartSettled }) => {
   const [{ epciChart, epcis }] = useQueryStates({
     epciChart: parseAsString,
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
@@ -48,7 +63,14 @@ const PeakAwareTutorialButton: FC<{ slug: WizardStepSlug; context: TutorialConte
   // rendu, et la bulle est de toute façon filtrée au démarrage.
   const isPeakBeforeProjection = !!peakYear && !!projection && peakYear < projection
 
-  return <StepTutorialButton slug={slug} context={{ ...context, peakYear: isPeakBeforeProjection ? peakYear : null }} />
+  return (
+    <StepTutorialButton
+      slug={slug}
+      context={{ ...context, peakYear: isPeakBeforeProjection ? peakYear : null }}
+      autoStart={autoStart}
+      onAutoStartSettled={onAutoStartSettled}
+    />
+  )
 }
 
 /**
@@ -57,19 +79,25 @@ const PeakAwareTutorialButton: FC<{ slug: WizardStepSlug; context: TutorialConte
  * Le tuto ne couvre pour l'instant que la création. La garde sur le parcours est
  * indispensable : le stepper est rendu aussi en modification, où les slugs sont les mêmes
  * mais les ancres vivent dans d'autres composants — le tuto s'y afficherait à côté.
+ *
+ * `?tuto=1` ouvre le tuto sans clic : c'est par là que le mot de bienvenue fait entrer un
+ * nouvel arrivant dans le parcours. Le paramètre est retiré une fois joué, faute de quoi un
+ * rechargement — ou une URL partagée — rouvrirait le tuto à chaque fois.
  */
 export const TutorialButton: FC = () => {
   const pathname = usePathname()
   const context = useScenarioContext()
+  const [tuto, setTuto] = useQueryState('tuto', parseAsString)
+  const clearTuto = useCallback(() => {
+    void setTuto(null)
+  }, [setTuto])
   const slug = getFlowFromPathname(pathname) === 'creation' ? getSlugFromPathname(pathname) : undefined
 
   if (!slug) {
     return null
   }
 
-  return PEAK_YEAR_STEPS.has(slug) ? (
-    <PeakAwareTutorialButton slug={slug} context={context} />
-  ) : (
-    <StepTutorialButton slug={slug} context={context} />
-  )
+  const Trigger = PEAK_YEAR_STEPS.has(slug) ? PeakAwareTutorialButton : StepTutorialButton
+
+  return <Trigger slug={slug} context={context} autoStart={tuto === '1'} onAutoStartSettled={clearTuto} />
 }

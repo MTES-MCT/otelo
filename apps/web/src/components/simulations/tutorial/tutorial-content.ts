@@ -31,7 +31,6 @@ export type TutorialAnchor =
   | 'selected-epcis'
   | 'urbanisme-doc'
   | 'epci-group-name'
-  | 'next-step'
   // cadrage-temporel
   | 'millesime-select'
   | 'projection-range'
@@ -44,8 +43,6 @@ export type TutorialAnchor =
   // présent dans les deux onglets de l'étape démographique
   | 'territory-chart-select'
   | 'demographic-data-source'
-  // colonne latérale, présente de l'étape démographique à la dernière
-  | 'estimation-card'
   // encart du pic de ménages, sur les deux étapes de taux cibles
   | 'peak-year-alert'
   // taux-cibles-logements-vacants
@@ -145,21 +142,6 @@ export type TutorialContext = {
   peakYear?: number | null
 }
 
-/**
- * Le conseil sur l'infographie vise un lien de l'en-tête, hors de notre balisage : le DSFR
- * construit sa navigation lui-même. On le vise par son `href`, stable, plutôt que par une
- * classe susceptible de bouger avec la version. L'en-tête étant rendu deux fois (menu
- * bureau et menu mobile), c'est l'occurrence visible qui est retenue au démarrage.
- */
-const INFOGRAPHIE_STEP: TutorialStep = {
-  selector: 'header a[href="/infographies"]',
-  title: 'Besoin de mieux comprendre la dynamique du territoire ?',
-  description:
-    "L'Infographie rassemble des données de cadrage sur les évolutions passées de votre territoire. Elle peut vous aider à approfondir votre lecture si une projection vous surprend ou si vous souhaitez la confronter à des tendances plus anciennes. <strong>Elle reste utile tout au long du parcours.</strong>",
-  side: 'bottom',
-  align: 'center',
-}
-
 const buildCreationContent = ({ millesime, peakYear, projection }: TutorialContext): Partial<Record<WizardStepSlug, TutorialStep[]>> => ({
   'choix-du-territoire': [
     {
@@ -235,14 +217,6 @@ const buildCreationContent = ({ millesime, peakYear, projection }: TutorialConte
         "Nommez ce territoire de façon à pouvoir le retrouver dans l'onglet « Tableau de bord », et le réutiliser pour de futurs scénarios.",
       side: 'top',
       align: 'start',
-    },
-    {
-      anchor: 'next-step',
-      title: "Passer à l'étape suivante",
-      description:
-        "<strong>Pourquoi le bouton est-il grisé ?</strong> Il s'active une fois le territoire sélectionné, la question sur le document d'urbanisme répondue, et le groupe nommé. Si le nom saisi est déjà porté par un de vos groupes, rien ne bloque : le scénario sera simplement rattaché à ce groupe.",
-      side: 'top',
-      align: 'end',
     },
   ],
 
@@ -349,15 +323,6 @@ const buildCreationContent = ({ millesime, peakYear, projection }: TutorialConte
       title: 'La même source de données, mais pas la même échelle',
       description:
         "Pour les EPCI de plus de 50 000 habitants, la trajectoire est directement calculée à cette échelle. Pour les autres, elle peut être issue du bassin d'habitat. Lorsque le bassin ne dispose pas lui-même d'une projection suffisamment robuste, Otelo s'appuie sur une projection départementale, ensuite répartie entre les territoires concernés. <strong>Cette information est importante pour apprécier le niveau de précision de la projection que vous utilisez.</strong>",
-      side: 'left',
-      align: 'start',
-    },
-    INFOGRAPHIE_STEP,
-    {
-      anchor: 'estimation-card',
-      title: 'Votre estimation se construit ici',
-      description:
-        'Chaque étape ajoute ses termes à cette carte : la démographie et le mal-logement maintenant, puis la vacance, les résidences secondaires et le renouvellement urbain. Les lignes en cours de paramétrage sont mises en couleur. Les situations de mal-logement (*) sont reprises telles quelles à ce stade : leur résorption — quelles situations retenir et à quel horizon les résorber — se paramètre depuis la page de résultats.',
       side: 'left',
       align: 'start',
     },
