@@ -86,6 +86,7 @@ Clé de l'entonnoir : les six `WizardStepSlug` de `components/simulations/settin
 | A3 | Aide | `question guide` | ancre du guide | ⏳ |
 | A4 | Aide | `lien source de donnees` | ancre | ⏳ |
 | A5 | Aide | `ouverture faq` | libellé de la question | ⏳ |
+| A6 | Aide | `presentation otelo` | `commencer` / `plus tard` | ✅ `onboarding/welcome-modal.tsx` |
 | E1 | Engagement | `lien externe` | `quiz` / `webinaire` / `demarches-simplifiees` | ⏳ |
 | E2 | Engagement | `feedback` | `envoi` / `report`, value = note | ✅ `feedback/feedback-banner.tsx` |
 | E3 | Engagement | `signalement probleme` | — (le chemin de la page part dans le mail, jamais dans Matomo) | ✅ `components/report-issue-button.tsx` |

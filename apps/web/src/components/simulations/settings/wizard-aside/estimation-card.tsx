@@ -7,7 +7,6 @@ import classNames from 'classnames'
 import { usePathname } from 'next/navigation'
 import { FC } from 'react'
 import { getFlowFromPathname, getSlugFromPathname } from '~/components/simulations/settings/wizard-steps'
-import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { formatNumber } from '~/utils/format-numbers'
 import { sPluriel } from '~/utils/sPluriel'
 import {
@@ -91,7 +90,7 @@ export const EstimationCard: FC<EstimationCardProps> = ({
   )
 
   const renderWithoutFigures = (message: string) => (
-    <div className={classNames(styles.card, 'shadow')} {...tutorialAnchor('estimation-card')}>
+    <div className={classNames(styles.card, 'shadow')}>
       {header}
       <p className={classNames(styles.footnote, fr.cx('fr-text--xs', 'fr-mb-0'))}>{message}</p>
     </div>
@@ -139,11 +138,7 @@ export const EstimationCard: FC<EstimationCardProps> = ({
   }
 
   return (
-    <div
-      className={classNames(styles.card, 'shadow', { [styles.stale]: isStale })}
-      aria-busy={isStale}
-      {...tutorialAnchor('estimation-card')}
-    >
+    <div className={classNames(styles.card, 'shadow', { [styles.stale]: isStale })} aria-busy={isStale}>
       {header}
 
       {ESTIMATION_SECTIONS.map((section) => {

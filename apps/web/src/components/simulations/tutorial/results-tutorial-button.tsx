@@ -25,5 +25,5 @@ export const ResultsTutorialButton: FC<ResultsTutorialButtonProps> = ({ peakYear
   // qu'au changement d'onglet, pas à chaque rendu de la page.
   const steps = useMemo(() => getResultsTutorialSteps({ peakYear }), [peakYear])
 
-  return <TutorialTrigger label="Comprendre ces résultats" steps={steps} trackingName="resultats" />
+  return <TutorialTrigger label="Guide de lecture des résultats" steps={steps} trackingName="resultats" />
 }

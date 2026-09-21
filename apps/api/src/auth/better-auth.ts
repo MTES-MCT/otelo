@@ -455,8 +455,6 @@ export const auth = betterAuth({
 
             const jwt = await res.text()
 
-            // Ce jeton devient l'identité du compte, et `accountLinking` le rattache à un
-            // compte existant de même adresse : il ne peut pas être lu sans être vérifié.
             const { payload } = await jwtVerify(jwt, proconnectJwks, {
               algorithms: PROCONNECT_SIGNING_ALGORITHMS,
               audience: env.OAUTH_PROCONNECT_CLIENT_ID,
