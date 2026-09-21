@@ -2,14 +2,14 @@
 
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
 import { useIsModalOpen } from '@codegouvfr/react-dsfr/Modal/useIsModalOpen'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { parseAsString, useQueryState } from 'nuqs'
 import { useEffect, useRef, useState } from 'react'
 import { trackEvent } from '~/lib/tracking'
 import { OTELO_INTRO } from './welcome-content'
 
-const DASHBOARD_PATH = '/tableaux-de-bord'
-/** `tuto=1` ouvre le didacticiel de l'étape sans attendre de clic. */
-const FIRST_STEP_PATH = '/simulation/choix-du-territoire?tuto=1'
+/** Première étape de la création : c'est là que l'utilisateur entre dans le paramétrage. */
+const CREATION_FIRST_STEP_PATH = '/simulation/choix-du-territoire'
 
 /** Le DSFR instrumente le dialogue après coup : la première tentative d'ouverture peut tomber trop tôt. */
 const OPEN_RETRY_MS = 100
@@ -45,12 +45,16 @@ const markAsSeen = (): void => {
 const WelcomeModal = createModal({ id: 'otelo-welcome-modal', isOpenedByDefault: false })
 
 /**
- * Présentation d'Otelo à la première arrivée sur le tableau de bord, et porte d'entrée du
- * didacticiel.
+ * Présentation d'Otelo à la première arrivée sur la création de simulation, et porte
+ * d'entrée du didacticiel.
  *
  * Le didacticiel était jusqu'ici entièrement opt-in : rien ne s'ouvrait sans clic sur le
  * bouton d'aide, et les tests utilisateurs ne portaient donc jamais dessus. Cette modale
  * fait entrer le nouvel arrivant dans le parcours plutôt que d'attendre qu'il le demande.
+ *
+ * Affichée sur la première étape plutôt que sur le tableau de bord : la présentation
+ * annonce ce que l'utilisateur va faire, elle vaut donc au moment où il commence. « Commencer »
+ * lance le didacticiel sur place, via le même `?tuto=1` que lit `TutorialButton`.
  *
  * Elle est indépendante de la modale de type d'organisation : elle ne consulte ni la
  * session, ni `?selectType`. Les deux peuvent donc se présenter au même passage, et c'est
@@ -60,7 +64,7 @@ const WelcomeModal = createModal({ id: 'otelo-welcome-modal', isOpenedByDefault:
 export function OteloWelcomeModal() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const router = useRouter()
+  const [, setTuto] = useQueryState('tuto', parseAsString)
   const [isMounted, setIsMounted] = useState(false)
   // Une fois la présentation réellement affichée, elle ne doit plus se rouvrir : sans ce
   // drapeau, la fermeture repasserait `isOpen` à `false` et relancerait les tentatives.
@@ -79,7 +83,7 @@ export function OteloWelcomeModal() {
   const isForced = searchParams.get('bienvenue') !== null
 
   useEffect(() => {
-    if (pathname !== DASHBOARD_PATH || (hasBeenSeen() && !isForced)) {
+    if (pathname !== CREATION_FIRST_STEP_PATH || (hasBeenSeen() && !isForced)) {
       return
     }
 
@@ -131,7 +135,7 @@ export function OteloWelcomeModal() {
           children: OTELO_INTRO.startLabel,
           onClick: () => {
             trackEvent({ action: 'presentation otelo', category: 'Aide', name: 'commencer' })
-            router.push(FIRST_STEP_PATH)
+            void setTuto('1')
           },
         },
       ]}
