@@ -28,6 +28,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Tableau de bord', icon: 'fr-icon-dashboard-3-line', href: '/admin/tableau-de-bord' },
       { label: 'Audience & usage', icon: 'fr-icon-line-chart-line', href: '/admin/audience' },
+      { label: 'Impact & utilité', icon: 'fr-icon-award-line', href: '/admin/impact' },
       { label: 'Statistiques métier', icon: 'fr-icon-bar-chart-box-line', href: '/admin/statistiques' },
       { label: 'Pilotage territorial', icon: 'fr-icon-map-pin-2-line', href: '/pilotage', external: true },
     ],

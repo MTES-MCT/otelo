@@ -60,7 +60,7 @@ export const SharingUsage: FC<SharingUsageProps> = ({ isLoading, sharing }) => (
         <ExportCsvButton dataset="partages" label="CSV" priority="tertiary" />
       </div>
       {sharing?.topShared.length ? (
-        <div className="fr-table fr-m-0">
+        <div className={classNames('fr-table fr-m-0', styles.tableWrapper)}>
           <table className="fr-width-full">
             <thead>
               <tr>
