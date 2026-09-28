@@ -2,6 +2,13 @@
   overflow-x: auto;
 }
 
+/* Specificite doublee (0,2,1) pour battre `.fr-table > table` de DSFR (0,1,1),
+   dont l'ordre de chargement s'inverse entre dev et build de prod. */
+.wrapper.wrapper > table {
+  display: table;
+  width: 100%;
+}
+
 .sortableHeader {
   cursor: pointer;
   user-select: none;

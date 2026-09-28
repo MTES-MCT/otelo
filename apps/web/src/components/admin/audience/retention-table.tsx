@@ -34,7 +34,7 @@ export const RetentionTable: FC<RetentionTableProps> = ({ isLoading, retention }
     ) : !retention?.length ? (
       <p className="fr-p-3w fr-text--sm fr-text-mention--grey fr-mb-0">Aucune cohorte sur cette période.</p>
     ) : (
-      <div className="fr-table fr-m-0">
+      <div className={classNames('fr-table fr-m-0', styles.tableWrapper)}>
         <table className="fr-width-full">
           <thead>
             <tr>
