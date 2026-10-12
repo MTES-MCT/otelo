@@ -10,7 +10,13 @@ import { ExportExcelService } from './export-excel.service'
 @Module({
   providers: [ExportExcelService],
   exports: [ExportExcelService],
-  imports: [PrismaModule, forwardRef(() => ResultsModule), AccommodationRatesModule, DemographicEvolutionModule, DemographicEvolutionCustomModule],
+  imports: [
+    PrismaModule,
+    forwardRef(() => ResultsModule),
+    AccommodationRatesModule,
+    DemographicEvolutionModule,
+    DemographicEvolutionCustomModule,
+  ],
   controllers: [ExportExcelController],
 })
 export class ExportExcelModule {}

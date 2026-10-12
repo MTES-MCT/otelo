@@ -701,11 +701,7 @@ describe('ExportExcelService', () => {
       })
 
       it('should look up custom data by scenario, epci and millesime', () => {
-        expect(demographicEvolutionCustomService.findFirstByScenarioAndEpci).toHaveBeenCalledWith(
-          expect.any(String),
-          CSV_EPCI,
-          2021,
-        )
+        expect(demographicEvolutionCustomService.findFirstByScenarioAndEpci).toHaveBeenCalledWith(expect.any(String), CSV_EPCI, 2021)
       })
     })
 

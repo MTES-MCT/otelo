@@ -8,11 +8,7 @@ describe('DemographicEvolutionCustomService.parseUploadedFile', () => {
   const toBuffer = (lines: string[]) => Buffer.from(lines.join('\n'), 'utf-8')
 
   it('should sum values using a comma as decimal separator', async () => {
-    const buffer = toBuffer([
-      'ZONE;SEXE;AGE;MENAGES_2018;MENAGES_2030',
-      'Z1;H;20;12,5;1 000,25',
-      'Z1;F;20;7,5;0,75',
-    ])
+    const buffer = toBuffer(['ZONE;SEXE;AGE;MENAGES_2018;MENAGES_2030', 'Z1;H;20;12,5;1 000,25', 'Z1;F;20;7,5;0,75'])
 
     await expect(service.parseUploadedFile(buffer, 'text/csv')).resolves.toEqual([
       { value: 20, year: 2018 },
