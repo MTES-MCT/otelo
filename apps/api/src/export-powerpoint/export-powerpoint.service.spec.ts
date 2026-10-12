@@ -4,6 +4,7 @@ import { AccommodationRatesService } from '~/accommodation-rates/accommodation-r
 import { NeedsCalculationService } from '~/calculation/needs-calculation/needs-calculation.service'
 import { DataVisualisationService } from '~/data-visualisation/data-visualisation.service'
 import { DemographicEvolutionService } from '~/demographic-evolution/demographic-evolution.service'
+import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
 import { EpcisService } from '~/epcis/epcis.service'
 import { PlaceholderGenerationService } from '~/export-powerpoint/placeholder-generation/placeholder-generation.service'
 import { ZipService } from '~/export-powerpoint/zip/zip.service'
@@ -27,6 +28,7 @@ describe('ExportPowerpointService', () => {
         { provide: DataVisualisationService, useValue: createMock<DataVisualisationService>() },
         { provide: RpInseeService, useValue: createMock<RpInseeService>() },
         { provide: AccommodationRatesService, useValue: createMock<AccommodationRatesService>() },
+        { provide: DemographicEvolutionCustomService, useValue: createMock<DemographicEvolutionCustomService>() },
       ],
     }).compile()
 

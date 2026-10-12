@@ -3,6 +3,7 @@ import { AccommodationRatesService } from '~/accommodation-rates/accommodation-r
 import { NeedsCalculationService } from '~/calculation/needs-calculation/needs-calculation.service'
 import { DataVisualisationService } from '~/data-visualisation/data-visualisation.service'
 import { DemographicEvolutionService } from '~/demographic-evolution/demographic-evolution.service'
+import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
 import { EpcisService } from '~/epcis/epcis.service'
 import { getOmphaleKey } from '~/export-excel/helpers/labels'
 import { PlaceholderGenerationService } from '~/export-powerpoint/placeholder-generation/placeholder-generation.service'
@@ -36,6 +37,7 @@ export class ExportPowerpointService {
     private readonly dataVisualisationService: DataVisualisationService,
     private readonly rpInseeService: RpInseeService,
     private readonly accommodationRatesService: AccommodationRatesService,
+    private readonly demographicEvolutionCustomService: DemographicEvolutionCustomService,
   ) {}
 
   private readonly slideCalculators = {
@@ -348,7 +350,8 @@ export class ExportPowerpointService {
   }
 
   private async calculateSlide14Data(commonData: CommonSlideData) {
-    const getDecohabitationScenarioLabel = (scenario: string) => {
+    const getDecohabitationScenarioLabel = (scenario: string, isCustom: boolean) => {
+      if (isCustom) return 'Projection personnalisée'
       if (scenario.endsWith('_B')) return 'Décohabitation décélérée'
       if (scenario.endsWith('_H')) return 'Décohabitation accélérée'
       return 'Tendance actuelle'
@@ -362,7 +365,7 @@ export class ExportPowerpointService {
     }
 
     const processSimulation = async (simulation: TSimulationWithEpciAndScenario | null, epciCode: string) => {
-      if (!simulation) return { hab: '', prin: '', vacance: '', rs: '', resorb: '' }
+      if (!simulation) return { hab: '', isCustom: false, prin: '', vacance: '', rs: '', resorb: '' }
 
       const demographicEvolution = getDemographicEvolution(simulation.scenario.b2_scenario)
       const projectionYear = simulation.scenario.projection
@@ -377,7 +380,15 @@ export class ExportPowerpointService {
         simulation.scenario.millesime,
       )
       const prinData = demographicEvolutionData.linearChart?.[epciCode]?.data.find((d) => d.year === projectionYear)
-      const prin = prinData?.[getOmphaleKey(simulation.scenario.b2_scenario)]?.toString() || ''
+      const customDemographicEvolution = await this.demographicEvolutionCustomService.findFirstByScenarioAndEpci(
+        simulation.scenario.id,
+        epciCode,
+        Number(simulation.scenario.millesime),
+      )
+      const isCustom = !!customDemographicEvolution
+      const prin = isCustom
+        ? customDemographicEvolution.data.find((d) => d.year === projectionYear)?.value?.toString() || ''
+        : prinData?.[getOmphaleKey(simulation.scenario.b2_scenario)]?.toString() || ''
 
       const epciScenario = simulation.scenario.epciScenarios.find((es) => es.epciCode === epciCode)
 
@@ -407,7 +418,7 @@ export class ExportPowerpointService {
       const rs = epciScenario?.b2_tx_rs.toString() || ''
       const resorb = simulation.scenario.b1_horizon_resorption.toString()
 
-      return { hab, prin, vacance, rs, resorb }
+      return { hab, isCustom, prin, vacance, rs, resorb }
     }
 
     const { data, simulations, privilegedScenario } = commonData
@@ -437,9 +448,9 @@ export class ExportPowerpointService {
         scenario1: firstSimulation ? this.getScenarioLabel(firstSimulation.scenario.b2_scenario) : '',
         scenario2: this.getScenarioLabel(privilegedScenario.scenario.b2_scenario),
         scenario3: lastSimulation ? this.getScenarioLabel(lastSimulation.scenario.b2_scenario) : '',
-        evol1: firstSimulation ? getDecohabitationScenarioLabel(firstSimulation.scenario.b2_scenario) : '',
-        evol2: getDecohabitationScenarioLabel(privilegedScenario.scenario.b2_scenario),
-        evol3: lastSimulation ? getDecohabitationScenarioLabel(lastSimulation.scenario.b2_scenario) : '',
+        evol1: firstSimulation ? getDecohabitationScenarioLabel(firstSimulation.scenario.b2_scenario, sim1Data.isCustom) : '',
+        evol2: getDecohabitationScenarioLabel(privilegedScenario.scenario.b2_scenario, sim2Data.isCustom),
+        evol3: lastSimulation ? getDecohabitationScenarioLabel(lastSimulation.scenario.b2_scenario, sim3Data.isCustom) : '',
         hab1: sim1Data.hab,
         hab2: sim2Data.hab,
         hab3: sim3Data.hab,

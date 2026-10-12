@@ -3,6 +3,7 @@ import * as ExcelJS from 'exceljs'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { PrismaService } from '~/db/prisma.service'
 import { DemographicEvolutionService } from '~/demographic-evolution/demographic-evolution.service'
+import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
 import {
   getBadHousingCategoryLabel,
   getHostedLabel,
@@ -148,6 +149,7 @@ export class ExportExcelService {
     private readonly resultsService: ResultsService,
     private readonly accommodationRatesService: AccommodationRatesService,
     private readonly demographicEvolutionService: DemographicEvolutionService,
+    private readonly demographicEvolutionCustomService: DemographicEvolutionCustomService,
   ) {}
 
   private toPercentage(value: number): string {
@@ -454,11 +456,25 @@ export class ExportExcelService {
       simulation.scenario.millesime,
     )
     const demographicEvolutionEpciData = demographicEvolution[epciScenario.epciCode]
+    const customDemographicEvolution = await this.demographicEvolutionCustomService.findFirstByScenarioAndEpci(
+      simulation.scenario.id,
+      epciScenario.epciCode,
+      Number(simulation.scenario.millesime),
+    )
     const populationKey = getPopulationKey(simulation.scenario.b2_scenario)
     const peakYear = results.flowRequirement.epcis.find((epci) => epci.code === epciScenario.epciCode)?.data.peakYear
     // If peakYear < projection, use peakYear and its associated values
     // If peakYear > projection, use projection and its associated values
     const targetYear = peakYear && peakYear < simulation.scenario.projection ? peakYear : simulation.scenario.projection
+    const getMenages = (year: number) => {
+      if (customDemographicEvolution) {
+        return customDemographicEvolution.data.find((d) => d.year === year)?.value ?? 0
+      }
+      const key = getOmphaleKey(simulation.scenario.b2_scenario)
+      const found = demographicEvolutionEpciData.data.find((d) => d.year === year)
+      return key ? (found?.[key] ?? 0) : 0
+    }
+    const menagesLabel = customDemographicEvolution ? 'Projection personnalisée' : getMenagesLabel(simulation.scenario.b2_scenario)
 
     const demographicConfig: SectionConfig = {
       data: [
@@ -485,25 +501,9 @@ export class ExportExcelService {
           style: 'standardBorder',
         },
         { cell: 'A11', value: 'Evolution des résidences principales', style: 'standardBorder' },
-        { cell: 'B11', value: `Décohabitation - ${getMenagesLabel(simulation.scenario.b2_scenario)}`, style: 'standardBorder' },
-        {
-          cell: 'C11',
-          value: (() => {
-            const key = getOmphaleKey(simulation.scenario.b2_scenario)
-            const found = demographicEvolutionEpciData.data.find((d) => d.year === Number(simulation.scenario.millesime))
-            return key ? (found?.[key] ?? 0) : 0
-          })(),
-          style: 'standardBorder',
-        },
-        {
-          cell: 'D11',
-          value: (() => {
-            const key = getOmphaleKey(simulation.scenario.b2_scenario)
-            const found = demographicEvolutionEpciData.data.find((d) => d.year === targetYear)
-            return key ? (found?.[key] ?? 0) : 0
-          })(),
-          style: 'standardBorder',
-        },
+        { cell: 'B11', value: `Décohabitation - ${menagesLabel}`, style: 'standardBorder' },
+        { cell: 'C11', value: getMenages(Number(simulation.scenario.millesime)), style: 'standardBorder' },
+        { cell: 'D11', value: getMenages(targetYear), style: 'standardBorder' },
       ],
     }
 

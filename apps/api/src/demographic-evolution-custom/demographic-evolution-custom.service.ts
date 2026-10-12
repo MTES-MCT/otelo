@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import * as Papa from 'papaparse'
 import { z } from 'zod'
+import { parseDecimal } from '~/common/utils/parse-decimal'
 import { PrismaService } from '~/db/prisma.service'
 import { DemographicEvolutionOmphaleCustom, Prisma } from '~/generated/prisma/client'
 import {
@@ -124,7 +125,7 @@ export class DemographicEvolutionCustomService {
     // Parse CSV using Papaparse
     const parseResult = Papa.parse(text, {
       header: true,
-      dynamicTyping: true,
+      dynamicTyping: false,
       skipEmptyLines: true,
     })
 
@@ -162,9 +163,15 @@ export class DemographicEvolutionCustomService {
 
       // Sum all values in this column
       let sum = 0
-      for (const row of data) {
-        const value = row[column]
-        if (typeof value === 'number' && !isNaN(value)) {
+      for (const [index, row] of data.entries()) {
+        let value: number | null
+        try {
+          value = parseDecimal(row[column])
+        } catch {
+          // +2: header line and 1-based numbering
+          throw new BadRequestException(`Valeur invalide "${row[column]}" dans ${column}, ligne ${index + 2}`)
+        }
+        if (value !== null) {
           sum += value
         }
       }

@@ -4,6 +4,7 @@ import * as ExcelJS from 'exceljs'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { PrismaService } from '~/db/prisma.service'
 import { DemographicEvolutionService } from '~/demographic-evolution/demographic-evolution.service'
+import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
 import { ResultsService } from '~/results/results.service'
 import { TResults } from '~/schemas/results/results'
 import { ExportExcelService } from './export-excel.service'
@@ -195,12 +196,15 @@ describe('ExportExcelService', () => {
   let resultsService: DeepMocked<ResultsService>
   let accommodationRatesService: DeepMocked<AccommodationRatesService>
   let demographicEvolutionService: DeepMocked<DemographicEvolutionService>
+  let demographicEvolutionCustomService: DeepMocked<DemographicEvolutionCustomService>
 
   beforeEach(async () => {
     prisma = createMock<PrismaService>()
     resultsService = createMock<ResultsService>()
     accommodationRatesService = createMock<AccommodationRatesService>()
     demographicEvolutionService = createMock<DemographicEvolutionService>()
+    demographicEvolutionCustomService = createMock<DemographicEvolutionCustomService>()
+    demographicEvolutionCustomService.findFirstByScenarioAndEpci.mockResolvedValue(undefined as any)
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -209,6 +213,7 @@ describe('ExportExcelService', () => {
         { provide: ResultsService, useValue: resultsService },
         { provide: AccommodationRatesService, useValue: accommodationRatesService },
         { provide: DemographicEvolutionService, useValue: demographicEvolutionService },
+        { provide: DemographicEvolutionCustomService, useValue: demographicEvolutionCustomService },
       ],
     }).compile()
 
@@ -675,6 +680,32 @@ describe('ExportExcelService', () => {
         // getPopulationKey('Central_C') = 'central'
         expect(epciSheet.getCell('D10').value).toBe(310000) // 2030 value
         expect(epciSheet.getCell('C10').value).toBe(300000) // 2021 value
+      })
+    })
+
+    describe('demographic section with custom data', () => {
+      beforeEach(async () => {
+        demographicEvolutionCustomService.findFirstByScenarioAndEpci.mockResolvedValue({
+          data: [
+            { value: 91000, year: 2021 },
+            { value: 99000, year: 2030 },
+          ],
+        } as any)
+        epciSheet = (await service.exportScenario('sim-csv')).workbook.worksheets[1]
+      })
+
+      it('should write ménages from the custom projection', () => {
+        expect(epciSheet.getCell('B11').value).toBe('Décohabitation - Projection personnalisée')
+        expect(epciSheet.getCell('C11').value).toBe(91000)
+        expect(epciSheet.getCell('D11').value).toBe(99000)
+      })
+
+      it('should look up custom data by scenario, epci and millesime', () => {
+        expect(demographicEvolutionCustomService.findFirstByScenarioAndEpci).toHaveBeenCalledWith(
+          expect.any(String),
+          CSV_EPCI,
+          2021,
+        )
       })
     })
 

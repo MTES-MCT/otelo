@@ -4,6 +4,7 @@ import { AccommodationRatesModule } from '~/accommodation-rates/accommodation-ra
 import { NeedsCalculationModule } from '~/calculation/needs-calculation/needs-calculation.module'
 import { DataVisualisationModule } from '~/data-visualisation/data-visualisation.module'
 import { DemographicEvolutionModule } from '~/demographic-evolution/demographic-evolution.module'
+import { DemographicEvolutionCustomModule } from '~/demographic-evolution-custom/demographic-evolution-custom.module'
 import { EmailModule } from '~/email/email.module'
 import { EpcisModule } from '~/epcis/epcis.module'
 import { ExportExcelModule } from '~/export-excel/export-excel.module'
@@ -27,6 +28,7 @@ import { ExportPowerpointService } from './export-powerpoint.service'
     PlaceholderGenerationModule,
     ChartGenerationModule,
     DemographicEvolutionModule,
+    DemographicEvolutionCustomModule,
     EpcisModule,
     forwardRef(() => NeedsCalculationModule),
     forwardRef(() => SimulationsModule),
