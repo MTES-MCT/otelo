@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common'
 import { PrismaService } from '~/db/prisma.service'
+import { Prisma } from '~/generated/prisma/client'
 import { DemographicEvolutionCustomService } from './demographic-evolution-custom.service'
 
 describe('DemographicEvolutionCustomService.parseUploadedFile', () => {
@@ -35,5 +36,19 @@ describe('DemographicEvolutionCustomService.parseUploadedFile', () => {
 
     await expect(result).rejects.toThrow(BadRequestException)
     await expect(result).rejects.toThrow('Valeur invalide "abc" dans MENAGES_2018, ligne 3')
+  })
+})
+
+describe('DemographicEvolutionCustomService.findAndRecalibrate', () => {
+  it('should recalibrate on the INSEE reference of the requested millesime only', async () => {
+    const queryRaw = jest.fn().mockResolvedValue([])
+    const service = new DemographicEvolutionCustomService({ $queryRaw: queryRaw } as unknown as PrismaService)
+
+    await service.findAndRecalibrate(Prisma.empty, 2022)
+
+    const [strings, ...values] = queryRaw.mock.calls[0]
+    const sql = Prisma.sql(strings, ...values)
+    expect(sql.text).toMatch(/deo\.year = \$\d+ AND deo\.millesime = \$\d+/)
+    expect(sql.values).toEqual(expect.arrayContaining([2022, '2022']))
   })
 })

@@ -84,7 +84,7 @@ export class DemographicEvolutionCustomService {
             deo.central_c AS reference_insee,
             elem ->> 'value' AS reference_custom
           FROM demographic_evolution_omphale_custom deoc
-          LEFT JOIN demographic_evolution_omphale deo ON deoc.epci_code = deo.epci_code AND deo.year = ${baseYear},
+          LEFT JOIN demographic_evolution_omphale deo ON deoc.epci_code = deo.epci_code AND deo.year = ${baseYear} AND deo.millesime = ${baseYearStr},
           LATERAL jsonb_array_elements(deoc.data) AS elem
           WHERE elem ->> 'year' = ${baseYearStr}
           ${sqlCondition}
@@ -100,6 +100,7 @@ export class DemographicEvolutionCustomService {
               ROUND((element ->> 'value')::numeric / rd.reference_custom::numeric * rd.reference_insee::numeric)
             )
           )
+          ORDER BY (element ->> 'year')::int
         ) AS data,
         rd.user_id AS "userId",
         rd.created_at AS "createdAt",
