@@ -54,7 +54,6 @@ describe('DemographicEvolutionCustomService.findAndRecalibrate', () => {
   })
 })
 
-
 /**
  * L'EPCI et le scénario viennent du corps : aucun décorateur ne peut en vérifier la
  * propriété. Le calcul lit cette donnée par (scénario, EPCI).
