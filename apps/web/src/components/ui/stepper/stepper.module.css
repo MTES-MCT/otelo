@@ -1,0 +1,135 @@
+.list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Une colonne par étape : la pastille au centre, le libellé dessous. */
+.step {
+  --bullet-size: 2.5rem;
+  --line-color: var(--border-default-grey);
+
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0;
+  position: relative;
+  text-align: center;
+}
+
+/* Le DSFR numérote les `ol` via `::marker` : la pastille porte déjà le rang. */
+.step::marker {
+  content: none;
+}
+
+/*
+ * Le trait est fait de deux moitiés par étape, de part et d'autre de la pastille : il reste continu
+ * même quand les colonnes n'ont pas la même largeur (mobile). La moitié gauche suit l'état de
+ * l'étape, la moitié droite celui de la suivante — bleue seulement si cette étape est complétée.
+ */
+.step:not(:first-child)::before,
+.step:not(:last-child)::after {
+  background-color: var(--line-color);
+  content: "";
+  height: 1px;
+  position: absolute;
+  top: calc(var(--bullet-size) / 2);
+}
+
+.step::before {
+  left: 0;
+  right: 50%;
+}
+
+.step::after {
+  left: 50%;
+  right: 0;
+}
+
+.step.active::after {
+  background-color: var(--border-default-grey);
+}
+
+.content {
+  align-items: center;
+  background-image: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0 0.25rem;
+}
+
+.bullet {
+  align-items: center;
+  /* Même fond que la page : la pastille à venir masque le trait sans se détacher en blanc. */
+  background-color: var(--background-alt-blue-france);
+  border: 1px solid var(--border-default-grey);
+  border-radius: 50%;
+  color: var(--text-mention-grey);
+  display: flex;
+  font-size: 1rem;
+  height: var(--bullet-size);
+  justify-content: center;
+  position: relative;
+  width: var(--bullet-size);
+  z-index: 1;
+}
+
+.label {
+  color: var(--text-mention-grey);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.complete,
+.active {
+  --line-color: var(--blue-france-main-525);
+}
+
+.complete .bullet {
+  background-color: var(--background-action-low-blue-france);
+  border-color: var(--background-action-low-blue-france);
+  color: var(--text-title-blue-france);
+}
+
+.complete .label {
+  color: var(--text-default-grey);
+}
+
+.active .bullet {
+  background-color: var(--blue-france-main-525);
+  border-color: var(--blue-france-main-525);
+  color: var(--text-inverted-grey);
+}
+
+.active .label {
+  color: var(--text-title-blue-france);
+  font-weight: 700;
+}
+
+/* Seules les étapes complétées sont des liens : on le signale au survol. */
+a.content:hover .label {
+  text-decoration: underline;
+}
+
+a.content:hover .bullet {
+  background-color: var(--background-action-low-blue-france-hover);
+}
+
+/* Sous 48em, six libellés ne tiennent pas côte à côte : seul celui de l'étape en cours reste. */
+@media (max-width: 47.99em) {
+  .step:not(.active) .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* L'étape en cours prend la place libérée par les autres libellés. */
+  .active {
+    flex-grow: 3;
+  }
+}
