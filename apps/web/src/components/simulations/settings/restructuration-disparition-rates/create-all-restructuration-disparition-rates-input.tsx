@@ -10,6 +10,8 @@ import { parseAsString, useQueryState } from 'nuqs'
 import { FC, useState } from 'react'
 import { tss } from 'tss-react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
+import { DISAPPEARANCE_DEFINITION, RESTRUCTURATION_DEFINITION } from '~/components/simulations/tutorial/definitions'
+import { DefinitionTooltip } from '~/components/ui/definition-tooltip'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 
 export const CreateAllRestructurationDisparitionRatesInput: FC = () => {
@@ -84,7 +86,12 @@ export const CreateAllRestructurationDisparitionRatesInput: FC = () => {
           <Input
             className="fr-width-full"
             iconId="ri-percent-line"
-            label={<span className="fr-text--medium">Taux annuel de restructuration</span>}
+            label={
+              <>
+                <span className="fr-text--medium">Taux annuel de restructuration</span>{' '}
+                <DefinitionTooltip definition={RESTRUCTURATION_DEFINITION} />
+              </>
+            }
             nativeInputProps={{
               type: 'text',
               value: restructuringRateInput,
@@ -114,7 +121,12 @@ export const CreateAllRestructurationDisparitionRatesInput: FC = () => {
           <Input
             className="fr-width-full"
             iconId="ri-percent-line"
-            label={<span className="fr-text--medium">Taux annuel de disparition</span>}
+            label={
+              <>
+                <span className="fr-text--medium">Taux annuel de disparition</span>{' '}
+                <DefinitionTooltip definition={DISAPPEARANCE_DEFINITION} />
+              </>
+            }
             nativeInputProps={{
               type: 'text',
               value: disappearanceRateInput,

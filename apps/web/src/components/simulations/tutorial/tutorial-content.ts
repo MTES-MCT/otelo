@@ -25,42 +25,28 @@ export type TutorialAnchor =
   | 'scenario-panel'
   // choix-du-territoire
   | 'method-cards'
-  | 'card-existing-group'
-  | 'card-bassin'
   | 'card-custom'
+  | 'epci-group-select'
   | 'epci-search'
-  | 'selected-epcis'
   | 'urbanisme-doc'
+  | 'urbanisme-doc-existing-group'
   | 'epci-group-name'
-  // cadrage-temporel
-  | 'millesime-select'
-  | 'projection-range'
-  | 'projection-period-label'
   // parametrages-demographique
+  | 'infographie-link'
   | 'population-select'
   | 'population-chart'
   | 'omphale-select'
   | 'omphale-chart'
   // présent dans les deux onglets de l'étape démographique
   | 'territory-chart-select'
-  | 'demographic-data-source'
-  // encart du pic de ménages, sur les deux étapes de taux cibles
-  | 'peak-year-alert'
   // taux-cibles-logements-vacants
-  | 'long-term-vacancy-rate'
   | 'long-term-vacancy-input'
-  | 'short-term-vacancy-rate'
   | 'vacancy-parc-chart'
-  | 'vacancy-toggle'
   // taux-cibles-residences-secondaires
   | 'secondary-rate'
-  | 'secondary-toggle'
   // taux-restructuration-disparition
   | 'observed-rates-note'
-  | 'restructuration-rate'
-  | 'disappearance-rate'
   | 'renewal-reading-key'
-  | 'restructuration-toggle'
   // page de résultats
   | 'results-scenarios'
   | 'results-settings'
@@ -140,90 +126,77 @@ export type TutorialContext = {
   millesime?: number | null
   /** Horizon de projection retenu. */
   projection?: number | null
-  /** Année du pic de ménages du territoire affiché, lorsqu'elle précède l'horizon. */
+  /** Année du pic de ménages de l'EPCI affiché sur les résultats, lorsqu'elle précède l'horizon. */
   peakYear?: number | null
 }
 
-const buildCreationContent = ({ millesime, peakYear, projection }: TutorialContext): Partial<Record<WizardStepSlug, TutorialStep[]>> => ({
+const buildCreationContent = ({ millesime }: TutorialContext): Partial<Record<WizardStepSlug, TutorialStep[]>> => ({
   'choix-du-territoire': [
     {
       anchor: 'wizard-stepper',
       // Mot d'accueil : il n'a plus lieu d'être une fois la méthode de sélection choisie.
       visibleWith: 'method-cards',
-      title: 'Construire votre scénario',
+      title: 'Construction du scénario',
       description:
         "<strong>Votre scénario se construit en 6 étapes.</strong> Vous définissez d'abord le territoire et l'horizon de projection, puis vous choisissez vos hypothèses sur la démographie et l'évolution du parc de logements. Otelo calcule ensuite les besoins à partir de l'ensemble de ces choix.",
       side: 'bottom',
       align: 'center',
     },
     {
-      anchor: 'scenario-panel',
-      visibleWith: 'method-cards',
-      title: 'Votre scénario, étape par étape',
-      description:
-        "<strong>Cette colonne récapitule vos choix et l'estimation qui en découle.</strong> Elle se complète à chaque étape : territoire, horizon, puis les ménages à loger, l'évolution de l'offre du parc et les logements à trouver.",
-      side: 'right',
-      align: 'start',
-    },
-    {
       anchor: 'method-cards',
-      title: "Choisissez votre territoire d'étude",
+      title: "Choisir le territoire d'étude",
       description:
         "Vous pouvez <strong>reprendre un territoire déjà utilisé</strong>, choisir un <strong>bassin d'habitat prédéfini</strong> ou composer vous-même un territoire à partir de plusieurs EPCI. Ces trois possibilités servent à définir le périmètre sur lequel vous allez construire votre scénario.",
       side: 'top',
       align: 'center',
     },
     {
-      anchor: 'card-bassin',
-      title: "Le bassin d'habitat, l'échelle de référence",
-      description:
-        "<strong>Le bassin d'habitat est l'échelle de référence proposée par Otelo pour estimer les besoins en logements.</strong> Il regroupe plusieurs EPCI appartenant à un même espace de fonctionnement du marché du logement. Lorsque vous recherchez un EPCI, Otelo vous propose automatiquement le bassin d'habitat auquel il appartient. Vous pourrez ensuite paramétrer et consulter les résultats de chaque EPCI qui le compose.",
-      side: 'bottom',
-      align: 'center',
-    },
-    {
       anchor: 'card-custom',
       title: 'Travailler sur un autre périmètre',
       description:
-        "Votre territoire d'étude ne correspond pas à un seul bassin d'habitat ? Vous pouvez créer votre propre regroupement d'EPCI. <strong>Cette option est particulièrement utile pour travailler sur un périmètre, par exemple un SCoT, qui s'étend sur plusieurs bassins d'habitat.</strong> Otelo vous permet alors de sélectionner les EPCI limitrophes qui composent ce territoire.",
+        "Si votre territoire d'étude ne correspond pas à un seul bassin d'habitat, vous pouvez créer votre propre regroupement d'EPCI en sélectionnant les EPCI limitrophes qui le composent. <strong>Cette option est utile pour travailler sur un SCoT qui s'étend sur plusieurs bassins d'habitat.</strong>",
       side: 'bottom',
       align: 'end',
     },
     {
-      anchor: 'card-existing-group',
-      title: "Repartir d'un périmètre déjà constitué",
-      description:
-        "Reprend un groupe d'EPCI que vous avez précédemment sauvegardé, pour comparer plusieurs scénarios sur le même territoire sans le recomposer à chaque fois.",
-      side: 'bottom',
-      align: 'start',
-    },
-    {
       anchor: 'epci-search',
-      title: 'Commencez par votre EPCI',
+      title: 'Rechercher un EPCI',
       description:
         "Recherchez ici l'EPCI sur lequel vous travaillez. Otelo identifiera automatiquement le bassin d'habitat auquel il appartient et ajoutera les autres EPCI qui le composent.",
       side: 'bottom',
       align: 'start',
     },
     {
-      anchor: 'selected-epcis',
-      title: "Votre bassin d'habitat est automatiquement constitué",
+      // Hors référentiel : sans elle, l'écran « Utiliser des territoires étudiés » n'avait aucune
+      // bulle avant le choix d'un groupe, et le bouton du guide ne faisait rien.
+      anchor: 'epci-group-select',
+      title: "Repartir d'un territoire déjà étudié",
       description:
-        "Une fois votre EPCI sélectionné, Otelo ajoute automatiquement les autres EPCI de son bassin d'habitat. <strong>Ce périmètre est prédéfini : vous ne pouvez pas retirer ou ajouter un EPCI à ce stade.</strong> Si ce périmètre ne correspond pas à votre territoire d'étude, revenez à la sélection personnalisée.",
+        "Cette option permet de <strong>réutiliser un regroupement d'EPCI précédemment créé</strong>, pour comparer plusieurs scénarios sur le même territoire sans le recomposer à chaque fois.",
       side: 'bottom',
       align: 'start',
     },
     {
       anchor: 'urbanisme-doc',
-      title: 'Dans quel cadre réalisez-vous cette estimation ?',
+      title: "Cadre de l'estimation",
       description:
         "Indiquez si votre scénario est réalisé dans le cadre d'un document d'urbanisme. Cette information permet notamment à Otelo de mieux rattacher votre travail à son contexte et de vous proposer <strong>un nom adapté pour votre groupe d'EPCI</strong>.",
       side: 'bottom',
       align: 'start',
     },
     {
+      // Hors référentiel : sur un groupe existant, le nom est déjà fixé et la réponse ne sert qu'à
+      // compléter le territoire — la bulle « Cadre de l'estimation » y serait trompeuse.
+      anchor: 'urbanisme-doc-existing-group',
+      title: "Cadre de l'estimation",
+      description:
+        "Indiquez si ce scénario s'inscrit dans un document d'urbanisme. Cette information est facultative : elle sera <strong>ajoutée à votre territoire</strong> et ne vous sera plus demandée pour ses prochains scénarios.",
+      side: 'bottom',
+      align: 'start',
+    },
+    {
       anchor: 'epci-group-name',
-      title: 'Donnez un nom facile à retrouver',
+      title: 'Attribuer un nom au territoire',
       description:
         "Nommez ce territoire de façon à pouvoir le retrouver dans l'onglet « Tableau de bord », et le réutiliser pour de futurs scénarios.",
       side: 'top',
@@ -231,141 +204,55 @@ const buildCreationContent = ({ millesime, peakYear, projection }: TutorialConte
     },
   ],
 
-  'cadrage-temporel': [
-    {
-      anchor: 'millesime-select',
-      title: 'Le millésime : le point de départ de votre estimation',
-      description: millesime
-        ? `Le <strong>millésime</strong> correspond à l'année de référence des données utilisées par Otelo. Il fixe donc le point de départ de votre scénario : avec le millésime ${millesime}, votre estimation commence au <strong>1er janvier ${millesime}</strong>.`
-        : "Le <strong>millésime</strong> correspond à l'année de référence des données utilisées par Otelo. Il fixe donc le point de départ de votre scénario : votre estimation commencera au 1er janvier de l'année retenue.",
-      side: 'bottom',
-      align: 'start',
-    },
-    {
-      anchor: 'projection-range',
-      title: 'Jusqu’à quand souhaitez-vous vous projeter ?',
-      description:
-        "Choisissez ici l'horizon de projection, c'est-à-dire la date jusqu'à laquelle vous souhaitez estimer les besoins en logements. Les hypothèses que vous définirez ensuite — démographie, vacance, résidences secondaires… — seront projetées jusqu'à cette date.",
-      side: 'bottom',
-      align: 'start',
-    },
-    {
-      anchor: 'projection-period-label',
-      title: 'Vérifiez bien la période de votre scénario',
-      description:
-        millesime && projection
-          ? `<strong>Otelo raisonne du 1er janvier au 1er janvier</strong> : avec le millésime ${millesime} et l'horizon ${projection}, l'estimation porte du <strong>1er janvier ${millesime} au 1er janvier ${projection}</strong>. Cette période sera utilisée pour calculer et présenter vos besoins en logements. Si vous souhaitez estimer les besoins en logements d'une année N, indiquez l'année N+1 avec le curseur.`
-          : "<strong>Otelo raisonne du 1er janvier au 1er janvier</strong>. Avec un millésime 2022 et un horizon 2035, l'estimation porte donc du <strong>1er janvier 2022 au 1er janvier 2035</strong>. Cette période sera utilisée pour calculer et présenter vos besoins en logements. Si vous souhaitez estimer les besoins en logements d'une année N, indiquez l'année N+1 avec le curseur.",
-      side: 'bottom',
-      align: 'start',
-    },
-  ],
-
+  // Les deux onglets partagent le sélecteur « Territoire affiché » : `visibleWith` choisit la
+  // bulle de l'onglet ouvert, chacun ne montant que son propre sélecteur de scénario.
   'parametrages-demographique': [
     {
-      // Le DSFR ne laisse pas poser d'attribut sur sa liste d'onglets : on la vise par sa classe.
-      selector: '.fr-tabs__list',
-      // Mot d'ouverture de l'étape : réservé à l'onglet Population, par lequel on arrive.
+      anchor: 'infographie-link',
       visibleWith: 'population-select',
-      title: 'Construisez votre trajectoire démographique',
+      title: 'Mieux comprendre la dynamique du territoire',
       description:
-        "Cette étape permet de définir <strong>combien d'habitants et combien de ménages votre territoire pourrait compter à l'horizon de projection choisi</strong>. Vous allez d'abord choisir une projection de population, puis une projection du nombre de ménages correspondant à cette trajectoire. <strong>C'est l'évolution du nombre de ménages qui déterminera ensuite le besoin démographique en résidences principales.</strong>",
-      side: 'bottom',
-      align: 'start',
-    },
-    {
-      anchor: 'population-select',
-      title: 'Que signifient les scénarios bas, central et haut ?',
-      description:
-        "Otelo s'appuie sur les projections démographiques Omphale de l'INSEE, un modèle de référence qui simule l'évolution de la population selon des hypothèses de natalité, de mortalité et de migration. <strong>Elles décrivent plusieurs futurs possibles, pas trois niveaux de besoin en logements.</strong> Un scénario « bas » ne signifie donc pas nécessairement une baisse de population. Le scénario central, lui, n'est pas toujours un simple prolongement de la tendance récente.",
-      side: 'bottom',
+        "<strong>L'Infographie peut être utile tout au long du parcours Otelo.</strong> Elle rassemble des données de cadrage sur les évolutions passées de votre territoire et peut vous aider à approfondir votre lecture si une projection vous surprend ou si vous souhaitez la confronter à des tendances plus anciennes.",
+      side: 'top',
       align: 'start',
     },
     {
       anchor: 'population-chart',
-      title: 'Regardez ce que la projection change pour votre territoire',
+      title: 'Comparer les trajectoires projetées',
       description:
-        "Le graphique met en regard <strong>l'évolution récente de la population et les trajectoires projetées</strong>. Il permet de voir si une projection prolonge la tendance passée, la ralentit ou marque une rupture.",
-      side: 'top',
-      align: 'center',
-    },
-    {
-      anchor: 'omphale-select',
-      title: 'Pour ce scénario de population, combien de résidences principales ?',
-      description:
-        "Pour estimer le besoin en résidences principales, ce n'est pas seulement le nombre d'habitants qui compte, mais le nombre de ménages qu'ils forment : un ménage correspond à une résidence principale occupée. Une population stable peut donc générer des besoins supplémentaires si le nombre de ménages augmente, par exemple sous l'effet du vieillissement ou de la décohabitation.",
-      side: 'bottom',
-      align: 'start',
-    },
-    {
-      anchor: 'omphale-select',
-      title: 'Que choisissez-vous ici ?',
-      description:
-        '<strong>Comment les modes de cohabitation vont évoluer pour la population déjà projetée</strong>. Une décohabitation plus rapide crée davantage de ménages ; une décohabitation plus lente en crée moins. Ce choix modifie donc directement le besoin en résidences principales.',
-      side: 'bottom',
-      align: 'start',
-    },
-    {
-      anchor: 'omphale-chart',
-      title: 'Regardez ce que la projection change pour votre territoire',
-      description:
-        "Le graphique met en regard <strong>l'évolution récente du nombre de ménages et les trajectoires projetées</strong>. Il permet de voir si une projection prolonge la tendance passée, la ralentit ou marque une rupture.",
-      side: 'top',
-      align: 'center',
-    },
-    {
-      anchor: 'omphale-chart',
-      title: 'Attention au pic de ménages',
-      description:
-        "Le nombre de ménages peut augmenter pendant quelques années puis diminuer <strong>avant l'horizon que vous avez choisi</strong>. Dans ce cas, regarder uniquement la situation à l'année finale masquerait une partie des besoins qui auront existé entre-temps. Otelo repère donc cette <strong>année du maximum</strong> pour tenir compte de toute la trajectoire.",
+        "Le graphique met en regard <strong>l'évolution récente de la population et les trois trajectoires projetées</strong>. Il permet de voir si une projection prolonge la tendance passée, la ralentit ou marque une rupture. Un scénario « bas » ne signifie donc pas nécessairement une baisse de population. Le scénario central, lui, n'est pas toujours un simple prolongement de la tendance récente.",
       side: 'top',
       align: 'center',
     },
     {
       anchor: 'territory-chart-select',
+      visibleWith: 'population-select',
       title: 'Un choix pour tout le territoire, une lecture EPCI par EPCI',
       description:
-        "Vous pouvez afficher le graphique pour chaque EPCI ou pour l'ensemble du territoire afin de comparer leurs trajectoires. <strong>Le scénario que vous sélectionnez s'applique toutefois à l'ensemble des EPCI de votre étude</strong> : changer le territoire affiché ne change pas votre paramétrage.",
+        "Vous pouvez afficher le graphique pour chaque EPCI ou pour l'ensemble du territoire afin de comparer leurs trajectoires. <strong>Le scénario de population que vous sélectionnez s'applique toutefois à l'ensemble des EPCI de votre étude.</strong> Changer le territoire affiché ne change donc pas votre paramétrage.",
       side: 'left',
       align: 'start',
+    },
+    {
+      anchor: 'omphale-chart',
+      title: 'Comparer les trajectoires projetées',
+      description:
+        "Le graphique met en regard <strong>l'évolution récente du nombre de ménages et les trois trajectoires projetées</strong>. Il permet de voir si une projection prolonge la tendance passée, la ralentit ou marque une rupture.",
+      side: 'top',
+      align: 'center',
     },
     {
       anchor: 'territory-chart-select',
-      title: 'La même source de données, mais pas la même échelle',
+      visibleWith: 'omphale-select',
+      title: 'Un choix pour tout le territoire, une lecture EPCI par EPCI',
       description:
-        "Pour les EPCI de plus de 50 000 habitants, la trajectoire est directement calculée à cette échelle. Pour les autres, elle peut être issue du bassin d'habitat. Lorsque le bassin ne dispose pas lui-même d'une projection suffisamment robuste, Otelo s'appuie sur une projection départementale, ensuite répartie entre les territoires concernés. <strong>Cette information est importante pour apprécier le niveau de précision de la projection que vous utilisez.</strong>",
+        "Vous pouvez afficher le graphique pour chaque EPCI ou pour l'ensemble du territoire afin de comparer leurs trajectoires. <strong>Le scénario d'évolution des ménages que vous sélectionnez s'applique toutefois à l'ensemble des EPCI de votre étude.</strong>",
       side: 'left',
-      align: 'start',
-    },
-    {
-      anchor: 'demographic-data-source',
-      title: 'Sources de données',
-      description:
-        "Population : modèle Omphale de l'INSEE (2018-2070). Ménages : scénarios de décohabitation du SDES (2018-2050) croisés avec Omphale. Dans les deux cas, les données sont recalées à la valeur observée dans le millésime du recensement de la population retenu comme année de référence.",
-      side: 'top',
       align: 'start',
     },
   ],
 
   'taux-cibles-logements-vacants': [
-    {
-      anchor: 'peak-year-alert',
-      title: 'Le nombre de ménages atteint un maximum avant votre horizon',
-      description:
-        peakYear && projection
-          ? `Votre projection prévoit un <strong>pic de ménages en ${peakYear}</strong>, avant l'horizon ${projection}. À partir de cette date, le besoin en résidences principales n'augmente plus. Otelo considère donc que les objectifs de vacance et de résidences secondaires doivent être atteints en <strong>${peakYear}</strong>, et non en ${projection}. Vous retrouverez cette date à l'étape suivante.`
-          : "Votre projection prévoit un <strong>pic de ménages</strong> avant l'horizon choisi. À partir de cette date, le besoin en résidences principales n'augmente plus. Otelo considère donc que les objectifs de vacance et de résidences secondaires doivent être atteints à l'année du pic, et non à l'horizon. Vous retrouverez cette date à l'étape suivante.",
-      side: 'bottom',
-      align: 'start',
-    },
-    {
-      anchor: 'long-term-vacancy-rate',
-      title: 'Un réservoir de logements mobilisables',
-      description:
-        'La vacance de longue durée désigne les logements vacants depuis plus de deux ans. Elle peut, en partie, constituer un gisement de logements remobilisables, notamment comme résidences principales.',
-      side: 'bottom',
-      align: 'start',
-    },
     {
       anchor: 'long-term-vacancy-input',
       title: 'La valeur par défaut',
@@ -376,9 +263,9 @@ const buildCreationContent = ({ millesime, peakYear, projection }: TutorialConte
     },
     {
       anchor: 'long-term-vacancy-input',
-      title: 'Quel effet sur les besoins en logements ?',
+      title: 'Effets sur les besoins en logements',
       description:
-        "Réduire la vacance de longue durée revient à supposer qu'une partie de ces logements pourra redevenir disponible. <strong>Plus la réduction retenue est importante, plus le parc existant couvre une part du besoin, et moins la construction neuve sera élevée.</strong> Attention : vous réduisez ici le <strong>taux</strong> de vacance. Par exemple, réduire de 15 % un taux de 2 % conduit à un taux cible de <strong>1,7 %</strong>.",
+        "Réduire la vacance de longue durée revient à supposer qu'une partie de ces logements pourra redevenir disponible, notamment comme résidence principale. <strong>Plus la réduction retenue est importante, plus le parc existant couvre une partie du besoin en logements, et moins la construction neuve sera élevée.</strong> Attention : vous réduisez ici le <strong>taux</strong> de vacance. Par exemple, réduire de 15 % un taux de 2 % conduit à un taux cible de <strong>1,7 %</strong>.",
       side: 'bottom',
       align: 'start',
     },
@@ -390,34 +277,9 @@ const buildCreationContent = ({ millesime, peakYear, projection }: TutorialConte
       side: 'top',
       align: 'start',
     },
-    {
-      anchor: 'short-term-vacancy-rate',
-      title: 'Et la vacance de courte durée ?',
-      description:
-        'La vacance de courte durée est une vacance de rotation, nécessaire au bon fonctionnement du parc : elle permet les déménagements, les ventes, les mises en location ou les travaux entre deux occupations. Otelo la considère stable et ne propose pas de la modifier.',
-      side: 'bottom',
-      align: 'start',
-    },
-    {
-      anchor: 'vacancy-toggle',
-      title: 'Un même objectif pour tous les EPCI ?',
-      description:
-        "Par défaut, vous pouvez adapter l'objectif à chaque EPCI. Activez cette option si vous souhaitez appliquer <strong>le même pourcentage de réduction</strong> à tous les EPCI du territoire.",
-      side: 'bottom',
-      align: 'start',
-    },
   ],
 
   'taux-cibles-residences-secondaires': [
-    {
-      anchor: 'peak-year-alert',
-      title: 'Un objectif ramené à l’année du pic de ménages',
-      description: peakYear
-        ? `Le nombre de ménages atteint son maximum en <strong>${peakYear}</strong>, avant l'horizon de projection choisi. Le taux cible de résidences secondaires est donc rapporté à <strong>${peakYear}</strong> : au-delà, le besoin en résidences principales n'augmente plus.`
-        : "Le nombre de ménages atteint son maximum avant l'horizon de projection choisi. Le taux cible de résidences secondaires est donc rapporté à l'année du pic : au-delà, le besoin en résidences principales n'augmente plus.",
-      side: 'bottom',
-      align: 'start',
-    },
     {
       anchor: 'secondary-rate',
       title: 'La valeur par défaut',
@@ -428,7 +290,7 @@ const buildCreationContent = ({ millesime, peakYear, projection }: TutorialConte
     },
     {
       anchor: 'secondary-rate',
-      title: 'Quel effet sur les besoins en logements ?',
+      title: 'Effets sur les besoins en logements',
       description:
         "Viser un taux <strong>plus faible</strong> revient à supposer qu'une partie des résidences secondaires pourra devenir résidence principale : le besoin à couvrir diminue. Viser un taux <strong>plus élevé</strong> réserve au contraire une part plus importante du parc aux résidences secondaires : le besoin augmente.",
       side: 'bottom',
@@ -442,54 +304,22 @@ const buildCreationContent = ({ millesime, peakYear, projection }: TutorialConte
       side: 'top',
       align: 'start',
     },
-    {
-      anchor: 'secondary-toggle',
-      title: 'Un même objectif pour tous les EPCI ?',
-      description:
-        'Par défaut, vous pouvez fixer un objectif différent pour chaque EPCI. Activez cette option si vous souhaitez appliquer <strong>le même taux cible</strong> à tous les EPCI.',
-      side: 'bottom',
-      align: 'start',
-    },
   ],
 
   'taux-restructuration-disparition': [
     {
-      anchor: 'restructuration-rate',
-      title: 'Des logements créés dans le parc existant',
-      description:
-        "Le taux de restructuration mesure les logements <strong>créés chaque année sans construction neuve</strong> : par exemple la division d'un grand logement ou la transformation de bureaux en logements. Plus ces créations sont nombreuses, plus elles contribuent à couvrir le besoin.",
-      side: 'bottom',
-      align: 'start',
-    },
-    {
-      anchor: 'disappearance-rate',
-      title: 'Des logements qui sortent du parc',
-      description:
-        "Le taux de disparition mesure les logements qui <strong>sortent du parc chaque année</strong> : démolition, fusion de plusieurs logements ou transformation d'un logement en local d'activité. Ces disparitions doivent être compensées et augmentent donc le besoin en logements.",
-      side: 'bottom',
-      align: 'start',
-    },
-    {
       anchor: 'observed-rates-note',
-      title: 'Ne reconduisez pas automatiquement le passé',
+      title: 'À noter',
       description: `Otelo prolonge par défaut les <strong>taux annuels observés entre ${getObservedRatesPeriodLabel(millesime)}</strong>. Vérifiez qu'ils correspondent bien à ce que vous anticipez. Par exemple, si cette période comprend une importante opération ponctuelle de démolition, reconduire ce rythme chaque année jusqu'à l'horizon peut fortement surestimer les disparitions futures.`,
       side: 'bottom',
       align: 'start',
     },
     {
       anchor: 'renewal-reading-key',
-      title: 'Quel effet sur les besoins en logements ?',
+      title: 'Effets sur les besoins en logements',
       description:
         'Otelo met en balance les logements créés par restructuration et ceux qui disparaissent. <strong>Si les créations sont supérieures aux disparitions, le besoin à produire diminue ; si les disparitions sont supérieures, il augmente.</strong> La clé de lecture traduit directement ce solde en logements par an.',
       side: 'top',
-      align: 'start',
-    },
-    {
-      anchor: 'restructuration-toggle',
-      title: 'Les mêmes dynamiques pour tous les EPCI ?',
-      description:
-        'Par défaut, les taux peuvent être adaptés EPCI par EPCI. Activez cette option uniquement si vous souhaitez appliquer <strong>les mêmes taux annuels de restructuration et de disparition</strong> à tout le territoire.',
-      side: 'bottom',
       align: 'start',
     },
   ],
