@@ -50,10 +50,7 @@ export const CreateRestructurationDisparitionRates: FC<CreateRestructurationDisp
 
   return (
     <>
-      <div
-        className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}
-        {...tutorialAnchor('restructuration-toggle')}
-      >
+      <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
         <RestructurationRatesToggleSwitch />
       </div>
       {isAllMode ? (

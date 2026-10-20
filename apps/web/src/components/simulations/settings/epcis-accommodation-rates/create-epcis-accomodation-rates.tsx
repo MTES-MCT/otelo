@@ -46,7 +46,7 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
           <PeakYearHorizonAlert peakYear={epciPeakYear ?? null} projection={projection} millesime={millesime ? Number(millesime) : null} />
           {!isLockedByMillesime && (
             <>
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v" {...tutorialAnchor('long-term-vacancy-rate')}>
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
                 <span className="fr-text--medium">Vacance de longue durée</span>
                 <p className="fr-mb-0">
                   Elle désigne les logements vacants depuis plus de deux ans. Elle représente un réservoir de logements mobilisables. Le
@@ -56,7 +56,7 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
               <div {...tutorialAnchor('long-term-vacancy-input')}>
                 <CreateVacancyAccommodationRatesInput epci={epci} />
               </div>
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v" {...tutorialAnchor('short-term-vacancy-rate')}>
+              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
                 <div className="fr-flex fr-flex-gap-2v">
                   <span className="fr-text--medium">Vacance de courte durée</span>
                   <Badge>Non modifiable</Badge>
@@ -101,10 +101,7 @@ export const CreateEpcisAccommodationRates: FC<CreateEpcisAccomodationRatesProps
 
   return (
     <>
-      <div
-        className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}
-        {...tutorialAnchor('vacancy-toggle')}
-      >
+      <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
         <RatesToggleSwitch disabled={isPeakBeforeProjection} />
       </div>
       {isAllMode ? (

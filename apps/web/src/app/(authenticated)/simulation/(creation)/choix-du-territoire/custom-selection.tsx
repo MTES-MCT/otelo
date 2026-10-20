@@ -70,7 +70,7 @@ export const CustomSelection = ({ bassinEpcis, hasUrbanismeDocError }: CustomSel
           <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
             <div className="fr-col-md-9">
               {!isEditing && (
-                <div className="fr-py-5w" {...tutorialAnchor('selected-epcis')}>
+                <div className="fr-py-5w">
                   Les territoires inclus dans la simulation sont :
                   <ul>
                     {selectedEpcis?.map((epci) => (

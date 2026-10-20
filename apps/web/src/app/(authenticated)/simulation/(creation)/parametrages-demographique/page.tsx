@@ -8,9 +8,9 @@ import { PopulationScenariosChart } from '~/components/charts/population-scenari
 import { PrefetchCreationSimulationPreview } from '~/components/simulations/preview/prefetch-creation-simulation-preview'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { DemographicSettingsHeader } from '~/components/simulations/settings/demographic-settings-header'
-import { NextStepLink } from '~/components/simulations/settings/next-step-link'
+import { DemographicNextStep } from '~/components/simulations/settings/demographic-transition-modal'
+import { InfographieLink } from '~/components/simulations/settings/infographie-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
-import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { getEpcisWithoutInseeProjection } from '~/server-only/demographic-evolution/get-epcis-without-insee-projection'
 import { getOmphaleDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-omphale-evolution-by-epci'
 import { getPopulationDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-population-evolution-by-epci'
@@ -64,12 +64,13 @@ export default async function DemographicSettingsPage({ searchParams }: PageProp
           </ChartDownloadWrapper>
         </DemographicSettingsHeader>
       </div>
-      <div className="fr-px-2w fr-pt-2w" {...tutorialAnchor('demographic-data-source')}>
+      <div className="fr-flex fr-flex-gap-2v fr-px-2w fr-pt-2w">
+        <InfographieLink />
         <DataSourceLink anchor="#projections-demographiques" />
       </div>
       <div className="fr-flex fr-flex-gap-6v fr-justify-content-end fr-py-4w fr-px-2w">
         <PreviousStepLink />
-        <NextStepLink href={href} query="omphale" touchedQueryParam="omphaleTouched" />
+        <DemographicNextStep href={href} />
       </div>
     </>
   )

@@ -76,7 +76,7 @@ export const BassinHabitatSelection = ({ bassinEpcis, hasUrbanismeDocError }: Ba
 
       {selectedEpcis && selectedEpcis.length > 0 && (
         <>
-          <div className="fr-py-5w" {...tutorialAnchor('selected-epcis')}>
+          <div className="fr-py-5w">
             {isBassinHabitat && (
               <Alert
                 description="Les EPCI du bassin d'habitat ont été automatiquement sélectionnés et ne peuvent pas être modifiés."

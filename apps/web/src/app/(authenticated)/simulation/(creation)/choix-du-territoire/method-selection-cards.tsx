@@ -1,7 +1,9 @@
 import { fr } from '@codegouvfr/react-dsfr'
 import { FC } from 'react'
 import { tss } from 'tss-react'
+import { BASSIN_HABITAT_DEFINITION } from '~/components/simulations/tutorial/definitions'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
+import { DefinitionTooltip } from '~/components/ui/definition-tooltip'
 import { sPluriel } from '~/utils/sPluriel'
 
 export type SelectionMethod = 'existing-group' | 'custom-selection' | 'bassin-habitat' | null
@@ -18,7 +20,9 @@ export const MethodSelectionCards: FC<MethodSelectionCardsProps> = ({ selectedMe
 
   return (
     <div className={classes.container}>
-      <h3 className={fr.cx('fr-h5', 'fr-mb-3w')}>Comment souhaitez-vous sélectionner les EPCI ?</h3>
+      <h3 className={fr.cx('fr-h5', 'fr-mb-3w')}>
+        Comment souhaitez-vous sélectionner les EPCI ? <DefinitionTooltip definition={BASSIN_HABITAT_DEFINITION} />
+      </h3>
 
       <div className={classes.cardsWrapper} {...tutorialAnchor('method-cards')}>
         {showExistingGroup && (
@@ -30,7 +34,6 @@ export const MethodSelectionCards: FC<MethodSelectionCardsProps> = ({ selectedMe
             )}
             onClick={() => onMethodSelect('existing-group')}
             type="button"
-            {...tutorialAnchor('card-existing-group')}
           >
             <div className={classes.cardIcon}>
               <i className={fr.cx('fr-icon-folder-2-line', 'fr-icon--lg')} />
@@ -58,7 +61,6 @@ export const MethodSelectionCards: FC<MethodSelectionCardsProps> = ({ selectedMe
           )}
           onClick={() => onMethodSelect('bassin-habitat')}
           type="button"
-          {...tutorialAnchor('card-bassin')}
         >
           <div className={classes.cardIcon}>
             <i className={fr.cx('fr-icon-map-pin-2-line', 'fr-icon--lg')} />
