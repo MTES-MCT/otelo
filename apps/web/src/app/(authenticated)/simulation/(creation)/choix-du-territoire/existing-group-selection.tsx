@@ -75,7 +75,7 @@ export const ExistingGroupSelection = () => {
       )}
       {selectedGroup && !hasPlanningDocument && (
         <div className={fr.cx('fr-px-3w', 'fr-pb-3w')} {...tutorialAnchor('urbanisme-doc-existing-group')}>
-          <UrbanismeDocQuestion />
+          <UrbanismeDocQuestion required={false} />
         </div>
       )}
     </>

@@ -108,13 +108,23 @@
   font-weight: 700;
 }
 
-/* Seules les étapes complétées sont des liens : on le signale au survol. */
+/* Seules les étapes accessibles sont des liens : au survol, la pastille s'éclaire et le libellé passe en bleu. */
 a.content:hover .label {
-  text-decoration: underline;
+  color: var(--text-title-blue-france);
+  font-weight: 700;
 }
 
 a.content:hover .bullet {
   background-color: var(--background-action-low-blue-france-hover);
+  border-color: var(--background-action-low-blue-france-hover);
+  color: var(--text-title-blue-france);
+}
+
+/* Étape à venir mais déjà renseignée (modification) : même pastille qu'une étape complétée. */
+a.content .bullet {
+  background-color: var(--background-action-low-blue-france);
+  border-color: var(--background-action-low-blue-france);
+  color: var(--text-title-blue-france);
 }
 
 /* Sous 48em, six libellés ne tiennent pas côte à côte : seul celui de l'étape en cours reste. */

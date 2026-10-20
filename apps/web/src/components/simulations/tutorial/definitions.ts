@@ -31,3 +31,9 @@ export const DISAPPEARANCE_DEFINITION: Definition = {
   description:
     "Le taux de disparition mesure les logements qui sortent du parc chaque année : démolition, fusion de plusieurs logements ou transformation d'un logement en local d'activité. Ces disparitions doivent être compensées et augmentent donc le besoin en logements.",
 }
+
+export const LONG_TERM_VACANCY_DEFINITION: Definition = {
+  title: 'Un gisement de logements remobilisables',
+  description:
+    'La vacance de longue durée désigne les logements vacants depuis plus de deux ans. Elle peut, en partie, constituer un gisement de logements remobilisables, notamment comme résidences principales.',
+}

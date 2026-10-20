@@ -15,8 +15,8 @@ export const ContiguousEpcisCheckboxes = ({ epcis }: ContiguousEpcisCheckboxesPr
 
   if (isLoading) {
     return (
-      <div className={fr.cx('fr-py-4w')}>
-        <p>Chargement des EPCIs limitrophes...</p>
+      <div className={fr.cx('fr-pb-4w')}>
+        <p>Chargement des EPCI limitrophes...</p>
       </div>
     )
   }
@@ -28,21 +28,18 @@ export const ContiguousEpcisCheckboxes = ({ epcis }: ContiguousEpcisCheckboxesPr
 
   if (!filteredContiguousEpcis || filteredContiguousEpcis.length === 0) {
     return (
-      <div className={fr.cx('fr-py-4w')}>
+      <div className={fr.cx('fr-pb-4w')}>
         <p className={fr.cx('fr-text--sm')}>Aucun EPCI limitrophe trouvé.</p>
       </div>
     )
   }
 
   return (
-    <div className={fr.cx('fr-py-4w')}>
-      <h4 className={fr.cx('fr-mb-2w')}>EPCIs limitrophes</h4>
-      <p className={fr.cx('fr-text--sm', 'fr-mb-2w')}>Vous pouvez sélectionner des EPCIs limitrophes à inclure dans votre simulation :</p>
-      <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-        <div className={fr.cx('fr-col-12', 'fr-col-md-12')}>
-          <CheckboxEpcis epcis={filteredContiguousEpcis} legend="Sélection des EPCIs" />
-        </div>
-      </div>
+    <div className={fr.cx('fr-pb-4w')}>
+      <CheckboxEpcis
+        epcis={filteredContiguousEpcis}
+        legend="Vous pouvez sélectionner des EPCI limitrophes à inclure dans votre simulation :"
+      />
     </div>
   )
 }

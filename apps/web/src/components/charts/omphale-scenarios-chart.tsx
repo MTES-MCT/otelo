@@ -2,22 +2,21 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
-import Badge from '@codegouvfr/react-dsfr/Badge'
 import Button from '@codegouvfr/react-dsfr/Button'
-import CallOut from '@codegouvfr/react-dsfr/CallOut'
-import classNames from 'classnames'
 import { parseAsArrayOf, parseAsString, useQueryState, useQueryStates } from 'nuqs'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { NameType, Payload as TooltipPayload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { tss } from 'tss-react'
 import { ChartDownloadButton } from '~/components/charts/chart-download-wrapper'
+import { CustomDemographicEvolutionModal } from '~/components/charts/custom-demographic-evolution-modal'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { OmphaleScenariosSelection } from '~/components/charts/omphale-scenarios-selection'
-import { UploadDemographicEvolutionCustom } from '~/components/charts/upload-demographic-evolution-custom'
+import { getScenarioProjection } from '~/components/charts/scenario-projection-hint'
 import { DemographicSettingsSelectEpci } from '~/components/simulations/settings/demographic-settings-header'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
+import { ReadingKey } from '~/components/ui/reading-key'
 import { useChartTerritory } from '~/hooks/use-chart-territory'
 import { useDemographicEvolutionCustom } from '~/hooks/use-demographic-evolution-custom'
 import { useEpcis } from '~/hooks/use-epcis'
@@ -30,7 +29,11 @@ interface DemographicEvolutionChartProps {
   onChange?: (e: string) => void
   scenarioId?: string
   epcis?: string[]
+  /** EPCI sans projection robuste de l'Insee : le scénario personnalisé y est mis en avant. */
+  fragileEpciCodes?: string[]
 }
+
+const CHART_HEIGHT = 468
 
 const SCENARIOS = [
   {
@@ -154,7 +157,12 @@ const findMaxValueYear = (data: TOmphaleEvolution[], scenarioKey?: string) => {
   }, data[0]).year
 }
 
-export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demographicEvolution, epcis: epcisProps, scenarioId }) => {
+export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({
+  demographicEvolution,
+  epcis: epcisProps,
+  scenarioId,
+  fragileEpciCodes = [],
+}) => {
   const { classes } = useStyles()
   const [millesime] = useQueryState('millesime')
 
@@ -168,6 +176,7 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
   })
   const { dataKey: territoryKey, focusedEpciCode, isAggregated } = useChartTerritory(epcisProps ?? queryStates.epcis)
   const currentEpci = focusedEpciCode ?? ''
+  const isFocusedEpciFragile = !!focusedEpciCode && fragileEpciCodes.includes(focusedEpciCode)
   const evolution = territoryKey ? demographicEvolution[territoryKey] : undefined
   const [chartData, setChartData] = useState<TOmphaleEvolutionWithCustom[]>(evolution?.data ?? [])
   const [isUsingCustomData, setIsUsingCustomData] = useState(false)
@@ -228,6 +237,12 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
   const popEvolutionValue = isUsingCustomData ? popEvolution?.custom : popEvolution?.[formattedOmphale as keyof typeof popEvolution]
   const evol = basePopulationValue && popEvolutionValue ? popEvolutionValue - basePopulationValue : 0
   const maxYear = findMaxValueYear(chartData, formattedOmphale)
+  const projections = Object.fromEntries(
+    SCENARIOS.filter((scenario) => scenario.id === queryStates.population).map((scenario) => {
+      const key = scenario.dataKey as keyof TOmphaleEvolutionWithCustom
+      return [scenario.queryValue, getScenarioProjection(basePopulation?.[key], popEvolution?.[key])]
+    }),
+  )
 
   const savePeakYear = useCallback(
     (year: number | null) => {
@@ -283,8 +298,14 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
 
   return (
     <>
-      <OmphaleScenariosSelection />
-      {!isAggregated && <UploadDemographicEvolutionCustom epciCode={currentEpci} scenarioId={scenarioId} />}
+      <OmphaleScenariosSelection projections={isUsingCustomData ? undefined : projections} horizon={period} />
+      <CustomDemographicEvolutionModal
+        epcis={epcisProps ?? queryStates.epcis}
+        // Sur l'ensemble du territoire, on propose d'emblée le premier EPCI concerné.
+        defaultEpciCode={isFocusedEpciFragile || fragileEpciCodes.length === 0 ? focusedEpciCode : fragileEpciCodes[0]}
+        scenarioId={scenarioId}
+        highlighted={isAggregated ? fragileEpciCodes.length > 0 : isFocusedEpciFragile}
+      />
       {isAggregated && allCustomData.length > 0 && (
         <Alert
           description="Les données démographiques personnalisées que vous avez importées ne sont pas reprises dans la courbe de l'ensemble du territoire. Sélectionnez l'EPCI concerné pour les visualiser."
@@ -307,9 +328,8 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
         />
       )}
       <DemographicSettingsSelectEpci epcis={epcisProps ?? queryStates.epcis} />
-      <ChartDownloadButton />
       <div className={classes.chartContainer} {...tutorialAnchor('omphale-chart')}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
           <LineChart width={500} height={300} data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
 
@@ -373,45 +393,27 @@ export const OmphaleScenariosChart: FC<DemographicEvolutionChartProps> = ({ demo
           ))}
         </div>
       </div>
+      <ChartDownloadButton className="fr-mt-1w" />
       {queryStates.omphale && (
-        <CallOut
-          className="fr-py-2w fr-mb-0 fr-mt-4w"
-          title={
-            <Badge severity="new" noIcon small>
-              <span className={classNames(classes.badgeIcon, 'ri-lightbulb-line fr-mr-1v')} />
-              <span className="fr-text--uppercase">Clé de lecture</span>
-            </Badge>
-          }
-        >
-          <span className="fr-text--md">
-            <span>
-              Ce scénario anticipe une évolution du nombre de ménages de <strong>{evol > 0 ? `+${evol}` : evol}</strong> sur la période{' '}
-              {millesime || '2021'} - {period}.
-            </span>
-            {maxYear && maxYear > Number(millesime || '2021') && (
-              <>
-                <br />
-                <span>
-                  Le pic de ménages sera atteint <strong>{maxYear < 2050 ? `en ${maxYear}` : `après ${maxYear}`}</strong>.
-                </span>
-              </>
-            )}
-          </span>
-        </CallOut>
+        <ReadingKey className="fr-mt-4w">
+          Le nombre de ménages {evol >= 0 ? 'augmentera' : 'diminuera'} de <strong>{formatNumber(Math.round(Math.abs(evol)))}</strong> entre{' '}
+          {millesime || '2021'} et {period}.
+          {maxYear && maxYear > Number(millesime || '2021') && (
+            <>
+              <br />
+              Le pic de ménages sera atteint <strong>{maxYear < 2050 ? `en ${maxYear}` : `après ${maxYear}`}</strong>.
+            </>
+          )}
+        </ReadingKey>
       )}
     </>
   )
 }
 
 const useStyles = tss.create({
-  badgeIcon: {
-    '&::before': {
-      '--icon-size': '12px',
-    },
-  },
+  // Hauteur portée par le graphique, pas par le conteneur : la légende s'ajoute dessous sans déborder.
   chartContainer: {
     backgroundColor: 'white',
-    height: '500px',
     padding: '1rem',
     width: '100%',
   },

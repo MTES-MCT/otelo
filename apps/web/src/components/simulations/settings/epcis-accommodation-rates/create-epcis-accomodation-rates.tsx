@@ -1,6 +1,5 @@
 'use client'
 
-import Badge from '@codegouvfr/react-dsfr/Badge'
 import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -10,7 +9,9 @@ import { EpciTabs } from '~/components/simulations/settings/epci-tabs'
 import { AllEpcisRatesView } from '~/components/simulations/settings/epcis-accommodation-rates/all-epcis-rates-view'
 import ParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/parc-comparison-charts'
 import { RatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/rates-toggle-switch'
+import { LongTermVacancyQuestion } from '~/components/simulations/settings/long-term-vacancy-texts'
 import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-year-horizon-alert'
+import { ChoiceHelpButton } from '~/components/simulations/tutorial/tutorial-button'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
@@ -24,11 +25,12 @@ interface CreateEpcisAccomodationRatesProps {
 
 interface TabChildrenProps {
   epci: string
+  epciName: string
   rates: TEpcisAccommodationRates
   millesime: string
 }
 
-const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
+const TabChildren: FC<TabChildrenProps> = ({ epci, epciName, rates, millesime }) => {
   const { peakYears, projection, isLoading } = useCreationPeakYears()
   const epciRates = rates?.[epci]
   const epciPeakYear = peakYears[epci] ?? null
@@ -42,30 +44,19 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
   return (
     <>
       <div className="fr-mb-2w">
-        <div className="fr-flex fr-direction-column fr-flex-gap-8v">
+        <div className="fr-flex fr-direction-column fr-flex-gap-6v">
+          <ChoiceHelpButton />
           <PeakYearHorizonAlert peakYear={epciPeakYear ?? null} projection={projection} millesime={millesime ? Number(millesime) : null} />
           {!isLockedByMillesime && (
             <>
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">Vacance de longue durée</span>
-                <p className="fr-mb-0">
-                  Elle désigne les logements vacants depuis plus de deux ans. Elle représente un réservoir de logements mobilisables. Le
-                  taux en {millesime} sur ce territoire est de <strong>{(Number(epciRates.longTermVacancyRate) * 100).toFixed(2)}%</strong>.
-                </p>
-              </div>
+              <LongTermVacancyQuestion
+                millesime={millesime}
+                territoryLabel={epciName}
+                observedRate={Number(epciRates.longTermVacancyRate)}
+                targetYear={targetYear}
+              />
               <div {...tutorialAnchor('long-term-vacancy-input')}>
-                <CreateVacancyAccommodationRatesInput epci={epci} />
-              </div>
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <div className="fr-flex fr-flex-gap-2v">
-                  <span className="fr-text--medium">Vacance de courte durée</span>
-                  <Badge>Non modifiable</Badge>
-                </div>
-                <p>
-                  Elle regroupe les logements temporairement vacants (rotation locative, mise en vente, travaux), nécessaires au bon
-                  fonctionnement du marché du logement. Otelo considère le taux de vacance courte durée observé en {millesime} comme{' '}
-                  <span className="fr-text--bold">stable</span> et ne propose pas de le modifier.
-                </p>
+                <CreateVacancyAccommodationRatesInput epci={epci} epciName={epciName} />
               </div>
             </>
           )}
@@ -107,7 +98,17 @@ export const CreateEpcisAccommodationRates: FC<CreateEpcisAccomodationRatesProps
       {isAllMode ? (
         <AllEpcisRatesView />
       ) : (
-        <EpciTabs epcis={epcis} renderTab={(epciCode) => <TabChildren epci={epciCode} rates={rates} millesime={millesime!} />} />
+        <EpciTabs
+          epcis={epcis}
+          renderTab={(epciCode) => (
+            <TabChildren
+              epci={epciCode}
+              epciName={epcis.find((epci) => epci.code === epciCode)?.name ?? epciCode}
+              rates={rates}
+              millesime={millesime!}
+            />
+          )}
+        />
       )}
     </>
   )

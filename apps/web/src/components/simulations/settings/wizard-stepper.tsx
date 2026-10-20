@@ -20,7 +20,13 @@ export const WizardStepper: FC = () => {
 
   return (
     <div {...tutorialAnchor('wizard-stepper')}>
-      <Stepper steps={stepperSteps} currentIndex={currentIndex} ariaLabel="Étapes du paramétrage du scénario" />
+      <Stepper
+        steps={stepperSteps}
+        currentIndex={currentIndex}
+        // En modification, toutes les étapes sont déjà renseignées : chacune est accessible.
+        lastAccessibleIndex={flow === 'modification' ? steps.length - 1 : currentIndex}
+        ariaLabel="Étapes du paramétrage du scénario"
+      />
     </div>
   )
 }

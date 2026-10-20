@@ -6,7 +6,7 @@ import classes from './choix-du-territoire.module.css'
 import { WrapperSimulationTypePage } from './wrapper-simulation-type-page'
 
 export const metadata: Metadata = {
-  title: 'Elaborer un scenario - étape 1 sur 6 - Otelo',
+  title: 'Élaborer un scénario - étape 1 sur 6 - Otelo',
 }
 
 type TerritorialChoicePageProps = {

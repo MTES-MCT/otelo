@@ -1,7 +1,7 @@
 'use client'
 
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
-import { useEffect } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import { OmphaleScenariosChart } from '~/components/charts/omphale-scenarios-chart'
@@ -21,6 +21,8 @@ type DemographicSettingsFormWrapperProps = {
   omphaleEvolution: TOmphaleDemographicEvolution
   epcis: string[]
   scenarioId: string
+  notice?: ReactNode
+  fragileEpciCodes?: string[]
 }
 
 export const DemographicSettingsFormWrapper = ({
@@ -28,6 +30,8 @@ export const DemographicSettingsFormWrapper = ({
   populationEvolution,
   omphaleEvolution,
   scenarioId,
+  notice,
+  fragileEpciCodes,
 }: DemographicSettingsFormWrapperProps) => {
   const [queryStates, setQueryStates] = useQueryStates({
     epciChart: parseAsString,
@@ -85,12 +89,18 @@ export const DemographicSettingsFormWrapper = ({
   if (!queryStates.epciChart) return null
 
   return (
-    <DemographicSettingsHeader>
+    <DemographicSettingsHeader notice={notice}>
       <ChartDownloadWrapper fileName="scenarios-population" withFloatingButton={false}>
         <PopulationScenariosChart demographicEvolution={populationEvolution} epcis={epcis} />
       </ChartDownloadWrapper>
       <ChartDownloadWrapper fileName="scenarios-omphale" withFloatingButton={false}>
-        <OmphaleScenariosChart demographicEvolution={omphaleEvolution} scenarioId={scenarioId} onChange={handleChange} epcis={epcis} />
+        <OmphaleScenariosChart
+          demographicEvolution={omphaleEvolution}
+          scenarioId={scenarioId}
+          onChange={handleChange}
+          epcis={epcis}
+          fragileEpciCodes={fragileEpciCodes}
+        />
       </ChartDownloadWrapper>
     </DemographicSettingsHeader>
   )

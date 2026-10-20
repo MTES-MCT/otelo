@@ -5,8 +5,9 @@ import Tabs from '@codegouvfr/react-dsfr/Tabs'
 import { ALL_EPCIS_KEY } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryStates } from 'nuqs'
-import { useRef } from 'react'
+import { ReactNode, useRef } from 'react'
 import { tss } from 'tss-react'
+import { ChoiceHelpButton } from '~/components/simulations/tutorial/tutorial-button'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useChartTerritory } from '~/hooks/use-chart-territory'
 import { useEpcis } from '~/hooks/use-epcis'
@@ -14,6 +15,8 @@ import { useEpcis } from '~/hooks/use-epcis'
 type DemographicSettingsHeaderProps = {
   children: React.ReactNode[]
   epcis?: string[]
+  /** Avertissement affiché au-dessus du choix de scénario, dans les deux onglets. */
+  notice?: ReactNode
 }
 
 export const DemographicSettingsSelectEpci = ({ epcis }: { epcis?: string[] }) => {
@@ -26,8 +29,8 @@ export const DemographicSettingsSelectEpci = ({ epcis }: { epcis?: string[] }) =
   const canAggregate = (epcis?.length ?? 0) > 1
 
   return (
-    <div className="fr-flex fr-justify-content-end fr-align-items-end fr-flex-gap-2v" {...tutorialAnchor('territory-chart-select')}>
-      <span className="fr-text--sm fr-mb-0">Territoire affiché :</span>
+    <div className="fr-flex fr-align-items-center fr-flex-gap-2v" {...tutorialAnchor('territory-chart-select')}>
+      <span className="fr-mb-0">Simuler graphiquement pour</span>
       <Select
         label={undefined}
         nativeSelectProps={{
@@ -49,9 +52,10 @@ export const DemographicSettingsSelectEpci = ({ epcis }: { epcis?: string[] }) =
   )
 }
 
-export const DemographicSettingsHeader = ({ children }: DemographicSettingsHeaderProps) => {
+export const DemographicSettingsHeader = ({ children, notice }: DemographicSettingsHeaderProps) => {
   const [queryState, setQueryState] = useQueryStates({
     population: parseAsString,
+    omphale: parseAsString,
     scenario: parseAsString.withDefault('population'),
     populationTouched: parseAsString,
   })
@@ -84,14 +88,22 @@ export const DemographicSettingsHeader = ({ children }: DemographicSettingsHeade
         {
           label: 'Projection de population',
           tabId: 'population',
+          iconId: isPopulationSelected ? 'fr-icon-checkbox-circle-fill' : undefined,
         },
         {
           label: 'Projection de ménages',
           tabId: 'menages',
+          // La projection de ménages découle de celle de population : l'onglet reste grisé tant
+          // qu'elle n'est pas choisie, et le clic ne fait que signaler le choix manquant.
+          iconId: isPopulationSelected && queryState.omphale ? 'fr-icon-checkbox-circle-fill' : undefined,
         },
       ]}
     >
-      <div className={classNames(classes.container, 'fr-background-default--grey')}>{content}</div>
+      <div className={classNames(classes.container, 'fr-background-default--grey')}>
+        <ChoiceHelpButton />
+        {notice}
+        {content}
+      </div>
     </Tabs>
   )
 }

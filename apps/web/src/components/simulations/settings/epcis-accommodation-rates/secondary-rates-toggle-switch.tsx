@@ -21,7 +21,7 @@ export const SecondaryRatesToggleSwitch: FC<Props> = ({ disabled, disabledMessag
   }
 
   return (
-    <div>
+    <div className="fr-mt-2w">
       <ToggleSwitch
         className={styles.compactToggle}
         label={<span className="fr-text--medium">Appliquer le taux à l'ensemble du territoire</span>}

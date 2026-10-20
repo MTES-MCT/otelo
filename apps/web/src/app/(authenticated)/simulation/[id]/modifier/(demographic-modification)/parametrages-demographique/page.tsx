@@ -1,8 +1,8 @@
-import Alert from '@codegouvfr/react-dsfr/Alert'
 import { redirect } from 'next/navigation'
 import { DemographicSettingsFormWrapper } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/parametrages-demographique/demographic-settings-form-wrapper'
 import { PrefetchModifySimulationPreview } from '~/components/simulations/preview/prefetch-modify-simulation-preview'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
+import { FragileProjectionAlert } from '~/components/simulations/settings/fragile-projection-alert'
 import { NextStepLinkWithoutValidation } from '~/components/simulations/settings/next-step-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
 import { getEpcisWithoutInseeProjection } from '~/server-only/demographic-evolution/get-epcis-without-insee-projection'
@@ -60,35 +60,18 @@ export default async function ParametragesDemographiquePage({ params, searchPara
     getPopulationDemographicEvolutionByEpci(epcisCodes, simulation.scenario.millesime),
     getEpcisWithoutInseeProjection(epcisCodes),
   ])
-  const hasEpcisWithoutInseeProjection = epcisWithoutInseeProjection.length > 0
 
   return (
     <>
       <PrefetchModifySimulationPreview />
-      {hasEpcisWithoutInseeProjection && (
-        <div className="fr-py-2w fr-pt-2w">
-          <Alert
-            severity="warning"
-            small
-            description={
-              <>
-                Pour ce territoire, l'INSEE ne propose pas de projections démographiques robustes. Les projections affichées ont été
-                recalculées en ventilant les projections départementales — ménages ou population — au prorata du poids de l'EPCI dans le
-                département.{' '}
-                <a href="/guide#elaboration-projections" target="_blank" rel="noopener noreferrer">
-                  En savoir plus
-                </a>
-              </>
-            }
-          />
-        </div>
-      )}
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <DemographicSettingsFormWrapper
           epcis={epcisCodes}
           omphaleEvolution={omphaleEvolution}
           populationEvolution={populationEvolution}
           scenarioId={simulation.scenario.id}
+          fragileEpciCodes={epcisWithoutInseeProjection}
+          notice={<FragileProjectionAlert epciCodes={epcisWithoutInseeProjection} epcisCount={epcisCodes.length} />}
         />
       </div>
       <div className="fr-px-2w fr-pt-2w">

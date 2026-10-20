@@ -34,13 +34,14 @@ export const ModifyAllEpcisSecondaryRatesView: FC<ModifyAllEpcisSecondaryRatesVi
 
   return (
     <div className="fr-p-4w shadow">
-      <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
+      <div className="fr-flex fr-direction-column fr-flex-gap-4v fr-justify-content-space-between">
         <PeakYearHorizonAlert peakYear={minPeakYear} projection={projection} millesime={millesimeNum} />
         {!isLockedByMillesime && (
           <>
-            <span className="fr-text-mention--grey">
-              Le taux moyen observé sur l'ensemble du territoire s'élève à <strong>{(averageTxRS * 100).toFixed(2)} %</strong>.
-            </span>
+            <p className="fr-mb-0">
+              Le taux de <strong>résidences secondaires</strong> moyen observé sur l&apos;ensemble du territoire s&apos;élève à{' '}
+              <strong>{(averageTxRS * 100).toFixed(2).replace('.', ',')} %</strong>.
+            </p>
             <div className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between">
               <ModifyAllSecondaryAccommodationRateInput epcis={epcis} />
               <ModifyAggregatedSecondaryParcsComparisonChart targetYear={targetYear} />

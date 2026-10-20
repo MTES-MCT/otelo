@@ -29,14 +29,16 @@ export const ModifyAllEpcisRestructurationRatesView: FC = () => {
 
   return (
     <div className="fr-p-4w shadow">
-      <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-        <span className="fr-text-mention--grey fr-mb-3v">
-          Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre {observedPeriodLabel}. Les taux moyens observés sur
-          l'ensemble du territoire sont de <strong>{(averageRestructuringRate * 100).toFixed(2)} %</strong> pour la restructuration et{' '}
-          <strong>{(averageDisappearanceRate * 100).toFixed(2)} %</strong> pour la disparition.
-        </span>
+      <div className="fr-flex fr-direction-column fr-flex-gap-4v fr-justify-content-space-between">
+        {/* Introduit le renouvellement urbain plutôt que d'inciter à reconduire les taux par défaut. */}
+        <p className="fr-mb-1v">
+          Entre {observedPeriodLabel}, le parc de logements de votre territoire a évolué sous l&apos;effet des démolitions, fusions,
+          divisions et changements d&apos;usage, à un rythme moyen de <strong>{(averageRestructuringRate * 100).toFixed(2)} %</strong> par
+          an pour la restructuration et <strong>{(averageDisappearanceRate * 100).toFixed(2)} %</strong> pour la disparition. Quel rythme
+          anticipez-vous d&apos;ici {simulationSettings.projection} ?
+        </p>
         <ModifyAllRestructurationDisparitionRatesInput />
-      </div>{' '}
+      </div>
     </div>
   )
 }

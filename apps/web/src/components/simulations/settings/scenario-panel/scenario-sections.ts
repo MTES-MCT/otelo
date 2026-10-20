@@ -28,12 +28,20 @@ type ScenarioRowDefinition = {
   step: WizardStepSlug
   /** Renvoie vers la note de bas de colonne. */
   footnote?: boolean
-  /** La ligne porte le taux cible de vacance de longue durée, quand un seul EPCI est affiché. */
-  showsLongTermVacancyRate?: boolean
+  /** Hypothèse rappelée sous le libellé : scénario démographique, ou taux cible quand un seul EPCI est affiché. */
+  detail?: ScenarioRowDetail
 }
 
+export type ScenarioRowDetail = 'demographicScenario' | 'longTermVacancyRate' | 'secondaryResidenceRate'
+
 const HOUSEHOLDS_ROWS: ScenarioRowDefinition[] = [
-  { key: 'demographic', label: 'Évolution du nombre de ménages', step: 'parametrages-demographique', terms: ['demographic'] },
+  {
+    key: 'demographic',
+    label: 'Évolution du nombre de ménages',
+    step: 'parametrages-demographique',
+    terms: ['demographic'],
+    detail: 'demographicScenario',
+  },
   { key: 'badHousing', label: 'Situations de mal-logement', step: 'parametrages-demographique', terms: ['badHousing'], footnote: true },
 ]
 
@@ -43,9 +51,15 @@ const PARC_OFFER_ROWS: ScenarioRowDefinition[] = [
     label: 'Vacance longue durée',
     step: 'taux-cibles-logements-vacants',
     terms: ['fluidity', 'vacancyIncrease'],
-    showsLongTermVacancyRate: true,
+    detail: 'longTermVacancyRate',
   },
-  { key: 'secondaryResidences', label: 'Résidences secondaires', step: 'taux-cibles-residences-secondaires', terms: ['secondaryIncrease'] },
+  {
+    key: 'secondaryResidences',
+    label: 'Résidences secondaires',
+    step: 'taux-cibles-residences-secondaires',
+    terms: ['secondaryIncrease'],
+    detail: 'secondaryResidenceRate',
+  },
   { key: 'disappearance', label: 'Renouvellement urbain', step: 'taux-restructuration-disparition', terms: ['disappearanceSurplus'] },
 ]
 
@@ -75,7 +89,7 @@ export type ScenarioRow = {
   stepLabel: string
   isEditing: boolean
   footnote: boolean
-  showsLongTermVacancyRate: boolean
+  detail?: ScenarioRowDetail
 }
 
 export type ScenarioSection = {
@@ -119,7 +133,7 @@ const buildRow = (
   isEditing: definition.step === currentSlug,
   key: definition.key,
   label: definition.label,
-  showsLongTermVacancyRate: Boolean(definition.showsLongTermVacancyRate),
+  detail: definition.detail,
   stepLabel: getStepLabel(definition.step, flow),
   value,
 })

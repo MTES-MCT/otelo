@@ -5,7 +5,7 @@ import { SelectMillesimeModal } from '~/components/simulations/settings/select-m
 import { SelectProjectionPeriod } from '~/components/simulations/settings/select-projection-period'
 
 export const metadata: Metadata = {
-  title: 'Elaborer scenario - étape 2 sur 6 - Otelo',
+  title: 'Élaborer un scénario - étape 2 sur 6 - Otelo',
 }
 export default async function TemporalChoicePage() {
   const href = `/simulation/parametrages-demographique`

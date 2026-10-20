@@ -34,33 +34,31 @@ const CHOIX_DU_TERRITOIRE: WizardStep = {
 
 const CADRAGE_TEMPOREL: WizardStep = {
   slug: 'cadrage-temporel',
-  title: "Déterminer l'horizon de temps",
+  title: 'Horizon de temps',
   stepperLabel: 'Horizon de temps',
-  description: "Les futurs paramétrages seront appliqués à l'horizon temporel choisi",
 }
 
 const PARAMETRAGES_DEMOGRAPHIQUE: WizardStep = {
   slug: 'parametrages-demographique',
-  title: 'Affiner la projection démographique',
+  title: 'Évolution démographique',
   stepperLabel: 'Évolution démographique',
-  description: "Les choix de projection démographique s'appliquent à l'ensemble des EPCI inclus dans le territoire d'étude.",
 }
 
 const TAUX_CIBLES_LOGEMENTS_VACANTS: WizardStep = {
   slug: 'taux-cibles-logements-vacants',
-  title: 'Cibler le taux de logements vacants de longue durée',
+  title: 'Taux de vacance longue durée',
   stepperLabel: 'Vacance longue durée',
 }
 
 const TAUX_CIBLES_RESIDENCES_SECONDAIRES: WizardStep = {
   slug: 'taux-cibles-residences-secondaires',
-  title: 'Cibler le taux de résidences secondaires',
+  title: 'Taux de résidences secondaires',
   stepperLabel: 'Résidences secondaires',
 }
 
 const TAUX_RESTRUCTURATION_DISPARITION: WizardStep = {
   slug: 'taux-restructuration-disparition',
-  title: 'Paramétrer les dynamiques de renouvellement urbain',
+  title: 'Dynamiques de renouvellement urbain',
   stepperLabel: 'Renouvellement urbain',
 }
 

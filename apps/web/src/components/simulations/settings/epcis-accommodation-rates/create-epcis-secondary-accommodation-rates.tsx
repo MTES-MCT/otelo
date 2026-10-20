@@ -4,12 +4,15 @@ import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
+import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { CreateSecondaryAccommodationRateInput } from '~/components/simulations/settings/create-secondary-accommodation-rate-input'
 import { EpciTabs } from '~/components/simulations/settings/epci-tabs'
 import { AllEpcisSecondaryRatesView } from '~/components/simulations/settings/epcis-accommodation-rates/all-epcis-secondary-rates-view'
 import ParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/parc-comparison-charts'
 import { SecondaryRatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/secondary-rates-toggle-switch'
 import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-year-horizon-alert'
+import { SecondaryResidenceObservation, SecondaryResidenceReadingKey } from '~/components/simulations/settings/secondary-residence-texts'
+import { ChoiceHelpButton } from '~/components/simulations/tutorial/tutorial-button'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
@@ -22,13 +25,16 @@ interface CreateEpcisAccomodationRatesProps {
 
 interface TabChildrenProps {
   epci: string
+  epciName: string
   rates: TEpcisAccommodationRates
   millesime: string
 }
 
-const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
+const TabChildren: FC<TabChildrenProps> = ({ epci, epciName, rates, millesime }) => {
   const { peakYears, projection: projectionNum, isLoading } = useCreationPeakYears()
+  const { rates: targetRates } = useEpcisRates()
   const epciRates = rates?.[epci]
+  const targetTxRS = targetRates[epci]?.txRS
 
   const epciPeakYear = peakYears[epci] ?? null
   const isPeakBeforeProjection = epciPeakYear !== null && projectionNum !== null && epciPeakYear < projectionNum
@@ -39,13 +45,12 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
   if (isLoading) return <LoadingSpinner />
 
   return (
-    <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
+    <div className="fr-flex fr-direction-column fr-flex-gap-4v fr-justify-content-space-between">
+      <ChoiceHelpButton />
       <PeakYearHorizonAlert peakYear={epciPeakYear ?? null} projection={projectionNum} millesime={millesime ? Number(millesime) : null} />
       {!isLockedByMillesime && (
         <>
-          <span className="fr-text-mention--grey">
-            Le taux observé en {epciRates.vacancy.year} s'élève à <strong>{Number(epciRates.txRs * 100).toFixed(2)} %</strong>.
-          </span>
+          <SecondaryResidenceObservation year={epciRates.vacancy.year} territoryLabel={epciName} observedRate={Number(epciRates.txRs)} />
           <div
             className="fr-flex fr-direction-column fr-flex-gap-6v fr-justify-content-space-between"
             {...tutorialAnchor('secondary-rate')}
@@ -54,6 +59,14 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
               epci={epci}
               label={`Quel objectif de taux souhaitez-vous fixer pour l'horizon ${targetYear} ?`}
             />
+            {targetTxRS !== undefined && (
+              <SecondaryResidenceReadingKey
+                territoryLabel={epciName}
+                observedRate={Number(epciRates.txRs)}
+                targetRate={targetTxRS}
+                targetYear={targetYear}
+              />
+            )}
             <ParcsComparisonCharts epci={epci} targetYear={targetYear} />
           </div>
         </>
@@ -83,7 +96,17 @@ export const CreateEpcisSecondaryAccommodationRates: FC<CreateEpcisAccomodationR
       {isAllMode ? (
         <AllEpcisSecondaryRatesView epcis={epcis} />
       ) : (
-        <EpciTabs epcis={epcis} renderTab={(epciCode) => <TabChildren epci={epciCode} rates={rates} millesime={millesime ?? ''} />} />
+        <EpciTabs
+          epcis={epcis}
+          renderTab={(epciCode) => (
+            <TabChildren
+              epci={epciCode}
+              epciName={epcis.find((epci) => epci.code === epciCode)?.name ?? epciCode}
+              rates={rates}
+              millesime={millesime ?? ''}
+            />
+          )}
+        />
       )}
     </>
   )

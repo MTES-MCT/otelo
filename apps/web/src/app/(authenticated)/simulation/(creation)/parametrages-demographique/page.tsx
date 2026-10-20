@@ -1,4 +1,3 @@
-import Alert from '@codegouvfr/react-dsfr/Alert'
 import type { Metadata } from 'next'
 import { SearchParams } from 'nuqs'
 import { searchParamsCache } from '~/app/(authenticated)/simulation/(creation)/searchParams'
@@ -9,6 +8,7 @@ import { PrefetchCreationSimulationPreview } from '~/components/simulations/prev
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { DemographicSettingsHeader } from '~/components/simulations/settings/demographic-settings-header'
 import { DemographicNextStep } from '~/components/simulations/settings/demographic-transition-modal'
+import { FragileProjectionAlert } from '~/components/simulations/settings/fragile-projection-alert'
 import { InfographieLink } from '~/components/simulations/settings/infographie-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
 import { getEpcisWithoutInseeProjection } from '~/server-only/demographic-evolution/get-epcis-without-insee-projection'
@@ -16,7 +16,7 @@ import { getOmphaleDemographicEvolutionByEpci } from '~/server-only/demographic-
 import { getPopulationDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-population-evolution-by-epci'
 
 export const metadata: Metadata = {
-  title: 'Elaborer scenario - étape 3 sur 6 - Otelo',
+  title: 'Élaborer un scénario - étape 3 sur 6 - Otelo',
 }
 
 type PageProps = {
@@ -31,36 +31,17 @@ export default async function DemographicSettingsPage({ searchParams }: PageProp
     getEpcisWithoutInseeProjection(epcis),
   ])
   const href = `/simulation/taux-cibles-logements-vacants`
-  const hasEpcisWithoutInseeProjection = epcisWithoutInseeProjection.length > 0
 
   return (
     <>
       <PrefetchCreationSimulationPreview />
-      {hasEpcisWithoutInseeProjection && (
-        <div className="fr-py-2w fr-pt-2w">
-          <Alert
-            severity="warning"
-            small
-            description={
-              <>
-                Pour ce territoire, l'INSEE ne propose pas de projections démographiques robustes. Les projections affichées ont été
-                recalculées en ventilant les projections départementales — ménages ou population — au prorata du poids de l'EPCI dans le
-                département.{' '}
-                <a href="/guide#elaboration-projections" target="_blank" rel="noopener noreferrer">
-                  En savoir plus
-                </a>
-              </>
-            }
-          />
-        </div>
-      )}
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
-        <DemographicSettingsHeader>
+        <DemographicSettingsHeader notice={<FragileProjectionAlert epciCodes={epcisWithoutInseeProjection} epcisCount={epcis.length} />}>
           <ChartDownloadWrapper fileName="scenarios-population" withFloatingButton={false}>
             <PopulationScenariosChart demographicEvolution={populationEvolution} />
           </ChartDownloadWrapper>
           <ChartDownloadWrapper fileName="scenarios-omphale" withFloatingButton={false}>
-            <OmphaleScenariosChart demographicEvolution={omphaleEvolution} />
+            <OmphaleScenariosChart demographicEvolution={omphaleEvolution} fragileEpciCodes={epcisWithoutInseeProjection} />
           </ChartDownloadWrapper>
         </DemographicSettingsHeader>
       </div>

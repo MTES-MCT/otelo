@@ -1,0 +1,25 @@
+/*
+ * « Comment faire mon choix ? » : jaune tournesol pour se distinguer des actions du parcours,
+ * qui restent bleues. L'aide se lit dans le fil de l'étape, pas comme une action à accomplir.
+ */
+.button {
+  align-items: center;
+  background-color: var(--background-contrast-yellow-tournesol);
+  border: none;
+  color: var(--text-action-high-blue-france);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1rem;
+  font-weight: 500;
+  gap: 0.5rem;
+  line-height: 1.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.button:hover {
+  background-color: var(--background-contrast-yellow-tournesol-hover);
+}
+
+.button:active {
+  background-color: var(--background-contrast-yellow-tournesol-active);
+}

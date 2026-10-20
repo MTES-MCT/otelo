@@ -4,6 +4,7 @@ import { Range } from '@codegouvfr/react-dsfr/Range'
 import { TAccommodationRates } from '@shared'
 import { FC, useState } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
+import { ReadingKey } from '~/components/ui/reading-key'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 
 interface ModifyAllEpcisAccommodationRangeProps {
@@ -36,17 +37,25 @@ export const ModifyAllEpcisAccommodationRange: FC<ModifyAllEpcisAccommodationRan
   }
 
   return (
-    <div className="fr-col-8">
-      <Range
-        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${targetYear} ?`}
-        suffix="%"
-        max={100}
-        min={0}
-        nativeInputProps={{
-          onChange: handleChange,
-          value: reductionPercent,
-        }}
-      />
-    </div>
+    <>
+      <div className="fr-col-12 fr-col-md-8">
+        <Range
+          // La question est posée juste au-dessus, en toutes lettres : le libellé ne sert qu'aux lecteurs d'écran.
+          label={`Réduction du taux de vacance longue durée de chaque EPCI d'ici ${targetYear}`}
+          classes={{ label: 'fr-sr-only' }}
+          suffix="%"
+          max={100}
+          min={0}
+          nativeInputProps={{
+            onChange: handleChange,
+            value: reductionPercent,
+          }}
+        />
+      </div>
+      <ReadingKey className="fr-mt-3w">
+        Le taux de vacance longue durée de <strong>chaque EPCI</strong> sera réduit de <strong>{reductionPercent} %</strong> d&apos;ici{' '}
+        {targetYear}, à partir de son propre taux observé.
+      </ReadingKey>
+    </>
   )
 }

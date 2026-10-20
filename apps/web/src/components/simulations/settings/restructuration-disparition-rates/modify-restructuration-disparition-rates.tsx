@@ -17,6 +17,8 @@ interface ModifyRestructurationDisparitionRatesProps {
 
 interface TabChildrenProps {
   epci: string
+  epciName: string
+  projection: number
   rates: TEpcisAccommodationRates
   observedPeriodLabel: string
 }
@@ -26,15 +28,17 @@ const getObservedRatesPeriodLabel = (millesime?: string): string => {
   return Number.isFinite(year) && year >= 2022 ? '2015 et 2022' : '2015 et 2021'
 }
 
-const TabChildren: FC<TabChildrenProps> = ({ epci, rates, observedPeriodLabel }) => {
+const TabChildren: FC<TabChildrenProps> = ({ epci, epciName, projection, rates, observedPeriodLabel }) => {
   const epciRates = rates?.[epci]
   if (!epciRates) return null
 
   return (
-    <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-      <span className="fr-text-mention--grey fr-mb-5v">
-        Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre {observedPeriodLabel}.
-      </span>
+    <div className="fr-flex fr-direction-column fr-flex-gap-4v fr-justify-content-space-between">
+      {/* Introduit le renouvellement urbain plutôt que d'inciter à reconduire les taux par défaut. */}
+      <p className="fr-mb-1v">
+        Entre {observedPeriodLabel}, le parc de logements de {epciName} a évolué sous l&apos;effet des démolitions, fusions, divisions et
+        changements d&apos;usage. Quel rythme anticipez-vous d&apos;ici {projection} ?
+      </p>
 
       <ModifyRestructurationDisparitionRatesInput epci={epci} />
     </div>
@@ -61,7 +65,15 @@ export const ModifyRestructurationDisparitionRates: FC<ModifyRestructurationDisp
       ) : (
         <EpciTabs
           epcis={epcis}
-          renderTab={(epciCode) => <TabChildren epci={epciCode} rates={rates} observedPeriodLabel={observedPeriodLabel} />}
+          renderTab={(epciCode) => (
+            <TabChildren
+              epci={epciCode}
+              epciName={epcis.find((epci) => epci.code === epciCode)?.name ?? epciCode}
+              projection={simulationSettings.projection}
+              rates={rates}
+              observedPeriodLabel={observedPeriodLabel}
+            />
+          )}
         />
       )}
     </>

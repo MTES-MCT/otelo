@@ -1,5 +1,6 @@
 'use client'
 
+import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
 import type { ModalProps } from '@codegouvfr/react-dsfr/Modal'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
 import { buildEstimationBreakdown } from '@shared'
@@ -14,7 +15,30 @@ import { NextStepLink } from './next-step-link'
 
 const modal = createModal({ id: 'demographic-transition-modal', isOpenedByDefault: false })
 
-type TransitionPage = { title: string; content: ReactNode }
+/**
+ * « Ne plus afficher ce message » ne masque que les écrans pédagogiques, identiques d'un scénario à
+ * l'autre. L'écran du pic de ménages, propre aux données du territoire, reste toujours affiché.
+ */
+const DISMISSED_KEY = 'otelo.simulation.demographicTransitionDismissed'
+
+/** Le stockage local jette en navigation privée ou cookies bloqués : jamais bloquant ici. */
+const isDismissed = (): boolean => {
+  try {
+    return localStorage.getItem(DISMISSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+const markAsDismissed = (): void => {
+  try {
+    localStorage.setItem(DISMISSED_KEY, '1')
+  } catch {
+    // Sans stockage, les écrans reviendront au prochain scénario : c'est sans gravité.
+  }
+}
+
+type TransitionPage = { title: string; content: ReactNode; dismissible?: boolean }
 
 type PeakEpci = { code: string; name: string; peakYear: number }
 
@@ -89,10 +113,12 @@ export const DemographicNextStep: FC<{ href: string }> = ({ href }) => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [pageIndex, setPageIndex] = useState(0)
+  const [dismissed, setDismissed] = useState(false)
+  const [dontShowAgain, setDontShowAgain] = useState(false)
   const { peakEpcis, projection, isSingleEpciTerritory } = usePeakEpcis()
   const badHousingNeed = useBadHousingNeed()
 
-  const pages: TransitionPage[] = [
+  const allPages: TransitionPage[] = [
     ...(peakEpcis.length > 0 && projection
       ? [
           {
@@ -102,70 +128,118 @@ export const DemographicNextStep: FC<{ href: string }> = ({ href }) => {
         ]
       : []),
     {
-      title: 'La prise en compte du mal-logement',
+      title: 'Le mal-logement intégré à votre estimation',
+      dismissible: true,
       content: (
-        <p>
-          Vous venez de paramétrer les évolutions démographiques de votre territoire. Une autre composante de la demande de logements est
-          prise en compte à ce stade par Otelo : <strong>la résorption du mal-logement</strong>. Vous pourrez la modifier à la fin du
-          parcours, depuis la fenêtre de résultats.
-          {badHousingNeed !== null && (
-            <>
-              {' '}
-              Son paramétrage par défaut génère un besoin de <strong>{formatNumber(badHousingNeed)} logements</strong> pour l&apos;instant.
-            </>
-          )}
-        </p>
+        <>
+          <p>
+            Vous venez de définir l&apos;évolution du nombre de ménages. Otelo a complété cette première estimation avec une autre
+            composante de la demande : le <strong>mal-logement</strong>.
+            {badHousingNeed !== null && (
+              <>
+                {' '}
+                Son hypothèse par défaut génère un besoin de <strong>{formatNumber(badHousingNeed)}</strong> logements.
+              </>
+            )}
+          </p>
+          <p className="fr-mb-0">Vous pourrez la modifier depuis la page des résultats, une fois votre scénario enregistré.</p>
+        </>
       ),
     },
     {
       title: "Prochaines étapes : l'évolution du parc",
+      dismissible: true,
       content: (
         <>
           <p>
-            À population donnée, plusieurs leviers permettent de répondre aux besoins en logements. Vous allez maintenant paramétrer les
-            évolutions du parc de logements : <strong>la vacance de longue durée, les résidences secondaires et le renouvellement</strong>.
-          </p>
-          <p>
-            Ces paramètres déterminent dans quelle mesure la mobilisation du parc existant peut contribuer à répondre aux besoins en
-            logements, ou, au contraire, à les accroître.
+            Vous allez maintenant examiner comment l&apos;évolution du parc de logements agit sur votre estimation, à travers la vacance de
+            longue durée, les résidences secondaires et le renouvellement urbain.
           </p>
           <p className="fr-mb-0">
-            À noter que la vacance de courte durée, nécessaire au fonctionnement du parc, est fixée et non modifiable.
+            La{' '}
+            <a
+              href="/guide#donnees-parc-logement"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Vacance de courte durée - nouvelle fenêtre"
+            >
+              vacance de courte durée
+            </a>
+            , nécessaire au fonctionnement du parc, est fixée par Otelo.
           </p>
         </>
       ),
     },
   ]
 
+  const pages = dismissed ? allPages.filter((transitionPage) => !transitionPage.dismissible) : allPages
+
   // Le pic peut arriver après l'ouverture et allonger la liste : on ne sort jamais des bornes.
   const currentIndex = Math.min(pageIndex, pages.length - 1)
-  const page = pages[currentIndex]
+  // Liste vide quand les écrans pédagogiques sont masqués sans pic de ménages : la modale reste
+  // montée (le DSFR l'ouvre par son id) mais n'est jamais ouverte.
+  const page: TransitionPage | undefined = pages[currentIndex]
   const isLastPage = currentIndex === pages.length - 1
 
-  const open = () => {
-    setPageIndex(0)
-    modal.open()
-  }
-
   const goToNextStep = () => {
+    if (dontShowAgain) markAsDismissed()
     modal.close()
     window.scrollTo({ top: 0 })
     router.push(`${href}?${new URLSearchParams(searchParams)}`)
   }
 
-  const forward = isLastPage
-    ? { children: 'Continuer', doClosesModal: false, onClick: goToNextStep }
-    : { children: 'Suivant', doClosesModal: false, onClick: () => setPageIndex(currentIndex + 1) }
+  const open = () => {
+    const isAlreadyDismissed = isDismissed()
+    setDismissed(isAlreadyDismissed)
+    setPageIndex(0)
+    // Écrans pédagogiques masqués et pas de pic de ménages : rien à montrer, on enchaîne.
+    if (isAlreadyDismissed && !allPages.some((transitionPage) => !transitionPage.dismissible)) {
+      goToNextStep()
+      return
+    }
+    modal.open()
+  }
+
+  const forward: ModalProps.ActionAreaButtonProps = isLastPage
+    ? { children: "Examiner l'évolution du parc", doClosesModal: false, onClick: goToNextStep }
+    : {
+        children: 'Continuer',
+        iconId: 'fr-icon-arrow-right-line',
+        iconPosition: 'right',
+        doClosesModal: false,
+        onClick: () => setPageIndex(currentIndex + 1),
+      }
   const buttons: ModalProps['buttons'] =
     currentIndex > 0
-      ? [{ children: 'Précédent', priority: 'secondary', doClosesModal: false, onClick: () => setPageIndex(currentIndex - 1) }, forward]
+      ? [
+          {
+            children: 'Précédent',
+            priority: 'secondary',
+            iconId: 'fr-icon-arrow-left-line',
+            iconPosition: 'left',
+            doClosesModal: false,
+            onClick: () => setPageIndex(currentIndex - 1),
+          },
+          forward,
+        ]
       : [forward]
 
   return (
     <>
       <NextStepLink href={href} query="omphale" touchedQueryParam="omphaleTouched" onNext={open} />
-      <modal.Component title={page.title} buttons={buttons} size="large">
-        {page.content}
+      <modal.Component title={page?.title ?? ''} buttons={buttons}>
+        {page?.content}
+        {page?.dismissible && (
+          <Checkbox
+            className="fr-mt-3w fr-mb-0"
+            options={[
+              {
+                label: 'Ne plus afficher ce message',
+                nativeInputProps: { checked: dontShowAgain, onChange: (event) => setDontShowAgain(event.target.checked) },
+              },
+            ]}
+          />
+        )}
         {pages.length > 1 && (
           <p className="fr-text--sm fr-text-mention--grey fr-mt-2w fr-mb-0">
             {currentIndex + 1} sur {pages.length}

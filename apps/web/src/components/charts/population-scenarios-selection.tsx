@@ -8,12 +8,20 @@ import { FC, useState } from 'react'
 import { MillesimeReminder } from '~/components/simulations/settings/millesime-reminder'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import styles from './charts.module.css'
+import { formatScenarioProjection, type ScenarioProjection } from './scenario-projection-hint'
+
+type PopulationScenariosSelectionProps = {
+  availableScenarios?: string[]
+  /** Population projetée à l'horizon par scénario, sur le territoire affiché par le graphique. */
+  projections?: Partial<Record<string, ScenarioProjection>>
+  horizon?: string
+}
 
 // `availableScenarios` liste les projections de population disponibles pour
 // TOUS les EPCI du bassin d'habitat (intersection). Non fourni = toutes
 // disponibles (rétro-compatible). Les scénarios absents pour au moins un EPCI
 // sont désactivés plutôt que masqués, pour rester visibles.
-export const PopulationScenariosSelection: FC<{ availableScenarios?: string[] }> = ({ availableScenarios }) => {
+export const PopulationScenariosSelection: FC<PopulationScenariosSelectionProps> = ({ availableScenarios, projections, horizon }) => {
   const [queryState, setQueryState] = useQueryStates({
     population: parseAsString,
     populationTouched: parseAsString,
@@ -26,35 +34,25 @@ export const PopulationScenariosSelection: FC<{ availableScenarios?: string[] }>
 
   const isAvailable = (value: string) => !availableScenarios || availableScenarios.includes(value)
 
-  const RADIO_OPTIONS = [
-    {
-      label: 'Basse',
+  const RADIO_OPTIONS = (
+    [
+      ['basse', 'Basse'],
+      ['central', 'Centrale'],
+      ['haute', 'Haute'],
+    ] as const
+  ).map(([value, label]) => {
+    const projection = isAvailable(value) ? projections?.[value] : undefined
+    return {
+      label,
+      hintText: projection && horizon ? formatScenarioProjection(projection, 'hab.', horizon) : undefined,
       nativeInputProps: {
-        value: 'basse',
-        checked: queryState.population === 'basse',
-        onChange: () => setPopulation('basse'),
-        disabled: !isAvailable('basse'),
+        value,
+        checked: queryState.population === value,
+        onChange: () => setPopulation(value),
+        disabled: !isAvailable(value),
       },
-    },
-    {
-      label: 'Centrale',
-      nativeInputProps: {
-        value: 'central',
-        checked: queryState.population === 'central',
-        onChange: () => setPopulation('central'),
-        disabled: !isAvailable('central'),
-      },
-    },
-    {
-      label: 'Haute',
-      nativeInputProps: {
-        value: 'haute',
-        checked: queryState.population === 'haute',
-        onChange: () => setPopulation('haute'),
-        disabled: !isAvailable('haute'),
-      },
-    },
-  ]
+    }
+  })
 
   const hasError = !queryState.population && queryState.populationTouched === 'true'
 
@@ -72,7 +70,19 @@ export const PopulationScenariosSelection: FC<{ availableScenarios?: string[] }>
       )}
       <RadioButtons
         key={`population-${queryState.population || 'none'}`}
-        legend="Choisissez une projection d'évolution de la population"
+        legend={
+          <>
+            Choisissez un scénario d&apos;<strong>évolution de la population</strong> établi par{' '}
+            <a
+              href="/guide#projections-population"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="L'Insee (modèle Omphale) - nouvelle fenêtre"
+            >
+              l&apos;Insee (modèle Omphale)
+            </a>
+          </>
+        }
         orientation="horizontal"
         options={RADIO_OPTIONS}
         name="population-scenario"

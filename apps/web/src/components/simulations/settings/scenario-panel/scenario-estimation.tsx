@@ -7,7 +7,37 @@ import { FC } from 'react'
 import { useWizardStep } from '../use-wizard-step'
 import styles from './scenario-panel.module.css'
 import { ScenarioSectionBlock } from './scenario-section-block'
-import { buildScenarioSections } from './scenario-sections'
+import { buildScenarioSections, type ScenarioRowDetail } from './scenario-sections'
+
+/** Hypothèses rappelées sous les lignes de l'estimation ; `null` quand elles ne s'appliquent pas. */
+export type ScenarioRowDetails = Record<ScenarioRowDetail, string | null>
+
+const POPULATION_LABELS: Record<string, string> = { Central: 'Centrale', PB: 'Basse', PH: 'Haute' }
+const HOUSEHOLDS_LABELS: Record<string, string> = { B: 'Décélération', C: 'Tendanciel', H: 'Accéléré' }
+
+/** « Central_H » → « Centrale – Accéléré » : le scénario de population, puis celui de ménages. */
+export const getDemographicScenarioLabel = (omphale: string | null | undefined): string | null => {
+  const [population, households] = omphale?.split('_') ?? []
+  const populationLabel = population ? POPULATION_LABELS[population] : undefined
+  const householdsLabel = households ? HOUSEHOLDS_LABELS[households] : undefined
+  return populationLabel && householdsLabel ? `${populationLabel} – ${householdsLabel}` : null
+}
+
+const formatTargetRate = (rate: number | null | undefined): string | null =>
+  rate == null ? null : `Taux cible : ${(rate * 100).toFixed(2).replace('.', ',')} %`
+
+/**
+ * Taux cibles d'un seul EPCI : sur l'ensemble du territoire, chaque EPCI garde le sien.
+ * La création porte le taux de résidences secondaires en `txRS`, la modification en `txRs`.
+ */
+export const buildScenarioRowDetails = (
+  omphale: string | null | undefined,
+  rates: { longTermVacancyRate?: number; txRS?: number; txRs?: number } | null | undefined,
+): ScenarioRowDetails => ({
+  demographicScenario: getDemographicScenarioLabel(omphale),
+  longTermVacancyRate: formatTargetRate(rates?.longTermVacancyRate),
+  secondaryResidenceRate: formatTargetRate(rates?.txRS ?? rates?.txRs),
+})
 
 type ScenarioEstimationProps = {
   /** `null` tant que la projection démographique n'est pas choisie : on dit ce qui manque. */
@@ -21,8 +51,7 @@ type ScenarioEstimationProps = {
   onScopeChange: (epciCode: string | null) => void
   /** Le moteur écarte cet EPCI du total : ses termes valent tous zéro, il faut le dire. */
   isScopedEpciExcluded?: boolean
-  /** Taux cible de vacance de longue durée de l'EPCI affiché, s'il n'y en a qu'un. */
-  longTermVacancyRate: number | null
+  rowDetails: ScenarioRowDetails
 }
 
 export const ScenarioEstimation: FC<ScenarioEstimationProps> = ({
@@ -32,7 +61,7 @@ export const ScenarioEstimation: FC<ScenarioEstimationProps> = ({
   scopedEpciCode,
   onScopeChange,
   isScopedEpciExcluded,
-  longTermVacancyRate,
+  rowDetails,
 }) => {
   const { currentIndex, currentStep, flow, steps } = useWizardStep()
 
@@ -86,11 +115,7 @@ export const ScenarioEstimation: FC<ScenarioEstimationProps> = ({
             key={`${section.key}-${currentSlug}`}
             section={section}
             defaultOpen={section.isEditing || section.key === 'housingToFind'}
-            renderRowDetail={(row) =>
-              row.showsLongTermVacancyRate && longTermVacancyRate !== null
-                ? `Taux cible : ${(longTermVacancyRate * 100).toFixed(2)} %`
-                : null
-            }
+            renderRowDetail={(row) => (row.detail ? rowDetails[row.detail] : null)}
           />
         ))}
       </div>

@@ -9,7 +9,7 @@ import { useEstimationScope } from '~/hooks/use-estimation-scope'
 import { useEstimationTerritory } from '~/hooks/use-estimation-territory'
 import { useSimulationPreview } from '~/hooks/use-simulation-preview'
 import { useWizardStep } from '../use-wizard-step'
-import { ScenarioEstimation } from './scenario-estimation'
+import { buildScenarioRowDetails, ScenarioEstimation } from './scenario-estimation'
 import { ScenarioPanel, ScenarioPeriod } from './scenario-panel'
 import { ScenarioTerritory } from './scenario-territory'
 
@@ -40,12 +40,12 @@ export const CreationScenarioPanel: FC = () => {
   }
 
   const displayedEpciCode = scopedEpciCode ?? (epciOptions.length === 1 ? epciOptions[0].code : null)
-  const longTermVacancyRate = displayedEpciCode ? (rates[displayedEpciCode]?.longTermVacancyRate ?? null) : null
+  const rowDetails = buildScenarioRowDetails(omphale, displayedEpciCode ? rates[displayedEpciCode] : null)
 
   const renderEstimation = () => {
     if (!showsEstimation) return null
 
-    const commonProps = { epciOptions, longTermVacancyRate, onScopeChange: setScope, scopedEpciCode }
+    const commonProps = { epciOptions, onScopeChange: setScope, rowDetails, scopedEpciCode }
 
     if (!hasDemographicChoice) {
       return <ScenarioEstimation breakdown={null} isStale={false} {...commonProps} />

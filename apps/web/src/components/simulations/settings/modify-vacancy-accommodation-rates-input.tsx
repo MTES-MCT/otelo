@@ -6,13 +6,14 @@ import { ModifyLongTermAccomodationRange } from '~/components/simulations/settin
 
 type ModifyVacancyAccommodationRatesInputProps = {
   epci: string
+  epciName: string
   epciRates: TAccommodationRates
 }
 
-export const ModifyVacancyAccommodationRatesInput: FC<ModifyVacancyAccommodationRatesInputProps> = ({ epci }) => {
+export const ModifyVacancyAccommodationRatesInput: FC<ModifyVacancyAccommodationRatesInputProps> = ({ epci, epciName }) => {
   return (
     <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-      <ModifyLongTermAccomodationRange epci={epci} />
+      <ModifyLongTermAccomodationRange epci={epci} epciName={epciName} />
     </div>
   )
 }

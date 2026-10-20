@@ -65,7 +65,8 @@ export const SelectMillesimeModal = () => {
       <Select
         label={
           <>
-            Millésime des données utilisées pour le scénario <DefinitionTooltip definition={getMillesimeDefinition(selectedMillesime)} />
+            <strong>Millésime</strong> <DefinitionTooltip definition={getMillesimeDefinition(selectedMillesime)} /> des données utilisées
+            pour votre scénario
           </>
         }
         hint="Le millésime fixe l'année de départ de l'horizon de temps ci-dessous."

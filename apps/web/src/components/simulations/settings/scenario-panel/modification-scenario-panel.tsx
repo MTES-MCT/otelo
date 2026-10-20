@@ -6,7 +6,7 @@ import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/mod
 import { useEstimationScope } from '~/hooks/use-estimation-scope'
 import { useModifyPreviewPayload } from '~/hooks/use-modify-preview-payload'
 import { useSimulationPreview } from '~/hooks/use-simulation-preview'
-import { ScenarioEstimation } from './scenario-estimation'
+import { buildScenarioRowDetails, ScenarioEstimation } from './scenario-estimation'
 import { ScenarioPanel, ScenarioPeriod } from './scenario-panel'
 import { ScenarioTerritory } from './scenario-territory'
 
@@ -27,8 +27,11 @@ export const ModificationScenarioPanel: FC<ModificationScenarioPanelProps> = ({ 
   const { data, isFetching, error } = useSimulationPreview(payload, { enabled: hasDemographicChoice })
 
   const displayedEpciCode = scopedEpciCode ?? (epciOptions.length === 1 ? epciOptions[0].code : null)
-  const longTermVacancyRate = displayedEpciCode ? (simulationSettings.epciScenarios[displayedEpciCode]?.longTermVacancyRate ?? null) : null
-  const commonProps = { epciOptions, longTermVacancyRate, onScopeChange: setScope, scopedEpciCode }
+  const rowDetails = buildScenarioRowDetails(
+    simulationSettings.b2_scenario,
+    displayedEpciCode ? simulationSettings.epciScenarios[displayedEpciCode] : null,
+  )
+  const commonProps = { epciOptions, onScopeChange: setScope, rowDetails, scopedEpciCode }
 
   const renderEstimation = () => {
     if (!hasDemographicChoice) {

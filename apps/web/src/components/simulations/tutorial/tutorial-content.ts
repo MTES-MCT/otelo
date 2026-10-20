@@ -24,8 +24,8 @@ export type TutorialAnchor =
   | 'wizard-stepper'
   | 'scenario-panel'
   // choix-du-territoire
-  | 'method-cards'
-  | 'card-custom'
+  | 'bassin-epcis'
+  | 'add-epcis'
   | 'epci-group-select'
   | 'epci-search'
   | 'urbanisme-doc'
@@ -134,8 +134,6 @@ const buildCreationContent = ({ millesime }: TutorialContext): Partial<Record<Wi
   'choix-du-territoire': [
     {
       anchor: 'wizard-stepper',
-      // Mot d'accueil : il n'a plus lieu d'être une fois la méthode de sélection choisie.
-      visibleWith: 'method-cards',
       title: 'Construction du scénario',
       description:
         "<strong>Votre scénario se construit en 6 étapes.</strong> Vous définissez d'abord le territoire et l'horizon de projection, puis vous choisissez vos hypothèses sur la démographie et l'évolution du parc de logements. Otelo calcule ensuite les besoins à partir de l'ensemble de ces choix.",
@@ -143,26 +141,26 @@ const buildCreationContent = ({ millesime }: TutorialContext): Partial<Record<Wi
       align: 'center',
     },
     {
-      anchor: 'method-cards',
-      title: "Choisir le territoire d'étude",
-      description:
-        "Vous pouvez <strong>reprendre un territoire déjà utilisé</strong>, choisir un <strong>bassin d'habitat prédéfini</strong> ou composer vous-même un territoire à partir de plusieurs EPCI. Ces trois possibilités servent à définir le périmètre sur lequel vous allez construire votre scénario.",
-      side: 'top',
-      align: 'center',
-    },
-    {
-      anchor: 'card-custom',
-      title: 'Travailler sur un autre périmètre',
-      description:
-        "Si votre territoire d'étude ne correspond pas à un seul bassin d'habitat, vous pouvez créer votre propre regroupement d'EPCI en sélectionnant les EPCI limitrophes qui le composent. <strong>Cette option est utile pour travailler sur un SCoT qui s'étend sur plusieurs bassins d'habitat.</strong>",
-      side: 'bottom',
-      align: 'end',
-    },
-    {
       anchor: 'epci-search',
       title: 'Rechercher un EPCI',
       description:
-        "Recherchez ici l'EPCI sur lequel vous travaillez. Otelo identifiera automatiquement le bassin d'habitat auquel il appartient et ajoutera les autres EPCI qui le composent.",
+        "Recherchez ici l'EPCI ou la commune sur lequel vous travaillez. Otelo identifiera automatiquement le bassin d'habitat auquel il appartient et ajoutera les autres EPCI qui le composent.",
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      anchor: 'bassin-epcis',
+      title: "Le bassin d'habitat, votre territoire d'étude",
+      description:
+        "L'estimation des besoins se fait à l'échelle du <strong>bassin d'habitat</strong> : ses EPCI sont tous retenus. Vous pourrez ensuite consulter les résultats de chacun d'eux.",
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      anchor: 'add-epcis',
+      title: 'Travailler sur un autre périmètre',
+      description:
+        "Si votre territoire d'étude déborde du bassin d'habitat, vous pouvez y ajouter des EPCI limitrophes. <strong>Cette option est utile pour travailler sur un SCoT qui s'étend sur plusieurs bassins d'habitat.</strong>",
       side: 'bottom',
       align: 'start',
     },

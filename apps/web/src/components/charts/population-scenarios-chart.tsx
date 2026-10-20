@@ -1,10 +1,7 @@
 'use client'
 
-import Badge from '@codegouvfr/react-dsfr/Badge'
 import Button from '@codegouvfr/react-dsfr/Button'
-import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import { ALL_EPCIS_KEY } from '@shared'
-import classNames from 'classnames'
 import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC, useEffect } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
@@ -14,8 +11,10 @@ import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { PopulationScenariosCustomTooltip } from '~/components/charts/population-scenarios-custom-tooltip'
 import { PopulationScenariosSelection } from '~/components/charts/population-scenarios-selection'
+import { getScenarioProjection } from '~/components/charts/scenario-projection-hint'
 import { DemographicSettingsSelectEpci } from '~/components/simulations/settings/demographic-settings-header'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
+import { ReadingKey } from '~/components/ui/reading-key'
 import { useChartTerritory } from '~/hooks/use-chart-territory'
 import { TPopulationDemographicEvolution, TPopulationEvolution } from '~/schemas/demographic-evolution'
 import { formatNumber } from '~/utils/format-numbers'
@@ -29,6 +28,8 @@ interface PopulationEvolutionChartProps {
 }
 
 type TPopulationScenarioKey = 'basse' | 'central' | 'haute'
+
+const CHART_HEIGHT = 468
 
 const SCENARIOS: Array<{ dataKey: TPopulationScenarioKey; name: string; queryValue: TPopulationScenarioKey; stroke: string }> = [
   {
@@ -146,18 +147,20 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
   const evol =
     ((popEvolution[queryStates.population as keyof typeof popEvolution] as number | null) ?? 0) -
     ((basePopulation[queryStates.population as keyof typeof basePopulation] as number | null) ?? 0)
+  const projections = Object.fromEntries(
+    availableScenarioKeys.map((key) => [key, getScenarioProjection(basePopulation[key], popEvolution[key])]),
+  )
   const handleClick = () => {
     setQueryStates({ scenario: 'menages' })
     window.scrollTo({ top: 0 })
   }
   return (
     <>
-      <PopulationScenariosSelection availableScenarios={availableScenarioKeys} />
+      <PopulationScenariosSelection availableScenarios={availableScenarioKeys} projections={projections} horizon={period} />
       <DemographicSettingsSelectEpci epcis={epcis ?? queryStates.epcis} />
-      <ChartDownloadButton />
 
       <div className={classes.chartContainer} {...tutorialAnchor('population-chart')}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
           <LineChart width={500} height={300} data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             {displayedScenarios.map(({ dataKey, name, queryValue, stroke, strokeWidth }) => (
@@ -212,6 +215,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
           ))}
         </div>
       </div>
+      <ChartDownloadButton className="fr-mt-1w" />
 
       {queryStates.population &&
         (() => {
@@ -222,29 +226,15 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
           const tcam = periodYears > 0 && popBase > 0 ? (Math.pow(popAtProjection / popBase, 1 / periodYears) - 1) * 100 : 0
 
           return (
-            <CallOut
-              className="fr-py-2w fr-mb-0 fr-mt-4w"
-              title={
-                <Badge severity="new" noIcon small>
-                  <span className={classNames(classes.badgeIcon, 'ri-lightbulb-line fr-mr-1v')} />
-                  <span className="fr-text--uppercase">Clé de lecture</span>
-                </Badge>
-              }
-            >
-              <span className="fr-text--md">
-                <span>
-                  Ce scénario anticipe une évolution de la population de <strong>{evol > 0 ? `+${evol}` : evol}</strong> habitant
-                  {sPluriel(evol)} sur la période {queryStates.millesime} - {period}.
-                </span>
-                <br />
-                <span>
-                  Soit un taux de croissance annuel moyen de <strong>{tcam.toFixed(2)} %</strong> sur la période {queryStates.millesime} -{' '}
-                  {period}.
-                </span>
-                <br />
-                <span className="fr-text--sm fr-text-mention--grey fr-mb-0">Source des données : INSEE</span>
-              </span>
-            </CallOut>
+            <ReadingKey className="fr-mt-4w">
+              La population {evol >= 0 ? 'augmentera' : 'diminuera'} de <strong>{formatNumber(Math.round(Math.abs(evol)))}</strong> habitant
+              {sPluriel(Math.abs(evol))} entre {queryStates.millesime} et {period}, soit{' '}
+              <strong>
+                {tcam > 0 ? '+' : ''}
+                {tcam.toFixed(2).replace('.', ',')} %
+              </strong>{' '}
+              par an en moyenne.
+            </ReadingKey>
           )
         })()}
 
@@ -258,19 +248,14 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
 }
 
 const useStyles = tss.create({
-  badgeIcon: {
-    '&::before': {
-      '--icon-size': '12px',
-    },
-  },
   buttonContainer: {
     display: 'flex',
     justifyContent: 'flex-end',
     marginTop: '1rem',
   },
+  // Hauteur portée par le graphique, pas par le conteneur : la légende s'ajoute dessous sans déborder.
   chartContainer: {
     backgroundColor: 'white',
-    height: '500px',
     padding: '1rem',
     width: '100%',
   },

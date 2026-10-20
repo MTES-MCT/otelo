@@ -6,18 +6,22 @@ import RadioButtons from '@codegouvfr/react-dsfr/RadioButtons'
 import { Select } from '@codegouvfr/react-dsfr/Select'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { FC, useState } from 'react'
+import { RedAsterisk } from '~/components/ui/red-asterisk'
 import { collectPlanningDocuments, useDocurbaEpcis } from '~/hooks/use-docurba-epcis'
+import { validateUrbanismeDoc } from '~/schemas/urbanisme-doc'
 import { parseUrbanismeDocType, UrbanismeDocType } from '~/utils/epci-group-name'
 
 type UrbanismeDocQuestionProps = {
   /** Affiche les messages d'erreur, une fois « Suivant » sollicité sans réponse. */
   hasError?: boolean
+  /** Facultative sur un groupe existant, qui porte déjà son nom : pas de marque d'obligation. */
+  required?: boolean
 }
 
 /** Valeur sentinelle du `Select` : bascule sur la saisie libre, pour les documents absents de Docurba. */
 const FREE_TEXT_OPTION = '__autre__'
 
-export const UrbanismeDocQuestion: FC<UrbanismeDocQuestionProps> = ({ hasError = false }) => {
+export const UrbanismeDocQuestion: FC<UrbanismeDocQuestionProps> = ({ hasError = false, required = true }) => {
   const [{ epcis, urbanismeDoc, urbanismeDocType, urbanismeDocName }, setQueryStates] = useQueryStates({
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
     urbanismeDoc: parseAsString,
@@ -52,8 +56,9 @@ export const UrbanismeDocQuestion: FC<UrbanismeDocQuestionProps> = ({ hasError =
     return setQueryStates({ urbanismeDocName: value === FREE_TEXT_OPTION ? '' : value || null })
   }
 
-  const isDocTypeMissing = hasError && urbanismeDoc === 'oui' && !docType
-  const isDocNameMissing = hasError && docType === 'plh-plui' && !urbanismeDocName?.trim()
+  const requiredMark = required && <RedAsterisk />
+  // Les erreurs ne s'affichent qu'une fois « Suivant » sollicité : on ne reproche rien avant.
+  const errors = hasError ? validateUrbanismeDoc({ urbanismeDoc, urbanismeDocName, urbanismeDocType }) : {}
 
   return (
     <>
@@ -61,12 +66,12 @@ export const UrbanismeDocQuestion: FC<UrbanismeDocQuestionProps> = ({ hasError =
         // Remontage forcé : DSFR mémorise l'état coché de ses inputs, qui désynchronise sinon de l'URL.
         key={`urbanisme-doc-${urbanismeDoc ?? 'none'}`}
         className={fr.cx('fr-mb-0')}
-        legend="Travaillez-vous sur un document d'urbanisme ?"
+        legend={<>Travaillez-vous sur un document d&apos;urbanisme ? {requiredMark}</>}
         hintText="Votre réponse détermine le nom qui vous sera proposé pour ce groupe d'EPCI."
         orientation="horizontal"
         name="urbanisme-doc"
-        state={hasError && !urbanismeDoc ? 'error' : 'default'}
-        stateRelatedMessage={hasError && !urbanismeDoc ? 'Répondez à cette question pour continuer.' : undefined}
+        state={errors.urbanismeDoc ? 'error' : 'default'}
+        stateRelatedMessage={errors.urbanismeDoc}
         options={[
           {
             label: 'Oui',
@@ -84,11 +89,11 @@ export const UrbanismeDocQuestion: FC<UrbanismeDocQuestionProps> = ({ hasError =
           <RadioButtons
             key={`urbanisme-doc-type-${docType ?? 'none'}`}
             className={fr.cx('fr-mb-0')}
-            legend="Sur quel type de document travaillez-vous ?"
+            legend={<>Sur quel type de document travaillez-vous ? {requiredMark}</>}
             orientation="horizontal"
             name="urbanisme-doc-type"
-            state={isDocTypeMissing ? 'error' : 'default'}
-            stateRelatedMessage={isDocTypeMissing ? 'Choisissez un type de document pour continuer.' : undefined}
+            state={errors.urbanismeDocType ? 'error' : 'default'}
+            stateRelatedMessage={errors.urbanismeDocType}
             options={[
               {
                 label: 'PLH ou PLUi',
@@ -114,10 +119,12 @@ export const UrbanismeDocQuestion: FC<UrbanismeDocQuestionProps> = ({ hasError =
               {documents.length > 0 && (
                 <Select
                   // `Select` du DSFR n'accepte pas de `hintText` : la précision passe dans le libellé.
-                  label="Quel document ? (documents intercommunaux recensés par Docurba sur les territoires sélectionnés)"
+                  label={
+                    <>Quel document ? (documents intercommunaux recensés par Docurba sur les territoires sélectionnés) {requiredMark}</>
+                  }
                   nativeSelectProps={{ value: selectValue, onChange: (e) => onSelectDocument(e.target.value) }}
-                  state={isDocNameMissing && !isFreeText ? 'error' : 'default'}
-                  stateRelatedMessage={isDocNameMissing && !isFreeText ? 'Sélectionnez un document pour continuer.' : undefined}
+                  state={errors.urbanismeDocName && !isFreeText ? 'error' : 'default'}
+                  stateRelatedMessage={!isFreeText ? errors.urbanismeDocName : undefined}
                 >
                   <option value="">Sélectionnez un document</option>
                   {documents.map((document) => (
@@ -132,14 +139,14 @@ export const UrbanismeDocQuestion: FC<UrbanismeDocQuestionProps> = ({ hasError =
               {/* Docurba ne recense aucun PLH : hors PLUi, le nom ne peut venir que de l'utilisateur. */}
               {(documents.length === 0 || isFreeText) && (
                 <Input
-                  label="Nom du document"
+                  label={<>Nom du document {requiredMark}</>}
                   hintText={
                     documents.length === 0 && isFetching
                       ? 'Recherche des documents en cours…'
                       : 'Saisissez le nom du document tel qu’il est utilisé sur votre territoire.'
                   }
-                  state={isDocNameMissing ? 'error' : 'default'}
-                  stateRelatedMessage={isDocNameMissing ? 'Saisissez le nom du document pour continuer.' : undefined}
+                  state={errors.urbanismeDocName ? 'error' : 'default'}
+                  stateRelatedMessage={errors.urbanismeDocName}
                   nativeInputProps={{
                     value: urbanismeDocName ?? '',
                     onChange: (e) => setQueryStates({ urbanismeDocName: e.target.value }),

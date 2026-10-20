@@ -8,7 +8,7 @@ import { PreviousStepLink } from '~/components/simulations/settings/previous-ste
 import { getEpcis } from '~/server-only/epcis/get-epcis'
 
 export const metadata: Metadata = {
-  title: 'Élaborer scénario - étape 5 sur 6 - Otelo',
+  title: 'Élaborer un scénario - étape 5 sur 6 - Otelo',
 }
 
 type PageProps = {

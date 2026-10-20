@@ -3,6 +3,7 @@
 import { Range } from '@codegouvfr/react-dsfr/Range'
 import { FC, useEffect } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
+import { ReadingKey } from '~/components/ui/reading-key'
 import { clampProjectionYear, getMinProjectionYear, MAX_PROJECTION_YEAR } from '~/utils/projection'
 
 export const UpdateProjectionPeriod: FC = () => {
@@ -24,7 +25,8 @@ export const UpdateProjectionPeriod: FC = () => {
   return (
     <>
       <Range
-        label="Faites glisser le curseur pour établir l'horizon de temps du scénario."
+        label="Horizon de temps"
+        prefix="1er janvier "
         max={MAX_PROJECTION_YEAR}
         min={minYear}
         nativeInputProps={{
@@ -32,9 +34,9 @@ export const UpdateProjectionPeriod: FC = () => {
           value: projectionValue,
         }}
       />
-      <p className="fr-text--sm fr-mt-1w fr-text-mention--grey">
-        Période de projection : 1er janvier {millesime} au 1er janvier {projectionValue}
-      </p>
+      <ReadingKey className="fr-mt-4w">
+        Votre estimation portera du <strong>1er janvier {millesime}</strong> au <strong>1er janvier {projectionValue}</strong>.
+      </ReadingKey>
     </>
   )
 }

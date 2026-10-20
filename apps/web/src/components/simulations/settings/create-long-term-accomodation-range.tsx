@@ -2,11 +2,13 @@ import { Range } from '@codegouvfr/react-dsfr/Range'
 import { FC } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { useCreationPeakYears } from '~/hooks/use-simulation-peak-years'
+import { LongTermVacancyReadingKey } from './long-term-vacancy-texts'
 
 interface CreateLongTermAccomodationRangeProps {
   epci: string
+  epciName: string
 }
-export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRangeProps> = ({ epci }) => {
+export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRangeProps> = ({ epci, epciName }) => {
   const { peakYears, projection, millesime } = useCreationPeakYears()
 
   const epciPeakYear = peakYears[epci] ?? null
@@ -44,22 +46,22 @@ export const CreateLongTermAccomodationRange: FC<CreateLongTermAccomodationRange
 
   return (
     <>
-      <Range
-        label={`De quel pourcentage souhaitez-vous réduire ce taux d'ici ${targetYear} ?`}
-        suffix="%"
-        max={100}
-        min={0}
-        nativeInputProps={{
-          onChange: handleChange,
-          value: reductionPercent,
-          disabled: isLockedByMillesime,
-        }}
-      />
-      <p className="fr-text--sm fr-mt-1w fr-mb-0">
-        Le taux projeté à l'année {targetYear} est de : {(defaultEpciRates.longTermVacancyRate * 100).toFixed(2)} % -{' '}
-        {((reductionPercent / 100) * defaultEpciRates.longTermVacancyRate * 100).toFixed(2)} % ={' '}
-        <strong>{(projectedRate * 100).toFixed(2)} %</strong>
-      </p>
+      <div className="fr-col-12 fr-col-md-8">
+        <Range
+          // La question est posée juste au-dessus, en toutes lettres : le libellé ne sert qu'aux lecteurs d'écran.
+          label={`Réduction du taux de vacance longue durée de ${epciName} d'ici ${targetYear}`}
+          classes={{ label: 'fr-sr-only' }}
+          suffix="%"
+          max={100}
+          min={0}
+          nativeInputProps={{
+            onChange: handleChange,
+            value: reductionPercent,
+            disabled: isLockedByMillesime,
+          }}
+        />
+      </div>
+      <LongTermVacancyReadingKey territoryLabel={epciName} projectedRate={projectedRate} targetYear={targetYear} />
     </>
   )
 }

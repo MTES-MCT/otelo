@@ -1,6 +1,5 @@
 'use client'
 
-import Badge from '@codegouvfr/react-dsfr/Badge'
 import { TEpcisAccommodationRates } from '@shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -10,6 +9,7 @@ import { EpciTabs } from '~/components/simulations/settings/epci-tabs'
 import { ModifyAllEpcisRatesView } from '~/components/simulations/settings/epcis-accommodation-rates/modify-all-epcis-rates-view'
 import ModifyParcsComparisonCharts from '~/components/simulations/settings/epcis-accommodation-rates/modify-parc-comparison-charts'
 import { RatesToggleSwitch } from '~/components/simulations/settings/epcis-accommodation-rates/rates-toggle-switch'
+import { LongTermVacancyQuestion } from '~/components/simulations/settings/long-term-vacancy-texts'
 import { ModifyVacancyAccommodationRatesInput } from '~/components/simulations/settings/modify-vacancy-accommodation-rates-input'
 import { PeakYearHorizonAlert } from '~/components/simulations/settings/peak-year-horizon-alert'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
@@ -23,11 +23,12 @@ interface ModifyEpcisAccomodationRatesProps {
 
 interface TabChildrenProps {
   epci: string
+  epciName: string
   rates: TEpcisAccommodationRates
   millesime: string
 }
 
-const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
+const TabChildren: FC<TabChildrenProps> = ({ epci, epciName, rates, millesime }) => {
   const { simulationSettings } = useSimulationSettings()
   const { peakYears, isLoading } = useModifyPeakYears()
   const epciRates = rates?.[epci]
@@ -50,25 +51,13 @@ const TabChildren: FC<TabChildrenProps> = ({ epci, rates, millesime }) => {
           />
           {!isLockedByMillesime && (
             <>
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <span className="fr-text--medium">Vacance de longue durée</span>
-                <p className="fr-mb-0">
-                  Elle désigne les logements vacants depuis plus de deux ans. Elle représente un réservoir de logements mobilisables. Le
-                  taux en {millesime} sur ce territoire est de <strong>{(Number(epciRates.longTermVacancyRate) * 100).toFixed(2)}%</strong>.
-                </p>
-              </div>
-              <ModifyVacancyAccommodationRatesInput epci={epci} epciRates={epciRates} />
-              <div className="fr-flex fr-direction-column fr-flex-gap-2v">
-                <div className="fr-flex fr-flex-gap-2v">
-                  <span className="fr-text--medium">Vacance de courte durée</span>
-                  <Badge>Non modifiable</Badge>
-                </div>
-                <p>
-                  Elle regroupe les logements temporairement vacants (rotation locative, mise en vente, travaux), nécessaires au bon
-                  fonctionnement du marché du logement. Otelo considère le taux de vacance courte durée observé en {millesime} comme{' '}
-                  <span className="fr-text--bold">stable</span> et ne propose pas de le modifier.
-                </p>
-              </div>
+              <LongTermVacancyQuestion
+                millesime={millesime}
+                territoryLabel={epciName}
+                observedRate={Number(epciRates.longTermVacancyRate)}
+                targetYear={targetYear}
+              />
+              <ModifyVacancyAccommodationRatesInput epci={epci} epciName={epciName} epciRates={epciRates} />
             </>
           )}
         </div>
@@ -106,7 +95,14 @@ export const ModifyEpcisAccommodationRates: FC<ModifyEpcisAccomodationRatesProps
       ) : (
         <EpciTabs
           epcis={epcis}
-          renderTab={(epciCode) => <TabChildren epci={epciCode} rates={rates} millesime={simulationSettings.millesime} />}
+          renderTab={(epciCode) => (
+            <TabChildren
+              epci={epciCode}
+              epciName={epcis.find((epci) => epci.code === epciCode)?.name ?? epciCode}
+              rates={rates}
+              millesime={simulationSettings.millesime}
+            />
+          )}
         />
       )}
     </>

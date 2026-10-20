@@ -7,8 +7,15 @@ import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { FC, useEffect, useState } from 'react'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import styles from './charts.module.css'
+import { formatScenarioProjection, type ScenarioProjection } from './scenario-projection-hint'
 
-export const OmphaleScenariosSelection: FC = () => {
+type OmphaleScenariosSelectionProps = {
+  /** Nombre de ménages projeté à l'horizon, indexé par valeur de scénario (ex. `Central_C`). */
+  projections?: Partial<Record<string, ScenarioProjection>>
+  horizon?: string
+}
+
+export const OmphaleScenariosSelection: FC<OmphaleScenariosSelectionProps> = ({ projections, horizon }) => {
   const [knowMore, setKnowMore] = useState(false)
   const [queryStates, setQueryStates] = useQueryStates({
     omphale: parseAsString,
@@ -82,6 +89,8 @@ export const OmphaleScenariosSelection: FC = () => {
 
   const RADIO_OPTIONS = filteredScenarios.map((scenario) => ({
     label: scenario.label,
+    hintText:
+      projections?.[scenario.value] && horizon ? formatScenarioProjection(projections[scenario.value]!, 'ménages', horizon) : undefined,
     nativeInputProps: {
       value: scenario.value,
       checked: queryStates.omphale === scenario.value,
@@ -97,7 +106,19 @@ export const OmphaleScenariosSelection: FC = () => {
     <div className={styles.compactRadio} data-chart-download-exclude {...tutorialAnchor('omphale-select')}>
       <RadioButtons
         key={`omphale-${queryStates.omphale || 'none'}`}
-        legend="Choisissez une projection d'évolution des ménages"
+        legend={
+          <>
+            Choisissez un scénario d&apos;<strong>évolution des ménages</strong> établi par{' '}
+            <a
+              href="/guide#projections-menages"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="L'Insee (modèle Omphale) - nouvelle fenêtre"
+            >
+              l&apos;Insee (modèle Omphale)
+            </a>
+          </>
+        }
         orientation="horizontal"
         options={RADIO_OPTIONS}
         state={hasError ? 'error' : 'default'}

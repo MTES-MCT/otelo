@@ -1,15 +1,12 @@
 'use client'
 
-import Badge from '@codegouvfr/react-dsfr/Badge'
-import Button from '@codegouvfr/react-dsfr/Button'
-import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import Input from '@codegouvfr/react-dsfr/Input'
 import { TAccommodationRates } from '@shared'
-import classNames from 'classnames'
 import { FC, useState } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { DISAPPEARANCE_DEFINITION, RESTRUCTURATION_DEFINITION } from '~/components/simulations/tutorial/definitions'
 import { DefinitionTooltip } from '~/components/ui/definition-tooltip'
+import { ReadingKey } from '~/components/ui/reading-key'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
 
 export const ModifyAllRestructurationDisparitionRatesInput: FC = () => {
@@ -33,8 +30,6 @@ export const ModifyAllRestructurationDisparitionRatesInput: FC = () => {
 
   const [restructuringRateInput, setRestructuringRateInput] = useState(`${(averageRestructuringRate * 100).toFixed(2)}`)
   const [disappearanceRateInput, setDisappearanceRateInput] = useState(`${(averageDisappearanceRate * 100).toFixed(2)}`)
-  const [restructuringExpanded, setRestructuringExpanded] = useState(false)
-  const [disappearanceExpanded, setDisappearanceExpanded] = useState(false)
 
   const applyRatesToAllEpcis = (rateKey: 'restructuringRate' | 'disappearanceRate', rate: number) => {
     const newRatesPerEpci: Record<string, Partial<TAccommodationRates>> = {}
@@ -98,23 +93,6 @@ export const ModifyAllRestructurationDisparitionRatesInput: FC = () => {
               onChange: handleRestructuringRateChange,
             }}
           />
-          <Button
-            priority="tertiary no outline"
-            iconPosition="right"
-            iconId={restructuringExpanded ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}
-            onClick={() => setRestructuringExpanded(!restructuringExpanded)}
-            className="fr-mt-1v"
-            size="small"
-          >
-            À quoi correspond ce taux ?
-          </Button>
-          {restructuringExpanded && (
-            <p className="fr-text--sm fr-text-mention--grey fr-mt-1v">
-              Les restructurations correspondent aux créations de nouveaux logements au sein du parc existant, à travers la division de
-              logement ou de changement d'usages (par exemple la transformation de locaux d'activités en logements). Le taux de
-              restructuration correspond au volume de logements créés par ces phénomènes de restructuration, rapporté à l'ensemble du parc.
-            </p>
-          )}
         </div>
 
         <div className="fr-flex fr-direction-column fr-width-full">
@@ -133,34 +111,9 @@ export const ModifyAllRestructurationDisparitionRatesInput: FC = () => {
               onChange: handleDisappearanceRateChange,
             }}
           />
-          <Button
-            priority="tertiary no outline"
-            iconPosition="right"
-            iconId={disappearanceExpanded ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}
-            onClick={() => setDisappearanceExpanded(!disappearanceExpanded)}
-            className="fr-mt-1v"
-            size="small"
-          >
-            À quoi correspond ce taux ?
-          </Button>
-          {disappearanceExpanded && (
-            <p className="fr-text--sm fr-text-mention--grey fr-mt-1v">
-              Le taux annuel de disparition correspond à la proportion du parc de logement qui a disparu durant une année. Cela peut
-              correspondre à des logements démolis ou à des logements disparus du fait de fusions ou de changements d'usage (par exemple la
-              transformation d'un logement en local d'activité).
-            </p>
-          )}
         </div>
       </div>
-      <CallOut
-        className="fr-mt-2w"
-        title={
-          <Badge severity="new" noIcon small>
-            <span className={classNames('ri-lightbulb-line fr-mr-1v')} style={{ '--icon-size': '12px' } as React.CSSProperties} />
-            <span className="fr-text--uppercase">Clé de lecture</span>
-          </Badge>
-        }
-      >
+      <ReadingKey className="fr-mt-2w">
         <>
           <span>
             Le rythme de renouvellement urbain impliquerait une{' '}
@@ -168,7 +121,7 @@ export const ModifyAllRestructurationDisparitionRatesInput: FC = () => {
             supplémentaires à hauteur de <strong>{urbanRenewalAccommodationsTotal}</strong> logements par an.
           </span>
         </>
-      </CallOut>
+      </ReadingKey>
     </div>
   )
 }
