@@ -20,8 +20,9 @@ import type { WizardStepSlug } from '../settings/wizard-steps'
  * démarrage plutôt que d'afficher une bulle orpheline.
  */
 export type TutorialAnchor =
-  // colonne de gauche, présente sur toutes les étapes de la création
-  | 'side-menu'
+  // stepper et colonne « Votre scénario », présents sur toutes les étapes du parcours
+  | 'wizard-stepper'
+  | 'scenario-panel'
   // choix-du-territoire
   | 'method-cards'
   | 'card-existing-group'
@@ -80,11 +81,12 @@ export type TutorialAnchor =
   | 'results-surplus-housing'
   | 'results-bad-housing'
   // sous-parcours « Affiner le mal-logement »
-  | 'bad-housing-side-menu'
+  | 'bad-housing-stepper'
+  | 'bad-housing-scenario-panel'
   | 'bad-housing-resorption-horizon'
   | 'bad-housing-part'
 
-/** À étaler sur l'élément à mettre en avant : `<div {...tutorialAnchor('side-menu')}>`. */
+/** À étaler sur l'élément à mettre en avant : `<div {...tutorialAnchor('scenario-panel')}>`. */
 export const tutorialAnchor = (anchor: TutorialAnchor) => ({ 'data-tuto': anchor })
 
 export const tutorialSelector = (anchor: TutorialAnchor) => `[data-tuto="${anchor}"]`
@@ -145,12 +147,21 @@ export type TutorialContext = {
 const buildCreationContent = ({ millesime, peakYear, projection }: TutorialContext): Partial<Record<WizardStepSlug, TutorialStep[]>> => ({
   'choix-du-territoire': [
     {
-      anchor: 'side-menu',
+      anchor: 'wizard-stepper',
       // Mot d'accueil : il n'a plus lieu d'être une fois la méthode de sélection choisie.
       visibleWith: 'method-cards',
       title: 'Construire votre scénario',
       description:
         "<strong>Votre scénario se construit en 6 étapes.</strong> Vous définissez d'abord le territoire et l'horizon de projection, puis vous choisissez vos hypothèses sur la démographie et l'évolution du parc de logements. Otelo calcule ensuite les besoins à partir de l'ensemble de ces choix.",
+      side: 'bottom',
+      align: 'center',
+    },
+    {
+      anchor: 'scenario-panel',
+      visibleWith: 'method-cards',
+      title: 'Votre scénario, étape par étape',
+      description:
+        "<strong>Cette colonne récapitule vos choix et l'estimation qui en découle.</strong> Elle se complète à chaque étape : territoire, horizon, puis les ménages à loger, l'évolution de l'offre du parc et les logements à trouver.",
       side: 'right',
       align: 'start',
     },
@@ -709,11 +720,11 @@ export const BAD_HOUSING_TUTORIAL_CONTENT: TutorialStep[] = [
     align: 'start',
   },
   {
-    anchor: 'bad-housing-side-menu',
+    anchor: 'bad-housing-stepper',
     title: 'Toutes les situations de mal-logement ne se ressemblent pas',
     description:
       "Otelo distingue cinq familles de situations. Elles ne renvoient ni aux mêmes publics ni aux mêmes réponses : certaines peuvent nécessiter un logement supplémentaire, d'autres peuvent être traitées autrement, par exemple par rénovation.",
-    side: 'right',
+    side: 'bottom',
     align: 'start',
   },
   {

@@ -9,5 +9,6 @@ export const UpdateSimulationBreadcrumb = () => (
       href: '/',
     }}
     segments={[]}
+    className="fr-mb-3w"
   />
 )

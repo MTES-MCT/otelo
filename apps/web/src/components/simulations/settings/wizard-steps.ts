@@ -1,7 +1,7 @@
 /**
  * Registre unique des étapes du parcours de scénario démographique.
  *
- * Source de vérité pour le stepper, le menu latéral, la navigation précédent/suivant
+ * Source de vérité pour le stepper, la colonne « Votre scénario », la navigation précédent/suivant
  * et le mode tuto. Le rang et le nombre d'étapes sont dérivés de l'ordre du tableau :
  * ils ne sont jamais saisis à la main.
  */
@@ -18,60 +18,50 @@ export type WizardStepSlug =
 
 export type WizardStep = {
   slug: WizardStepSlug
-  /** Titre long, affiché dans le stepper DSFR. */
+  /** Titre long, affiché en tête de la carte de l'étape. */
   title: string
-  /** Titre court, affiché dans le menu latéral. */
-  shortTitle: string
-  /** Précision affichée sous le stepper. */
+  /** Libellé court, affiché sous la pastille du stepper. */
+  stepperLabel: string
+  /** Précision affichée sous le titre de l'étape. */
   description?: string
-  /** Paramètres d'URL portant la saisie de l'étape, lus par les tags du menu latéral. */
-  queryKeys: string[]
-  iconId?: string
 }
 
 const CHOIX_DU_TERRITOIRE: WizardStep = {
   slug: 'choix-du-territoire',
-  title: 'Choix du territoire',
-  shortTitle: 'Choix du territoire',
-  queryKeys: ['epci', 'epcis'],
+  title: "Choix du territoire d'étude",
+  stepperLabel: "Territoire d'étude",
 }
 
 const CADRAGE_TEMPOREL: WizardStep = {
   slug: 'cadrage-temporel',
   title: "Déterminer l'horizon de temps",
-  shortTitle: 'Horizon de temps',
+  stepperLabel: 'Horizon de temps',
   description: "Les futurs paramétrages seront appliqués à l'horizon temporel choisi",
-  queryKeys: ['projection'],
-  iconId: 'ri-time-line',
 }
 
 const PARAMETRAGES_DEMOGRAPHIQUE: WizardStep = {
   slug: 'parametrages-demographique',
   title: 'Affiner la projection démographique',
-  shortTitle: 'Projection démographique',
+  stepperLabel: 'Évolution démographique',
   description: "Les choix de projection démographique s'appliquent à l'ensemble des EPCI inclus dans le territoire d'étude.",
-  queryKeys: ['omphale'],
 }
 
 const TAUX_CIBLES_LOGEMENTS_VACANTS: WizardStep = {
   slug: 'taux-cibles-logements-vacants',
   title: 'Cibler le taux de logements vacants de longue durée',
-  shortTitle: 'Logements vacants longue durée',
-  queryKeys: [],
+  stepperLabel: 'Vacance longue durée',
 }
 
 const TAUX_CIBLES_RESIDENCES_SECONDAIRES: WizardStep = {
   slug: 'taux-cibles-residences-secondaires',
   title: 'Cibler le taux de résidences secondaires',
-  shortTitle: 'Résidences secondaires',
-  queryKeys: [],
+  stepperLabel: 'Résidences secondaires',
 }
 
 const TAUX_RESTRUCTURATION_DISPARITION: WizardStep = {
   slug: 'taux-restructuration-disparition',
   title: 'Paramétrer les dynamiques de renouvellement urbain',
-  shortTitle: 'Renouvellement urbain',
-  queryKeys: [],
+  stepperLabel: 'Renouvellement urbain',
 }
 
 export const CREATION_STEPS: readonly WizardStep[] = [
@@ -100,3 +90,6 @@ export const buildStepPath = (slug: WizardStepSlug, flow: WizardFlow, simulation
 
 export const getStepIndex = (slug: WizardStepSlug | undefined, flow: WizardFlow): number =>
   slug ? getStepsForFlow(flow).findIndex((step) => step.slug === slug) : -1
+
+/** Récapitulatif final de la modification : hors registre, il suit la dernière étape. */
+export const isValidationPathname = (pathname: string): boolean => pathname.endsWith('/validation-parametrage')

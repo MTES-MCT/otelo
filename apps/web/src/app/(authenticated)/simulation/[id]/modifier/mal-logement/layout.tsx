@@ -1,27 +1,19 @@
+import { BadHousingScenarioPanel } from '~/components/simulations/settings/modification/mal-logement/bad-housing-scenario-panel'
 import { BadHousingSettingsFormContextWrapper } from '~/components/simulations/settings/modification/mal-logement/bad-housing-settings-form-context-wrapper'
-import BadHousingSettingsSimulationSideMenu from '~/components/simulations/settings/modification/mal-logement/bad-housing-settings-simulation-side-menu'
-import { BadHousingSettingsSimulationStepper } from '~/components/simulations/settings/modification/mal-logement/bad-housing-settings-simulation-stepper'
+import { BadHousingStepHeader } from '~/components/simulations/settings/modification/mal-logement/bad-housing-step-header'
+import { BadHousingStepper } from '~/components/simulations/settings/modification/mal-logement/bad-housing-stepper'
+import { WizardLayout } from '~/components/simulations/settings/wizard-layout'
 import type { SimulationLayoutProps } from '~/types/simulation-page-props'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function ModifySimulationLayout({ children, params }: SimulationLayoutProps) {
-  const { id } = await params
+export default async function ModifyBadHousingLayout({ children }: SimulationLayoutProps) {
   return (
-    <div className="fr-container">
-      <BadHousingSettingsFormContextWrapper>
-        <div className="fr-flex fr-flex-gap-12v">
-          <BadHousingSettingsSimulationSideMenu id={id} />
-          <div className="fr-col-md-9">
-            <div className="fr-container">
-              <BadHousingSettingsSimulationStepper />
-              {children}
-              {/*<BadHousingPreview />*/}
-            </div>
-          </div>
-        </div>
-      </BadHousingSettingsFormContextWrapper>
-    </div>
+    <BadHousingSettingsFormContextWrapper>
+      <WizardLayout stepper={<BadHousingStepper />} panel={<BadHousingScenarioPanel />} header={<BadHousingStepHeader />}>
+        {children}
+      </WizardLayout>
+    </BadHousingSettingsFormContextWrapper>
   )
 }

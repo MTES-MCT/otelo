@@ -64,15 +64,20 @@ const apiOrigins = [...new Set([originOf(process.env.NEXT_PUBLIC_APP_URL), origi
  * `frame-ancestors 'none'` interdit l'affichage du site dans le cadre d'un autre site,
  * ce qui écarte le détournement de clic (clickjacking).
  */
+/** Géoplateforme IGN : style, tuiles vectorielles, sprites et polices du fond de carte (`src/utils/ign-basemap.ts`). */
+const IGN_GEOPLATEFORME_ORIGIN = 'https://data.geopf.fr'
+
 const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${matomoOrigin ? ` ${matomoOrigin}` : ''}`,
   "style-src 'self' 'unsafe-inline'",
-  // Tuiles CARTO pour les cartes, plus les images encodées dans la page.
-  `img-src 'self' data: blob: https://*.basemaps.cartocdn.com${matomoOrigin ? ` ${matomoOrigin}` : ''}`,
+  // Fond de carte IGN (sprites), plus les images encodées dans la page.
+  `img-src 'self' data: blob: ${IGN_GEOPLATEFORME_ORIGIN}${matomoOrigin ? ` ${matomoOrigin}` : ''}`,
   "font-src 'self' data:",
-  // API Otelo, découpage administratif de l'État, et Matomo si configuré.
-  ['connect-src', "'self'", 'https://geo.api.gouv.fr', ...apiOrigins, matomoOrigin]
+  // MapLibre lance ses web workers depuis des URL `blob:`.
+  "worker-src 'self' blob:",
+  // API Otelo, découpage administratif de l'État, fond de carte IGN (style, tuiles, polices), et Matomo si configuré.
+  ['connect-src', "'self'", 'https://geo.api.gouv.fr', IGN_GEOPLATEFORME_ORIGIN, ...apiOrigins, matomoOrigin]
     .filter(Boolean)
     .join(' '),
   "object-src 'none'",

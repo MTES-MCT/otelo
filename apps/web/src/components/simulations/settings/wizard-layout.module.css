@@ -1,0 +1,55 @@
+/*
+ * Breadcrumb, stepper pleine largeur, puis deux colonnes : « Votre scénario » à gauche, la carte de
+ * l'étape à droite. Un peu plus large que le `fr-container` (78rem) pour laisser au formulaire et à
+ * ses graphiques la place qu'occupait l'ancienne colonne de droite.
+ */
+.container {
+  width: 100%;
+  max-width: 84rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 48em) {
+  .container {
+    padding-inline: 1.5rem;
+  }
+}
+
+.columns {
+  align-items: flex-start;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.panelColumn {
+  flex: 0 0 20rem;
+  max-width: 20rem;
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+/* Élastique : tout ce que la colonne « Votre scénario » laisse revient au formulaire. */
+.mainColumn {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Sous 48em, une seule colonne : le formulaire d'abord, le récapitulatif ensuite. */
+@media (max-width: 47.99em) {
+  .columns {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .panelColumn {
+    flex: 1 1 auto;
+    max-width: none;
+    max-height: none;
+    order: 1;
+    overflow-y: visible;
+    position: static;
+  }
+}
