@@ -688,7 +688,7 @@ Il n'y a pas de hook git (husky, lint-staged) : lancez `pnpm lint` avant de pous
 
 ### CircleCI (`.circleci/config.yml`)
 
-Le workflow `otelo` tourne avec Node 24.11.1 et Postgres 16.4.
+Le workflow `otelo` tourne avec Node 24.22.1 et Postgres 16.4.
 
 | Job | Contenu |
 |-----|---------|
