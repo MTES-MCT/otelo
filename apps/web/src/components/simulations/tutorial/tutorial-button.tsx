@@ -38,7 +38,6 @@ const StepTutorialButton: FC<StepTutorialButtonProps> = ({ slug, autoStart, onAu
   return (
     <TutorialTrigger
       label={placement === 'inline' ? 'Comment faire mon choix ?' : 'Guide de prise en main'}
-      variant={placement === 'inline' ? 'choice' : 'default'}
       steps={steps}
       trackingName={slug}
       autoStart={autoStart}

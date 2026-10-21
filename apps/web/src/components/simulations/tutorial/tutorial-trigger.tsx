@@ -1,6 +1,5 @@
 'use client'
 
-import Button from '@codegouvfr/react-dsfr/Button'
 import { FC, useEffect, useRef } from 'react'
 import styles from './choice-help-button.module.css'
 import type { TutorialStep } from './tutorial-content'
@@ -24,8 +23,6 @@ type TutorialTriggerProps = {
    * L'appelant s'en sert pour retirer de l'URL le signal qui l'a déclenché.
    */
   onAutoStartSettled?: () => void
-  /** `choice` : bouton « Comment faire mon choix ? », posé dans le fil de l'étape. */
-  variant?: 'default' | 'choice'
 }
 
 /** Les ancres sont montées par des composants clients : le premier essai peut tomber trop tôt. */
@@ -38,14 +35,7 @@ const AUTO_START_TIMEOUT_MS = 3_000
  * Ne rend rien si aucune étape n'est fournie : un bouton d'aide qui n'ouvre rien vaut moins
  * que pas de bouton du tout.
  */
-export const TutorialTrigger: FC<TutorialTriggerProps> = ({
-  steps,
-  label,
-  trackingName,
-  autoStart = false,
-  onAutoStartSettled,
-  variant = 'default',
-}) => {
+export const TutorialTrigger: FC<TutorialTriggerProps> = ({ steps, label, trackingName, autoStart = false, onAutoStartSettled }) => {
   const triggerRef = useRef<HTMLButtonElement>(null)
   const { hasTutorial, start } = useTutorial(steps, triggerRef, trackingName)
   // Le démarrage automatique ne vaut que pour l'écran d'arrivée. Sans ce drapeau, le
@@ -85,28 +75,12 @@ export const TutorialTrigger: FC<TutorialTriggerProps> = ({
     return null
   }
 
-  if (variant === 'choice') {
-    return (
-      <div>
-        <button ref={triggerRef} type="button" className={styles.button} onClick={() => start()}>
-          <span aria-hidden="true" className="ri-lightbulb-line" />
-          {label}
-        </button>
-      </div>
-    )
-  }
-
   return (
-    <Button
-      priority="tertiary no outline"
-      size="small"
-      iconId="fr-icon-question-line"
-      iconPosition="left"
-      onClick={() => start()}
-      type="button"
-      nativeButtonProps={{ ref: triggerRef }}
-    >
-      {label}
-    </Button>
+    <div>
+      <button ref={triggerRef} type="button" className={styles.button} onClick={() => start()}>
+        <span aria-hidden="true" className="ri-lightbulb-line" />
+        {label}
+      </button>
+    </div>
   )
 }

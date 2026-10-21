@@ -1,6 +1,6 @@
 /*
- * « Comment faire mon choix ? » : jaune tournesol pour se distinguer des actions du parcours,
- * qui restent bleues. L'aide se lit dans le fil de l'étape, pas comme une action à accomplir.
+ * Boutons d'aide (« Comment faire mon choix ? », guides) : jaune tournesol pour se distinguer
+ * des actions du parcours, qui restent bleues. L'aide se lit à côté, pas comme une action à accomplir.
  */
 .button {
   align-items: center;
