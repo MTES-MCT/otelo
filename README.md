@@ -232,6 +232,6 @@ pnpm lint:fix     # Corriger automatiquement le style
 
 ### Prérequis
 
-- Node.js 20+
+- Node.js 24
 - pnpm 10.28.2+
 - PostgreSQL 15+
