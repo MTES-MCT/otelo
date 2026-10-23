@@ -63,11 +63,17 @@ export const TerritorySearchSelection = ({ bassinEpcis, hasUrbanismeDocError }: 
   )
 
   // Le bassin arrive du serveur après la recherche (`router.refresh`) : on le reporte alors dans l'URL.
+  // Avant son arrivée, l'EPCI recherché est retenu seul ; les EPCI du bassin s'y ajoutent ensuite,
+  // faute de quoi ils resteraient affichés cochés sans faire partie de la simulation.
   useEffect(() => {
-    if (baseEpci && epcis.length === 0) {
-      void setQueryStates({ epcis: isBassinLoaded ? bassinEpcis.map((epci) => epci.code) : [baseEpci] })
+    if (!baseEpci) return
+    if (isBassinLoaded) {
+      const missingCodes = bassinEpcis.map((epci) => epci.code).filter((code) => !epcis.includes(code))
+      if (missingCodes.length > 0) void setQueryStates({ epcis: [...epcis, ...missingCodes] })
+    } else if (epcis.length === 0) {
+      void setQueryStates({ epcis: [baseEpci] })
     }
-  }, [baseEpci, epcis.length, isBassinLoaded, bassinEpcis, setQueryStates])
+  }, [baseEpci, epcis, isBassinLoaded, bassinEpcis, setQueryStates])
 
   const onSelectEpci = async (item: GeoApiEpciResult | GeoApiCommuneResult) => {
     const code = 'codeEpci' in item ? (item.codeEpci ?? item.code) : item.code
