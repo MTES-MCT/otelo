@@ -22,8 +22,13 @@ export function IgnBasemapLayer() {
 
     void (async () => {
       const { default: L } = await import('leaflet')
+      const { setWorkerUrl } = await import('maplibre-gl')
       await import('@maplibre/maplibre-gl-leaflet')
       if (cancelled) return
+
+      // Turbopack réécrit `import.meta.url` : sans URL explicite, maplibre charge la page HTML comme
+      // worker. Le fichier est copié dans `public/` par `scripts/copy-maplibre-worker.mjs`.
+      setWorkerUrl('/maplibre-gl-worker.mjs')
 
       layer = L.maplibreGL({
         style: IGN_STYLE_URL,

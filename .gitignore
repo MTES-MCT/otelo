@@ -38,3 +38,5 @@ apps/api/.cache/*
 apps/api/src/generated/*
 apps/api/import-error.sql
 apps/api/public/docurba/*.csv
+# Worker maplibre-gl, copié depuis node_modules au build
+apps/web/public/maplibre-gl-worker.mjs
