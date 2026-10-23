@@ -7,8 +7,8 @@
     "node": "24.x"
   },
   "scripts": {
-    "predev": "react-dsfr update-icons && node scripts/copy-maplibre-worker.mjs",
-    "prebuild": "react-dsfr update-icons && node scripts/copy-maplibre-worker.mjs",
+    "predev": "react-dsfr update-icons",
+    "prebuild": "react-dsfr update-icons",
     "dev": "next dev",
     "build": "next build",
     "start": "node .next/standalone/apps/web/server.js",
