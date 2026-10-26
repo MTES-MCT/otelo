@@ -1,6 +1,6 @@
 'use client'
 
-import { TEpciNeighborWithGeo } from '@shared'
+import { TEpciNeighborWithGeo } from '@otelo/shared'
 import { useEffect } from 'react'
 import styles from './territoires-voisins.module.css'
 

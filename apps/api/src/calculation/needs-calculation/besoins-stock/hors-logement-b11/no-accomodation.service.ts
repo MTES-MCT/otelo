@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { TCalculationResult } from '@shared'
+import { TCalculationResult } from '@otelo/shared'
 import { BaseCalculator, CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { PrismaService } from '~/db/prisma.service'
 import { Homeless, HostedFiness, Hotel, MakeShiftHousing_RP, MakeShiftHousing_SNE } from '~/generated/prisma/client'

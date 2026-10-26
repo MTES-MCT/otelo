@@ -17,7 +17,7 @@ console.log(`\n[scalingo-postbuild] BUILD_TARGET=${BUILD_TARGET}\n`)
 // scalingo-postbuild replaces "build" — run the build first
 console.log('Running build...\n')
 try {
-  execSync(`pnpm --filter @shared build && pnpm --filter ${BUILD_TARGET} build`, {
+  execSync(`pnpm --filter @otelo/shared build && pnpm --filter ${BUILD_TARGET} build`, {
     stdio: 'inherit',
     cwd: ROOT,
     env: { ...process.env, CI: 'true' },

@@ -1,7 +1,7 @@
 'use client'
 
 import Badge from '@codegouvfr/react-dsfr/Badge'
-import { SIMULATION_CHANGE_ACTION_SEVERITY, type SimulationChangeAction, type TSimulationChange } from '@shared'
+import { SIMULATION_CHANGE_ACTION_SEVERITY, type SimulationChangeAction, type TSimulationChange } from '@otelo/shared'
 import classNames from 'classnames'
 import type { FC } from 'react'
 import styles from './change-entry.module.css'

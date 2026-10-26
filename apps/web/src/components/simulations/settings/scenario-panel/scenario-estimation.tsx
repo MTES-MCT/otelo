@@ -1,7 +1,7 @@
 'use client'
 
 import { Select } from '@codegouvfr/react-dsfr/Select'
-import { ALL_EPCIS_KEY, EstimationBreakdown } from '@shared'
+import { ALL_EPCIS_KEY, EstimationBreakdown } from '@otelo/shared'
 import classNames from 'classnames'
 import { FC } from 'react'
 import { useWizardStep } from '../use-wizard-step'

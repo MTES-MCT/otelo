@@ -4,7 +4,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
 import { Pagination } from '@codegouvfr/react-dsfr/Pagination'
 import Select from '@codegouvfr/react-dsfr/Select'
-import { SELECTABLE_USER_TYPES, USER_TYPE_LABELS } from '@shared'
+import { SELECTABLE_USER_TYPES, USER_TYPE_LABELS } from '@otelo/shared'
 import {
   type Column,
   type ColumnDef,

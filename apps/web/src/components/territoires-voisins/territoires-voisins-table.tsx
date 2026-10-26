@@ -1,6 +1,6 @@
 'use client'
 
-import { TEpciNeighborWithGeo } from '@shared'
+import { TEpciNeighborWithGeo } from '@otelo/shared'
 import styles from './territoires-voisins.module.css'
 
 interface TerritoiresVoisinsTableProps {

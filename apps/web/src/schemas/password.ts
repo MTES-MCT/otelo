@@ -1,4 +1,4 @@
-import { TWO_FACTOR_CODE_LENGTH } from '@shared'
+import { TWO_FACTOR_CODE_LENGTH } from '@otelo/shared'
 import z from 'zod'
 
 export const ZForgotPasswordSchema = z.object({

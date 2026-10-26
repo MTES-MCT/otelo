@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { TTemplateStatisticsRow } from '@shared'
+import { TTemplateStatisticsRow } from '@otelo/shared'
 import { PrismaService } from '~/db/prisma.service'
 import { FeedbackStatus, Prisma } from '~/generated/prisma/client'
 import { IS_ROLE_USER, OWNER_IS_NOT_TEAM, ownerIsNotTeam } from './team'

@@ -1,6 +1,6 @@
 'use client'
 
-import type { TImpactStatistics } from '@shared'
+import type { TImpactStatistics } from '@otelo/shared'
 import classNames from 'classnames'
 import type { FC } from 'react'
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'

@@ -103,7 +103,7 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@shared'],
+  transpilePackages: ['@otelo/shared'],
   turbopack: {
     root: monorepoRoot,
   },

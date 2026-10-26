@@ -1,4 +1,4 @@
-import { ZUserBase } from '@shared'
+import { ZUserBase } from '@otelo/shared'
 import { z } from 'zod'
 import { Role, UserType } from '~/generated/prisma/enums'
 

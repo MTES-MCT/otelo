@@ -1,7 +1,7 @@
 'use client'
 
 import Tabs from '@codegouvfr/react-dsfr/Tabs'
-import { NEED_COMPONENT_LABELS, type TImpactStatistics, type TTerritoryNeeds } from '@shared'
+import { NEED_COMPONENT_LABELS, type TImpactStatistics, type TTerritoryNeeds } from '@otelo/shared'
 import classNames from 'classnames'
 import { type FC, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, LineChart, ReferenceLine, Tooltip, XAxis, YAxis } from 'recharts'

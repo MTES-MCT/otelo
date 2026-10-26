@@ -1,5 +1,5 @@
 import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs'
 import { ComponentProps } from 'react'
 

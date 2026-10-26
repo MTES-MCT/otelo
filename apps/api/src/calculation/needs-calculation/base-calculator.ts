@@ -6,7 +6,7 @@ import {
   TFlowRequirementChartDataResult,
   TSitadelData,
   TSitadelDataResult,
-} from '@shared'
+} from '@otelo/shared'
 import { TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'
 
 export interface CalculationContext {

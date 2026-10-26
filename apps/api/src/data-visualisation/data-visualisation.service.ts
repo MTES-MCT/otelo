@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { BadQualityService } from '~/bad-quality/bad-quality.service'
 import { DataPackVersionsService } from '~/data-pack-versions/data-pack-versions.service'
 import { DemographicEvolutionService } from '~/demographic-evolution/demographic-evolution.service'

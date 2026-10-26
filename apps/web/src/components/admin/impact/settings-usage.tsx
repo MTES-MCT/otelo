@@ -1,6 +1,6 @@
 'use client'
 
-import { TARGET_REDUCTION_LABELS, type TImpactStatistics } from '@shared'
+import { TARGET_REDUCTION_LABELS, type TImpactStatistics } from '@otelo/shared'
 import classNames from 'classnames'
 import type { FC } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, Tooltip, XAxis, YAxis } from 'recharts'

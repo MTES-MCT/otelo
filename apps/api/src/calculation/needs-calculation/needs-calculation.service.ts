@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { TFlowRequirementChartData } from '@shared'
+import { TFlowRequirementChartData } from '@otelo/shared'
 import { FlowRequirementService } from '~/calculation/needs-calculation/besoins-flux/flow-requirement.service'
 import { SitadelService } from '~/calculation/needs-calculation/sitadel/sitadel.service'
 import { TResults } from '~/schemas/results/results'

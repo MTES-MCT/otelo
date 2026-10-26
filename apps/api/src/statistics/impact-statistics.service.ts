@@ -10,7 +10,7 @@ import {
   type TTargetReduction,
   type TTargetReductionDomain,
   type TTerritoryNeeds,
-} from '@shared'
+} from '@otelo/shared'
 import type { DateRange } from '~/common/utils/date-range'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'

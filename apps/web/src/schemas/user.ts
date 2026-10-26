@@ -1,4 +1,4 @@
-import { SELECTABLE_USER_TYPES, UserType, ZUserBase } from '@shared'
+import { SELECTABLE_USER_TYPES, UserType, ZUserBase } from '@otelo/shared'
 import { z } from 'zod'
 
 export { UserType }

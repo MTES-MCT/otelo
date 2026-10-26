@@ -3,7 +3,7 @@
 import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
 import type { ModalProps } from '@codegouvfr/react-dsfr/Modal'
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
-import { buildEstimationBreakdown } from '@shared'
+import { buildEstimationBreakdown } from '@otelo/shared'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FC, ReactNode, useState } from 'react'
 import { useCreationPreviewPayload } from '~/hooks/use-creation-preview-payload'

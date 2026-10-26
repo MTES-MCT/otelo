@@ -1,7 +1,7 @@
 'use client'
 
 import Input from '@codegouvfr/react-dsfr/Input'
-import { TAccommodationRates } from '@shared'
+import { TAccommodationRates } from '@otelo/shared'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC, useState } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'

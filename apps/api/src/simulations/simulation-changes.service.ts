@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { getChangeFieldLabel, type SimulationChangeAction } from '@shared'
+import { getChangeFieldLabel, type SimulationChangeAction } from '@otelo/shared'
 import { PrismaService } from '~/db/prisma.service'
 
 export type ChangeEntry = {

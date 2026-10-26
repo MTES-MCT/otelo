@@ -1,4 +1,4 @@
-import { ZCommonDateFields, ZEpci } from '@shared'
+import { ZCommonDateFields, ZEpci } from '@otelo/shared'
 import { z } from 'zod'
 import { ZPlanningDocumentType } from '~/schemas/epci-group'
 import { ZResults } from '~/schemas/results'

@@ -1,4 +1,4 @@
-import { ZCommonDateFields } from '@shared'
+import { ZCommonDateFields } from '@otelo/shared'
 import { z } from 'zod'
 import { B11Etablissement, B15Surocc } from '~/generated/prisma/client'
 import { ZDemographicEvolutionOmphaleCustom } from '~/schemas/demographic-evolution-custom/demographic-evolution-custom'

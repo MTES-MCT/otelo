@@ -2,7 +2,7 @@
 
 import { Select } from '@codegouvfr/react-dsfr/Select'
 import Tabs from '@codegouvfr/react-dsfr/Tabs'
-import { ALL_EPCIS_KEY } from '@shared'
+import { ALL_EPCIS_KEY } from '@otelo/shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryStates } from 'nuqs'
 import { ReactNode, useRef } from 'react'

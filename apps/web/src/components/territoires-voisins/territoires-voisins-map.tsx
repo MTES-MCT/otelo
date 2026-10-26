@@ -1,6 +1,6 @@
 'use client'
 
-import { TEpciGeoData, TEpciNeighborWithGeo } from '@shared'
+import { TEpciGeoData, TEpciNeighborWithGeo } from '@otelo/shared'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useMemo, useRef } from 'react'

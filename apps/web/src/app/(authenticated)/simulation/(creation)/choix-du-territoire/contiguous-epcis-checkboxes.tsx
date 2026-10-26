@@ -1,7 +1,7 @@
 'use client'
 
 import { fr } from '@codegouvfr/react-dsfr'
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { useContiguousEpcis } from '~/hooks/use-contiguous-epcis'
 import { CheckboxEpcis } from './checkbox-epcis'
 

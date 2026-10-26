@@ -1,4 +1,4 @@
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import classNames from 'classnames'
 import type { Metadata } from 'next'
 import { getBassinEpcis } from '~/server-only/epcis/get-bassin-epcis'

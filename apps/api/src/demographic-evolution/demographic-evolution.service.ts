@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { ALL_EPCIS_KEY, TEpci } from '@shared'
+import { ALL_EPCIS_KEY, TEpci } from '@otelo/shared'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'
 import { TDemographicProjectionDataTable } from '~/schemas/data-visualisation/data-visualisation'

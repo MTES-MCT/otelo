@@ -1,7 +1,7 @@
 'use client'
 
 import Input from '@codegouvfr/react-dsfr/Input'
-import { TAccommodationRates } from '@shared'
+import { TAccommodationRates } from '@otelo/shared'
 import { FC, useState } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'

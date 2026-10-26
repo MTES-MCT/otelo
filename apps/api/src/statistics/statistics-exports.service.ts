@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { SIMULATION_CHANGE_ACTION_LABELS, type SimulationChangeAction } from '@shared'
+import { SIMULATION_CHANGE_ACTION_LABELS, type SimulationChangeAction } from '@otelo/shared'
 import { csvBoolean, csvDate } from '~/common/utils/csv'
 import type { DateRange } from '~/common/utils/date-range'
 import { PrismaService } from '~/db/prisma.service'

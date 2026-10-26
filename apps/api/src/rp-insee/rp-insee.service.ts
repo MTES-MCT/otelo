@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { PrismaService } from '~/db/prisma.service'
 import { TRPDataResults, TRPDataTable } from '~/schemas/data-visualisation/data-visualisation'
 

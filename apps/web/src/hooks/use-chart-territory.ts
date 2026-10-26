@@ -1,6 +1,6 @@
 'use client'
 
-import { ALL_EPCIS_KEY } from '@shared'
+import { ALL_EPCIS_KEY } from '@otelo/shared'
 import { parseAsString, useQueryStates } from 'nuqs'
 import { useCallback } from 'react'
 

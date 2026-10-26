@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { USER_TYPE_LABELS } from '@shared'
+import { USER_TYPE_LABELS } from '@otelo/shared'
 import * as ExcelJS from 'exceljs'
 import * as fs from 'fs'
 import Papa from 'papaparse'

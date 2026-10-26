@@ -1,6 +1,6 @@
 'use client'
 
-import { TAccommodationRates } from '@shared'
+import { TAccommodationRates } from '@otelo/shared'
 import { FC } from 'react'
 import { ModifyLongTermAccomodationRange } from '~/components/simulations/settings/modify-long-term-accomodation-range'
 

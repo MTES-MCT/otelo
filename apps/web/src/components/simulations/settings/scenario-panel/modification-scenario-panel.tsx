@@ -1,6 +1,6 @@
 'use client'
 
-import { buildEstimationBreakdown, isEpciCountedInTotal } from '@shared'
+import { buildEstimationBreakdown, isEpciCountedInTotal } from '@otelo/shared'
 import { FC } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { useEstimationScope } from '~/hooks/use-estimation-scope'

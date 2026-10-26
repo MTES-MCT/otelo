@@ -1,6 +1,6 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import { RiIconClassName } from '@codegouvfr/react-dsfr/fr/generatedFromCss/classNames'
-import { sumRenewalSurplus } from '@shared'
+import { sumRenewalSurplus } from '@otelo/shared'
 import { SynthesisCnEvolutionChart } from '~/components/charts/synthesis-cn-evolution-chart'
 import { ScotInfoDrawer } from '~/components/simulations/docurba/scot-info-drawer'
 import { SimulationAnnualsNeedsSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs'

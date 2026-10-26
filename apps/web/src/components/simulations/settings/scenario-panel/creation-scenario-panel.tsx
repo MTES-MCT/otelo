@@ -1,6 +1,6 @@
 'use client'
 
-import { buildEstimationBreakdown, isEpciCountedInTotal } from '@shared'
+import { buildEstimationBreakdown, isEpciCountedInTotal } from '@otelo/shared'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'

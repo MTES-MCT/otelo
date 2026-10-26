@@ -1,4 +1,4 @@
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { useQuery } from '@tanstack/react-query'
 
 export const useContiguousEpcis = (epciCodes?: string | string[]) => {

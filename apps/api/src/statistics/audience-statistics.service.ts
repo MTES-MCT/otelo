@@ -10,7 +10,7 @@ import {
   type TConnectionsByUserType,
   type TRetentionCohort,
   type TSharedSimulation,
-} from '@shared'
+} from '@otelo/shared'
 import type { DateRange } from '~/common/utils/date-range'
 import { PrismaService } from '~/db/prisma.service'
 import { percentage, round, toNumber } from './statistics-numbers'

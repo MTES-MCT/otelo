@@ -4,10 +4,28 @@ packages:
 
 catalog:
   '@biomejs/biome': 2.3.13
-  '@types/node': ^25.9.5
+  '@types/node': ^25.9.9
   dayjs: ^1.11.23
   typescript: ^5.9.3
-  zod: ^4.5.4
+  zod: ^4.6.7
 
-minimumReleaseAgeExclude:
-  - '@thallesp/nestjs-better-auth'
+minimumReleaseAge: 10080
+
+allowBuilds:
+  '@scarf/scarf': false
+  '@gouvfr/dsfr': false
+  '@parcel/watcher': false
+  '@prisma/client': false
+  '@prisma/engines': false
+  argon2: false
+  esbuild: false
+  prisma: false
+  puppeteer: false
+  unrs-resolver: false
+
+overrides:
+  '@prisma/config>deepmerge-ts': 8.0.0
+  'exceljs>uuid': 11.1.1
+  'tsup>esbuild': 0.28.1
+  multer: '>=2.3.0'
+  '@nestjs/swagger>js-yaml': 5.4.3

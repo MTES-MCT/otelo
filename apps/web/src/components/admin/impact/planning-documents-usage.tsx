@@ -1,6 +1,6 @@
 'use client'
 
-import { IMPACT_PLANNING_DOCUMENT_KEYS, IMPACT_PLANNING_DOCUMENT_LABELS, type TImpactStatistics, USER_TYPE_LABELS } from '@shared'
+import { IMPACT_PLANNING_DOCUMENT_KEYS, IMPACT_PLANNING_DOCUMENT_LABELS, type TImpactStatistics, USER_TYPE_LABELS } from '@otelo/shared'
 import classNames from 'classnames'
 import type { FC } from 'react'
 import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts'

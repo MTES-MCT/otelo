@@ -2,7 +2,7 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import Checkbox from '@codegouvfr/react-dsfr/Checkbox'
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { ComponentProps } from 'react'
 
 type PowerpointEpci = Pick<TEpci, 'code' | 'name'>

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { TSitadelData, TSitadelDataResult } from '@shared'
+import { TSitadelData, TSitadelDataResult } from '@otelo/shared'
 import { BaseCalculator, CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { PrismaService } from '~/db/prisma.service'
 import { TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'

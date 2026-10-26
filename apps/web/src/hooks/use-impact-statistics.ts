@@ -1,6 +1,6 @@
 'use client'
 
-import type { TImpactStatistics } from '@shared'
+import type { TImpactStatistics } from '@otelo/shared'
 import { useQuery } from '@tanstack/react-query'
 import type { PeriodRange } from '~/components/admin/shared/period-selector'
 

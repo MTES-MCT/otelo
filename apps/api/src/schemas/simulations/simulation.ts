@@ -1,4 +1,4 @@
-import { ZCommonDateFields, ZEpci } from '@shared'
+import { ZCommonDateFields, ZEpci } from '@otelo/shared'
 import { z } from 'zod'
 import { ZResults } from '~/schemas/results/results'
 import { ZEpciScenario, ZScenario } from '~/schemas/scenarios/scenario'

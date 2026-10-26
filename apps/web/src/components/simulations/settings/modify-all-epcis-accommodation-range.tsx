@@ -1,7 +1,7 @@
 'use client'
 
 import { Range } from '@codegouvfr/react-dsfr/Range'
-import { TAccommodationRates } from '@shared'
+import { TAccommodationRates } from '@otelo/shared'
 import { FC, useState } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
 import { ReadingKey } from '~/components/ui/reading-key'

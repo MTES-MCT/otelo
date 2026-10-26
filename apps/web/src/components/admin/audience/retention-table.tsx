@@ -1,6 +1,6 @@
 'use client'
 
-import type { TRetentionCohort } from '@shared'
+import type { TRetentionCohort } from '@otelo/shared'
 import classNames from 'classnames'
 import type { FC } from 'react'
 import styles from '~/app/(authenticated)/admin/admin.module.css'

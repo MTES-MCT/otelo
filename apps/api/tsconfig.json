@@ -26,8 +26,8 @@
     "paths": {
       "~/*": ["./src/*"],
       "@test/*": ["./test/*"],
-      "@shared": ["../../packages/shared/src"],
-      "@shared/*": ["../../packages/shared/src/*"]
+      "@otelo/shared": ["../../packages/shared/src"],
+      "@otelo/shared/*": ["../../packages/shared/src/*"]
     }
   }
 }

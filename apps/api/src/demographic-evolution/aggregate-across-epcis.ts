@@ -1,4 +1,4 @@
-import { ALL_EPCIS_KEY } from '@shared'
+import { ALL_EPCIS_KEY } from '@otelo/shared'
 
 type ScenarioRow<K extends string> = { year: number } & { [P in K]: number | null }
 

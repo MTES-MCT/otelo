@@ -3,7 +3,7 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import { Select } from '@codegouvfr/react-dsfr/Select'
 import { Table } from '@codegouvfr/react-dsfr/Table'
-import { USER_TYPE_LABELS } from '@shared'
+import { USER_TYPE_LABELS } from '@otelo/shared'
 import classNames from 'classnames'
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'

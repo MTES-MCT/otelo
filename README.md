@@ -125,7 +125,7 @@ pnpm -F @otelo/web dev   # Front Next.js → http://localhost:3000
 
 - `dev` côté API lance d'abord `cli sync-docurba`, puis `nest start --watch`.
 - `dev` côté web régénère d'abord les icônes DSFR (`predev`).
-- Pour travailler sur `packages/shared` en continu : `pnpm -F @shared dev` (tsup en mode watch).
+- Pour travailler sur `packages/shared` en continu : `pnpm -F @otelo/shared dev` (tsup en mode watch).
 
 Vérifications :
 
@@ -225,7 +225,7 @@ otelo/
 │   │   └── docker-compose.yml
 │   └── web/                 # Frontend Next.js (@otelo/web)
 ├── packages/
-│   └── shared/              # Types, schémas Zod et enums partagés (@shared)
+│   └── shared/              # Types, schémas Zod et enums partagés (@otelo/shared)
 ├── scripts/                 # scalingo-postbuild.mjs
 ├── .circleci/               # Pipeline CI
 ├── Aptfile, .buildpacks, Procfile   # Déploiement Scalingo
@@ -298,7 +298,7 @@ Organisation de `apps/web/src` :
 - Les routes `/api/auth/*` sont réécrites vers l'API par `next.config.mjs`.
 - Les autres appels passent par les route handlers de `src/app/api/` ou par les fetchers de `src/server-only/`, qui appellent l'API côté serveur.
 
-### Package partagé (`@shared`)
+### Package partagé (`@otelo/shared`)
 
 Types TypeScript et schémas Zod réutilisés par le front et le back. Il est compilé avec tsup (ESM et CJS).
 
@@ -306,7 +306,7 @@ Types TypeScript et schémas Zod réutilisés par le front et le back. Il est co
 - `enums/` : rôles, types d'utilisateurs, sources de données (B11, B14, B15, B17)
 - `calculations/`, `auth/` : logique partagée (décomposition des estimations, 2FA)
 
-Il doit être recompilé (`pnpm build:shared`) après toute modification, sauf si `pnpm -F @shared dev` tourne.
+Il doit être recompilé (`pnpm build:shared`) après toute modification, sauf si `pnpm -F @otelo/shared dev` tourne.
 
 ### API
 
@@ -319,9 +319,9 @@ Il doit être recompilé (`pnpm build:shared`) après toute modification, sauf s
 
 | Commande | Description |
 |----------|-------------|
-| `pnpm build:shared` | Compile `@shared` |
+| `pnpm build:shared` | Compile `@otelo/shared` |
 | `pnpm build:api` / `pnpm build:web` | Compile l'API ou le front (après `build:shared`) |
-| `pnpm build` | Build de déploiement : `@shared`, puis l'app désignée par `BUILD_TARGET` |
+| `pnpm build` | Build de déploiement : `@otelo/shared`, puis l'app désignée par `BUILD_TARGET` |
 | `pnpm lint` / `pnpm lint:fix` | Vérifie ou corrige le code avec Biome |
 | `pnpm clean` | Supprime `node_modules`, `dist` et `.next` |
 | `pnpm -F @otelo/api dev` | API en mode watch (après `sync-docurba`) |
@@ -329,7 +329,7 @@ Il doit être recompilé (`pnpm build:shared`) après toute modification, sauf s
 | `pnpm -F @otelo/api cli <commande>` | CLI de l'API |
 | `pnpm -F @otelo/api prisma <commande>` | CLI Prisma |
 | `pnpm -F @otelo/web dev` | Front en mode développement |
-| `pnpm -F @shared dev` / `typecheck` | Shared en watch, vérification des types |
+| `pnpm -F @otelo/shared dev` / `typecheck` | Shared en watch, vérification des types |
 
 
 ## Authentification et accès
@@ -637,7 +637,7 @@ pnpm -F api cli backfill-epci-contours [--write] [--force]
 
 ## Tests
 
-Seule l'API est testée. Elle utilise **Jest** avec ts-jest. Le front et `@shared` n'ont pas de tests automatisés.
+Seule l'API est testée. Elle utilise **Jest** avec ts-jest. Le front et `@otelo/shared` n'ont pas de tests automatisés.
 
 ```bash
 # Tests unitaires (*.spec.ts), sans base de données
@@ -673,7 +673,7 @@ pnpm lint:fix   # Corrige automatiquement
 - Sont ignorés : `generated/`, `dist/`, `.next/`.
 - `apps/web/.vscode/settings.json` configure Biome comme formateur, avec formatage à l'enregistrement. Installez l'extension Biome dans votre éditeur.
 
-Il n'y a pas de hook git (husky, lint-staged) : lancez `pnpm lint` avant de pousser, car la CI le vérifie. La vérification de types n'existe en script que pour `@shared` (`pnpm -F @shared typecheck`). Pour l'API et le web, elle se fait au build.
+Il n'y a pas de hook git (husky, lint-staged) : lancez `pnpm lint` avant de pousser, car la CI le vérifie. La vérification de types n'existe en script que pour `@otelo/shared` (`pnpm -F @otelo/shared typecheck`). Pour l'API et le web, elle se fait au build.
 
 
 ## Workflow Git
@@ -709,7 +709,7 @@ L'API et le front sont déployés comme **deux applications Scalingo distinctes*
 | `Aptfile` | Bibliothèques système nécessaires à Chrome (Puppeteer) |
 | `Procfile` | `web: pnpm --filter $BUILD_TARGET run start` |
 | `.slugignore` | Exclut `.circleci`, `.git` et `*.md` de l'image |
-| `scripts/scalingo-postbuild.mjs` | Build de `@shared` et de la cible, puis nettoyage |
+| `scripts/scalingo-postbuild.mjs` | Build de `@otelo/shared` et de la cible, puis nettoyage |
 
 Le post-build :
 
@@ -774,7 +774,7 @@ Les variables `NEXT_PUBLIC_*` du front doivent être configurées sur l'applicat
 |----------|------------------|
 | `EADDRINUSE :3000` ou le front appelle la mauvaise app | `PORT=4200` manquant dans `apps/api/.env` |
 | `Configuration d'environnement invalide` au démarrage de l'API | Une variable obligatoire manque dans `apps/api/.env` (voir le tableau ci-dessus) |
-| `Cannot find module '@shared'` ou des types partagés obsolètes | Lancer `pnpm build:shared` ou `pnpm -F @shared dev` |
+| `Cannot find module '@otelo/shared'` ou des types partagés obsolètes | Lancer `pnpm build:shared` ou `pnpm -F @otelo/shared dev` |
 | `Cannot find module '…/generated/prisma'` | Lancer `pnpm -F @otelo/api exec prisma generate` |
 | Erreurs SQL sur des tables vides ou des clés étrangères | Base initialisée uniquement par migrations : restaurer une sauvegarde (`import-backup`) |
 | L'API met du temps à démarrer ou échoue hors ligne | `sync-docurba` télécharge les fichiers Docurba à chaque `dev` |

@@ -1,4 +1,4 @@
-import { EstimationBreakdown, EstimationTermKey } from '@shared'
+import { EstimationBreakdown, EstimationTermKey } from '@otelo/shared'
 import { getStepIndex, getStepsForFlow, WizardFlow, WizardStepSlug } from '~/components/simulations/settings/wizard-steps'
 
 /**

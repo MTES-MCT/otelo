@@ -1,5 +1,5 @@
+import { TWO_FACTOR_CODE_LENGTH } from '@otelo/shared'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { TWO_FACTOR_CODE_LENGTH } from '@shared'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { createAuthMiddleware } from 'better-auth/api'

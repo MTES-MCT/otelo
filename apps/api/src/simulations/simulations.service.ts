@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common'
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import {
   omphaleMap,

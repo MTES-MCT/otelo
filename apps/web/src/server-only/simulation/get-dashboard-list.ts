@@ -1,4 +1,4 @@
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { notFound } from 'next/navigation'
 import { authFetch, getSession } from '~/lib/auth/server'
 import { TSimulationDashboardItem } from '~/schemas/simulation'

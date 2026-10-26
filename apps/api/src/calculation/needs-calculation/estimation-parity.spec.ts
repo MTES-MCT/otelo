@@ -1,6 +1,6 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { Test, TestingModule } from '@nestjs/testing'
-import { buildEstimationBreakdown, buildEstimationParityReport } from '@shared'
+import { buildEstimationBreakdown, buildEstimationParityReport } from '@otelo/shared'
 import { FlowRequirementService } from '~/calculation/needs-calculation/besoins-flux/flow-requirement.service'
 import { SitadelService } from '~/calculation/needs-calculation/sitadel/sitadel.service'
 import { StockRequirementsService } from '~/stock-requirements/stock-requirements.service'
@@ -10,7 +10,7 @@ import { NeedsCalculationService } from './needs-calculation.service'
 /**
  * L'encart « Votre estimation en cours » et la page de résultats sont servis par le même
  * `NeedsCalculationService` : leurs chiffres doivent être strictement égaux. L'encart décompose
- * `TResults` en dix termes (`buildEstimationBreakdown`, dans `@shared`), la page affiche les
+ * `TResults` en dix termes (`buildEstimationBreakdown`, dans `@otelo/shared`), la page affiche les
  * agrégats bruts du moteur. Ce fichier vérifie que les deux lectures coïncident, sur la sortie
  * réelle du service et non sur une formule recopiée.
  */

@@ -2,7 +2,7 @@
 
 import Button from '@codegouvfr/react-dsfr/Button'
 import { Tag } from '@codegouvfr/react-dsfr/Tag'
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { useState } from 'react'
 import { ShareSimulationModal } from '~/components/collaboration/share-simulation-modal'
 import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'

@@ -1,4 +1,4 @@
-import { ZEpci } from '@shared'
+import { ZEpci } from '@otelo/shared'
 import { createZodDto } from 'nestjs-zod'
 
 const EDITABLE_FIELDS = {

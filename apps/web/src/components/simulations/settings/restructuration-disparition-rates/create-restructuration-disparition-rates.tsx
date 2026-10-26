@@ -1,6 +1,6 @@
 'use client'
 
-import { TEpcisAccommodationRates } from '@shared'
+import { TEpcisAccommodationRates } from '@otelo/shared'
 import classNames from 'classnames'
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'

@@ -1,7 +1,7 @@
 'use client'
 
 import Badge from '@codegouvfr/react-dsfr/Badge'
-import type { TAudienceStatistics } from '@shared'
+import type { TAudienceStatistics } from '@otelo/shared'
 import classNames from 'classnames'
 import type { FC } from 'react'
 import styles from '~/app/(authenticated)/admin/admin.module.css'

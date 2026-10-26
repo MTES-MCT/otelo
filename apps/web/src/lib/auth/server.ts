@@ -1,4 +1,4 @@
-import type { UserType } from '@shared'
+import type { UserType } from '@otelo/shared'
 import { cookies, headers } from 'next/headers'
 
 const DEFAULT_API_ORIGIN = 'http://localhost:4200'
