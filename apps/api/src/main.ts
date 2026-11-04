@@ -1,13 +1,12 @@
 import { Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { SwaggerModule } from '@nestjs/swagger'
 import helmet from 'helmet'
-import { cleanupOpenApiDoc } from 'nestjs-zod'
 import { legacyOAuthCallbackRedirect } from '~/auth/legacy-oauth-callback'
 import { env } from '~/config/env'
-import { ExternalModule } from '~/external/external.module'
 import { MainModule } from '~/main.module'
+import { createExternalDocument, createInternalDocument } from '~/openapi'
 
 const bootstrap = async () => {
   const app = await NestFactory.create<NestExpressApplication>(MainModule, { bodyParser: false })
@@ -42,51 +41,8 @@ const bootstrap = async () => {
   // Avant le gestionnaire better-auth : l'ancienne URL de retour ProConnect n'y existe plus.
   app.use(legacyOAuthCallbackRedirect(globalPrefix))
 
-  /**
-   * Swagger : les routes d'administration en sont absentes, via `@ExcludeOpenApi()`. Le
-   * document est servi hors pipeline Nest, donc sans garde : c'est son contenu, et non
-   * son accès, qui le rend publiable.
-   */
-  const fullConfig = new DocumentBuilder()
-    .setTitle('Otelo - API interne')
-    .setDescription("Documentation de l'API Otelo. Les routes d'administration en sont exclues.")
-    .setVersion('1.0')
-    .addBearerAuth({
-      type: 'http',
-      scheme: 'bearer',
-      description: 'API Key au format otelo_xxx',
-    })
-    .build()
-
-  const fullDocumentFactory = () => cleanupOpenApiDoc(SwaggerModule.createDocument(app, fullConfig))
-  SwaggerModule.setup('swagger', app, fullDocumentFactory, {
-    useGlobalPrefix: true,
-  })
-
-  const externalConfig = new DocumentBuilder()
-    .setTitle('Otelo - API externe')
-    .setDescription(
-      'API Otelo pour les consommateurs externes.\n\n' +
-        'Authentification : `Authorization: Bearer otelo_xxx`\n\n' +
-        'Contactez un administrateur pour obtenir une clé API par mail : otelo@beta.gouv.fr',
-    )
-    .setVersion('1.0')
-    .addBearerAuth({
-      type: 'http',
-      scheme: 'bearer',
-      description: 'API Key au format otelo_xxx',
-    })
-    .build()
-
-  const externalDocumentFactory = () =>
-    cleanupOpenApiDoc(
-      SwaggerModule.createDocument(app, externalConfig, {
-        include: [ExternalModule],
-      }),
-    )
-  SwaggerModule.setup('swagger-external', app, externalDocumentFactory, {
-    useGlobalPrefix: true,
-  })
+  SwaggerModule.setup('swagger', app, () => createInternalDocument(app), { useGlobalPrefix: true })
+  SwaggerModule.setup('swagger-external', app, () => createExternalDocument(app), { useGlobalPrefix: true })
 
   /**
    * En-têtes de sécurité HTTP.
