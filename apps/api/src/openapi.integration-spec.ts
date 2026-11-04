@@ -1,7 +1,5 @@
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import { MainModule } from '~/main.module'
-import { createExternalDocument, createInternalDocument } from '~/openapi'
 
 // `test/jest-setup.ts` remplace better-auth par une doublure : le module réel est requis ici.
 jest.unmock('~/auth/better-auth')
@@ -15,8 +13,28 @@ jest.unmock('~/auth/better-auth')
  */
 describe('Document OpenAPI (intégration)', () => {
   let app: INestApplication
+  let createExternalDocument: typeof import('~/openapi').createExternalDocument
+  let createInternalDocument: typeof import('~/openapi').createInternalDocument
 
   beforeAll(async () => {
+    /**
+     * better-auth lance la découverte OIDC de ProConnect dès sa création, en tâche de fond.
+     * L'émetteur de test n'existe pas : selon la résolution DNS de la machine, l'échec arrivait
+     * avant ou après la fin des tests, et un log tardif fait échouer jest. On la fait échouer
+     * tout de suite, sans réseau, avant de charger better-auth, puis on attend son initialisation.
+     */
+    const issuer = process.env.OAUTH_PROCONNECT_ISSUER as string
+    const realFetch = globalThis.fetch
+    jest.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+      const url = input instanceof Request ? input.url : String(input)
+      return url.startsWith(issuer) ? Promise.reject(new TypeError('fetch failed')) : realFetch(input, init)
+    })
+
+    const { auth } = await import('~/auth/better-auth')
+    await auth.$context
+    ;({ createExternalDocument, createInternalDocument } = await import('~/openapi'))
+    const { MainModule } = await import('~/main.module')
+
     const moduleRef = await Test.createTestingModule({ imports: [MainModule] }).compile()
     app = moduleRef.createNestApplication({ logger: false })
     app.setGlobalPrefix('api')
@@ -24,7 +42,8 @@ describe('Document OpenAPI (intégration)', () => {
   })
 
   afterAll(async () => {
-    await app.close()
+    await app?.close()
+    jest.restoreAllMocks()
   })
 
   it('should keep the external API contract unchanged', () => {
