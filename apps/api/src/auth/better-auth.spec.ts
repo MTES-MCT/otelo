@@ -1,11 +1,13 @@
 jest.unmock('~/auth/better-auth')
 
 import {
+  mapProConnectProfileToUser,
   prepareTwoFactorForSignIn,
   prepareUserBeforeCreate,
   recordLoginEvent,
   resolveLoginProvider,
   sendTwoFactorCode,
+  toProConnectProfile,
   touchLoginEvent,
   updateLastLoginAt,
 } from './better-auth'
@@ -281,6 +283,32 @@ describe('better-auth hooks', () => {
       expect(mockDb.user.update).toHaveBeenCalledWith({
         where: { id: 'user-123' },
         data: { lastLoginAt: expect.any(Date) },
+      })
+    })
+  })
+
+  describe('toProConnectProfile', () => {
+    it('expose le sub ProConnect comme identifiant et compose le nom', () => {
+      expect(toProConnectProfile({ sub: 'pc-123', email: 'Agent@Example.GOUV.fr', given_name: 'Ada', usual_name: 'Lovelace' })).toEqual({
+        sub: 'pc-123',
+        email: 'agent@example.gouv.fr',
+        name: 'Ada Lovelace',
+        emailVerified: true,
+        firstname: 'Ada',
+        lastname: 'Lovelace',
+      })
+    })
+
+    it('tolère des noms absents', () => {
+      expect(toProConnectProfile({ sub: 'pc-123' })).toMatchObject({ name: '', firstname: '', lastname: '', email: undefined })
+    })
+  })
+
+  describe('mapProConnectProfileToUser', () => {
+    it('reporte prénom et nom sur l’utilisateur', () => {
+      expect(mapProConnectProfileToUser({ sub: 'pc-123', firstname: 'Ada', lastname: 'Lovelace' })).toEqual({
+        firstname: 'Ada',
+        lastname: 'Lovelace',
       })
     })
   })

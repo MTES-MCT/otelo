@@ -4,6 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import helmet from 'helmet'
 import { cleanupOpenApiDoc } from 'nestjs-zod'
+import { legacyOAuthCallbackRedirect } from '~/auth/legacy-oauth-callback'
 import { env } from '~/config/env'
 import { ExternalModule } from '~/external/external.module'
 import { MainModule } from '~/main.module'
@@ -37,6 +38,9 @@ const bootstrap = async () => {
    * d'origine et non son auteur.
    */
   app.set('trust proxy', 1)
+
+  // Avant le gestionnaire better-auth : l'ancienne URL de retour ProConnect n'y existe plus.
+  app.use(legacyOAuthCallbackRedirect(globalPrefix))
 
   /**
    * Swagger : les routes d'administration en sont absentes, via `@ExcludeOpenApi()`. Le

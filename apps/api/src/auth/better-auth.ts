@@ -7,6 +7,7 @@ import { generateRandomString, symmetricEncrypt } from 'better-auth/crypto'
 import { admin, genericOAuth, twoFactor } from 'better-auth/plugins'
 import { adminAc, userAc } from 'better-auth/plugins/admin/access'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
+import { legacyOAuthCallbackPath } from '~/auth/legacy-oauth-callback'
 import { env } from '~/config/env'
 import { TRUSTED_PROXIES } from '~/config/trusted-proxies'
 import { isTwoFactorBypassed } from '~/config/two-factor-bypass'
@@ -340,6 +341,33 @@ export async function touchLoginEvent(db: LoginEventPrismaLike, session: Session
   }
 }
 
+/**
+ * Profil brut ProConnect, tel que better-auth 1.7 l'attend de `getUserInfo`.
+ *
+ * `sub` sert d'identifiant de compte, et better-auth le confronte à celui du jeton d'identité :
+ * un profil qui ne désigne pas la même personne est refusé. L'adresse est réputée vérifiée,
+ * ProConnect ne transmettant que des adresses contrôlées par le fournisseur d'identité.
+ */
+export const toProConnectProfile = (payload: Record<string, unknown>) => {
+  const givenName = typeof payload.given_name === 'string' ? payload.given_name : ''
+  const usualName = typeof payload.usual_name === 'string' ? payload.usual_name : ''
+
+  return {
+    sub: payload.sub as string,
+    email: typeof payload.email === 'string' ? payload.email.toLowerCase() : undefined,
+    name: `${givenName} ${usualName}`.trim(),
+    emailVerified: true,
+    firstname: givenName,
+    lastname: usualName,
+  }
+}
+
+/** Depuis better-auth 1.7, seuls l'email, le nom et l'image passent du profil à l'utilisateur sans ce relais. */
+export const mapProConnectProfileToUser = (profile: Record<string, unknown>) => ({
+  firstname: typeof profile.firstname === 'string' ? profile.firstname : '',
+  lastname: typeof profile.lastname === 'string' ? profile.lastname : '',
+})
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
@@ -443,6 +471,9 @@ export const auth = betterAuth({
           clientSecret: env.OAUTH_PROCONNECT_CLIENT_SECRET,
           scopes: ['openid', 'given_name', 'usual_name', 'email'],
           pkce: true,
+          // URL de retour déclarée chez ProConnect, antérieure à better-auth 1.7 : voir
+          // `legacyOAuthCallbackRedirect`, qui la renvoie vers la route actuelle.
+          redirectURI: `${env.BETTER_AUTH_URL ?? env.CLIENT_BASE_URL}/api${legacyOAuthCallbackPath('proconnect')}`,
           getUserInfo: async ({ accessToken }) => {
             // ProConnect renvoie un JWT signé, et non du JSON, sur son endpoint userinfo.
             const res = await fetch(`${PROCONNECT_OIDC_ISSUER}/userinfo`, {
@@ -461,18 +492,9 @@ export const auth = betterAuth({
               issuer: PROCONNECT_OIDC_ISSUER,
             })
 
-            const givenName = (payload.given_name as string) ?? ''
-            const usualName = (payload.usual_name as string) ?? ''
-
-            return {
-              id: payload.sub as string,
-              email: (payload.email as string | undefined)?.toLowerCase(),
-              name: `${givenName} ${usualName}`.trim(),
-              emailVerified: true,
-              firstname: givenName,
-              lastname: usualName,
-            }
+            return toProConnectProfile(payload)
           },
+          mapProfileToUser: mapProConnectProfileToUser,
         },
       ],
     }),
