@@ -86,8 +86,8 @@ export const LoginForm: FC = () => {
 
   const onProConnectSignIn = async () => {
     try {
-      await signIn.oauth2({
-        providerId: 'proconnect',
+      await signIn.social({
+        provider: 'proconnect',
         callbackURL: '/tableaux-de-bord?selectType',
       })
     } catch (error) {
