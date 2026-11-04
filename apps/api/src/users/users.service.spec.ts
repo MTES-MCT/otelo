@@ -35,6 +35,19 @@ describe('UsersService', () => {
     expect(service).toBeDefined()
   })
 
+  describe('markTutorialCompleted', () => {
+    it('ne date que la première fin du didacticiel', async () => {
+      prismaService.user.updateMany = jest.fn().mockResolvedValue({ count: 1 })
+
+      await service.markTutorialCompleted('user-1')
+
+      expect(prismaService.user.updateMany).toHaveBeenCalledWith({
+        data: { tutorialCompletedAt: expect.any(Date) },
+        where: { id: 'user-1', tutorialCompletedAt: null },
+      })
+    })
+  })
+
   describe('isEmailInWhitelist', () => {
     it('should return true when email is in whitelist', async () => {
       prismaService.userWhitelist.findUnique = jest.fn().mockResolvedValue({ email: 'whitelisted@example.com' })

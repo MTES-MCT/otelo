@@ -28,6 +28,7 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
     useQueryStates({
       baseEpci: parseAsString,
       epcis: parseAsArrayOf(parseAsString).withDefault([]),
+      epcisExclus: parseAsArrayOf(parseAsString),
       epciGroupName: parseAsString,
       epciGroupNameAuto: parseAsString,
       epciGroupId: parseAsString,
@@ -65,6 +66,7 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
       epciGroupName: null,
       epciGroupNameAuto: null,
       epcis: [],
+      epcisExclus: null,
       baseEpci: null,
       territoireTouched: null,
       urbanismeDoc: null,

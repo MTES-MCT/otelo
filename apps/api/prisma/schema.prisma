@@ -61,6 +61,8 @@ model User {
   type          UserType?
   referent      String?
   region        String?
+  /// Fin du didacticiel de création suivi en entier. Nul tant qu'il ne l'a pas été : le parcours l'impose alors.
+  tutorialCompletedAt DateTime? @map("tutorial_completed_at")
 
   twoFactorEnabled                  Boolean                             @default(true) @map("two_factor_enabled")
   // Relations

@@ -25,6 +25,7 @@ export type TutorialAnchor =
   | 'scenario-panel'
   // choix-du-territoire
   | 'bassin-epcis'
+  | 'edit-bassin-epcis'
   | 'add-epcis'
   | 'epci-group-select'
   | 'epci-search'
@@ -152,7 +153,15 @@ const buildCreationContent = ({ millesime }: TutorialContext): Partial<Record<Wi
       anchor: 'bassin-epcis',
       title: "Le bassin d'habitat, votre territoire d'étude",
       description:
-        "L'estimation des besoins se fait à l'échelle du <strong>bassin d'habitat</strong> : ses EPCI sont tous retenus. Vous pourrez ensuite consulter les résultats de chacun d'eux.",
+        "L'estimation des besoins se fait à l'échelle du <strong>bassin d'habitat</strong> : par défaut, ses EPCI sont tous retenus. Vous pourrez ensuite consulter les résultats de chacun d'eux.",
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      anchor: 'edit-bassin-epcis',
+      title: 'Ajuster le bassin',
+      description:
+        "Vous pouvez <strong>retirer des EPCI du bassin d'habitat</strong> s'ils n'entrent pas dans votre étude. L'EPCI que vous avez recherché reste toujours retenu. Gardez à l'esprit que le bassin d'habitat est l'échelle la plus pertinente pour estimer les besoins.",
       side: 'bottom',
       align: 'start',
     },

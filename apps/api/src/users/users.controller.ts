@@ -197,6 +197,16 @@ export class UsersController {
     return this.usersService.delete(id)
   }
 
+  @ExcludeOpenApi()
+  @AccessControl({
+    roles: [Role.ADMIN, Role.USER],
+  })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('me/tutorial-completed')
+  async markTutorialCompleted(@User() user: TUser) {
+    await this.usersService.markTutorialCompleted(user.id)
+  }
+
   @AccessControl({
     roles: [Role.ADMIN, Role.USER],
   })
