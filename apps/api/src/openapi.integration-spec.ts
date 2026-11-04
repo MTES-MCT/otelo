@@ -50,8 +50,17 @@ describe('Document OpenAPI (intégration)', () => {
     expect(createExternalDocument(app)).toMatchSnapshot()
   })
 
-  /** Il échouait sur `z.date()`, et `/swagger-json` répondait 500. */
+  /**
+   * Il échouait sur `z.date()`, et `/swagger-json` répondait 500. Sans consommateur externe,
+   * seul l'inventaire des routes documentées est figé, pas le détail des schémas.
+   */
   it('should generate the internal API document', () => {
-    expect(createInternalDocument(app)).toMatchSnapshot()
+    const { paths } = createInternalDocument(app)
+    const operations = Object.entries(paths).flatMap(([path, item]) =>
+      Object.keys(item)
+        .filter((key) => ['get', 'post', 'put', 'patch', 'delete'].includes(key))
+        .map((method) => `${method.toUpperCase()} ${path}`),
+    )
+    expect(operations.sort()).toMatchSnapshot()
   })
 })

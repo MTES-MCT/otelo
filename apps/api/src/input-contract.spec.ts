@@ -247,6 +247,27 @@ function resolvePath(path: string, params: unknown): string {
   })
 }
 
+/** Clés triées : l'ordre interne d'une bibliothèque ne fait pas partie du contrat. */
+function sortKeys(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortKeys)
+  if (value === null || typeof value !== 'object') return value
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, sortKeys((value as Record<string, unknown>)[key])]),
+  )
+}
+
+/** Résultat d'un appel, figé sur une ligne JSON : un snapshot par scénario, lisible en diff. */
+class ContractResult {
+  constructor(readonly data: { status: number; body: unknown; calls: Call[] }) {}
+}
+
+expect.addSnapshotSerializer({
+  test: (value) => value instanceof ContractResult,
+  serialize: (value: ContractResult) => JSON.stringify(sortKeys(value.data)),
+})
+
 const routes = discoverRoutes()
 
 describe("Contrat d'entrée des routes validées", () => {
@@ -288,7 +309,7 @@ describe("Contrat d'entrée des routes validées", () => {
       if (inputs.query !== undefined) pending = pending.query(toQuery(inputs.query))
       if (inputs.body !== undefined) pending = pending.send(inputs.body as object)
       const response = await pending
-      return { status: response.status, body: response.body, calls: [...calls] }
+      return new ContractResult({ status: response.status, body: response.body, calls: [...calls] })
     }
 
     for (const input of route.inputs) {
@@ -301,7 +322,7 @@ describe("Contrat d'entrée des routes validées", () => {
 
     /** Sans cette vérification, une route pourrait ne jamais être exercée qu'en échec. */
     it('should let the valid example through validation', async () => {
-      const { status } = await send(defaults)
+      const { status } = (await send(defaults)).data
       expect(status).not.toBe(400)
     })
   })
