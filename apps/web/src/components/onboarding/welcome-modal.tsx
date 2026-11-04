@@ -6,6 +6,8 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { parseAsString, useQueryState } from 'nuqs'
 import { useEffect, useRef, useState } from 'react'
 import { trackEvent } from '~/lib/tracking'
+import { isWelcomeDone, markWelcomeDone } from './tutorial-progress'
+import { useTutorialRequirement } from './use-tutorial-requirement'
 import { OTELO_INTRO } from './welcome-content'
 
 /** Première étape de la création : c'est là que l'utilisateur entre dans le paramétrage. */
@@ -60,17 +62,29 @@ const WelcomeModal = createModal({ id: 'otelo-welcome-modal', isOpenedByDefault:
  * session, ni `?selectType`. Les deux peuvent donc se présenter au même passage, et c'est
  * assumé — faire dépendre la présentation du profil la rendait invisible dès que la
  * session tardait ou que le type manquait.
+ *
+ * Tant que le didacticiel est obligatoire, la présentation revient jusqu'à ce que le compte
+ * l'ait vue (suivi par compte, plus par navigateur), et « Plus tard » disparaît. Sa fermeture,
+ * quelle qu'elle soit, libère alors les bulles imposées par `MandatoryCreationTutorial`.
  */
 export function OteloWelcomeModal() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [, setTuto] = useQueryState('tuto', parseAsString)
+  const { isPending, isRequired, userId } = useTutorialRequirement()
+  const isMandatory = isRequired && !!userId
+  // Lu dans les rappels du DSFR, qui peuvent garder la fermeture du premier rendu.
+  const mandatoryUserIdRef = useRef<string | null>(null)
+  mandatoryUserIdRef.current = isMandatory && userId ? userId : null
   const [isMounted, setIsMounted] = useState(false)
   // Une fois la présentation réellement affichée, elle ne doit plus se rouvrir : sans ce
   // drapeau, la fermeture repasserait `isOpen` à `false` et relancerait les tentatives.
   const hasBeenDisclosedRef = useRef(false)
 
   const isOpen = useIsModalOpen(WelcomeModal, {
+    onConceal: () => {
+      if (mandatoryUserIdRef.current) markWelcomeDone(mandatoryUserIdRef.current)
+    },
     onDisclose: () => {
       hasBeenDisclosedRef.current = true
       // Marqué à l'affichage effectif, pas à l'intention : si le DSFR n'a pas réussi à
@@ -83,12 +97,18 @@ export function OteloWelcomeModal() {
   const isForced = searchParams.get('bienvenue') !== null
 
   useEffect(() => {
-    if (pathname !== CREATION_FIRST_STEP_PATH || (hasBeenSeen() && !isForced)) {
+    // Le caractère obligatoire dépend de la session : on attend de le connaître.
+    if (pathname !== CREATION_FIRST_STEP_PATH || isPending) {
+      return
+    }
+
+    const isDue = isMandatory && userId ? !isWelcomeDone(userId) : !hasBeenSeen()
+    if (!isDue && !isForced) {
       return
     }
 
     setIsMounted(true)
-  }, [pathname, isForced])
+  }, [pathname, isForced, isPending, isMandatory, userId])
 
   useEffect(() => {
     if (!isMounted || isOpen || hasBeenDisclosedRef.current) {
@@ -108,13 +128,15 @@ export function OteloWelcomeModal() {
     const timer = setInterval(() => {
       if (Date.now() > deadline) {
         clearInterval(timer)
+        // Le dialogue n'a jamais pu s'ouvrir : le didacticiel imposé ne doit pas l'attendre indéfiniment.
+        if (isMandatory && userId) markWelcomeDone(userId)
         return
       }
       attempt()
     }, OPEN_RETRY_MS)
 
     return () => clearInterval(timer)
-  }, [isMounted, isOpen])
+  }, [isMounted, isOpen, isMandatory, userId])
 
   if (!isMounted) {
     return null
@@ -124,21 +146,32 @@ export function OteloWelcomeModal() {
     <WelcomeModal.Component
       title={OTELO_INTRO.title}
       size="medium"
-      buttons={[
-        {
-          priority: 'secondary',
-          children: OTELO_INTRO.laterLabel,
-          onClick: () => trackEvent({ action: 'presentation otelo', category: 'Aide', name: 'plus tard' }),
-        },
-        {
-          priority: 'primary',
-          children: OTELO_INTRO.startLabel,
-          onClick: () => {
-            trackEvent({ action: 'presentation otelo', category: 'Aide', name: 'commencer' })
-            void setTuto('1')
-          },
-        },
-      ]}
+      buttons={
+        isMandatory
+          ? [
+              {
+                priority: 'primary',
+                children: OTELO_INTRO.startLabel,
+                // Les bulles partent d'elles-mêmes à la fermeture : `?tuto=1` en lancerait un second jeu.
+                onClick: () => trackEvent({ action: 'presentation otelo', category: 'Aide', name: 'commencer (obligatoire)' }),
+              },
+            ]
+          : [
+              {
+                priority: 'secondary',
+                children: OTELO_INTRO.laterLabel,
+                onClick: () => trackEvent({ action: 'presentation otelo', category: 'Aide', name: 'plus tard' }),
+              },
+              {
+                priority: 'primary',
+                children: OTELO_INTRO.startLabel,
+                onClick: () => {
+                  trackEvent({ action: 'presentation otelo', category: 'Aide', name: 'commencer' })
+                  void setTuto('1')
+                },
+              },
+            ]
+      }
     >
       {OTELO_INTRO.paragraphs.map((paragraph) => (
         // Fragment HTML écrit dans `welcome-content.ts`, jamais reçu de l'extérieur.

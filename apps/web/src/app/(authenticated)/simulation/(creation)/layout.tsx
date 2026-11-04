@@ -5,6 +5,7 @@ import { WizardLayout } from '~/components/simulations/settings/wizard-layout'
 import { WizardStepHeader } from '~/components/simulations/settings/wizard-step-header'
 import { WizardStepTracker } from '~/components/simulations/settings/wizard-step-tracker'
 import { WizardStepper } from '~/components/simulations/settings/wizard-stepper'
+import { MandatoryCreationTutorial } from '~/components/simulations/tutorial/mandatory-creation-tutorial'
 
 type PageProps = {
   children: React.ReactNode
@@ -15,6 +16,7 @@ export default function CreateSimulationLayout({ children }: PageProps) {
     <SimulationFormRatesProviderContextWrapper>
       <WizardStepTracker />
       <MillesimeInitializer />
+      <MandatoryCreationTutorial />
       <WizardLayout stepper={<WizardStepper />} panel={<CreationScenarioPanel />} header={<WizardStepHeader />}>
         {children}
       </WizardLayout>

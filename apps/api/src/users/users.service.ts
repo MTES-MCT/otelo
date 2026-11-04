@@ -159,6 +159,14 @@ export class UsersService {
     })
   }
 
+  /** Idempotent : la première date de fin est conservée si le didacticiel est rejoué. */
+  async markTutorialCompleted(id: string): Promise<void> {
+    await this.prisma.user.updateMany({
+      data: { tutorialCompletedAt: new Date() },
+      where: { id, tutorialCompletedAt: null },
+    })
+  }
+
   async importUsersFromCsv(
     rows: Array<{ email: string; referent?: string; name: string; firstname: string; lastname: string; type?: UserType }>,
   ): Promise<{ created: number; skipped: number }> {

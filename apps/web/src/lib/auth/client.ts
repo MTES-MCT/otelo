@@ -16,6 +16,7 @@ export const authClient = createAuthClient({
         hasAccess: { type: 'boolean', required: true },
         role: { type: 'string', required: false },
         region: { type: 'string', required: false },
+        tutorialCompletedAt: { type: 'date', required: false },
       },
     }),
     nextCookies(),

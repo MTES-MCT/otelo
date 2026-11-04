@@ -519,6 +519,11 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      tutorialCompletedAt: {
+        type: 'date',
+        required: false,
+        input: false,
+      },
     },
     changeEmail: {
       enabled: false,

@@ -32,6 +32,23 @@ const resolveTarget = (step: TutorialStep): HTMLElement | null =>
 const isAnchorVisible = (anchor: TutorialAnchor): boolean =>
   Array.from(document.querySelectorAll<HTMLElement>(tutorialSelector(anchor))).some(isVisible)
 
+type TutorialCallbacks = {
+  /** Bulle affichée, repérée par son rang dans `steps`. */
+  onStepShown?: (stepIndex: number) => void
+  /** Tuto mené jusqu'à « Terminer ». */
+  onDone?: () => void
+}
+
+type StartOptions = {
+  /**
+   * Didacticiel imposé : ni bouton de fermeture, ni Échap, ni clic sur le voile. Seul
+   * « Terminer », sur la dernière bulle, en sort.
+   */
+  mandatory?: boolean
+  /** Écarte les bulles déjà lues, repérées par leur rang dans `steps`. */
+  isSeen?: (stepIndex: number) => boolean
+}
+
 /**
  * Pilote le mode tuto de l'écran courant.
  *
@@ -55,7 +72,12 @@ export const useTutorial = (
    * ni jusqu'où les utilisateurs vont dedans.
    */
   trackingName?: string,
+  callbacks: TutorialCallbacks = {},
 ) => {
+  // Les rappels sont lus au moment où driver.js les déclenche : passer par une ref évite de
+  // recréer `start`, donc de refermer le tuto, à chaque rendu de l'appelant.
+  const callbacksRef = useRef(callbacks)
+  callbacksRef.current = callbacks
   const driverRef = useRef<Driver | null>(null)
   const observerRef = useRef<ResizeObserver | null>(null)
   // Distingue une fermeture par l'utilisateur d'une destruction au démontage : sans ce
@@ -76,91 +98,111 @@ export const useTutorial = (
   // des constantes de module, l'identité des étapes ne change donc qu'avec l'écran.
   useEffect(() => teardown, [steps, teardown])
 
-  const start = useCallback((): boolean => {
-    if (!steps?.length) {
-      return false
-    }
+  const start = useCallback(
+    ({ mandatory = false, isSeen }: StartOptions = {}): boolean => {
+      if (!steps?.length) {
+        return false
+      }
 
-    // driver.js calcule « x sur y » sur la longueur totale des étapes fournies, et
-    // n'ignore pas une ancre absente : il affiche un popover orphelin centré. On résout
-    // donc en amont pour que la progression annoncée corresponde aux bulles montrées.
-    const reachable = steps
-      .filter((step) => step.visibleWith === undefined || isAnchorVisible(step.visibleWith))
-      .map((step) => ({ step, initial: resolveTarget(step) }))
-      .filter((entry): entry is typeof entry & { initial: HTMLElement } => Boolean(entry.initial))
+      // driver.js calcule « x sur y » sur la longueur totale des étapes fournies, et
+      // n'ignore pas une ancre absente : il affiche un popover orphelin centré. On résout
+      // donc en amont pour que la progression annoncée corresponde aux bulles montrées.
+      const reachable = steps
+        .map((step, index) => ({ index, step }))
+        .filter(({ index }) => !isSeen?.(index))
+        .filter(({ step }) => step.visibleWith === undefined || isAnchorVisible(step.visibleWith))
+        .map(({ index, step }) => ({ index, initial: resolveTarget(step), step }))
+        .filter((entry): entry is typeof entry & { initial: HTMLElement } => Boolean(entry.initial))
 
-    if (!reachable.length) {
-      return false
-    }
+      if (!reachable.length) {
+        return false
+      }
 
-    teardown()
+      teardown()
 
-    const instance = driver({
-      allowClose: true,
-      allowKeyboardControl: true,
-      // RGAA 13.8 : pas d'animation imposée à qui n'en veut pas.
-      animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-      // Le tuto explique, il ne fait pas agir. Sans cela driver laisse la cible
-      // interactive, et un re-render nuqs remplacerait le nœud sous le popover.
-      disableActiveInteraction: true,
-      doneBtnText: 'Terminer',
-      nextBtnText: 'Suivant',
-      overlayOpacity: 0.6,
-      popoverClass: 'otelo-tutorial-popover',
-      prevBtnText: 'Précédent',
-      progressText: 'Aide {{current}} sur {{total}}',
-      showProgress: true,
-      // Filet : si le DOM bouge après le filtrage, on saute plutôt que d'afficher un
-      // popover orphelin au centre de l'écran.
-      skipMissingElement: true,
-      stagePadding: 6,
-      // Le DSFR n'arrondit pas ses surfaces.
-      stageRadius: 0,
-      steps: reachable.map(({ step, initial }) => ({
-        // Résolu à chaque bulle plutôt qu'une fois pour toutes : `refresh()` ne
-        // re-résout pas la cible et se recalerait sur un nœud détaché.
-        element: () => resolveTarget(step) ?? initial,
-        popover: { align: step.align, description: step.description, side: step.side, title: step.title },
-      })),
-      onPopoverRender: (popover) => {
-        popover.closeButton.setAttribute('aria-label', "Fermer l'aide")
-      },
-      onDestroyed: () => {
-        if (isTearingDownRef.current) {
-          return
-        }
+      const instance = driver({
+        allowClose: !mandatory,
+        allowKeyboardControl: true,
+        // RGAA 13.8 : pas d'animation imposée à qui n'en veut pas.
+        animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        // Le tuto explique, il ne fait pas agir. Sans cela driver laisse la cible
+        // interactive, et un re-render nuqs remplacerait le nœud sous le popover.
+        disableActiveInteraction: true,
+        doneBtnText: 'Terminer',
+        nextBtnText: 'Suivant',
+        overlayOpacity: 0.6,
+        popoverClass: 'otelo-tutorial-popover',
+        prevBtnText: 'Précédent',
+        progressText: 'Aide {{current}} sur {{total}}',
+        showButtons: mandatory ? ['next', 'previous'] : ['next', 'previous', 'close'],
+        showProgress: true,
+        // Filet : si le DOM bouge après le filtrage, on saute plutôt que d'afficher un
+        // popover orphelin au centre de l'écran.
+        skipMissingElement: true,
+        stagePadding: 6,
+        // Le DSFR n'arrondit pas ses surfaces.
+        stageRadius: 0,
+        steps: reachable.map(({ step, initial }) => ({
+          // Résolu à chaque bulle plutôt qu'une fois pour toutes : `refresh()` ne
+          // re-résout pas la cible et se recalerait sur un nœud détaché.
+          element: () => resolveTarget(step) ?? initial,
+          popover: { align: step.align, description: step.description, side: step.side, title: step.title },
+        })),
+        onHighlighted: () => {
+          const activeIndex = instance.getActiveIndex()
+          const entry = activeIndex === undefined ? undefined : reachable[activeIndex]
+          if (entry) {
+            callbacksRef.current.onStepShown?.(entry.index)
+          }
+        },
+        onPopoverRender: (popover) => {
+          popover.closeButton.setAttribute('aria-label', "Fermer l'aide")
+        },
+        // driver.js remet son état à zéro avant d'appeler ce rappel : l'index actif ne se lit plus
+        // sur l'instance, seulement sur l'état qu'il nous transmet.
+        onDestroyed: (_element, _step, { state }) => {
+          if (isTearingDownRef.current) {
+            return
+          }
 
-        if (trackingName) {
-          const activeIndex = instance.getActiveIndex() ?? 0
+          const activeIndex = state.activeIndex ?? 0
+          const isDone = activeIndex >= reachable.length - 1
 
-          trackEvent({
-            action: 'fin tutoriel',
-            category: 'Aide',
-            name: activeIndex >= reachable.length - 1 ? 'termine' : 'abandonne',
-            value: activeIndex + 1,
-          })
-        }
+          if (trackingName) {
+            trackEvent({
+              action: 'fin tutoriel',
+              category: 'Aide',
+              name: isDone ? 'termine' : 'abandonne',
+              value: activeIndex + 1,
+            })
+          }
 
-        triggerRef.current?.focus()
-      },
-    })
+          if (isDone) {
+            callbacksRef.current.onDone?.()
+          }
 
-    driverRef.current = instance
+          triggerRef.current?.focus()
+        },
+      })
 
-    if (trackingName) {
-      trackEvent({ action: 'ouverture tutoriel', category: 'Aide', name: trackingName, value: reachable.length })
-    }
+      driverRef.current = instance
 
-    // Le contenu bouge sous le projecteur : alertes « pic de ménages », graphiques montés
-    // après coup, requêtes react-query qui se résolvent. `refresh()` est throttlé en
-    // interne et ne touche pas au focus, contrairement à `moveTo()`.
-    observerRef.current = new ResizeObserver(() => driverRef.current?.refresh())
-    observerRef.current.observe(document.body)
+      if (trackingName) {
+        trackEvent({ action: 'ouverture tutoriel', category: 'Aide', name: trackingName, value: reachable.length })
+      }
 
-    instance.drive()
+      // Le contenu bouge sous le projecteur : alertes « pic de ménages », graphiques montés
+      // après coup, requêtes react-query qui se résolvent. `refresh()` est throttlé en
+      // interne et ne touche pas au focus, contrairement à `moveTo()`.
+      observerRef.current = new ResizeObserver(() => driverRef.current?.refresh())
+      observerRef.current.observe(document.body)
 
-    return true
-  }, [steps, teardown, triggerRef, trackingName])
+      instance.drive()
+
+      return true
+    },
+    [steps, teardown, triggerRef, trackingName],
+  )
 
   return { hasTutorial: Boolean(steps?.length), start }
 }

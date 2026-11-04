@@ -32,7 +32,7 @@ export const ModifyAggregatedSecondaryParcsComparisonChart = ({ targetYear }: { 
   const baseYear = simulationSettings.millesime
   const epciIds = Object.keys(simulationSettings.epciScenarios)
   const { data: originalRatesData } = useAccommodationRatesByEpci(epciIds, simulationSettings.millesime)
-  const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(false))
+  const [isShown, setIsShown] = useQueryState('parcEvolutionShown', parseAsBoolean.withDefault(true))
 
   if (!originalRatesData || epciIds.length === 0) return null
 

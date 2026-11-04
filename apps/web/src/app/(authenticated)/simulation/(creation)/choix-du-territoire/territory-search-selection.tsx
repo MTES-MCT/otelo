@@ -36,15 +36,19 @@ type TerritorySearchSelectionProps = {
  * Choix du territoire d'étude par recherche directe : l'utilisateur cherche son EPCI (ou une commune),
  * Otelo lui présente le bassin d'habitat complet.
  *
- * L'estimation se fait à l'échelle du bassin : ses EPCI sont cochés et verrouillés, pour qu'on ne
- * puisse pas, dans le parcours courant, ne garder que l'EPCI qui nous intéresse. Ajouter des EPCI
- * limitrophes — pour un SCoT qui déborde du bassin, par exemple — reste possible, en second niveau.
+ * L'estimation se fait à l'échelle du bassin : ses EPCI sont tous retenus par défaut. Les retirer et
+ * ajouter des EPCI limitrophes — pour un SCoT qui déborde du bassin, par exemple — restent possibles,
+ * en second niveau. L'EPCI recherché, lui, ne se retire pas : l'étude garde toujours un EPCI.
  */
 export const TerritorySearchSelection = ({ bassinEpcis, hasUrbanismeDocError }: TerritorySearchSelectionProps) => {
   const router = useRouter()
-  const [{ baseEpci, epcis, epciGroupName }, setQueryStates] = useQueryStates({
+  const [{ baseEpci, epcis, epcisExclus, epciGroupName }, setQueryStates] = useQueryStates({
     baseEpci: parseAsString,
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
+    // EPCI du bassin que l'utilisateur a décochés. Tenus à part de `epcis` : sans cette liste, la
+    // synchronisation du bassin ci-dessous ne saurait pas distinguer un EPCI retiré d'un EPCI pas
+    // encore reporté, et le recocherait aussitôt.
+    epcisExclus: parseAsArrayOf(parseAsString).withDefault([]),
     epciGroupName: parseAsString,
     epciChart: parseAsString,
   })
@@ -55,7 +59,9 @@ export const TerritorySearchSelection = ({ bassinEpcis, hasUrbanismeDocError }: 
   const studyEpcis: TEpci[] = isBassinLoaded ? bassinEpcis : (selectedEpcis?.filter((epci) => epci.code === baseEpci) ?? [])
   const studyEpciCodes = studyEpcis.map((epci) => epci.code)
   const hasAddedEpcis = epcis.some((code) => !studyEpciCodes.includes(code))
+  const hasExcludedEpcis = epcisExclus.some((code) => studyEpciCodes.includes(code))
   const [isAddingEpcis, setIsAddingEpcis] = useState(hasAddedEpcis)
+  const [isEditingBassin, setIsEditingBassin] = useState(hasExcludedEpcis)
   const { data: contours } = useEpciContours(epcis)
   const getRole = useCallback(
     (code: string): StudyTerritoryRole => (code === baseEpci ? 'searched' : studyEpciCodes.includes(code) ? 'bassin' : 'added'),
@@ -68,26 +74,35 @@ export const TerritorySearchSelection = ({ bassinEpcis, hasUrbanismeDocError }: 
   useEffect(() => {
     if (!baseEpci) return
     if (isBassinLoaded) {
-      const missingCodes = bassinEpcis.map((epci) => epci.code).filter((code) => !epcis.includes(code))
+      const missingCodes = bassinEpcis.map((epci) => epci.code).filter((code) => !epcis.includes(code) && !epcisExclus.includes(code))
       if (missingCodes.length > 0) void setQueryStates({ epcis: [...epcis, ...missingCodes] })
     } else if (epcis.length === 0) {
       void setQueryStates({ epcis: [baseEpci] })
     }
-  }, [baseEpci, epcis, isBassinLoaded, bassinEpcis, setQueryStates])
+  }, [baseEpci, epcis, epcisExclus, isBassinLoaded, bassinEpcis, setQueryStates])
+
+  const onToggleBassinEpci = (code: string, checked: boolean) => {
+    void setQueryStates({
+      epcis: checked ? [...epcis, code] : epcis.filter((epciCode) => epciCode !== code),
+      epcisExclus: checked ? epcisExclus.filter((epciCode) => epciCode !== code) : [...epcisExclus, code],
+    })
+  }
 
   const onSelectEpci = async (item: GeoApiEpciResult | GeoApiCommuneResult) => {
     const code = 'codeEpci' in item ? (item.codeEpci ?? item.code) : item.code
     setIsAddingEpcis(false)
-    await setQueryStates({ baseEpci: code, epciChart: code, epcis: [] })
+    setIsEditingBassin(false)
+    await setQueryStates({ baseEpci: code, epciChart: code, epcis: [], epcisExclus: [] })
     router.refresh()
   }
 
   const baseEpciData = bassinEpcis.find((epci) => epci.code === baseEpci) ?? selectedEpcis?.find((epci) => epci.code === baseEpci)
 
-  // Le nom du bassin n'est proposé que si l'étude s'y tient : avec des EPCI ajoutés, ce n'en est plus un.
+  // Le nom du bassin n'est proposé que si l'étude s'y tient : avec des EPCI ajoutés ou retirés, ce n'en est plus un.
+  const isWholeBassin = !hasAddedEpcis && !hasExcludedEpcis
   useEpciGroupNamePrefill({
-    bassinName: hasAddedEpcis ? undefined : baseEpciData?.bassinName,
-    territoryLabel: baseEpciData ? buildTerritoryLabel(baseEpciData.name, hasAddedEpcis ? undefined : baseEpciData.bassinName) : '',
+    bassinName: isWholeBassin ? baseEpciData?.bassinName : undefined,
+    territoryLabel: baseEpciData ? buildTerritoryLabel(baseEpciData.name, isWholeBassin ? baseEpciData.bassinName : undefined) : '',
   })
 
   return (
@@ -116,10 +131,20 @@ export const TerritorySearchSelection = ({ bassinEpcis, hasUrbanismeDocError }: 
                   'Votre étude portera sur le territoire suivant :'
                 )
               }
-              options={studyEpcis.map((epci) => ({
-                label: epci.name,
-                nativeInputProps: { checked: true, disabled: true, readOnly: true, value: epci.code },
-              }))}
+              hintText={isEditingBassin ? "Décochez les EPCI à exclure de votre étude. L'EPCI recherché reste toujours retenu." : undefined}
+              options={studyEpcis.map((epci) => {
+                const isLocked = !isEditingBassin || epci.code === baseEpci
+                return {
+                  label: epci.name,
+                  nativeInputProps: isLocked
+                    ? { checked: epcis.includes(epci.code) || epci.code === baseEpci, disabled: true, readOnly: true, value: epci.code }
+                    : {
+                        checked: epcis.includes(epci.code),
+                        onChange: (event) => onToggleBassinEpci(epci.code, event.target.checked),
+                        value: epci.code,
+                      },
+                }
+              })}
             />
           </div>
 
@@ -129,13 +154,24 @@ export const TerritorySearchSelection = ({ bassinEpcis, hasUrbanismeDocError }: 
             </div>
           )}
 
-          {isAddingEpcis ? (
-            <ContiguousEpcisCheckboxes epcis={studyEpcis} />
-          ) : (
-            <div className="fr-mb-4w" {...tutorialAnchor('add-epcis')}>
-              <Button priority="secondary" size="small" onClick={() => setIsAddingEpcis(true)}>
-                Ajouter des EPCI
-              </Button>
+          {isAddingEpcis && <ContiguousEpcisCheckboxes epcis={studyEpcis} />}
+
+          {(!isAddingEpcis || (isBassinLoaded && !isEditingBassin)) && (
+            <div className="fr-mb-4w fr-flex fr-flex-gap-2v">
+              {isBassinLoaded && !isEditingBassin && (
+                <div {...tutorialAnchor('edit-bassin-epcis')}>
+                  <Button priority="secondary" size="small" onClick={() => setIsEditingBassin(true)}>
+                    Retirer des EPCI du bassin
+                  </Button>
+                </div>
+              )}
+              {!isAddingEpcis && (
+                <div {...tutorialAnchor('add-epcis')}>
+                  <Button priority="secondary" size="small" onClick={() => setIsAddingEpcis(true)}>
+                    Ajouter des EPCI
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
