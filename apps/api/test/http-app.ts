@@ -1,5 +1,4 @@
-import { INestApplication } from '@nestjs/common'
-import { ModuleMetadata } from '@nestjs/common/interfaces'
+import { INestApplication, ModuleMetadata } from '@nestjs/common'
 import { APP_PIPE } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
 import { ZodValidationPipe } from 'nestjs-zod'

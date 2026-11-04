@@ -3,10 +3,10 @@ packages:
   - packages/*
 
 catalog:
-  '@biomejs/biome': 2.3.13
+  '@biomejs/biome': 2.6.3
   '@types/node': ^25.9.9
   dayjs: ^1.11.23
-  typescript: ^5.9.3
+  typescript: ^6.0.3
   zod: ^4.6.7
 
 minimumReleaseAge: 10080
@@ -41,3 +41,8 @@ overrides:
   'tsup>esbuild': 0.28.1
   multer: '>=2.3.0'
   '@nestjs/swagger>js-yaml': 5.4.3
+  # GHSA-3g3m-2fjr-6pw4 (glob >=9 <=14.0.1) et GHSA-g3hv-75wg-m249 (minimatch <11.0.1).
+  # minimatch 3.x n'est pas forcé : fork-ts-checker et glob 7 utilisent son export par défaut, supprimé en v11.
+  'glob@>=9.0.0 <14.0.2': 14.0.2
+  'minimatch@>=9.0.0 <11.0.1': 11.0.1
+  'readdir-glob>minimatch': 11.0.1

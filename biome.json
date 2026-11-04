@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,7 +7,18 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/node_modules/**", "!**/dist/**", "!**/.next/**", "!**/generated/**", "!apps/web/next-env.d.ts"]
+    "includes": [
+      "**",
+      "!**/node_modules/**",
+      "!**/dist/**",
+      "!**/.next/**",
+      "!**/generated/**",
+      "!apps/web/next-env.d.ts",
+      "!**/*.md",
+      "!**/*.yml",
+      "!**/*.yaml",
+      "!**/*.scss"
+    ]
   },
   "css": {
     "parser": {
@@ -29,7 +40,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": false,
+      "preset": "none",
       "complexity": {
         "noExtraBooleanCast": "error",
         "noUselessCatch": "error",

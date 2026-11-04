@@ -17,7 +17,7 @@ export const CreateSecondaryAccommodationRateInput: FC<CreateAccommodationRateIn
   const [valueInput, setValueInput] = useState<string | undefined>(undefined)
 
   useEffect(() => {
-    if (!!defaultRatesByEpci && defaultRatesByEpci.txRS) {
+    if (defaultRatesByEpci && defaultRatesByEpci.txRS) {
       setValueInput(`${Number(defaultRatesByEpci.txRS * 100).toFixed(2)}`)
     }
   }, [defaultRatesByEpci])

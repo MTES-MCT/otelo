@@ -77,9 +77,7 @@ const csp = [
   // MapLibre lance ses web workers depuis des URL `blob:`.
   "worker-src 'self' blob:",
   // API Otelo, découpage administratif de l'État, fond de carte IGN (style, tuiles, polices), et Matomo si configuré.
-  ['connect-src', "'self'", 'https://geo.api.gouv.fr', IGN_GEOPLATEFORME_ORIGIN, ...apiOrigins, matomoOrigin]
-    .filter(Boolean)
-    .join(' '),
+  ['connect-src', "'self'", 'https://geo.api.gouv.fr', IGN_GEOPLATEFORME_ORIGIN, ...apiOrigins, matomoOrigin].filter(Boolean).join(' '),
   "object-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
