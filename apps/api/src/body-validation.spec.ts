@@ -12,12 +12,10 @@ jest.mock('@thallesp/nestjs-better-auth', () => ({
 }))
 
 /**
- * Le `ZodValidationPipe` ne valide que si le paramètre est annoté avec une classe
- * `createZodDto`. Un type TypeScript est effacé à la compilation : le corps passe sans
- * être validé, en silence, et rien ne le signale.
- *
- * `strictSchemaDeclaration` ne répond pas au besoin : elle lève sur tout paramètre sans
- * DTO, `@Param('id')` compris, et à l'exécution.
+ * Le pipe de validation global ne valide que les paramètres qui portent un schéma :
+ * `@Body({ schema })`, `@Query({ schema })`. Un type TypeScript est effacé à la
+ * compilation : sans schéma, le corps passe sans être validé, en silence, et rien ne le
+ * signale.
  */
 describe('Validation des entrées de requête', () => {
   const SRC = join(__dirname)
@@ -31,7 +29,7 @@ describe('Validation des entrées de requête', () => {
 
   type Offender = { controller: string; method: string; index: number }
 
-  /** Les `@Body()` et `@Query()` entiers sans DTO `createZodDto`, donc non validés. */
+  /** Les `@Body()` et `@Query()` entiers sans schéma, donc non validés. */
   const unvalidatedInputs = (paramtype: RouteParamtypes): Offender[] => {
     const found: Offender[] = []
 
@@ -50,16 +48,13 @@ describe('Validation des entrées de requête', () => {
           const args = Reflect.getMetadata(ROUTE_ARGS_METADATA, controller, method)
           if (!args) continue
 
-          const paramtypes: unknown[] = Reflect.getMetadata('design:paramtypes', controller.prototype, method) ?? []
-
-          for (const [key, meta] of Object.entries(args as Record<string, { index: number; data?: unknown }>)) {
+          for (const [key, meta] of Object.entries(args as Record<string, { index: number; data?: unknown; schema?: unknown }>)) {
             const [kind] = key.split(':')
             if (Number(kind) !== paramtype) continue
             // `@Body('champ')` extrait une valeur unique : pas d'entrée entière à valider.
             if (meta.data !== undefined) continue
 
-            const metatype = paramtypes[meta.index] as { isZodDto?: boolean } | undefined
-            if (!metatype?.isZodDto) {
+            if (!meta.schema) {
               found.push({ controller: controller.name, method, index: meta.index })
             }
           }
@@ -70,13 +65,13 @@ describe('Validation des entrées de requête', () => {
     return found
   }
 
-  it('should route every full @Body() through a createZodDto class', () => {
+  it('should give every full @Body() a validation schema', () => {
     const offenders = unvalidatedInputs(RouteParamtypes.BODY)
 
     expect(offenders.map(({ controller, method }) => `${controller}.${method}()`)).toEqual([])
   })
 
-  it('should route every full @Query() through a createZodDto class', () => {
+  it('should give every full @Query() a validation schema', () => {
     const offenders = unvalidatedInputs(RouteParamtypes.QUERY)
 
     expect(offenders.map(({ controller, method }) => `${controller}.${method}()`)).toEqual([])

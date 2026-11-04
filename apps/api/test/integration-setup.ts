@@ -16,7 +16,7 @@ import { INTEGRATION_DATABASE_URL } from './integration-database'
  * d'être écrasée en silence.
  */
 export default function globalSetup(): void {
-  execFileSync('npx', ['prisma', 'db', 'push', '--skip-generate'], {
+  execFileSync('npx', ['prisma', 'db', 'push'], {
     cwd: join(__dirname, '..'),
     env: { ...process.env, DATABASE_URL: INTEGRATION_DATABASE_URL },
     stdio: 'inherit',

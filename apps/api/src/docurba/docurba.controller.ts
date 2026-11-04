@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Query } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
-import { DocurbaEpciParamsDto, DocurbaEpcisQueryDto } from './docurba.dto'
+import { TDocurbaEpciParams, TDocurbaEpcisQuery, ZDocurbaEpciParams, ZDocurbaEpcisQuery } from '~/docurba/docurba.dto'
 import { DocurbaEpciResult, DocurbaService } from './docurba.service'
 
 /**
@@ -18,14 +18,16 @@ export class DocurbaController {
 
   @Get('epcis')
   @HttpCode(HttpStatus.OK)
-  async getBatchForEpcis(@Query() { codes }: DocurbaEpcisQueryDto): Promise<Record<string, DocurbaEpciResult | null>> {
+  async getBatchForEpcis(
+    @Query({ schema: ZDocurbaEpcisQuery }) { codes }: TDocurbaEpcisQuery,
+  ): Promise<Record<string, DocurbaEpciResult | null>> {
     const results = await Promise.all(codes.map((code) => this.docurbaService.getForEpci(code)))
     return Object.fromEntries(codes.map((code, i) => [code, results[i] ?? null]))
   }
 
   @Get('epci/:code')
   @HttpCode(HttpStatus.OK)
-  async getForEpci(@Param() { code }: DocurbaEpciParamsDto): Promise<DocurbaEpciResult | null> {
+  async getForEpci(@Param({ schema: ZDocurbaEpciParams }) { code }: TDocurbaEpciParams): Promise<DocurbaEpciResult | null> {
     return this.docurbaService.getForEpci(code)
   }
 }

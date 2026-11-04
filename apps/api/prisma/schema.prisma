@@ -1,7 +1,6 @@
 generator client {
-  provider   = "prisma-client"
-  output     = "../src/generated/prisma"
-  engineType = "client"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 generator json {
@@ -10,7 +9,6 @@ generator json {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model DataPackVersion {
@@ -42,25 +40,26 @@ model DataPackVersion {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String
-  image         String?
-  emailVerified Boolean   @default(false)
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  name                String
+  image               String?
+  emailVerified       Boolean   @default(false)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
   // Custom fields
-  firstname     String
-  lastname      String
-  role          Role      @default(USER)
-  banned        Boolean   @default(false)
-  banReason     String?   @map("ban_reason")
-  lastLoginAt   DateTime  @default(now()) @map("last_login_at")
-  hasAccess     Boolean   @default(false)
-  engaged       Boolean   @default(false)
-  type          UserType?
-  referent      String?
-  region        String?
+  firstname           String
+  lastname            String
+  role                Role      @default(USER)
+  banned              Boolean   @default(false)
+  banReason           String?   @map("ban_reason")
+  banExpires          DateTime? @map("ban_expires")
+  lastLoginAt         DateTime  @default(now()) @map("last_login_at")
+  hasAccess           Boolean   @default(false)
+  engaged             Boolean   @default(false)
+  type                UserType?
+  referent            String?
+  region              String?
   /// Fin du didacticiel de création suivi en entier. Nul tant qu'il ne l'a pas été : le parcours l'impose alors.
   tutorialCompletedAt DateTime? @map("tutorial_completed_at")
 

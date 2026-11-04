@@ -7,7 +7,6 @@ import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { EmailService } from '~/email/email.service'
 import { ExportExcelService } from '~/export-excel/export-excel.service'
-import { CheckPowerpointRequestDto, RequestPowerpointDto } from '~/export-powerpoint/export-powerpoint.dto'
 import { ExportPowerpointService } from '~/export-powerpoint/export-powerpoint.service'
 import {
   PowerpointRequestsService,
@@ -16,6 +15,12 @@ import {
 } from '~/export-powerpoint/powerpoint-requests.service'
 import { Role } from '~/generated/prisma/enums'
 import { TEmailDto } from '~/schemas/email/email'
+import {
+  TCheckPowerpointRequest,
+  TRequestPowerpoint,
+  ZCheckPowerpointRequest,
+  ZRequestPowerpoint,
+} from '~/schemas/export-powerpoint/export-powerpoint'
 import { TUser } from '~/schemas/users/user'
 import { SimulationsService } from '~/simulations/simulations.service'
 
@@ -50,7 +55,10 @@ export class ExportPowerpointController {
   @Throttle({ default: { ttl: 60_000, limit: 30 } })
   @Post('check')
   @HttpCode(HttpStatus.OK)
-  async checkDuplicate(@User() user: TUser, @Body() { selectedSimulations, epciCodes }: CheckPowerpointRequestDto) {
+  async checkDuplicate(
+    @User() user: TUser,
+    @Body({ schema: ZCheckPowerpointRequest }) { selectedSimulations, epciCodes }: TCheckPowerpointRequest,
+  ) {
     const hasAccess = await this.simulationsService.hasUserAccessToAll(selectedSimulations, user.id)
     if (!hasAccess) {
       throw new ForbiddenException('You do not have access to one or more selected simulations')
@@ -70,7 +78,7 @@ export class ExportPowerpointController {
   @Throttle({ default: { ttl: 60_000, limit: 5 } })
   @Post()
   @HttpCode(HttpStatus.OK)
-  async requestPowerpoint(@User() user: TUser, @Body() data: RequestPowerpointDto) {
+  async requestPowerpoint(@User() user: TUser, @Body({ schema: ZRequestPowerpoint }) data: TRequestPowerpoint) {
     const { nextStep, resultDate, selectedSimulations, privilegedSimulation, epcis, epci, documentType, periodStart, periodEnd } = data
 
     const hasAccess = await this.simulationsService.hasUserAccessToAll(selectedSimulations, user.id)
@@ -81,7 +89,7 @@ export class ExportPowerpointController {
     // La confirmation ne peut pas être contournée en appelant l'API directement,
     // ni par un onglet resté ouvert dont la vérification a vieilli : on rejoue le
     // contrôle ici et on exige que l'utilisateur ait confirmé *cette* demande-là.
-    const requestedEpciCodes = !!epcis && epcis.length > 0 ? epcis.map((item) => item.code) : epci ? [epci.code] : []
+    const requestedEpciCodes = epcis && epcis.length > 0 ? epcis.map((item) => item.code) : epci ? [epci.code] : []
 
     const replaceable = await this.powerpointRequestsService.findReplaceable(user.id, selectedSimulations, requestedEpciCodes)
     if (replaceable && data.replacesRequestId !== replaceable.requestId) {
@@ -92,7 +100,7 @@ export class ExportPowerpointController {
       })
     }
 
-    const selectedEpci = !!epcis && epcis.length > 0 ? epcis[0] : epci
+    const selectedEpci = epcis && epcis.length > 0 ? epcis[0] : epci
 
     if (!selectedEpci) {
       throw new Error('Either epci or epcis must be provided')
@@ -152,7 +160,7 @@ export class ExportPowerpointController {
       </ul>
       <p><strong>EPCI(s) demandé(s):</strong></p>
       ${
-        !!epcis && epcis.length > 0
+        epcis && epcis.length > 0
           ? `<ul>
         ${epcis.map((epciItem) => `<li>${escapeHtml(epciItem.name)} - ${escapeHtml(epciItem.code)}</li>`).join('')}
       </ul>`
@@ -167,7 +175,7 @@ export class ExportPowerpointController {
         to: this.receiverEmail,
         subject: replaceable ? 'Demande de PowerPoint remplaçant une demande précédente' : 'Nouvelle demande de PowerPoint',
         html: htmlContent,
-        text: `${replaceable ? `${this.replacementNoticeText(replaceable)}\n\n` : ''}Demande de PowerPoint\n\nEmail de l'utilisateur: ${user.email}\nType de document: ${documentType}\nPériode d'étude: ${periodStart} - ${periodEnd}\nProchaine étape: ${nextStep}\nDate du résultat: ${new Date(resultDate).toLocaleDateString('fr-FR')}${privilegedSim ? `\nScénario privilégié: ${privilegedSim.name}` : ''}\nSimulations sélectionnées:\n${simulations.map((sim) => `- ${sim.name}`).join('\n')}\nEPCI(s) demandé(s):\n${!!epcis && epcis.length > 0 ? epcis.map((epciItem) => `- ${epciItem.name} - ${epciItem.code}`).join('\n') : epci ? `- ${epci.name} - ${epci.code}` : ''}`,
+        text: `${replaceable ? `${this.replacementNoticeText(replaceable)}\n\n` : ''}Demande de PowerPoint\n\nEmail de l'utilisateur: ${user.email}\nType de document: ${documentType}\nPériode d'étude: ${periodStart} - ${periodEnd}\nProchaine étape: ${nextStep}\nDate du résultat: ${new Date(resultDate).toLocaleDateString('fr-FR')}${privilegedSim ? `\nScénario privilégié: ${privilegedSim.name}` : ''}\nSimulations sélectionnées:\n${simulations.map((sim) => `- ${sim.name}`).join('\n')}\nEPCI(s) demandé(s):\n${epcis && epcis.length > 0 ? epcis.map((epciItem) => `- ${epciItem.name} - ${epciItem.code}`).join('\n') : epci ? `- ${epci.name} - ${epci.code}` : ''}`,
         attachments,
       })
 

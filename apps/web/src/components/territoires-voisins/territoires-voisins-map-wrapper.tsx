@@ -9,5 +9,5 @@ const TerritoiresVoisinsMap = dynamic(() => import('./territoires-voisins-map').
   ),
 })
 
-export { TerritoiresVoisinsMap as TerritoiresVoisinsMapWrapper }
 export type { TerritoiresVoisinsMapProps } from './territoires-voisins-map'
+export { TerritoiresVoisinsMap as TerritoiresVoisinsMapWrapper }

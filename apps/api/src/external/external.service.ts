@@ -4,7 +4,7 @@ import { PrismaService } from '~/db/prisma.service'
 import { ResultsService } from '~/results/results.service'
 import { TExternalUpdateScenario } from '~/schemas/scenarios/scenario'
 import { SimulationsService } from '~/simulations/simulations.service'
-import { CreateSimulationDto } from './external.dto'
+import { TCreateSimulationBody } from './external.dto'
 
 @Injectable()
 export class ExternalService {
@@ -15,7 +15,7 @@ export class ExternalService {
     private readonly resultsService: ResultsService,
   ) {}
 
-  async createSimulation(apiConsumerId: string, data: CreateSimulationDto) {
+  async createSimulation(apiConsumerId: string, data: TCreateSimulationBody) {
     const { epcis, millesime, ...scenarioFields } = data.scenario
 
     const epciScenariosData = Object.entries(epcis).map(([code, epciScenario]) => ({

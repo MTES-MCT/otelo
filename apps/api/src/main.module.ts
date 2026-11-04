@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
+import { APP_GUARD, APP_PIPE } from '@nestjs/core'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth'
-import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { auth } from '~/auth/better-auth'
 import { BassinModule } from '~/bassin/bassin.module'
 import { AuthorizationGuard } from '~/common/guards/authorization.guard'
+import { createValidationPipe } from '~/common/validation/standard-schema'
 import { env } from '~/config/env'
 import { resolveThrottlerTracker } from '~/config/trusted-proxies'
 import { CronModule } from '~/cron/cron.module'
@@ -135,11 +135,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     },
     {
       provide: APP_PIPE,
-      useClass: ZodValidationPipe,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ZodSerializerInterceptor,
+      useFactory: createValidationPipe,
     },
   ],
 })

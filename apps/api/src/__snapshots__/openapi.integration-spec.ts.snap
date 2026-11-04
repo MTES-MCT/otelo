@@ -1,0 +1,1228 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Document OpenAPI (intégration) should generate the internal API document 1`] = `
+[
+  "DELETE /api/demographic-evolution-custom/{id}",
+  "DELETE /api/external/simulations/{simulationId}",
+  "DELETE /api/scenarios/{id}",
+  "DELETE /api/simulations/{id}",
+  "GET /api/accommodation-rates",
+  "GET /api/data-pack-versions",
+  "GET /api/data-visualisation",
+  "GET /api/demographic-evolution-custom/find-many",
+  "GET /api/demographic-evolution/no-insee-projection",
+  "GET /api/demographic-evolution/omphale",
+  "GET /api/demographic-evolution/population",
+  "GET /api/docurba/epci/{code}",
+  "GET /api/docurba/epcis",
+  "GET /api/epci-groups",
+  "GET /api/epci-neighbors/access-check",
+  "GET /api/epci-neighbors/{code}",
+  "GET /api/epcis",
+  "GET /api/epcis/contiguous",
+  "GET /api/epcis/contours",
+  "GET /api/epcis/{code}",
+  "GET /api/epcis/{epciCode}/bassin",
+  "GET /api/export-excel/{simulationId}",
+  "GET /api/external/simulations",
+  "GET /api/external/simulations/{simulationId}/results",
+  "GET /api/feedback/status",
+  "GET /api/health",
+  "GET /api/projections/households",
+  "GET /api/projections/households/by-type",
+  "GET /api/projections/population",
+  "GET /api/projections/population/by-age",
+  "GET /api/projections/population/by-age-group",
+  "GET /api/projections/population/by-sex",
+  "GET /api/projections/zones",
+  "GET /api/projections/zones/resolve",
+  "GET /api/scenarios",
+  "GET /api/scenarios/{id}",
+  "GET /api/share/{token}",
+  "GET /api/share/{token}/contours",
+  "GET /api/simulations/dashboard-list",
+  "GET /api/simulations/{id}",
+  "GET /api/simulations/{id}/scenario",
+  "GET /api/simulations/{simulationId}/results",
+  "GET /api/simulations/{simulationId}/share",
+  "PATCH /api/simulations/{id}/name",
+  "PATCH /api/users/{id}",
+  "POST /api/demographic-evolution-custom/upload",
+  "POST /api/email/contact",
+  "POST /api/export-powerpoint",
+  "POST /api/export-powerpoint/check",
+  "POST /api/external/simulations",
+  "POST /api/feedback/snooze",
+  "POST /api/feedback/submit",
+  "POST /api/simulations",
+  "POST /api/simulations/preview",
+  "POST /api/simulations/{id}/actualize",
+  "POST /api/simulations/{id}/clone",
+  "POST /api/simulations/{simulationId}/preview",
+  "POST /api/simulations/{simulationId}/share/toggle",
+  "PUT /api/external/simulations/{simulationId}/scenario",
+  "PUT /api/simulations/{id}/scenario",
+]
+`;
+
+exports[`Document OpenAPI (intégration) should keep the external API contract unchanged 1`] = `
+{
+  "components": {
+    "schemas": {
+      "CreateSimulationDto": {
+        "properties": {
+          "epci": {
+            "description": "Liste des EPCI",
+            "items": {
+              "properties": {
+                "code": {
+                  "description": "Code EPCI (SIREN)",
+                  "type": "string",
+                },
+              },
+              "required": [
+                "code",
+              ],
+              "type": "object",
+            },
+            "type": "array",
+          },
+          "epciGroupName": {
+            "description": "Nom du groupe d'EPCI (optionnel)",
+            "type": "string",
+          },
+          "name": {
+            "description": "Nom de la simulation",
+            "type": "string",
+          },
+          "scenario": {
+            "properties": {
+              "b11_etablissement": {
+                "items": {
+                  "enum": [
+                    "autreCentre",
+                    "demandeAsile",
+                    "reinsertion",
+                    "centreProvisoire",
+                    "jeuneTravailleur",
+                    "foyerMigrants",
+                    "malade",
+                    "maisonRelai",
+                    "horsMaisonRelai",
+                  ],
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "b11_fortune": {
+                "type": "boolean",
+              },
+              "b11_hotel": {
+                "type": "boolean",
+              },
+              "b11_part_etablissement": {
+                "type": "number",
+              },
+              "b11_sa": {
+                "type": "boolean",
+              },
+              "b12_cohab_interg_subie": {
+                "type": "number",
+              },
+              "b12_heberg_particulier": {
+                "type": "boolean",
+              },
+              "b12_heberg_temporaire": {
+                "type": "boolean",
+              },
+              "b13_acc": {
+                "type": "boolean",
+              },
+              "b13_plp": {
+                "type": "boolean",
+              },
+              "b13_taux_effort": {
+                "type": "number",
+              },
+              "b13_taux_reallocation": {
+                "type": "number",
+              },
+              "b14_confort": {
+                "type": "string",
+              },
+              "b14_occupation": {
+                "type": "string",
+              },
+              "b14_qualite": {
+                "type": "string",
+              },
+              "b14_taux_reallocation": {
+                "type": "number",
+              },
+              "b15_loc_hors_hlm": {
+                "type": "boolean",
+              },
+              "b15_proprietaire": {
+                "type": "boolean",
+              },
+              "b15_surocc": {
+                "enum": [
+                  "Acc",
+                  "Mod",
+                ],
+                "type": "string",
+              },
+              "b15_taux_reallocation": {
+                "type": "number",
+              },
+              "b1_horizon_resorption": {
+                "type": "number",
+              },
+              "b2_scenario": {
+                "description": "Scénario démographique : Population (Central, PH=haute, PB=basse) + Ménages (B=décélération, C=tendanciel, H=accélération)",
+                "enum": [
+                  "Central_B",
+                  "Central_C",
+                  "Central_H",
+                  "PB_B",
+                  "PB_C",
+                  "PB_H",
+                  "PH_B",
+                  "PH_C",
+                  "PH_H",
+                ],
+                "type": "string",
+              },
+              "epcis": {
+                "additionalProperties": {
+                  "properties": {
+                    "b2_tx_disparition": {
+                      "description": "Taux de disparition",
+                      "type": "number",
+                    },
+                    "b2_tx_restructuration": {
+                      "description": "Taux de restructuration",
+                      "type": "number",
+                    },
+                    "b2_tx_rs": {
+                      "description": "Taux résidences secondaires",
+                      "type": "number",
+                    },
+                    "b2_tx_vacance": {
+                      "description": "Taux vacance",
+                      "type": "number",
+                    },
+                    "b2_tx_vacance_courte": {
+                      "description": "Taux vacance courte durée",
+                      "type": "number",
+                    },
+                    "b2_tx_vacance_longue": {
+                      "description": "Taux vacance longue durée",
+                      "type": "number",
+                    },
+                    "baseEpci": {
+                      "description": "EPCI de base pour le calcul",
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "baseEpci",
+                  ],
+                  "type": "object",
+                },
+                "description": "Paramétrage par EPCI (clé = code EPCI)",
+                "type": "object",
+              },
+              "millesime": {
+                "type": "string",
+              },
+              "projection": {
+                "description": "Année de projection (entre 2021 et 2050)",
+                "maximum": 2050,
+                "minimum": 2020,
+                "type": "integer",
+              },
+              "source_b11": {
+                "enum": [
+                  "RP",
+                  "SNE",
+                ],
+                "type": "string",
+              },
+              "source_b14": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "RP",
+                    ],
+                    "type": "string",
+                  },
+                  {
+                    "enum": [
+                      "Filo",
+                    ],
+                    "type": "string",
+                  },
+                  {
+                    "enum": [
+                      "FF",
+                    ],
+                    "type": "string",
+                  },
+                ],
+              },
+              "source_b15": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "RP",
+                    ],
+                    "type": "string",
+                  },
+                  {
+                    "enum": [
+                      "Filo",
+                    ],
+                    "type": "string",
+                  },
+                ],
+              },
+            },
+            "required": [
+              "b2_scenario",
+              "projection",
+              "epcis",
+            ],
+            "type": "object",
+          },
+        },
+        "required": [
+          "name",
+          "epci",
+          "scenario",
+        ],
+        "type": "object",
+      },
+      "NotFoundResponseDto": {
+        "properties": {
+          "message": {
+            "type": "string",
+          },
+          "statusCode": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "statusCode",
+          "message",
+        ],
+        "type": "object",
+      },
+      "SimulationListItemDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string",
+          },
+          "epciGroup": {
+            "properties": {
+              "id": {
+                "type": "string",
+              },
+              "name": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "id",
+              "name",
+            ],
+            "type": "object",
+          },
+          "epcis": {
+            "items": {
+              "properties": {
+                "bassinName": {
+                  "type": "string",
+                },
+                "code": {
+                  "type": "string",
+                },
+                "name": {
+                  "type": "string",
+                },
+                "region": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "code",
+                "name",
+              ],
+              "type": "object",
+            },
+            "type": "array",
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string",
+          },
+          "name": {
+            "type": "string",
+          },
+          "scenario": {
+            "properties": {
+              "b2_scenario": {
+                "enum": [
+                  "Central_B",
+                  "Central_C",
+                  "Central_H",
+                  "PB_B",
+                  "PB_C",
+                  "PB_H",
+                  "PH_B",
+                  "PH_C",
+                  "PH_H",
+                ],
+                "type": "string",
+              },
+              "projection": {
+                "maximum": 2050,
+                "minimum": 2020,
+                "type": "integer",
+              },
+            },
+            "required": [
+              "b2_scenario",
+              "projection",
+            ],
+            "type": "object",
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt",
+          "epcis",
+          "scenario",
+        ],
+        "type": "object",
+      },
+      "SimulationWithResultsDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string",
+          },
+          "epcis": {
+            "items": {
+              "properties": {
+                "bassinName": {
+                  "type": "string",
+                },
+                "code": {
+                  "type": "string",
+                },
+                "name": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "code",
+                "name",
+              ],
+              "type": "object",
+            },
+            "type": "array",
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string",
+          },
+          "name": {
+            "type": "string",
+          },
+          "results": {
+            "properties": {
+              "badQuality": {
+                "description": "Détail mauvaise qualité (B14)",
+                "properties": {
+                  "epcis": {
+                    "items": {
+                      "properties": {
+                        "epciCode": {
+                          "type": "string",
+                        },
+                        "prorataValue": {
+                          "description": "Valeur prorata",
+                          "type": "number",
+                        },
+                        "value": {
+                          "description": "Valeur brute",
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "epciCode",
+                        "value",
+                        "prorataValue",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "prorataTotal": {
+                    "type": "number",
+                  },
+                  "total": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "epcis",
+                  "total",
+                  "prorataTotal",
+                ],
+                "type": "object",
+              },
+              "epcisTotals": {
+                "description": "Totaux par EPCI",
+                "items": {
+                  "properties": {
+                    "epciCode": {
+                      "type": "string",
+                    },
+                    "secondaryAccommodation": {
+                      "description": "Résidences secondaires",
+                      "type": "number",
+                    },
+                    "total": {
+                      "description": "Total (stock + flux)",
+                      "type": "number",
+                    },
+                    "totalFlux": {
+                      "description": "Total besoins flux (B2)",
+                      "type": "number",
+                    },
+                    "totalStock": {
+                      "description": "Total besoins stock (B1)",
+                      "type": "number",
+                    },
+                    "vacantAccomodation": {
+                      "description": "Logements vacants",
+                      "type": "number",
+                    },
+                  },
+                  "required": [
+                    "epciCode",
+                    "total",
+                    "totalFlux",
+                    "totalStock",
+                    "vacantAccomodation",
+                    "secondaryAccommodation",
+                  ],
+                  "type": "object",
+                },
+                "type": "array",
+              },
+              "financialInadequation": {
+                "description": "Détail inadéquation financière (B13)",
+                "properties": {
+                  "epcis": {
+                    "items": {
+                      "properties": {
+                        "epciCode": {
+                          "type": "string",
+                        },
+                        "prorataValue": {
+                          "description": "Valeur prorata",
+                          "type": "number",
+                        },
+                        "value": {
+                          "description": "Valeur brute",
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "epciCode",
+                        "value",
+                        "prorataValue",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "prorataTotal": {
+                    "type": "number",
+                  },
+                  "total": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "epcis",
+                  "total",
+                  "prorataTotal",
+                ],
+                "type": "object",
+              },
+              "hosted": {
+                "description": "Détail héberges (B12)",
+                "properties": {
+                  "epcis": {
+                    "items": {
+                      "properties": {
+                        "epciCode": {
+                          "type": "string",
+                        },
+                        "prorataValue": {
+                          "description": "Valeur prorata",
+                          "type": "number",
+                        },
+                        "value": {
+                          "description": "Valeur brute",
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "epciCode",
+                        "value",
+                        "prorataValue",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "prorataTotal": {
+                    "type": "number",
+                  },
+                  "total": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "epcis",
+                  "total",
+                  "prorataTotal",
+                ],
+                "type": "object",
+              },
+              "noAccomodation": {
+                "description": "Détail sans-domicile (B11)",
+                "properties": {
+                  "epcis": {
+                    "items": {
+                      "properties": {
+                        "epciCode": {
+                          "type": "string",
+                        },
+                        "prorataValue": {
+                          "description": "Valeur prorata",
+                          "type": "number",
+                        },
+                        "value": {
+                          "description": "Valeur brute",
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "epciCode",
+                        "value",
+                        "prorataValue",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "prorataTotal": {
+                    "type": "number",
+                  },
+                  "total": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "epcis",
+                  "total",
+                  "prorataTotal",
+                ],
+                "type": "object",
+              },
+              "physicalInadequation": {
+                "description": "Détail suroccupation (B15)",
+                "properties": {
+                  "epcis": {
+                    "items": {
+                      "properties": {
+                        "epciCode": {
+                          "type": "string",
+                        },
+                        "prorataValue": {
+                          "description": "Valeur prorata",
+                          "type": "number",
+                        },
+                        "value": {
+                          "description": "Valeur brute",
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "epciCode",
+                        "value",
+                        "prorataValue",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "prorataTotal": {
+                    "type": "number",
+                  },
+                  "total": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "epcis",
+                  "total",
+                  "prorataTotal",
+                ],
+                "type": "object",
+              },
+              "secondaryAccommodation": {
+                "description": "Residences secondaires",
+                "type": "number",
+              },
+              "total": {
+                "description": "Total général (stock + flux)",
+                "type": "number",
+              },
+              "totalFlux": {
+                "description": "Total besoins flux (B2)",
+                "type": "number",
+              },
+              "totalStock": {
+                "description": "Total besoins stock (B1)",
+                "type": "number",
+              },
+              "vacantAccomodation": {
+                "description": "Logements vacants",
+                "type": "number",
+              },
+            },
+            "required": [
+              "epcisTotals",
+              "total",
+              "totalFlux",
+              "totalStock",
+              "vacantAccomodation",
+              "secondaryAccommodation",
+              "noAccomodation",
+              "hosted",
+              "financialInadequation",
+              "badQuality",
+              "physicalInadequation",
+            ],
+            "type": "object",
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt",
+          "epcis",
+          "results",
+        ],
+        "type": "object",
+      },
+      "UnauthorizedResponseDto": {
+        "properties": {
+          "message": {
+            "type": "string",
+          },
+          "statusCode": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "statusCode",
+          "message",
+        ],
+        "type": "object",
+      },
+      "UpdateScenarioDto": {
+        "properties": {
+          "b11_etablissement": {
+            "items": {
+              "enum": [
+                "autreCentre",
+                "demandeAsile",
+                "reinsertion",
+                "centreProvisoire",
+                "jeuneTravailleur",
+                "foyerMigrants",
+                "malade",
+                "maisonRelai",
+                "horsMaisonRelai",
+              ],
+              "type": "string",
+            },
+            "type": "array",
+          },
+          "b11_fortune": {
+            "type": "boolean",
+          },
+          "b11_hotel": {
+            "type": "boolean",
+          },
+          "b11_part_etablissement": {
+            "type": "number",
+          },
+          "b11_sa": {
+            "type": "boolean",
+          },
+          "b12_cohab_interg_subie": {
+            "type": "number",
+          },
+          "b12_heberg_particulier": {
+            "type": "boolean",
+          },
+          "b12_heberg_temporaire": {
+            "type": "boolean",
+          },
+          "b13_acc": {
+            "type": "boolean",
+          },
+          "b13_plp": {
+            "type": "boolean",
+          },
+          "b13_taux_effort": {
+            "type": "number",
+          },
+          "b13_taux_reallocation": {
+            "type": "number",
+          },
+          "b14_confort": {
+            "type": "string",
+          },
+          "b14_occupation": {
+            "type": "string",
+          },
+          "b14_qualite": {
+            "type": "string",
+          },
+          "b14_taux_reallocation": {
+            "type": "number",
+          },
+          "b15_loc_hors_hlm": {
+            "type": "boolean",
+          },
+          "b15_proprietaire": {
+            "type": "boolean",
+          },
+          "b15_surocc": {
+            "enum": [
+              "Acc",
+              "Mod",
+            ],
+            "type": "string",
+          },
+          "b15_taux_reallocation": {
+            "type": "number",
+          },
+          "b1_horizon_resorption": {
+            "type": "number",
+          },
+          "b2_scenario": {
+            "type": "string",
+          },
+          "epciScenarios": {
+            "additionalProperties": {
+              "properties": {
+                "b2_tx_disparition": {
+                  "type": "number",
+                },
+                "b2_tx_restructuration": {
+                  "type": "number",
+                },
+                "b2_tx_rs": {
+                  "type": "number",
+                },
+                "b2_tx_vacance": {
+                  "type": "number",
+                },
+                "b2_tx_vacance_courte": {
+                  "type": "number",
+                },
+                "b2_tx_vacance_longue": {
+                  "type": "number",
+                },
+              },
+              "type": "object",
+            },
+            "type": "object",
+          },
+          "millesime": {
+            "type": "string",
+          },
+          "projection": {
+            "type": "number",
+          },
+          "source_b11": {
+            "enum": [
+              "RP",
+              "SNE",
+            ],
+            "type": "string",
+          },
+          "source_b14": {
+            "anyOf": [
+              {
+                "enum": [
+                  "RP",
+                ],
+                "type": "string",
+              },
+              {
+                "enum": [
+                  "Filo",
+                ],
+                "type": "string",
+              },
+              {
+                "enum": [
+                  "FF",
+                ],
+                "type": "string",
+              },
+            ],
+          },
+          "source_b15": {
+            "anyOf": [
+              {
+                "enum": [
+                  "RP",
+                ],
+                "type": "string",
+              },
+              {
+                "enum": [
+                  "Filo",
+                ],
+                "type": "string",
+              },
+            ],
+          },
+        },
+        "type": "object",
+      },
+    },
+    "securitySchemes": {
+      "bearer": {
+        "bearerFormat": "JWT",
+        "description": "API Key au format otelo_xxx",
+        "scheme": "bearer",
+        "type": "http",
+      },
+    },
+  },
+  "info": {
+    "contact": {},
+    "description": "API Otelo pour les consommateurs externes.
+
+Authentification : \`Authorization: Bearer otelo_xxx\`
+
+Contactez un administrateur pour obtenir une clé API par mail : otelo@beta.gouv.fr",
+    "title": "Otelo - API externe",
+    "version": "1.0",
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/external/simulations": {
+      "get": {
+        "description": "Retourne toutes les simulations créées par ce consommateur API, triées par date de modification.",
+        "operationId": "ExternalController_listSimulations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SimulationListItemDto",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Liste des simulations",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedResponseDto",
+                },
+              },
+            },
+            "description": "Clé API invalide ou inactive",
+          },
+        },
+        "security": [
+          {
+            "bearer": [],
+          },
+        ],
+        "summary": "Lister les simulations du consommateur",
+        "tags": [
+          "Simulations - Résultats méthodo Otelo",
+        ],
+      },
+      "post": {
+        "description": "Crée un scénario, une simulation sur les EPCI sélectionnés, calcule les besoins en logements (stock B1 + flux B2) et retourne les résultats complets.",
+        "operationId": "ExternalController_createSimulation",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSimulationDto",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationWithResultsDto",
+                },
+              },
+            },
+            "description": "Simulation créée avec résultats",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedResponseDto",
+                },
+              },
+            },
+            "description": "Clé API invalide ou inactive",
+          },
+        },
+        "security": [
+          {
+            "bearer": [],
+          },
+        ],
+        "summary": "Créer une simulation et obtenir les résultats",
+        "tags": [
+          "Simulations - Résultats méthodo Otelo",
+        ],
+      },
+    },
+    "/api/external/simulations/{simulationId}": {
+      "delete": {
+        "description": "Supprime (soft-delete) une simulation appartenant au consommateur.",
+        "operationId": "ExternalController_deleteSimulation",
+        "parameters": [
+          {
+            "description": "ID de la simulation",
+            "in": "path",
+            "name": "simulationId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "204": {
+            "description": "Simulation supprimée",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedResponseDto",
+                },
+              },
+            },
+            "description": "Clé API invalide ou inactive",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponseDto",
+                },
+              },
+            },
+            "description": "Simulation non trouvée",
+          },
+        },
+        "security": [
+          {
+            "bearer": [],
+          },
+        ],
+        "summary": "Supprimer une simulation",
+        "tags": [
+          "Simulations - Résultats méthodo Otelo",
+        ],
+      },
+    },
+    "/api/external/simulations/{simulationId}/results": {
+      "get": {
+        "description": "Calcule (ou recalcule) les besoins en logements et retourne les résultats complets.",
+        "operationId": "ExternalController_getResults",
+        "parameters": [
+          {
+            "description": "ID de la simulation",
+            "in": "path",
+            "name": "simulationId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationWithResultsDto",
+                },
+              },
+            },
+            "description": "Résultats de la simulation",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedResponseDto",
+                },
+              },
+            },
+            "description": "Clé API invalide ou inactive",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponseDto",
+                },
+              },
+            },
+            "description": "Simulation non trouvée",
+          },
+        },
+        "security": [
+          {
+            "bearer": [],
+          },
+        ],
+        "summary": "Obtenir les résultats d'une simulation",
+        "tags": [
+          "Simulations - Résultats méthodo Otelo",
+        ],
+      },
+    },
+    "/api/external/simulations/{simulationId}/scenario": {
+      "put": {
+        "description": "Met à jour les paramètres du scénario (B1-B15, projection, etc.) et/ou les taux par EPCI (B2). Recalcule et retourne les résultats.",
+        "operationId": "ExternalController_updateSimulation",
+        "parameters": [
+          {
+            "description": "ID de la simulation",
+            "in": "path",
+            "name": "simulationId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScenarioDto",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationWithResultsDto",
+                },
+              },
+            },
+            "description": "Résultats recalculés",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedResponseDto",
+                },
+              },
+            },
+            "description": "Clé API invalide ou inactive",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponseDto",
+                },
+              },
+            },
+            "description": "Simulation non trouvée",
+          },
+        },
+        "security": [
+          {
+            "bearer": [],
+          },
+        ],
+        "summary": "Mettre à jour le paramétrage et recalculer les résultats",
+        "tags": [
+          "Simulations - Résultats méthodo Otelo",
+        ],
+      },
+    },
+  },
+  "servers": [],
+  "tags": [],
+}
+`;

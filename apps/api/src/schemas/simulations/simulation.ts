@@ -147,3 +147,4 @@ export const ZPreviewSimulationDto = ZPreviewSimulationBody.refine((d) => d.simu
  */
 export const ZPreviewForSimulationBody = ZPreviewSimulationBody.omit({ simulationId: true })
 export type TPreviewSimulationDto = z.infer<typeof ZPreviewSimulationDto>
+export type TPreviewForSimulationBody = z.infer<typeof ZPreviewForSimulationBody>

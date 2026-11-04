@@ -1,4 +1,3 @@
-import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 import { ZExternalUpdateScenario } from '~/schemas/scenarios/scenario'
 
@@ -25,16 +24,21 @@ const ZCreateScenario = ZExternalUpdateScenario.omit({ epciScenarios: true }).ex
     .describe('Paramétrage par EPCI (clé = code EPCI)'),
 })
 
-const ZCreateSimulationBody = z.object({
-  name: z.string().describe('Nom de la simulation'),
-  epci: z.array(z.object({ code: z.string().describe('Code EPCI (SIREN)') })).describe('Liste des EPCI'),
-  scenario: ZCreateScenario,
-  epciGroupName: z.string().optional().describe("Nom du groupe d'EPCI (optionnel)"),
-})
+/**
+ * Les `id` de méta nomment les composants du document OpenAPI publié : les consommateurs
+ * de l'API externe s'y réfèrent, ils ne doivent pas changer.
+ */
+export const ZCreateSimulationBody = z
+  .object({
+    name: z.string().describe('Nom de la simulation'),
+    epci: z.array(z.object({ code: z.string().describe('Code EPCI (SIREN)') })).describe('Liste des EPCI'),
+    scenario: ZCreateScenario,
+    epciGroupName: z.string().optional().describe("Nom du groupe d'EPCI (optionnel)"),
+  })
+  .meta({ id: 'CreateSimulationDto' })
+export type TCreateSimulationBody = z.output<typeof ZCreateSimulationBody>
 
-export class CreateSimulationDto extends createZodDto(ZCreateSimulationBody) {}
-
-export class UpdateScenarioDto extends createZodDto(ZExternalUpdateScenario) {}
+export const ZUpdateScenarioBody = ZExternalUpdateScenario.meta({ id: 'UpdateScenarioDto' })
 
 const ZEpciCalculationResult = z.object({
   epciCode: z.string(),
@@ -71,43 +75,43 @@ const ZResultsResponse = z.object({
   physicalInadequation: ZCalculationResult.describe('Détail suroccupation (B15)'),
 })
 
-const ZSimulationWithResults = z.object({
-  id: z.uuid(),
-  name: z.string(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-  epcis: z.array(z.object({ code: z.string(), name: z.string(), bassinName: z.string().optional() })),
-  results: ZResultsResponse,
-})
+export const ZSimulationWithResults = z
+  .object({
+    id: z.uuid(),
+    name: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    epcis: z.array(z.object({ code: z.string(), name: z.string(), bassinName: z.string().optional() })),
+    results: ZResultsResponse,
+  })
+  .meta({ id: 'SimulationWithResultsDto' })
 
-export class SimulationWithResultsDto extends createZodDto(ZSimulationWithResults) {}
-
-const ZSimulationListItem = z.object({
-  id: z.uuid(),
-  name: z.string(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-  epcis: z.array(
-    z.object({
-      code: z.string(),
-      name: z.string(),
-      region: z.string().optional(),
-      bassinName: z.string().optional(),
+export const ZSimulationListItem = z
+  .object({
+    id: z.uuid(),
+    name: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    epcis: z.array(
+      z.object({
+        code: z.string(),
+        name: z.string(),
+        region: z.string().optional(),
+        bassinName: z.string().optional(),
+      }),
+    ),
+    scenario: z.object({
+      b2_scenario: z.enum(B2_SCENARIOS),
+      projection: z.number().int().min(2020).max(2050),
     }),
-  ),
-  scenario: z.object({
-    b2_scenario: z.enum(B2_SCENARIOS),
-    projection: z.number().int().min(2020).max(2050),
-  }),
-  epciGroup: z.object({ id: z.string(), name: z.string() }).optional(),
-})
-
-export class SimulationListItemDto extends createZodDto(ZSimulationListItem) {}
+    epciGroup: z.object({ id: z.string(), name: z.string() }).optional(),
+  })
+  .meta({ id: 'SimulationListItemDto' })
 
 const ZErrorResponse = z.object({
   statusCode: z.number(),
   message: z.string(),
 })
 
-export class UnauthorizedResponseDto extends createZodDto(ZErrorResponse) {}
-export class NotFoundResponseDto extends createZodDto(ZErrorResponse) {}
+export const ZUnauthorizedResponse = ZErrorResponse.meta({ id: 'UnauthorizedResponseDto' })
+export const ZNotFoundResponse = ZErrorResponse.meta({ id: 'NotFoundResponseDto' })

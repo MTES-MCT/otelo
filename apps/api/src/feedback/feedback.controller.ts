@@ -3,8 +3,8 @@ import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
 import { Role } from '~/generated/prisma/enums'
+import { TSubmitFeedback, ZSubmitFeedback } from '~/schemas/feedback/submit-feedback'
 import { TUser } from '~/schemas/users/user'
-import { SubmitFeedbackDto } from './feedback.dto'
 import { FeedbackService } from './feedback.service'
 
 @Controller('feedback')
@@ -25,7 +25,7 @@ export class FeedbackController {
   })
   @HttpCode(HttpStatus.OK)
   @Post('submit')
-  async submit(@User() user: TUser, @Body() body: SubmitFeedbackDto) {
+  async submit(@User() user: TUser, @Body({ schema: ZSubmitFeedback }) body: TSubmitFeedback) {
     return this.feedbackService.submit(user.id, body)
   }
 

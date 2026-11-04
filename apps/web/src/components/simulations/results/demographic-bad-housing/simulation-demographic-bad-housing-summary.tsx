@@ -94,7 +94,7 @@ export const SimulationDemographicBadHousingSummary = ({
         <div className="fr-border fr-p-4w fr-flex fr-direction-column fr-width-full">
           <span className="fr-text--medium fr-text--lg fr-mb-0">Ménages en situation de mal logement</span>
           <span className="fr-h4 fr-text-title--blue-france fr-mt-1v fr-mb-0">
-            {!!epci && prepeakTotalStock ? formatNumber(prepeakTotalStock) : formatNumber(totalStock)} logements
+            {epci && prepeakTotalStock ? formatNumber(prepeakTotalStock) : formatNumber(totalStock)} logements
           </span>
           <div className="fr-my-2w">
             <SimulationResultPresentationHighlight>
