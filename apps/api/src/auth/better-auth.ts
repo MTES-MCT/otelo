@@ -7,7 +7,7 @@ import { generateRandomString, symmetricEncrypt } from 'better-auth/crypto'
 import { admin, genericOAuth, twoFactor } from 'better-auth/plugins'
 import { adminAc, userAc } from 'better-auth/plugins/admin/access'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
-import { legacyOAuthCallbackPath } from '~/auth/legacy-oauth-callback'
+import { legacyOAuthCallbackPlugin } from '~/auth/legacy-oauth-callback'
 import { env } from '~/config/env'
 import { TRUSTED_PROXIES } from '~/config/trusted-proxies'
 import { isTwoFactorBypassed } from '~/config/two-factor-bypass'
@@ -471,9 +471,6 @@ export const auth = betterAuth({
           clientSecret: env.OAUTH_PROCONNECT_CLIENT_SECRET,
           scopes: ['openid', 'given_name', 'usual_name', 'email'],
           pkce: true,
-          // URL de retour déclarée chez ProConnect, antérieure à better-auth 1.7 : voir
-          // `legacyOAuthCallbackRedirect`, qui la renvoie vers la route actuelle.
-          redirectURI: `${env.BETTER_AUTH_URL ?? env.CLIENT_BASE_URL}/api${legacyOAuthCallbackPath('proconnect')}`,
           getUserInfo: async ({ accessToken }) => {
             // ProConnect renvoie un JWT signé, et non du JSON, sur son endpoint userinfo.
             const res = await fetch(`${PROCONNECT_OIDC_ISSUER}/userinfo`, {
@@ -498,6 +495,9 @@ export const auth = betterAuth({
         },
       ],
     }),
+    // Après genericOAuth, dont il complète les fournisseurs : ProConnect garde l'URL de retour
+    // enregistrée avant better-auth 1.7.
+    legacyOAuthCallbackPlugin(['proconnect']),
   ],
   user: {
     additionalFields: {
