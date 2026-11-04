@@ -42,7 +42,12 @@ overrides:
   multer: '>=2.3.0'
   '@nestjs/swagger>js-yaml': 5.4.3
   # GHSA-3g3m-2fjr-6pw4 (glob >=9 <=14.0.1) et GHSA-g3hv-75wg-m249 (minimatch <11.0.1).
-  # minimatch 3.x n'est pas forcé : fork-ts-checker et glob 7 utilisent son export par défaut, supprimé en v11.
   'glob@>=9.0.0 <14.0.2': 14.0.2
   'minimatch@>=9.0.0 <11.0.1': 11.0.1
   'readdir-glob>minimatch': 11.0.1
+  # minimatch 3.x n'arrivait que par glob 7 (archiver-utils d'archiver 5, rimraf d'unzipper 0.10) et par fork-ts-checker.
+  # archiver-utils n'appelle que glob.sync, toujours exporté par glob 14. archiver 7 refuse les streams qu'exceljs lui passe.
+  # unzipper 0.12 garde Parse, seule API qu'exceljs appelle. fork-ts-checker ne sert qu'aux builders webpack/rspack.
+  'archiver-utils>glob': 14.0.2
+  'exceljs>unzipper': 0.12.5
+  '@nestjs/cli>fork-ts-checker-webpack-plugin': '-'
