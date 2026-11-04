@@ -26,10 +26,9 @@ import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
 import { sendCsv } from '~/common/utils/csv'
 import { ACCEPTED_CSV_MIMETYPES } from '~/common/utils/csv-upload'
 import { Role } from '~/generated/prisma/enums'
-import { TUpdateUserType } from '~/schemas/users/update-user'
+import { TUpdateUserType, ZUpdateUserType } from '~/schemas/users/update-user'
 import { TUser } from '~/schemas/users/user'
 import { resolveUserTypeLabel } from '~/users/user-type.utils'
-import { UpdateUserTypeDto } from '~/users/users.dto'
 import { UsersService } from '~/users/users.service'
 
 @Controller('users')
@@ -212,7 +211,7 @@ export class UsersController {
   })
   @HttpCode(HttpStatus.OK)
   @Patch(':id')
-  async updateType(@User() user: TUser, @Body() userType: UpdateUserTypeDto) {
+  async updateType(@User() user: TUser, @Body({ schema: ZUpdateUserType }) userType: TUpdateUserType) {
     return this.usersService.updateType(user.id, userType)
   }
 

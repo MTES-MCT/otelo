@@ -1,4 +1,3 @@
-import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 
 export const ZUpdateUserAccess = z.object({
@@ -8,6 +7,5 @@ export const ZUpdateUserAccess = z.object({
 export const ZUpdateUserRegion = z.object({
   region: z.string().max(2).nullable(),
 })
-
-export class UpdateUserAccessDto extends createZodDto(ZUpdateUserAccess) {}
-export class UpdateUserRegionDto extends createZodDto(ZUpdateUserRegion) {}
+export type TUpdateUserAccess = z.output<typeof ZUpdateUserAccess>
+export type TUpdateUserRegion = z.output<typeof ZUpdateUserRegion>

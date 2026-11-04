@@ -2,8 +2,8 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
+import { TCreateConsumer, TUpdateConsumer, ZCreateConsumer, ZUpdateConsumer } from '~/consumers/consumers.dto'
 import { Role } from '~/generated/prisma/client'
-import { CreateConsumerDto, UpdateConsumerDto } from './consumers.dto'
 import { ConsumersService } from './consumers.service'
 
 @ApiTags('Admin - Consommateurs')
@@ -17,7 +17,7 @@ export class ConsumersController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Créer un consommateur API' })
   @ApiResponse({ status: 201, description: 'Consommateur cree avec la cle API (affichee une seule fois)' })
-  async create(@Body() body: CreateConsumerDto) {
+  async create(@Body({ schema: ZCreateConsumer }) body: TCreateConsumer) {
     return this.consumersService.create({ name: body.name })
   }
 
@@ -41,7 +41,7 @@ export class ConsumersController {
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Modifier un consommateur API (nom, activation)' })
-  async update(@Param('id') id: string, @Body() body: UpdateConsumerDto) {
+  async update(@Param('id') id: string, @Body({ schema: ZUpdateConsumer }) body: TUpdateConsumer) {
     return this.consumersService.update(id, {
       name: body.name,
       active: body.active,

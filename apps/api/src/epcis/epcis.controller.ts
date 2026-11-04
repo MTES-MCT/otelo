@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Query } from '@nestjs/common'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
-import { CreateEpciDto, UpdateEpciDto } from '~/epcis/epcis.dto'
+import { TCreateEpci, TUpdateEpci, ZCreateEpci, ZUpdateEpci } from '~/epcis/epcis.dto'
 import { EpcisService } from '~/epcis/epcis.service'
 import { Epci } from '~/generated/prisma/client'
 import { Role } from '~/generated/prisma/enums'
@@ -66,7 +66,7 @@ export class EpcisController {
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createEpci(@Body() data: CreateEpciDto): Promise<Epci> {
+  async createEpci(@Body({ schema: ZCreateEpci }) data: TCreateEpci): Promise<Epci> {
     return await this.epcisService.create(data)
   }
 
@@ -77,7 +77,7 @@ export class EpcisController {
   })
   @Put(':code')
   @HttpCode(HttpStatus.ACCEPTED)
-  async updateEpci(@Param('code') code: string, @Body() data: UpdateEpciDto): Promise<Epci> {
+  async updateEpci(@Param('code') code: string, @Body({ schema: ZUpdateEpci }) data: TUpdateEpci): Promise<Epci> {
     try {
       return await this.epcisService.put(code, data)
     } catch (error) {

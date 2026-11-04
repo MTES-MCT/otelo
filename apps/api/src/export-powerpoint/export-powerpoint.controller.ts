@@ -7,7 +7,6 @@ import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { EmailService } from '~/email/email.service'
 import { ExportExcelService } from '~/export-excel/export-excel.service'
-import { CheckPowerpointRequestDto, RequestPowerpointDto } from '~/export-powerpoint/export-powerpoint.dto'
 import { ExportPowerpointService } from '~/export-powerpoint/export-powerpoint.service'
 import {
   PowerpointRequestsService,
@@ -16,6 +15,12 @@ import {
 } from '~/export-powerpoint/powerpoint-requests.service'
 import { Role } from '~/generated/prisma/enums'
 import { TEmailDto } from '~/schemas/email/email'
+import {
+  TCheckPowerpointRequest,
+  TRequestPowerpoint,
+  ZCheckPowerpointRequest,
+  ZRequestPowerpoint,
+} from '~/schemas/export-powerpoint/export-powerpoint'
 import { TUser } from '~/schemas/users/user'
 import { SimulationsService } from '~/simulations/simulations.service'
 
@@ -50,7 +55,10 @@ export class ExportPowerpointController {
   @Throttle({ default: { ttl: 60_000, limit: 30 } })
   @Post('check')
   @HttpCode(HttpStatus.OK)
-  async checkDuplicate(@User() user: TUser, @Body() { selectedSimulations, epciCodes }: CheckPowerpointRequestDto) {
+  async checkDuplicate(
+    @User() user: TUser,
+    @Body({ schema: ZCheckPowerpointRequest }) { selectedSimulations, epciCodes }: TCheckPowerpointRequest,
+  ) {
     const hasAccess = await this.simulationsService.hasUserAccessToAll(selectedSimulations, user.id)
     if (!hasAccess) {
       throw new ForbiddenException('You do not have access to one or more selected simulations')
@@ -70,7 +78,7 @@ export class ExportPowerpointController {
   @Throttle({ default: { ttl: 60_000, limit: 5 } })
   @Post()
   @HttpCode(HttpStatus.OK)
-  async requestPowerpoint(@User() user: TUser, @Body() data: RequestPowerpointDto) {
+  async requestPowerpoint(@User() user: TUser, @Body({ schema: ZRequestPowerpoint }) data: TRequestPowerpoint) {
     const { nextStep, resultDate, selectedSimulations, privilegedSimulation, epcis, epci, documentType, periodStart, periodEnd } = data
 
     const hasAccess = await this.simulationsService.hasUserAccessToAll(selectedSimulations, user.id)

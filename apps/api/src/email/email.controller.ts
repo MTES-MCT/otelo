@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config'
 import { Throttle } from '@nestjs/throttler'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 import escapeHtml from 'escape-html'
-import { ContactDto } from '~/email/email.dto'
 import { EmailService } from '~/email/email.service'
+import { TContactDto, ZContactDto } from '~/schemas/email/email'
 
 @Controller('email')
 export class EmailController {
@@ -21,7 +21,7 @@ export class EmailController {
   @Post('contact')
   @AllowAnonymous()
   @Throttle({ default: { ttl: 900_000, limit: 3 } })
-  async contact(@Body() body: ContactDto) {
+  async contact(@Body({ schema: ZContactDto }) body: TContactDto) {
     const firstname = escapeHtml(body.firstname)
     const lastname = escapeHtml(body.lastname)
     const email = escapeHtml(body.email)

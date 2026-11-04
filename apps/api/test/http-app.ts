@@ -1,7 +1,7 @@
 import { INestApplication, ModuleMetadata } from '@nestjs/common'
 import { APP_PIPE } from '@nestjs/core'
 import { Test, TestingModuleBuilder } from '@nestjs/testing'
-import { ZodValidationPipe } from 'nestjs-zod'
+import { createValidationPipe } from '~/common/validation/standard-schema'
 
 export type HttpTestAppOptions = {
   /** Ajuste le module avant compilation : `useMocker`, `overrideGuard`, etc. */
@@ -24,7 +24,7 @@ export async function createHttpTestApp(
 ): Promise<INestApplication> {
   const builder = Test.createTestingModule({
     ...metadata,
-    providers: [...(metadata.providers ?? []), { provide: APP_PIPE, useClass: ZodValidationPipe }],
+    providers: [...(metadata.providers ?? []), { provide: APP_PIPE, useFactory: createValidationPipe }],
   })
   const moduleRef = await (options.configure ? options.configure(builder) : builder).compile()
 

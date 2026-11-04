@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { MainModule } from '~/main.module'
-import { createExternalDocument } from '~/openapi'
+import { createExternalDocument, createInternalDocument } from '~/openapi'
 
 // `test/jest-setup.ts` remplace better-auth par une doublure : le module réel est requis ici.
 jest.unmock('~/auth/better-auth')
@@ -29,5 +29,10 @@ describe('Document OpenAPI (intégration)', () => {
 
   it('should keep the external API contract unchanged', () => {
     expect(createExternalDocument(app)).toMatchSnapshot()
+  })
+
+  /** Il échouait sur `z.date()`, et `/swagger-json` répondait 500. */
+  it('should generate the internal API document', () => {
+    expect(createInternalDocument(app)).toMatchSnapshot()
   })
 })

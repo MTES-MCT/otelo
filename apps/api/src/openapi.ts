@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common'
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger'
-import { cleanupOpenApiDoc } from 'nestjs-zod'
+import { zodOpenApiConverter } from '~/common/validation/standard-schema'
 import { ExternalModule } from '~/external/external.module'
 
 const bearerAuth = {
@@ -22,7 +22,7 @@ export function createInternalDocument(app: INestApplication): OpenAPIObject {
     .addBearerAuth(bearerAuth)
     .build()
 
-  return cleanupOpenApiDoc(SwaggerModule.createDocument(app, config))
+  return SwaggerModule.createDocument(app, config, { standardSchemaConverter: zodOpenApiConverter })
 }
 
 export function createExternalDocument(app: INestApplication): OpenAPIObject {
@@ -37,5 +37,5 @@ export function createExternalDocument(app: INestApplication): OpenAPIObject {
     .addBearerAuth(bearerAuth)
     .build()
 
-  return cleanupOpenApiDoc(SwaggerModule.createDocument(app, config, { include: [ExternalModule] }))
+  return SwaggerModule.createDocument(app, config, { include: [ExternalModule], standardSchemaConverter: zodOpenApiConverter })
 }

@@ -1,9 +1,9 @@
 import { Controller, Get, Query } from '@nestjs/common'
 import { TEpcisAccommodationRates } from '@otelo/shared'
+import { TAccommodationRatesQuery, ZAccommodationRatesQuery } from '~/accommodation-rates/accommodation-rates.dto'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Role } from '~/generated/prisma/enums'
-import { AccommodationRatesQueryDto } from './accommodation-rates.dto'
 
 @Controller('accommodation-rates')
 export class AccommodationRatesController {
@@ -11,7 +11,9 @@ export class AccommodationRatesController {
 
   @AccessControl({ roles: [Role.ADMIN, Role.USER] })
   @Get()
-  async getAccommodationRates(@Query() { epcis, millesime }: AccommodationRatesQueryDto): Promise<TEpcisAccommodationRates> {
+  async getAccommodationRates(
+    @Query({ schema: ZAccommodationRatesQuery }) { epcis, millesime }: TAccommodationRatesQuery,
+  ): Promise<TEpcisAccommodationRates> {
     return this.accommodationRatesService.getAccommodationRates(epcis.join(','), millesime)
   }
 }
