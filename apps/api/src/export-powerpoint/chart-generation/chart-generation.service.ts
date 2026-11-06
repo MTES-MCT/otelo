@@ -29,7 +29,7 @@ export class ChartGenerationService {
     this.logger.verbose(`Generating chart image for ${chartConfig.type}`)
     const puppeteer = (await import('puppeteer')).default
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: 'shell',
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--single-process', '--no-zygote'],
       executablePath: env.PUPPETEER_EXECUTABLE_PATH,
     })

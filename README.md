@@ -138,7 +138,7 @@ Vérifications :
 Puppeteer n'installe Chrome automatiquement que lors du build Scalingo (`BUILD_TARGET=@otelo/api`). En local :
 
 ```bash
-cd apps/api && npx puppeteer browsers install chrome
+cd apps/api && npx puppeteer browsers install chrome-headless-shell
 ```
 
 Vous pouvez aussi renseigner `PUPPETEER_EXECUTABLE_PATH` avec le chemin d'un Chrome existant.
@@ -647,6 +647,9 @@ pnpm -F @otelo/api test:cov
 
 # Tests d'intégration (*.integration-spec.ts), avec une vraie base PostgreSQL
 pnpm -F @otelo/api test:integration
+
+# Tests de bout en bout (*.e2e-spec.ts), avec un vrai Chrome
+pnpm -F @otelo/api test:e2e
 ```
 
 - **Unitaires.** `test/jest-setup.ts` injecte des variables d'environnement factices et mocke better-auth. Les dépendances se mockent avec `@golevelup/ts-jest`.
@@ -657,6 +660,7 @@ pnpm -F @otelo/api test:integration
   ```
 
   Le setup global applique le schéma avec `prisma db push`, et non avec les migrations (voir la remarque sur les données de référence).
+- **Bout en bout.** Ils lancent `chrome-headless-shell` pour produire un vrai PowerPoint, sans base de données. Installez-le une fois avec `cd apps/api && npx puppeteer browsers install chrome-headless-shell`.
 
 
 ## Qualité de code
@@ -696,6 +700,7 @@ Le workflow `otelo` tourne avec Node 24 (dernière version) et Postgres 16.4.
 | `lint` | `pnpm lint` |
 | `test_api` | `prisma generate`, `build:shared`, tests unitaires |
 | `test_api_integration` | Idem, avec une base `otelo-test`, puis `test:integration` |
+| `test_api_e2e` | Idem, installe les paquets de l'`Aptfile` et `chrome-headless-shell`, puis `test:e2e` |
 | `build_api` | Build de l'API |
 | `build_web` | Build du front (avec `apps/web/.env.dist` copié en `.env`) |
 
