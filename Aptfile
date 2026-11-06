@@ -1,8 +1,13 @@
 ca-certificates
 fonts-liberation
-libasound2
+libasound2t64
+libatk-bridge2.0-0t64
+libatk1.0-0t64
+libatspi2.0-0t64
 libgbm1
 libnss3
 libxcomposite1
 libxdamage1
+libxfixes3
+libxkbcommon0
 libxrandr2
