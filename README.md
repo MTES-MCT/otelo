@@ -138,7 +138,7 @@ Vérifications :
 Puppeteer n'installe Chrome automatiquement que lors du build Scalingo (`BUILD_TARGET=@otelo/api`). En local :
 
 ```bash
-cd apps/api && npx puppeteer browsers install chrome
+cd apps/api && npx puppeteer browsers install chrome-headless-shell
 ```
 
 Vous pouvez aussi renseigner `PUPPETEER_EXECUTABLE_PATH` avec le chemin d'un Chrome existant.
