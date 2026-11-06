@@ -43,6 +43,9 @@ workflows:
       - test_api_integration:
           requires:
             - prepare_workspace_dependencies
+      - test_api_e2e:
+          requires:
+            - prepare_workspace_dependencies
       - build_api:
           requires:
             - prepare_workspace_dependencies
@@ -111,6 +114,27 @@ jobs:
       - run:
           name: 'Integration tests API'
           command: pnpm -F api test:integration
+
+  # Lance un vrai Chrome pour l'export PowerPoint. Les bibliothèques système sont
+  # celles de l'Aptfile, comme au build Scalingo : un paquet retiré à tort casse ici.
+  test_api_e2e:
+    executor: node
+    steps:
+      - checkout
+      - install_dependencies
+      - prisma_generate
+      - run:
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: "Bibliothèques système de l'Aptfile"
+          command: sudo apt-get update && xargs -a Aptfile sudo apt-get install -y --no-install-recommends
+      - run:
+          name: 'Install chrome-headless-shell'
+          command: pnpm -F api exec puppeteer browsers install chrome-headless-shell
+      - run:
+          name: 'E2E tests API'
+          command: pnpm -F api test:e2e
 
   build_api:
     executor: node
