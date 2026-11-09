@@ -11,3 +11,19 @@ export const ZAmfCreateSimulationBody = ZAmfAnswers.extend({ email: z.email() })
 
 export type TAmfAnswers = z.output<typeof ZAmfAnswers>
 export type TAmfCreateSimulationBody = z.output<typeof ZAmfCreateSimulationBody>
+
+export const ZAmfResult = z.object({
+  baseYear: z.number(),
+  horizon: z.number(),
+  total: z.number(),
+  annualAverage: z.number(),
+  blocks: z
+    .object({
+      population: z.number(),
+      vacancy: z.number(),
+      secondaryResidences: z.number(),
+      badHousing: z.number(),
+    })
+    .nullable(),
+})
+export type TAmfResult = z.output<typeof ZAmfResult>
