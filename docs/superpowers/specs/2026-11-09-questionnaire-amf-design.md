@@ -51,15 +51,15 @@ Une question par écran, avec une barre de progression et un retour arrière pos
    - Ça n'est pas le plus utile pour mon territoire → 0 %
 
    Le pourcentage est une réduction relative du taux de vacance longue durée observé, comme dans l'appli (`create-long-term-accomodation-range.tsx`) : `b2_tx_vacance_longue = observé × (1 − pct)`. Le taux de vacance courte reste à sa valeur observée.
-5. **Le mal-logement est-il une problématique importante sur votre territoire ?**
-   - Oui → paramètres de stock par défaut d'Otelo (`SCENARIO_DEFAULTS`, horizon de résorption `b1_horizon_resorption` = 2050 inchangé, donc seule la part au prorata jusqu'en 2036 est comptée).
-   - Non → besoin lié au mal-logement nul (le `totalStock` du résultat doit valoir 0).
-6. **Quel est votre point de vue sur les résidences secondaires sur votre territoire ?**
+5. **Quel est votre point de vue sur les résidences secondaires sur votre territoire ?**
    - Ce n'est pas un sujet → taux observé inchangé
    - Je souhaite les réguler → `b2_tx_rs = observé × 0,95`
    - Je souhaite les développer → `b2_tx_rs = observé × 1,05`
 
    Il n'existe pas de paramètre distinct pour les meublés touristiques : ils sont inclus dans le taux de résidences secondaires.
+6. **Le mal-logement est-il une problématique importante sur votre territoire ?**
+   - Oui → paramètres de stock par défaut d'Otelo (`SCENARIO_DEFAULTS`, horizon de résorption `b1_horizon_resorption` = 2050 inchangé, donc seule la part au prorata jusqu'en 2036 est comptée).
+   - Non → besoin lié au mal-logement nul (le `totalStock` du résultat doit valoir 0).
 7. **Votre e-mail** (obligatoire pour voir les résultats). Sous le champ figure la mention : « Votre e-mail sera utilisé par l'équipe Otelo pour vous recontacter au sujet de votre besoin en logement », avec un lien vers la page Données personnelles existante. Il n'y a pas de case à cocher (choix validé par l'équipe, à confirmer avec le référent RGPD).
 8. **Résultats** (voir plus bas).
 Une fois les résultats affichés, on ne revient plus aux questions. Un bouton « Refaire une simulation » repart de l'intro. Chaque parcours terminé crée **une** simulation et **un** lead, liés un à un (choix du concepteur : comptage simple par clé, et les contacts partagés sont rattachés sans ambiguïté au lead du parcours en cours).

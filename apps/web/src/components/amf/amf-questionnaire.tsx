@@ -29,8 +29,8 @@ const QUESTION_STEPS: Partial<Record<TAmfStep, string>> = {
   epci: 'Votre territoire',
   demography: 'Évolution de la population',
   vacancy: 'Logements vacants',
-  badHousing: 'Mal-logement',
   secondaryResidences: 'Résidences secondaires',
+  badHousing: 'Mal-logement',
   email: 'Votre e-mail',
 }
 const QUESTION_STEP_KEYS = AMF_STEPS.filter((step) => step in QUESTION_STEPS)

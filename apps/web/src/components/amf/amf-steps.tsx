@@ -141,7 +141,7 @@ export const AmfDemographyStep: FC<AmfDemographyStepProps> = ({ epci, value, onC
 
   return (
     <RadioButtons
-      legend={<h2 className={fr.cx('fr-mb-0')}>D&apos;ici 2036, selon vous, la population de votre territoire connaîtra :</h2>}
+      legend={<h2 className={fr.cx('fr-mb-2w')}>D&apos;ici 2036, selon vous, la population de votre territoire connaîtra :</h2>}
       name="amf-demography"
       options={options.map((option) => ({
         label: option.label,
@@ -159,7 +159,7 @@ const VACANCY_OPTIONS: Array<{ value: TAmfVacancy; label: string }> = [
 
 export const AmfVacancyStep: FC<ChoiceStepProps<TAmfVacancy>> = ({ value, onChange }) => (
   <RadioButtons
-    legend={<h2 className={fr.cx('fr-mb-0')}>D&apos;après vous, est-ce une priorité de remobiliser des logements vacants ?</h2>}
+    legend={<h2 className={fr.cx('fr-mb-2w')}>D&apos;après vous, est-ce une priorité de remobiliser des logements vacants ?</h2>}
     name="amf-vacancy"
     options={VACANCY_OPTIONS.map((option) => ({
       label: option.label,
@@ -175,7 +175,7 @@ type AmfBadHousingStepProps = {
 
 export const AmfBadHousingStep: FC<AmfBadHousingStepProps> = ({ value, onChange }) => (
   <RadioButtons
-    legend={<h2 className={fr.cx('fr-mb-0')}>Le mal-logement est-il une problématique importante sur votre territoire ?</h2>}
+    legend={<h2 className={fr.cx('fr-mb-2w')}>Le mal-logement est-il une problématique importante sur votre territoire ?</h2>}
     name="amf-bad-housing"
     options={[
       { label: 'Oui', nativeInputProps: { value: 'oui', checked: value === true, onChange: () => onChange(true) } },
@@ -192,7 +192,7 @@ const SECONDARY_RESIDENCES_OPTIONS: Array<{ value: TAmfSecondaryResidences; labe
 
 export const AmfSecondaryResidencesStep: FC<ChoiceStepProps<TAmfSecondaryResidences>> = ({ value, onChange }) => (
   <RadioButtons
-    legend={<h2 className={fr.cx('fr-mb-0')}>Quel est votre point de vue sur les résidences secondaires sur votre territoire ?</h2>}
+    legend={<h2 className={fr.cx('fr-mb-2w')}>Quel est votre point de vue sur les résidences secondaires sur votre territoire ?</h2>}
     name="amf-secondary-residences"
     options={SECONDARY_RESIDENCES_OPTIONS.map((option) => ({
       label: option.label,

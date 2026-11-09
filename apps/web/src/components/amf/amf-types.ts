@@ -70,7 +70,7 @@ export type TAmfDraftAnswers = {
   email: string
 }
 
-export const AMF_STEPS = ['intro', 'epci', 'demography', 'vacancy', 'badHousing', 'secondaryResidences', 'email', 'results'] as const
+export const AMF_STEPS = ['intro', 'epci', 'demography', 'vacancy', 'secondaryResidences', 'badHousing', 'email', 'results'] as const
 export type TAmfStep = (typeof AMF_STEPS)[number]
 
 /** Même règle que `z.email()` côté API : une adresse refusée par l'API l'est aussi ici. */
