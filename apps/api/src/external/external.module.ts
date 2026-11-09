@@ -11,5 +11,6 @@ import { ExternalService } from './external.service'
   imports: [PrismaModule, ConsumersModule, SimulationsModule, ResultsModule, NeedsCalculationModule],
   controllers: [ExternalController],
   providers: [ExternalService],
+  exports: [ExternalService],
 })
 export class ExternalModule {}

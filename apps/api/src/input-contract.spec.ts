@@ -44,6 +44,16 @@ const withoutCustomEvolutions = (generated: Record<string, unknown>) => ({
   scenario: { ...(generated.scenario as Record<string, unknown>), demographicEvolutionOmphaleCustom: [] },
 })
 const VALID_INPUTS: Record<string, Partial<Record<'body' | 'query' | 'param', ManualInput>>> = {
+  'AmfController.createSimulation': {
+    body: {
+      epciCode: '200069672',
+      demography: 'tendance',
+      vacancy: 'parmi-autres',
+      badHousing: true,
+      secondaryResidences: 'neutre',
+      email: 'elu@example.fr',
+    },
+  },
   'AccommodationRatesController.getAccommodationRates': { query: { epcis: EPCI_CODES, millesime: '2021' } },
   'DemographicEvolutionController.getDemographicEvolution': { query: { epciCodes: EPCI_CODES, millesime: '2021' } },
   'DemographicEvolutionController.getEpcisWithoutInseeProjection': { query: { epciCodes: EPCI_CODES } },
