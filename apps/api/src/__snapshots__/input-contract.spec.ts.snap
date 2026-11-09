@@ -84,6 +84,18 @@ exports[`Contrat d'entrée des routes validées AmfController.createSimulation b
 
 exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — « vacancy » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_value","message":"Invalid option: expected one of \\"prioritaire\\"|\\"parmi-autres\\"|\\"non\\"","path":["vacancy"],"values":["prioritaire","parmi-autres","non"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
 
+exports[`Contrat d'entrée des routes validées AmfController.getEpci param — clé inconnue ajoutée 1`] = `{"body":{"mocked":"AmfService.getEpci"},"calls":[{"args":["200069672"],"fn":"AmfService.getEpci"}],"status":200}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.getEpci param — exemple minimal 1`] = `{"body":{"errors":[{"code":"invalid_format","format":"regex","message":"Invalid string: must match pattern /^\\\\d{9}$/","origin":"string","path":["epciCode"],"pattern":"/^\\\\d{9}$/"}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.getEpci param — exemple valide 1`] = `{"body":{"mocked":"AmfService.getEpci"},"calls":[{"args":["200069672"],"fn":"AmfService.getEpci"}],"status":200}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.getEpci param — objet vide 1`] = `{"body":{"errors":[{"code":"invalid_format","format":"regex","message":"Invalid string: must match pattern /^\\\\d{9}$/","origin":"string","path":["epciCode"],"pattern":"/^\\\\d{9}$/"}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.getEpci param — sans « epciCode » 1`] = `{"body":{"errors":[{"code":"invalid_format","format":"regex","message":"Invalid string: must match pattern /^\\\\d{9}$/","origin":"string","path":["epciCode"],"pattern":"/^\\\\d{9}$/"}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.getEpci param — « epciCode » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_format","format":"regex","message":"Invalid string: must match pattern /^\\\\d{9}$/","origin":"string","path":["epciCode"],"pattern":"/^\\\\d{9}$/"}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
 exports[`Contrat d'entrée des routes validées ConsumersController.create body — clé inconnue ajoutée 1`] = `{"body":{"mocked":"ConsumersService.create"},"calls":[{"args":[{"name":"sample"}],"fn":"ConsumersService.create"}],"status":201}`;
 
 exports[`Contrat d'entrée des routes validées ConsumersController.create body — exemple minimal 1`] = `{"body":{"mocked":"ConsumersService.create"},"calls":[{"args":[{"name":"sample"}],"fn":"ConsumersService.create"}],"status":201}`;
@@ -1043,6 +1055,7 @@ exports[`Contrat d'entrée des routes validées should discover the validated ro
   "PATCH /admin/users/:id/region → AdminController.updateRegion",
   "POST /amf/leads/:leadId/contacts → AmfController.addContacts",
   "POST /amf/simulations → AmfController.createSimulation",
+  "GET /amf/epcis/:epciCode → AmfController.getEpci",
   "POST /admin/consumers → ConsumersController.create",
   "PATCH /admin/consumers/:id → ConsumersController.update",
   "GET /data-visualisation → DataVisualisationController.get",

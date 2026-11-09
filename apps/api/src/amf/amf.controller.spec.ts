@@ -31,7 +31,7 @@ describe('AmfController', () => {
   it('délègue la lecture de l’EPCI au service', async () => {
     const epci = { code: '200000172' } as never
     service.getEpci.mockResolvedValue(epci)
-    await expect(controller.getEpci('200000172')).resolves.toBe(epci)
+    await expect(controller.getEpci({ epciCode: '200000172' })).resolves.toBe(epci)
     expect(service.getEpci).toHaveBeenCalledWith('200000172')
   })
 

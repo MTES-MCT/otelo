@@ -41,6 +41,7 @@ describe('buildAmfResult', () => {
 
   it('fait tomber l’addition juste', () => {
     const { total, blocks } = buildAmfResult(makeResults(), EPCI, 2022)
+    expect(blocks!.population).toBe(3900)
     expect(blocks!.population + blocks!.vacancy + blocks!.secondaryResidences + blocks!.badHousing).toBe(total)
   })
 
@@ -50,6 +51,11 @@ describe('buildAmfResult', () => {
 
   it.each([-300, 0])('renvoie total 0 et blocks null si le besoin vaut %i', (total) => {
     const result = buildAmfResult(makeResults({ total }), EPCI, 2022)
+    expect(result).toMatchObject({ total: 0, annualAverage: 0, blocks: null })
+  })
+
+  it('renvoie blocks null quand le total arrondi tombe à 0', () => {
+    const result = buildAmfResult(makeResults({ total: 4, totalFlux: 4 }), EPCI, 2022)
     expect(result).toMatchObject({ total: 0, annualAverage: 0, blocks: null })
   })
 

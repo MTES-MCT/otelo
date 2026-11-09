@@ -1296,10 +1296,10 @@ model AmfLead {
   id           String             @id @default(uuid())
   email        String
   epciCode     String             @map("epci_code")
-  simulationId String             @unique @map("simulation_id")
+  simulationId String?            @unique @map("simulation_id")
   answers      Json
   createdAt    DateTime           @default(now()) @map("created_at")
-  simulation   Simulation         @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  simulation   Simulation?        @relation(fields: [simulationId], references: [id], onDelete: SetNull)
   contacts     AmfSharedContact[]
 
   @@map("amf_leads")

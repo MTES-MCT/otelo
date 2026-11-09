@@ -44,6 +44,7 @@ const withoutCustomEvolutions = (generated: Record<string, unknown>) => ({
   scenario: { ...(generated.scenario as Record<string, unknown>), demographicEvolutionOmphaleCustom: [] },
 })
 const VALID_INPUTS: Record<string, Partial<Record<'body' | 'query' | 'param', ManualInput>>> = {
+  'AmfController.getEpci': { param: { epciCode: '200069672' } },
   'AmfController.createSimulation': {
     body: {
       epciCode: '200069672',
