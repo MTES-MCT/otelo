@@ -20,6 +20,7 @@ export type TAmfCreateSimulationBody = z.output<typeof ZAmfCreateSimulationBody>
 export const ZAmfResult = z.object({
   baseYear: z.number(),
   horizon: z.number(),
+  peakYear: z.number().nullable().describe("Année du pic de ménages quand elle précède l'horizon, sinon null"),
   total: z.number(),
   annualAverage: z.number(),
   blocks: z

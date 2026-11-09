@@ -33,6 +33,8 @@ export type TAmfCreateSimulationBody = TAmfAnswers & { email: string }
 export type TAmfResult = {
   baseYear: number
   horizon: number
+  /** Année du pic de ménages quand elle précède l'horizon, sinon `null`. Égale à `baseYear` : territoire déjà en baisse. */
+  peakYear: number | null
   total: number
   annualAverage: number
   /** Contributions signées ; `null` quand le besoin est nul. */
