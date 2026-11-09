@@ -17,6 +17,7 @@ import { ProjectionsModule } from '~/projections/projections.module'
 import { ResultsModule } from '~/results/results.module'
 import { AccommodationRatesModule } from './accommodation-rates/accommodation-rates.module'
 import { AdminModule } from './admin/admin.module'
+import { AmfModule } from './amf/amf.module'
 import { AuthModule } from './auth/auth.module'
 import { BadQualityModule } from './bad-quality/bad-quality.module'
 import { CalculationModule } from './calculation/calculation.module'
@@ -118,6 +119,7 @@ import { VacancyModule } from './vacancy/vacancy.module'
     ConsumersModule,
     DocurbaModule,
     ExternalModule,
+    AmfModule,
   ],
   providers: [
     // AuthorizationGuard for role-based access control

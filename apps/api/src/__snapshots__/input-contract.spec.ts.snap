@@ -40,6 +40,50 @@ exports[`Contrat d'entrée des routes validées AdminController.updateRegion bod
 
 exports[`Contrat d'entrée des routes validées AdminController.updateRegion body — « region » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"string","message":"Invalid input: expected string, received number","path":["region"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
 
+exports[`Contrat d'entrée des routes validées AmfController.addContacts body — clé inconnue ajoutée 1`] = `{"body":{},"calls":[{"args":["leadId-test",{"contacts":[{"email":"user@example.org","role":"sample"}]}],"fn":"AmfService.addContacts"}],"status":204}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.addContacts body — exemple minimal 1`] = `{"body":{},"calls":[{"args":["leadId-test",{"contacts":[{"email":"user@example.org","role":"sample"}]}],"fn":"AmfService.addContacts"}],"status":204}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.addContacts body — exemple valide 1`] = `{"body":{},"calls":[{"args":["leadId-test",{"contacts":[{"email":"user@example.org","role":"sample"}]}],"fn":"AmfService.addContacts"}],"status":204}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.addContacts body — objet vide 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"array","message":"Invalid input: expected array, received undefined","path":["contacts"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.addContacts body — sans « contacts » 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"array","message":"Invalid input: expected array, received undefined","path":["contacts"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.addContacts body — « contacts » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"array","message":"Invalid input: expected array, received string","path":["contacts"]},{"code":"too_big","inclusive":true,"maximum":10,"message":"Too big: expected string to have <=10 characters","origin":"string","path":["contacts"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — clé inconnue ajoutée 1`] = `{"body":{"mocked":"AmfService.createSimulation"},"calls":[{"args":["consumer-test",{"badHousing":true,"demography":"tendance","email":"elu@example.fr","epciCode":"200069672","secondaryResidences":"neutre","vacancy":"parmi-autres"}],"fn":"AmfService.createSimulation"}],"status":201}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — exemple minimal 1`] = `{"body":{"errors":[{"code":"invalid_format","format":"regex","message":"Invalid string: must match pattern /^\\\\d{9}$/","origin":"string","path":["epciCode"],"pattern":"/^\\\\d{9}$/"}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — exemple valide 1`] = `{"body":{"mocked":"AmfService.createSimulation"},"calls":[{"args":["consumer-test",{"badHousing":true,"demography":"tendance","email":"elu@example.fr","epciCode":"200069672","secondaryResidences":"neutre","vacancy":"parmi-autres"}],"fn":"AmfService.createSimulation"}],"status":201}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — objet vide 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"string","message":"Invalid input: expected string, received undefined","path":["epciCode"]},{"code":"invalid_value","message":"Invalid option: expected one of \\"plus\\"|\\"tendance\\"|\\"moins\\"","path":["demography"],"values":["plus","tendance","moins"]},{"code":"invalid_value","message":"Invalid option: expected one of \\"prioritaire\\"|\\"parmi-autres\\"|\\"non\\"","path":["vacancy"],"values":["prioritaire","parmi-autres","non"]},{"code":"invalid_type","expected":"boolean","message":"Invalid input: expected boolean, received undefined","path":["badHousing"]},{"code":"invalid_value","message":"Invalid option: expected one of \\"neutre\\"|\\"reguler\\"|\\"developper\\"","path":["secondaryResidences"],"values":["neutre","reguler","developper"]},{"code":"invalid_type","expected":"string","message":"Invalid input: expected string, received undefined","path":["email"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — sans « badHousing » 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"boolean","message":"Invalid input: expected boolean, received undefined","path":["badHousing"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — sans « demography » 1`] = `{"body":{"errors":[{"code":"invalid_value","message":"Invalid option: expected one of \\"plus\\"|\\"tendance\\"|\\"moins\\"","path":["demography"],"values":["plus","tendance","moins"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — sans « email » 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"string","message":"Invalid input: expected string, received undefined","path":["email"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — sans « epciCode » 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"string","message":"Invalid input: expected string, received undefined","path":["epciCode"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — sans « secondaryResidences » 1`] = `{"body":{"errors":[{"code":"invalid_value","message":"Invalid option: expected one of \\"neutre\\"|\\"reguler\\"|\\"developper\\"","path":["secondaryResidences"],"values":["neutre","reguler","developper"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — sans « vacancy » 1`] = `{"body":{"errors":[{"code":"invalid_value","message":"Invalid option: expected one of \\"prioritaire\\"|\\"parmi-autres\\"|\\"non\\"","path":["vacancy"],"values":["prioritaire","parmi-autres","non"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — « badHousing » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"boolean","message":"Invalid input: expected boolean, received string","path":["badHousing"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — « demography » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_value","message":"Invalid option: expected one of \\"plus\\"|\\"tendance\\"|\\"moins\\"","path":["demography"],"values":["plus","tendance","moins"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — « email » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"string","message":"Invalid input: expected string, received number","path":["email"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — « epciCode » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_type","expected":"string","message":"Invalid input: expected string, received number","path":["epciCode"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — « secondaryResidences » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_value","message":"Invalid option: expected one of \\"neutre\\"|\\"reguler\\"|\\"developper\\"","path":["secondaryResidences"],"values":["neutre","reguler","developper"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
+exports[`Contrat d'entrée des routes validées AmfController.createSimulation body — « vacancy » de type faux 1`] = `{"body":{"errors":[{"code":"invalid_value","message":"Invalid option: expected one of \\"prioritaire\\"|\\"parmi-autres\\"|\\"non\\"","path":["vacancy"],"values":["prioritaire","parmi-autres","non"]}],"message":"Validation failed","statusCode":400},"calls":[],"status":400}`;
+
 exports[`Contrat d'entrée des routes validées ConsumersController.create body — clé inconnue ajoutée 1`] = `{"body":{"mocked":"ConsumersService.create"},"calls":[{"args":[{"name":"sample"}],"fn":"ConsumersService.create"}],"status":201}`;
 
 exports[`Contrat d'entrée des routes validées ConsumersController.create body — exemple minimal 1`] = `{"body":{"mocked":"ConsumersService.create"},"calls":[{"args":[{"name":"sample"}],"fn":"ConsumersService.create"}],"status":201}`;
@@ -997,6 +1041,8 @@ exports[`Contrat d'entrée des routes validées should discover the validated ro
   "GET /accommodation-rates → AccommodationRatesController.getAccommodationRates",
   "PATCH /admin/users/:id/access → AdminController.update",
   "PATCH /admin/users/:id/region → AdminController.updateRegion",
+  "POST /amf/leads/:leadId/contacts → AmfController.addContacts",
+  "POST /amf/simulations → AmfController.createSimulation",
   "POST /admin/consumers → ConsumersController.create",
   "PATCH /admin/consumers/:id → ConsumersController.update",
   "GET /data-visualisation → DataVisualisationController.get",
