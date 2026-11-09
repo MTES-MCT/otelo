@@ -2,7 +2,7 @@ import { buildEstimationBreakdown, EstimationBreakdownInput } from '@otelo/share
 import { TAmfResult } from './amf.schemas'
 import { AMF_HORIZON } from './amf-scenario'
 
-const roundToTen = (value: number) => Math.round(value / 10) * 10
+export const roundToTen = (value: number) => Math.round(value / 10) * 10
 
 export function buildAmfResult(results: EstimationBreakdownInput & { total: number }, epciCode: string, baseYear: number): TAmfResult {
   const rawTotal = results.epcisTotals.find((epci) => epci.epciCode === epciCode)?.total ?? 0

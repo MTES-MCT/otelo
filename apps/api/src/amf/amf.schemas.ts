@@ -27,3 +27,17 @@ export const ZAmfResult = z.object({
     .nullable(),
 })
 export type TAmfResult = z.output<typeof ZAmfResult>
+
+export const ZAmfEpci = z.object({
+  code: z.string(),
+  name: z.string(),
+  fragileProjection: z.boolean(),
+  baseYear: z.number(),
+  horizon: z.number(),
+  populationChanges: z.object({
+    haute: z.number(),
+    central: z.number(),
+    basse: z.number().nullable(),
+  }),
+})
+export type TAmfEpci = z.output<typeof ZAmfEpci>

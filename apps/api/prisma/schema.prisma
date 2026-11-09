@@ -375,6 +375,7 @@ model Simulation {
   epcis                    Epci[]                     @relation("EpciToSimulation")
   shareLink                SimulationShareLink?
   changes                  SimulationChange[]
+  amfLead                  AmfLead?
 
   deleted DateTime?
 
@@ -1289,4 +1290,29 @@ model ProjectionHouseholdByType {
   @@id([zoneCode, year, householdType, millesime])
   @@index([millesime])
   @@map("projection_household_by_type")
+}
+
+model AmfLead {
+  id           String             @id @default(uuid())
+  email        String
+  epciCode     String             @map("epci_code")
+  simulationId String             @unique @map("simulation_id")
+  answers      Json
+  createdAt    DateTime           @default(now()) @map("created_at")
+  simulation   Simulation         @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  contacts     AmfSharedContact[]
+
+  @@map("amf_leads")
+}
+
+model AmfSharedContact {
+  id        String   @id @default(uuid())
+  leadId    String   @map("lead_id")
+  role      String
+  email     String
+  createdAt DateTime @default(now()) @map("created_at")
+  lead      AmfLead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@map("amf_shared_contacts")
 }
