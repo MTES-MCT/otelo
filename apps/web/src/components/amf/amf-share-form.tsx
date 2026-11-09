@@ -6,7 +6,7 @@ import Button from '@codegouvfr/react-dsfr/Button'
 import ButtonsGroup from '@codegouvfr/react-dsfr/ButtonsGroup'
 import Input from '@codegouvfr/react-dsfr/Input'
 import { FC, FormEvent, useRef, useState } from 'react'
-import { TAmfShareContactsBody, TAmfSharedContact } from '~/components/amf/amf-types'
+import { isValidAmfEmail, TAmfShareContactsBody, TAmfSharedContact } from '~/components/amf/amf-types'
 
 const MAX_CONTACTS = 10
 
@@ -20,10 +20,15 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
   const nextId = useRef(1)
   const [rows, setRows] = useState<ContactRow[]>([{ id: 0, role: '', email: '' }])
   const [status, setStatus] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle')
+  // Lignes dont l'e-mail serait refusé par l'API, signalées avant tout envoi.
+  const [invalidEmails, setInvalidEmails] = useState<Set<number>>(new Set())
   const submitting = useRef(false)
 
   const updateRow = (id: number, patch: Partial<TAmfSharedContact>) => {
     setRows((current) => current.map((row) => (row.id === id ? { ...row, ...patch } : row)))
+    if (patch.email !== undefined && invalidEmails.has(id)) {
+      setInvalidEmails((current) => new Set([...current].filter((rowId) => rowId !== id)))
+    }
   }
 
   const addRow = () => {
@@ -37,6 +42,11 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (submitting.current) {
+      return
+    }
+    const invalid = new Set(rows.filter((row) => !isValidAmfEmail(row.email.trim())).map((row) => row.id))
+    setInvalidEmails(invalid)
+    if (invalid.size > 0) {
       return
     }
     submitting.current = true
@@ -67,7 +77,7 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
       </h2>
 
       {status === 'done' ? (
-        <Alert severity="success" small description="Merci, nous transmettrons ces résultats." />
+        <Alert severity="success" small description="Merci, vos contacts ont bien été enregistrés." />
       ) : (
         <form onSubmit={handleSubmit}>
           {rows.map((row, index) => (
@@ -87,6 +97,10 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
               <div className={fr.cx('fr-fieldset__element')}>
                 <Input
                   label="E-mail"
+                  state={invalidEmails.has(row.id) ? 'error' : 'default'}
+                  stateRelatedMessage={
+                    invalidEmails.has(row.id) ? 'Veuillez saisir une adresse e-mail valide, par exemple nom@domaine.fr.' : undefined
+                  }
                   nativeInputProps={{
                     type: 'email',
                     required: true,

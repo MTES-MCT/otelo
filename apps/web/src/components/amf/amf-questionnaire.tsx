@@ -14,7 +14,14 @@ import {
   AmfSecondaryResidencesStep,
   AmfVacancyStep,
 } from '~/components/amf/amf-steps'
-import { AMF_STEPS, TAmfCreateSimulationBody, TAmfCreateSimulationResponse, TAmfDraftAnswers, TAmfStep } from '~/components/amf/amf-types'
+import {
+  AMF_STEPS,
+  isValidAmfEmail,
+  TAmfCreateSimulationBody,
+  TAmfCreateSimulationResponse,
+  TAmfDraftAnswers,
+  TAmfStep,
+} from '~/components/amf/amf-types'
 import styles from './amf.module.css'
 
 /** Étapes suivies par la barre de progression : les questions, de l'EPCI à l'e-mail. */
@@ -37,7 +44,16 @@ const EMPTY_ANSWERS: TAmfDraftAnswers = {
   email: '',
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+/** Message d'erreur selon le statut : seul un 400 met en cause la saisie (l'e-mail). */
+const errorMessageFor = (status: number): string => {
+  if (status === 400) {
+    return "Le calcul n'a pas pu aboutir. Veuillez vérifier votre e-mail et réessayer."
+  }
+  if (status === 429) {
+    return 'Trop de demandes en peu de temps. Veuillez patienter un instant avant de réessayer.'
+  }
+  return 'Une erreur est survenue, merci de réessayer dans quelques instants.'
+}
 
 type Submission = { status: 'idle' } | { status: 'submitting' } | { status: 'error'; message: string }
 
@@ -101,7 +117,7 @@ export const AmfQuestionnaire: FC = () => {
       return
     }
     const email = answers.email.trim()
-    if (!EMAIL_PATTERN.test(email)) {
+    if (!isValidAmfEmail(email)) {
       setSubmission({ status: 'error', message: 'Veuillez saisir une adresse e-mail valide, par exemple nom@domaine.fr.' })
       return
     }
@@ -118,20 +134,14 @@ export const AmfQuestionnaire: FC = () => {
         body: JSON.stringify(body),
       })
       if (!res.ok) {
-        setSubmission({
-          status: 'error',
-          message:
-            res.status === 429
-              ? 'Trop de demandes en peu de temps. Veuillez patienter un instant avant de réessayer.'
-              : "Le calcul n'a pas pu aboutir. Veuillez vérifier votre e-mail et réessayer.",
-        })
+        setSubmission({ status: 'error', message: errorMessageFor(res.status) })
         return
       }
       setOutcome((await res.json()) as TAmfCreateSimulationResponse)
       setSubmission({ status: 'idle' })
       setStep('results')
     } catch {
-      setSubmission({ status: 'error', message: "Le calcul n'a pas pu aboutir. Veuillez réessayer." })
+      setSubmission({ status: 'error', message: 'Une erreur est survenue, merci de réessayer dans quelques instants.' })
     } finally {
       submitting.current = false
     }
@@ -237,7 +247,11 @@ export const AmfQuestionnaire: FC = () => {
                     disabled: submission.status === 'submitting',
                   },
                   step === 'email'
-                    ? { children: 'Voir mes résultats', type: 'submit', disabled: submission.status === 'submitting' }
+                    ? {
+                        children: submission.status === 'submitting' ? 'Calcul en cours…' : 'Voir mes résultats',
+                        type: 'submit',
+                        disabled: submission.status === 'submitting',
+                      }
                     : { children: 'Suivant', type: 'submit', disabled: !canContinue() },
                 ]
           }

@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 // Types miroirs des schémas de l'API (`apps/api/src/amf/amf.schemas.ts`).
 // Le web n'importe pas le paquet de l'API : toute évolution du contrat doit être reportée ici.
 
@@ -68,3 +70,7 @@ export type TAmfDraftAnswers = {
 
 export const AMF_STEPS = ['intro', 'epci', 'demography', 'vacancy', 'badHousing', 'secondaryResidences', 'email', 'results'] as const
 export type TAmfStep = (typeof AMF_STEPS)[number]
+
+/** Même règle que `z.email()` côté API : une adresse refusée par l'API l'est aussi ici. */
+const ZAmfEmail = z.email()
+export const isValidAmfEmail = (value: string): boolean => ZAmfEmail.safeParse(value).success

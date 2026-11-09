@@ -24,7 +24,7 @@ export const AmfIntroStep: FC = () => (
   <>
     <h1 className={fr.cx('fr-h2')}>Votre besoin en logements en 3 minutes !</h1>
     <p className={fr.cx('fr-text--lead')}>
-      Obtenez une première estimation simplifiée de votre besoin en logement d&apos;ici 2036 sur votre territoire en seulement 4 étapes.
+      Obtenez une première estimation simplifiée de votre besoin en logement d&apos;ici 2036 sur votre territoire en seulement 5 questions.
     </p>
   </>
 )
@@ -133,15 +133,15 @@ type AmfDemographyStepProps = ChoiceStepProps<TAmfDemography> & { epci: TAmfEpci
 export const AmfDemographyStep: FC<AmfDemographyStepProps> = ({ epci, value, onChange }) => {
   const { haute, central, basse } = epci.populationChanges
   const options: Array<{ value: TAmfDemography; label: string }> = [
-    { value: 'plus', label: `Plus d'habitants (${formatSigned(haute)})` },
-    { value: 'tendance', label: `Dans la tendance actuelle (${formatSigned(central)})` },
+    { value: 'plus', label: `Une évolution plus favorable (${formatSigned(haute)} habitants)` },
+    { value: 'tendance', label: `Dans la tendance actuelle (${formatSigned(central)} habitants)` },
     // Sans projection basse pour ce territoire, le scénario n'est pas proposé.
-    ...(basse === null ? [] : [{ value: 'moins' as const, label: `Moins d'habitants (${formatSigned(basse)})` }]),
+    ...(basse === null ? [] : [{ value: 'moins' as const, label: `Une évolution moins favorable (${formatSigned(basse)} habitants)` }]),
   ]
 
   return (
     <RadioButtons
-      legend={<h2 className={fr.cx('fr-mb-0')}>En 2036, votre territoire aura selon vous :</h2>}
+      legend={<h2 className={fr.cx('fr-mb-0')}>D&apos;ici 2036, selon vous, la population de votre territoire connaîtra :</h2>}
       name="amf-demography"
       options={options.map((option) => ({
         label: option.label,
