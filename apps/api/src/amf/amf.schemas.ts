@@ -41,3 +41,14 @@ export const ZAmfEpci = z.object({
   }),
 })
 export type TAmfEpci = z.output<typeof ZAmfEpci>
+
+export const ZAmfShareContactsBody = z.object({
+  contacts: z
+    .array(z.object({ role: z.string().trim().min(1).max(100), email: z.email() }))
+    .min(1)
+    .max(10),
+})
+export type TAmfShareContactsBody = z.output<typeof ZAmfShareContactsBody>
+
+export const ZAmfCreateSimulationResponse = z.object({ leadId: z.uuid(), result: ZAmfResult })
+export type TAmfCreateSimulationResponse = z.output<typeof ZAmfCreateSimulationResponse>
