@@ -37,14 +37,14 @@ L'approche est pédagogique. On parle en **habitants** et non en ménages, et on
 
 Une question par écran, avec une barre de progression et un retour arrière possible.
 
-1. **Intro** : « Votre besoin en logements en 3 minutes ! Obtenez une première estimation simplifiée de votre besoin en logement d'ici 2036 sur votre territoire en seulement 4 étapes. » Bouton « Commencer ».
+1. **Intro** : « Votre besoin en logements en 3 minutes ! Obtenez une première estimation simplifiée de votre besoin en logement d'ici 2036 sur votre territoire en seulement 5 questions. » Bouton « Commencer ».
 2. **Quel est votre EPCI ?** Autocomplétion par nom d'EPCI ou de commune. On réutilise le composant existant (`apps/web/src/components/simulations/autocomplete/autocomplete-input.tsx` et `apps/web/src/hooks/use-geoapi-search.ts`, qui interroge geo.api.gouv.fr et exclut déjà l'Île-de-France). Un EPCI absent de la table `epcis` n'est pas sélectionnable : un message invite à se rendre sur Otelo. Un EPCI marqué `Epci.noInseeProjection` (environ 110 EPCI, dont 9 de Dordogne) **reste sélectionnable**, comme dans l'appli. Un court avertissement précise alors que les projections démographiques de ce territoire sont fragiles (même principe que `FragileProjectionAlert`). Décision de l'équipe.
-3. **En 2036, votre territoire aura selon vous :** trois options, chacune affichée avec l'évolution en habitants entre l'année de base et 2036 pour l'EPCI choisi (par exemple « Plus d'habitants (+25 100) ») :
-   - Plus d'habitants → `PH_C`
-   - Dans la tendance actuelle → `Central_C`
-   - Moins d'habitants → `PB_C`
+3. **D'ici 2036, selon vous, la population de votre territoire connaîtra :** trois options relatives, chacune affichée avec l'évolution signée en habitants entre l'année de base et 2036 pour l'EPCI choisi, unité comprise :
+   - « Une évolution plus favorable (+25 140 habitants) » → `PH_C`
+   - « Dans la tendance actuelle (+8 670 habitants) » → `Central_C`
+   - « Une évolution moins favorable (−7 150 habitants) » → `PB_C`
 
-   Les chiffres affichés viennent de `demographic_evolution_population` (colonnes `haute`, `central`, `basse`, en habitants). Le calcul, lui, utilise le scénario ménages correspondant (`demographic_evolution_omphale`, suffixe `C` = desserrement tendanciel, fixé et jamais demandé). Si la projection basse est absente pour l'EPCI (colonne nulle), l'option « Moins d'habitants » est masquée. C'est le même principe que le grisage dynamique de l'appli actuelle.
+   Les chiffres affichés viennent de `demographic_evolution_population` (colonnes `haute`, `central`, `basse`, en habitants). Le calcul, lui, utilise le scénario ménages correspondant (`demographic_evolution_omphale`, suffixe `C` = desserrement tendanciel, fixé et jamais demandé). Si la projection basse est absente pour l'EPCI (colonne nulle), l'option « Une évolution moins favorable » est masquée. C'est le même principe que le grisage dynamique de l'appli actuelle.
 4. **D'après vous, est-ce une priorité de remobiliser des logements vacants ?**
    - Oui, c'est prioritaire → −20 %
    - Oui, parmi d'autres mesures → −10 %
@@ -54,7 +54,7 @@ Une question par écran, avec une barre de progression et un retour arrière pos
 5. **Le mal-logement est-il une problématique importante sur votre territoire ?**
    - Oui → paramètres de stock par défaut d'Otelo (`SCENARIO_DEFAULTS`, horizon de résorption `b1_horizon_resorption` = 2050 inchangé, donc seule la part au prorata jusqu'en 2036 est comptée).
    - Non → besoin lié au mal-logement nul (le `totalStock` du résultat doit valoir 0).
-6. **Quel est votre point de vue sur les résidences secondaires et les Airbnb sur votre territoire ?**
+6. **Quel est votre point de vue sur les résidences secondaires sur votre territoire ?**
    - Ce n'est pas un sujet → taux observé inchangé
    - Je souhaite les réguler → `b2_tx_rs = observé × 0,95`
    - Je souhaite les développer → `b2_tx_rs = observé × 1,05`
@@ -64,7 +64,7 @@ Une question par écran, avec une barre de progression et un retour arrière pos
 8. **Résultats** (voir plus bas).
 Une fois les résultats affichés, on ne revient plus aux questions. Un bouton « Refaire une simulation » repart de l'intro. Chaque parcours terminé crée **une** simulation et **un** lead, liés un à un (choix du concepteur : comptage simple par clé, et les contacts partagés sont rattachés sans ambiguïté au lead du parcours en cours).
 
-9. **« À qui souhaitez-vous partager ces résultats ? »** Ce formulaire est sous les résultats, sur le même écran. L'élu saisit une fonction (libre, par exemple « DGS », « Chef de service habitat ») et un e-mail, et peut ajouter plusieurs contacts. Les contacts sont enregistrés, sans aucun envoi, puis un message de confirmation s'affiche. Cette étape est facultative.
+9. **« À qui souhaitez-vous partager ces résultats ? »** Ce formulaire est sous les résultats, sur le même écran. L'élu saisit une fonction (libre, par exemple « DGS », « Chef de service habitat ») et un e-mail, et peut ajouter plusieurs contacts. Les contacts sont enregistrés, sans aucun envoi, puis le message « Merci, vos contacts ont bien été enregistrés. » s'affiche (il ne promet aucun envoi). Cette étape est facultative.
 10. **CTA** : un bouton vers la page d'accueil d'Otelo.
 
 ## Écran de résultats
@@ -97,7 +97,7 @@ Besoin en construction d'ici 2036 : 4 800 logements
   - millésime = millésime du data pack actif (`DataPackVersionsService.getActive()`, et non la valeur `'2021'` codée en dur dans `preview.service.ts`) ;
   - taux par EPCI = taux observés (`AccommodationRatesService.getAccommodationRates(epciCode, millesime)`), seulement modifiés par les réponses ;
   - tous les autres paramètres aux valeurs par défaut d'Otelo.
-- **Stockage des leads** : nouvelle table pour l'élu (e-mail, simulation liée, code EPCI, réponses brutes, date) et nouvelle table pour les contacts partagés (lead lié, fonction, e-mail, date), avec une migration Prisma.
+- **Stockage des leads** : nouvelle table pour l'élu (e-mail, simulation liée, code EPCI, réponses brutes, date) et nouvelle table pour les contacts partagés (lead lié, fonction, e-mail, date), avec une migration Prisma. Les leads doivent survivre à la suppression de la clé ou des simulations (une suppression d'`ApiConsumer` supprime ses simulations en cascade) : `AmfLead.simulationId` est nullable, unique, avec `onDelete: SetNull`. Les contacts restent supprimés en cascade avec leur lead. Pour couper le questionnaire, on désactive la clé (`ApiConsumer.active = false`) plutôt que de la supprimer ; cette clé ouvre aussi l'API `/external`.
 
 ## Contraintes et pièges connus
 
