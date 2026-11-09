@@ -6,9 +6,9 @@ import { UnauthenticatedBreadcrumb } from '~/components/breadcrumbs/unauthentica
 
 export default function UnauthenticatedLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const isSharePage = pathname.startsWith('/partage')
+  const isFullWidthPage = pathname.startsWith('/partage') || pathname === '/amf' || pathname.startsWith('/amf/')
 
-  if (isSharePage) {
+  if (isFullWidthPage) {
     return (
       <div style={{ backgroundColor: 'var(--artwork-decorative-blue-france)', flex: 1 }} className="fr-py-md-5w fr-py-2w">
         {children}
