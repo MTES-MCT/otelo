@@ -1,7 +1,12 @@
 import { z } from 'zod'
 
+const ZAmfEpciCode = z.string().regex(/^\d{9}$/)
+
+export const ZAmfEpciParams = z.object({ epciCode: ZAmfEpciCode })
+export type TAmfEpciParams = z.output<typeof ZAmfEpciParams>
+
 export const ZAmfAnswers = z.object({
-  epciCode: z.string().regex(/^\d{9}$/),
+  epciCode: ZAmfEpciCode,
   demography: z.enum(['plus', 'tendance', 'moins']),
   vacancy: z.enum(['prioritaire', 'parmi-autres', 'non']),
   badHousing: z.boolean(),

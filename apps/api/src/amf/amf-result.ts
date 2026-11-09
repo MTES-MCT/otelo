@@ -13,6 +13,10 @@ export function buildAmfResult(results: EstimationBreakdownInput & { total: numb
 
   const { values } = buildEstimationBreakdown(results, { epciCode })
   const total = roundToTen(rawTotal)
+  if (total <= 0) {
+    return { baseYear, horizon: AMF_HORIZON, total: 0, annualAverage: 0, blocks: null }
+  }
+
   const vacancy = roundToTen(values.vacancyIncrease - values.vacancyRemobilised)
   const secondaryResidences = roundToTen(values.secondaryIncrease - values.secondaryDecrease)
   const badHousing = roundToTen(values.badHousing)

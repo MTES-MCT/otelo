@@ -10,10 +10,12 @@ import {
   TAmfCreateSimulationBody,
   TAmfCreateSimulationResponse,
   TAmfEpci,
+  TAmfEpciParams,
   TAmfShareContactsBody,
   ZAmfCreateSimulationBody,
   ZAmfCreateSimulationResponse,
   ZAmfEpci,
+  ZAmfEpciParams,
   ZAmfShareContactsBody,
 } from './amf.schemas'
 import { AmfService } from './amf.service'
@@ -28,13 +30,14 @@ export class AmfController {
   constructor(private readonly amfService: AmfService) {}
 
   @Get('epcis/:epciCode')
+  @Throttle({ default: { ttl: 60_000, limit: 60 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Obtenir les informations d'un EPCI pour le questionnaire" })
   @ApiParam({ name: 'epciCode', description: "Code SIREN de l'EPCI (9 chiffres)" })
   @ApiResponse({ status: 200, description: "Informations de l'EPCI", standardSchema: ZAmfEpci })
   @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', standardSchema: ZUnauthorizedResponse })
   @ApiResponse({ status: 404, description: 'EPCI non trouvé', standardSchema: ZNotFoundResponse })
-  async getEpci(@Param('epciCode') epciCode: string): Promise<TAmfEpci> {
+  async getEpci(@Param({ schema: ZAmfEpciParams }) { epciCode }: TAmfEpciParams): Promise<TAmfEpci> {
     return this.amfService.getEpci(epciCode)
   }
 
