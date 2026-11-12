@@ -904,12 +904,12 @@ export class ExportPowerpointService {
   async generateFromTemplate(data: TPowerpointData): Promise<Buffer> {
     const zip = await this.zipService.unzipPptx()
     const slideFiles = Object.keys(zip.files).filter((name) => name.match(/^ppt\/slides\/slide\d+\.xml$/))
+    const placeholders = await this.generatePlaceholders(data)
 
     for (const slideFile of slideFiles) {
       this.logger.log(`Processing slide ${slideFile}`)
       const slideName = slideFile.split('/').pop()!.replace('.xml', '')
       const slideXml = await zip.files[slideFile].async('text')
-      const placeholders = await this.generatePlaceholders(data)
 
       const modifiedSlideXml = await this.placeholderService.processSlide(slideXml, slideName, placeholders, zip)
       zip.file(slideFile, modifiedSlideXml)

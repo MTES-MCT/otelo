@@ -204,6 +204,18 @@ export class PowerpointRequestsService {
   }
 
   /**
+   * Efface une demande dont le livrable n'a jamais été envoyé à l'équipe.
+   *
+   * La demande est enregistrée avant la génération, pour que la détection de
+   * doublons voie aussitôt une demande en cours. Si la génération ou l'envoi
+   * échoue ensuite, la garder fausserait les statistiques et ferait prendre la
+   * nouvelle tentative de l'agent pour un doublon d'une demande jamais reçue.
+   */
+  async discard(requestId: string): Promise<void> {
+    await this.prismaService.export.deleteMany({ where: { requestId } })
+  }
+
+  /**
    * Reconstitue les demandes à partir des lignes, de la plus récente à la plus ancienne.
    *
    * Les lignes sont dédoublonnées sur leur identifiant : une demande peut avoir été

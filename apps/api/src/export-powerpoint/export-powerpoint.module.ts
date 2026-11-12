@@ -16,11 +16,12 @@ import { RpInseeModule } from '~/rp-insee/rp-insee.module'
 import { SimulationsModule } from '~/simulations/simulations.module'
 import { ExportPowerpointController } from './export-powerpoint.controller'
 import { ExportPowerpointService } from './export-powerpoint.service'
+import { PowerpointDeliveries } from './powerpoint-deliveries'
 import { PowerpointRequestsService } from './powerpoint-requests.service'
 
 @Module({
   controllers: [ExportPowerpointController],
-  providers: [ExportPowerpointService, PowerpointRequestsService],
+  providers: [ExportPowerpointService, PowerpointRequestsService, PowerpointDeliveries],
   exports: [ExportPowerpointService, PowerpointRequestsService],
   imports: [
     ExportExcelModule,

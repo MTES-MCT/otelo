@@ -8,6 +8,7 @@ const mockPrisma = {
     findMany: jest.fn(),
     createMany: jest.fn(),
     updateMany: jest.fn(),
+    deleteMany: jest.fn(),
   },
   simulation: {
     findMany: jest.fn(),
@@ -201,6 +202,14 @@ describe('PowerpointRequestsService', () => {
       expect(where).toEqual({ requestId: 'request-1', supersededAt: null })
       expect(data.supersededByRequestId).toBe('request-2')
       expect(data.supersededAt).toBeInstanceOf(Date)
+    })
+  })
+
+  describe('discard', () => {
+    it("efface toutes les lignes de la demande, qui n'a jamais été livrée", async () => {
+      await service.discard('request-2')
+
+      expect(mockPrisma.export.deleteMany).toHaveBeenCalledWith({ where: { requestId: 'request-2' } })
     })
   })
 })

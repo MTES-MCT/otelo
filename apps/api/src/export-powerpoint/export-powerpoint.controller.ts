@@ -8,6 +8,7 @@ import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { EmailService } from '~/email/email.service'
 import { ExportExcelService } from '~/export-excel/export-excel.service'
 import { ExportPowerpointService } from '~/export-powerpoint/export-powerpoint.service'
+import { PowerpointDeliveries } from '~/export-powerpoint/powerpoint-deliveries'
 import {
   PowerpointRequestsService,
   TPowerpointDuplicateReason,
@@ -36,6 +37,7 @@ export class ExportPowerpointController {
     private readonly simulationsService: SimulationsService,
     private readonly powerpointRequestsService: PowerpointRequestsService,
     private readonly emailService: EmailService,
+    private readonly powerpointDeliveries: PowerpointDeliveries,
   ) {
     this.receiverEmail = this.configService.getOrThrow<string>('EMAIL_RECEIVER_EMAIL')
   }
@@ -79,7 +81,7 @@ export class ExportPowerpointController {
   @Post()
   @HttpCode(HttpStatus.OK)
   async requestPowerpoint(@User() user: TUser, @Body({ schema: ZRequestPowerpoint }) data: TRequestPowerpoint) {
-    const { nextStep, resultDate, selectedSimulations, privilegedSimulation, epcis, epci, documentType, periodStart, periodEnd } = data
+    const { nextStep, selectedSimulations, privilegedSimulation, epcis, epci, documentType, periodStart, periodEnd } = data
 
     const hasAccess = await this.simulationsService.hasUserAccessToAll(selectedSimulations, user.id)
     if (!hasAccess) {
@@ -106,12 +108,8 @@ export class ExportPowerpointController {
       throw new Error('Either epci or epcis must be provided')
     }
 
-    const powerpointBuffer = await this.exportPowerpointService.generateFromTemplate({
-      ...data,
-      epci: selectedEpci,
-      username: `${user.firstname}  ${user.lastname}`,
-    })
-
+    // Enregistrée avant la réponse : une seconde demande faite pendant la génération
+    // doit déjà la voir pour être reconnue comme doublon.
     // `privilegedSimulation` est obligatoire dans le formulaire mais n'était pas transmis :
     // tous les exports PowerPoint étaient enregistrés avec `isPrivileged: false`.
     const requestId = await this.powerpointRequestsService.record(selectedSimulations, {
@@ -122,55 +120,84 @@ export class ExportPowerpointController {
       periodStart: Number.parseInt(periodStart, 10) || undefined,
       privilegedSimulationId: privilegedSimulation,
     })
-    const simulations = await this.simulationsService.getMany(selectedSimulations)
 
-    const privilegedSim = data.privilegedSimulation ? simulations.find((sim) => sim.id === privilegedSimulation) : null
+    // La génération et l'envoi dépassent le délai du routeur : la demande est
+    // acquittée tout de suite et livrée ensuite (voir `PowerpointDeliveries`).
+    this.powerpointDeliveries.start(requestId, () => this.deliver(user, data, selectedEpci, requestId, replaceable))
 
-    const attachments: TEmailDto['attachments'] = []
+    return { success: true, message: 'PowerPoint request accepted' }
+  }
 
-    attachments.push({
-      name: `Template Powerpoint.pptx`,
-      content: powerpointBuffer.toString('base64'),
-    })
-
-    for (const simulation of simulations) {
-      const { workbook } = await this.exportExcelService.exportScenario(simulation.id)
-      const excelBuffer = await workbook.xlsx.writeBuffer()
-
-      const name = `Export parametres_${simulation.name.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`
-
-      attachments.push({
-        name,
-        content: Buffer.from(excelBuffer).toString('base64'),
-      })
-    }
-
-    const htmlContent = `
-      ${replaceable ? this.replacementNoticeHtml(replaceable) : ''}
-      <h1>Demande de PowerPoint</h1>
-      <p><strong>Email de l'utilisateur:</strong> ${escapeHtml(user.email)}</p>
-      <p><strong>Type de document:</strong> ${escapeHtml(documentType)}</p>
-      <p><strong>Année de début et fin de document:</strong> ${escapeHtml(periodStart)} - ${escapeHtml(periodEnd)}</p>
-      <p><strong>Prochaine étape:</strong> ${escapeHtml(nextStep)}</p>
-      <p><strong>Date du résultat:</strong> ${new Date(resultDate).toLocaleDateString('fr-FR')}</p>
-      ${privilegedSim ? `<p><strong>Scénario privilégié:</strong> ${escapeHtml(privilegedSim.name)}</p>` : ''}
-      <p><strong>Simulations sélectionnées:</strong></p>
-      <ul>
-        ${simulations.map((sim) => `<li>${escapeHtml(sim.name)}</li>`).join('')}
-      </ul>
-      <p><strong>EPCI(s) demandé(s):</strong></p>
-      ${
-        epcis && epcis.length > 0
-          ? `<ul>
-        ${epcis.map((epciItem) => `<li>${escapeHtml(epciItem.name)} - ${escapeHtml(epciItem.code)}</li>`).join('')}
-      </ul>`
-          : epci
-            ? `<ul><li>${escapeHtml(epci.name)} - ${escapeHtml(epci.code)}</li></ul>`
-            : ''
-      }
-    `
+  /**
+   * Produit le PowerPoint et les classeurs Excel, puis les envoie à l'équipe.
+   *
+   * Si la génération ou l'envoi échoue, la demande est retirée : elle n'a jamais
+   * été livrée, et la demande qu'elle devait remplacer reste la référence.
+   */
+  private async deliver(
+    user: TUser,
+    data: TRequestPowerpoint,
+    selectedEpci: { code: string; name: string },
+    requestId: string,
+    replaceable: TReplaceablePowerpointRequest | null,
+  ): Promise<void> {
+    const { nextStep, resultDate, selectedSimulations, privilegedSimulation, epcis, epci, documentType, periodStart, periodEnd } = data
 
     try {
+      const powerpointBuffer = await this.exportPowerpointService.generateFromTemplate({
+        ...data,
+        epci: selectedEpci,
+        username: `${user.firstname}  ${user.lastname}`,
+      })
+
+      const simulations = await this.simulationsService.getMany(selectedSimulations)
+
+      const privilegedSim = data.privilegedSimulation ? simulations.find((sim) => sim.id === privilegedSimulation) : null
+
+      const attachments: TEmailDto['attachments'] = []
+
+      attachments.push({
+        name: `Template Powerpoint.pptx`,
+        content: powerpointBuffer.toString('base64'),
+      })
+
+      for (const simulation of simulations) {
+        const { workbook } = await this.exportExcelService.exportScenario(simulation.id)
+        const excelBuffer = await workbook.xlsx.writeBuffer()
+
+        const name = `Export parametres_${simulation.name.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`
+
+        attachments.push({
+          name,
+          content: Buffer.from(excelBuffer).toString('base64'),
+        })
+      }
+
+      const htmlContent = `
+        ${replaceable ? this.replacementNoticeHtml(replaceable) : ''}
+        <h1>Demande de PowerPoint</h1>
+        <p><strong>Email de l'utilisateur:</strong> ${escapeHtml(user.email)}</p>
+        <p><strong>Type de document:</strong> ${escapeHtml(documentType)}</p>
+        <p><strong>Année de début et fin de document:</strong> ${escapeHtml(periodStart)} - ${escapeHtml(periodEnd)}</p>
+        <p><strong>Prochaine étape:</strong> ${escapeHtml(nextStep)}</p>
+        <p><strong>Date du résultat:</strong> ${new Date(resultDate).toLocaleDateString('fr-FR')}</p>
+        ${privilegedSim ? `<p><strong>Scénario privilégié:</strong> ${escapeHtml(privilegedSim.name)}</p>` : ''}
+        <p><strong>Simulations sélectionnées:</strong></p>
+        <ul>
+          ${simulations.map((sim) => `<li>${escapeHtml(sim.name)}</li>`).join('')}
+        </ul>
+        <p><strong>EPCI(s) demandé(s):</strong></p>
+        ${
+          epcis && epcis.length > 0
+            ? `<ul>
+          ${epcis.map((epciItem) => `<li>${escapeHtml(epciItem.name)} - ${escapeHtml(epciItem.code)}</li>`).join('')}
+        </ul>`
+            : epci
+              ? `<ul><li>${escapeHtml(epci.name)} - ${escapeHtml(epci.code)}</li></ul>`
+              : ''
+        }
+      `
+
       await this.emailService.sendEmail({
         to: this.receiverEmail,
         subject: replaceable ? 'Demande de PowerPoint remplaçant une demande précédente' : 'Nouvelle demande de PowerPoint',
@@ -178,17 +205,16 @@ export class ExportPowerpointController {
         text: `${replaceable ? `${this.replacementNoticeText(replaceable)}\n\n` : ''}Demande de PowerPoint\n\nEmail de l'utilisateur: ${user.email}\nType de document: ${documentType}\nPériode d'étude: ${periodStart} - ${periodEnd}\nProchaine étape: ${nextStep}\nDate du résultat: ${new Date(resultDate).toLocaleDateString('fr-FR')}${privilegedSim ? `\nScénario privilégié: ${privilegedSim.name}` : ''}\nSimulations sélectionnées:\n${simulations.map((sim) => `- ${sim.name}`).join('\n')}\nEPCI(s) demandé(s):\n${epcis && epcis.length > 0 ? epcis.map((epciItem) => `- ${epciItem.name} - ${epciItem.code}`).join('\n') : epci ? `- ${epci.name} - ${epci.code}` : ''}`,
         attachments,
       })
-
-      // Après l'envoi seulement : si le mail échoue, la demande précédente reste
-      // la référence, plutôt que de laisser l'équipe sans aucune demande active.
-      if (replaceable) {
-        await this.powerpointRequestsService.supersede(replaceable.requestId, requestId)
-      }
-
-      return { success: true, message: 'Email sent successfully' }
     } catch (err) {
-      this.logger.error(err)
-      return { success: false, message: 'An error occurred while sending email.' }
+      this.logger.error(`PowerPoint ${requestId} non livré, demande retirée`, err instanceof Error ? err.stack : err)
+      await this.powerpointRequestsService.discard(requestId)
+      return
+    }
+
+    // Après l'envoi seulement : si le mail échoue, la demande précédente reste
+    // la référence, plutôt que de laisser l'équipe sans aucune demande active.
+    if (replaceable) {
+      await this.powerpointRequestsService.supersede(replaceable.requestId, requestId)
     }
   }
 
