@@ -6,6 +6,7 @@ import { DemographicEvolutionService } from '~/demographic-evolution/demographic
 import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
 import { EpcisService } from '~/epcis/epcis.service'
 import { getOmphaleKey } from '~/export-excel/helpers/labels'
+import { ChartGenerationService } from '~/export-powerpoint/chart-generation/chart-generation.service'
 import { PlaceholderGenerationService } from '~/export-powerpoint/placeholder-generation/placeholder-generation.service'
 import { ZipService } from '~/export-powerpoint/zip/zip.service'
 import { RpInseeService } from '~/rp-insee/rp-insee.service'
@@ -54,6 +55,7 @@ export class ExportPowerpointService {
     private readonly rpInseeService: RpInseeService,
     private readonly accommodationRatesService: AccommodationRatesService,
     private readonly demographicEvolutionCustomService: DemographicEvolutionCustomService,
+    private readonly chartGenerationService: ChartGenerationService,
   ) {}
 
   private readonly slideCalculators = {
@@ -930,14 +932,17 @@ export class ExportPowerpointService {
     const slideFiles = Object.keys(zip.files).filter((name) => name.match(/^ppt\/slides\/slide\d+\.xml$/))
     const placeholders = await this.generatePlaceholders(data)
 
-    for (const slideFile of slideFiles) {
-      this.logger.log(`Processing slide ${slideFile}`)
-      const slideName = slideFile.split('/').pop()!.replace('.xml', '')
-      const slideXml = await zip.files[slideFile].async('text')
+    // Un seul Chromium pour tous les graphiques de l'export.
+    await this.chartGenerationService.withBrowser(async (browser) => {
+      for (const slideFile of slideFiles) {
+        this.logger.log(`Processing slide ${slideFile}`)
+        const slideName = slideFile.split('/').pop()!.replace('.xml', '')
+        const slideXml = await zip.files[slideFile].async('text')
 
-      const modifiedSlideXml = await this.placeholderService.processSlide(slideXml, slideName, placeholders, zip)
-      zip.file(slideFile, modifiedSlideXml)
-    }
+        const modifiedSlideXml = await this.placeholderService.processSlide(slideXml, slideName, placeholders, zip, browser)
+        zip.file(slideFile, modifiedSlideXml)
+      }
+    })
 
     this.logger.log(`Generating PowerPoint file`)
     const pptxBuffer = await this.zipService.generatePptx(zip)
