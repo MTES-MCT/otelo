@@ -109,7 +109,9 @@ commands:
       - run:
           name: 'Install pnpm via corepack'
           command: |
-            corepack enable
+            # L'image livre un pnpm dans /usr/local/bin appartenant à root : sans sudo,
+            # corepack ne peut pas le remplacer par son propre lien.
+            sudo corepack enable
             corepack prepare --activate
 
   install_dependencies:
