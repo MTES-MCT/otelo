@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import type { Browser } from 'puppeteer'
 import { jsonForScript } from '~/common/utils/json-for-script'
 import { env } from '~/config/env'
 import { TResults } from '~/schemas/results/results'
@@ -25,53 +26,77 @@ interface ChartConfig {
 export class ChartGenerationService {
   private readonly logger = new Logger(ChartGenerationService.name)
 
-  async generateChartImage(chartConfig: ChartConfig): Promise<Buffer> {
+  /**
+   * Ouvre un Chromium pour la durée de `task`, puis le referme quoi qu'il arrive.
+   *
+   * Un export compose plusieurs graphiques : les rendre dans un même navigateur
+   * évite un démarrage par graphique. Chaque démarrage prend plusieurs secondes sur
+   * le conteneur, et un seul démarrage bloqué au-delà du délai de Puppeteer (30 s)
+   * suffisait à faire échouer tout l'export.
+   */
+  async withBrowser<T>(task: (browser: Browser) => Promise<T>): Promise<T> {
+    const browser = await this.launchBrowser()
+    try {
+      return await task(browser)
+    } finally {
+      // Sans cette fermeture garantie, un rendu en échec laissait un Chromium
+      // orphelin, qui alourdissait la mémoire et ralentissait les démarrages suivants.
+      await browser.close().catch((error) => this.logger.warn(`Fermeture de Chromium impossible : ${error}`))
+    }
+  }
+
+  async generateChartImage(chartConfig: ChartConfig, browser: Browser): Promise<Buffer> {
     this.logger.verbose(`Generating chart image for ${chartConfig.type}`)
+    const page = await browser.newPage()
+
+    try {
+      const width = chartConfig.width || 800
+      const height = chartConfig.height || 500
+
+      const scale = 2
+      const scaledWidth = width * scale
+      const scaledHeight = height * scale
+
+      await page.setViewport({
+        width: scaledWidth,
+        height: scaledHeight,
+        deviceScaleFactor: scale,
+      })
+
+      const html = this.generateRechartsHTML(chartConfig, scale)
+      await page.setContent(html)
+
+      await page.waitForFunction(
+        () => {
+          const canvas = document.querySelector('canvas')
+          return canvas && canvas.width > 0
+        },
+        { timeout: 5000 },
+      )
+
+      const screenshot = await page.screenshot({
+        type: 'png',
+        omitBackground: false,
+        clip: {
+          x: 0,
+          y: 0,
+          width: scaledWidth,
+          height: scaledHeight,
+        },
+      })
+      return Buffer.from(screenshot)
+    } finally {
+      await page.close().catch((error) => this.logger.warn(`Fermeture de la page du graphique impossible : ${error}`))
+    }
+  }
+
+  protected async launchBrowser(): Promise<Browser> {
     const puppeteer = (await import('puppeteer')).default
-    const browser = await puppeteer.launch({
+    return puppeteer.launch({
       headless: 'shell',
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--single-process', '--no-zygote'],
       executablePath: env.PUPPETEER_EXECUTABLE_PATH,
     })
-
-    const page = await browser.newPage()
-
-    const width = chartConfig.width || 800
-    const height = chartConfig.height || 500
-
-    const scale = 2
-    const scaledWidth = width * scale
-    const scaledHeight = height * scale
-
-    await page.setViewport({
-      width: scaledWidth,
-      height: scaledHeight,
-      deviceScaleFactor: scale,
-    })
-
-    const html = this.generateRechartsHTML(chartConfig, scale)
-    await page.setContent(html)
-
-    await page.waitForFunction(
-      () => {
-        const canvas = document.querySelector('canvas')
-        return canvas && canvas.width > 0
-      },
-      { timeout: 5000 },
-    )
-
-    const screenshot = await page.screenshot({
-      type: 'png',
-      omitBackground: false,
-      clip: {
-        x: 0,
-        y: 0,
-        width: scaledWidth,
-        height: scaledHeight,
-      },
-    })
-    await browser.close()
-    return Buffer.from(screenshot)
   }
 
   private generateRechartsHTML(chartConfig: ChartConfig, scale: number = 1): string {

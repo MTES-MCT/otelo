@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import JSZip from 'jszip'
+import type { Browser } from 'puppeteer'
 import { ChartGenerationService } from '~/export-powerpoint/chart-generation/chart-generation.service'
 import { ZipService } from '~/export-powerpoint/zip/zip.service'
 import { TPowerpointPlaceholders } from '~/schemas/export-powerpoint/export-powerpoint'
@@ -11,11 +12,17 @@ export class PlaceholderGenerationService {
     private readonly zipService: ZipService,
   ) {}
 
-  async processSlide(slideXml: string, slideName: string, placeholders: TPowerpointPlaceholders, zip: JSZip): Promise<string> {
+  async processSlide(
+    slideXml: string,
+    slideName: string,
+    placeholders: TPowerpointPlaceholders,
+    zip: JSZip,
+    browser: Browser,
+  ): Promise<string> {
     let modifiedSlideXml = slideXml
 
     modifiedSlideXml = this.replaceTextPlaceholders(modifiedSlideXml, slideName, placeholders)
-    modifiedSlideXml = await this.replaceChartPlaceholders(modifiedSlideXml, slideName, placeholders, zip)
+    modifiedSlideXml = await this.replaceChartPlaceholders(modifiedSlideXml, slideName, placeholders, zip, browser)
 
     return modifiedSlideXml
   }
@@ -38,10 +45,11 @@ export class PlaceholderGenerationService {
     slideName: string,
     placeholders: TPowerpointPlaceholders,
     zip: JSZip,
+    browser: Browser,
   ): Promise<string> {
     if (placeholders[slideName] && 'charts' in placeholders[slideName] && placeholders[slideName].charts) {
       for (const chartConfig of placeholders[slideName].charts) {
-        const chartBuffer = await this.chartGenerationService.generateChartImage(chartConfig)
+        const chartBuffer = await this.chartGenerationService.generateChartImage(chartConfig, browser)
 
         if (chartConfig.templateImageFileName) {
           await this.zipService.replaceImageInTemplate(zip, chartBuffer, chartConfig.templateImageFileName)
