@@ -67,6 +67,7 @@ export const ZPowerpointPlaceholders = z.object({
   }),
   slide10: z.object({
     text: ZLayout.extend({
+      firstPeriodStart: z.string(),
       pb1: z.string(),
       pb2: z.string(),
       pb3: z.string(),
@@ -81,6 +82,7 @@ export const ZPowerpointPlaceholders = z.object({
   }),
   slide11: z.object({
     text: ZLayout.extend({
+      firstPeriodStart: z.string(),
       pcA1: z.string(),
       pcA2: z.string(),
       pcA3: z.string(),

@@ -15,6 +15,7 @@ import { ExportPowerpointService } from './export-powerpoint.service'
 describe('ExportPowerpointService', () => {
   let service: ExportPowerpointService
   let zipService: jest.Mocked<ZipService>
+  let demographicEvolutionService: jest.Mocked<DemographicEvolutionService>
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,6 +36,7 @@ describe('ExportPowerpointService', () => {
 
     service = await module.resolve<ExportPowerpointService>(ExportPowerpointService)
     zipService = module.get(ZipService)
+    demographicEvolutionService = module.get(DemographicEvolutionService)
   })
 
   it('should be defined', () => {
@@ -55,5 +57,74 @@ describe('ExportPowerpointService', () => {
     await service.generateFromTemplate({} as never)
 
     expect(generatePlaceholders).toHaveBeenCalledTimes(1)
+  })
+
+  // Les périodes d'évolution annuelle commencent à l'année du millésime : un
+  // scénario 2022 n'a pas de période « 2021-2030 », et la lire faisait échouer
+  // les diapositives 10 et 11.
+  describe("diapositives d'évolution démographique", () => {
+    const epci = { code: '246600449', name: 'CC des Aspres' }
+    const evolution = (start: number) => ({
+      [`${start}-2030`]: {
+        basse: { percent: '0.1', value: 1 },
+        central: { percent: '0.2', value: 2 },
+        haute: { percent: '0.3', value: 3 },
+      },
+      '2030-2040': { basse: { percent: '0.4', value: 4 }, central: { percent: '0.5', value: 5 }, haute: { percent: '0.6', value: 6 } },
+      '2040-2050': { basse: { percent: '0.7', value: 7 }, central: { percent: '0.8', value: 8 }, haute: { percent: '0.9', value: 9 } },
+    })
+    type TSlideCalculator = (data: unknown) => Promise<{ text: Record<string, string> }>
+    const slides = () => service as never as { calculateSlide10Data: TSlideCalculator; calculateSlide11Data: TSlideCalculator }
+    const commonData = (millesime: string) => ({
+      baseLayout: {},
+      data: { epci },
+      epcis: [epci],
+      privilegedScenario: { scenario: { millesime, b2_scenario: 'Central_C' } },
+    })
+
+    it.each(['2021', '2022'])('remplit la diapositive 10 pour un scénario %s', async (millesime) => {
+      demographicEvolutionService.getDemographicEvolutionPopulationAndYear.mockResolvedValue({
+        tableData: { [epci.code]: { annualEvolution: evolution(Number(millesime)) } },
+      } as never)
+      demographicEvolutionService.getDemographicEvolutionPopulationByEpci.mockResolvedValue({
+        [epci.code]: { data: [], metadata: {} },
+      } as never)
+
+      const { text } = await slides().calculateSlide10Data(commonData(millesime))
+
+      expect(text).toMatchObject({ firstPeriodStart: millesime, pb1: '0.1', pc1: '0.2', ph1: '0.3', pb3: '0.7', ph3: '0.9' })
+    })
+
+    it.each(['2021', '2022'])('remplit la diapositive 11 pour un scénario %s', async (millesime) => {
+      demographicEvolutionService.getDemographicEvolutionOmphaleAndYear.mockResolvedValue({
+        tableData: { [epci.code]: { annualEvolution: evolution(Number(millesime)) } },
+        linearChart: {},
+      } as never)
+
+      const { text } = await slides().calculateSlide11Data(commonData(millesime))
+
+      expect(text).toMatchObject({
+        firstPeriodStart: millesime,
+        pcA1: '0.3',
+        pcT1: '0.2',
+        pcD1: '0.1',
+        phT1: '0.2',
+        pbT1: '0.2',
+        pbT3: '0.8',
+      })
+    })
+
+    it("affiche N/D quand une période manque plutôt que d'échouer", async () => {
+      demographicEvolutionService.getDemographicEvolutionPopulationAndYear.mockResolvedValue({
+        tableData: { [epci.code]: { annualEvolution: {} } },
+      } as never)
+      demographicEvolutionService.getDemographicEvolutionPopulationByEpci.mockResolvedValue({
+        [epci.code]: { data: [], metadata: {} },
+      } as never)
+
+      const { text } = await slides().calculateSlide10Data(commonData('2022'))
+
+      expect(text).toMatchObject({ pb1: 'N/D', pc2: 'N/D', ph3: 'N/D' })
+    })
   })
 })
