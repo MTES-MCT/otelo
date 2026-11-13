@@ -6,6 +6,7 @@ import { DataVisualisationService } from '~/data-visualisation/data-visualisatio
 import { DemographicEvolutionService } from '~/demographic-evolution/demographic-evolution.service'
 import { DemographicEvolutionCustomService } from '~/demographic-evolution-custom/demographic-evolution-custom.service'
 import { EpcisService } from '~/epcis/epcis.service'
+import { ChartGenerationService } from '~/export-powerpoint/chart-generation/chart-generation.service'
 import { PlaceholderGenerationService } from '~/export-powerpoint/placeholder-generation/placeholder-generation.service'
 import { ZipService } from '~/export-powerpoint/zip/zip.service'
 import { RpInseeService } from '~/rp-insee/rp-insee.service'
@@ -16,6 +17,8 @@ describe('ExportPowerpointService', () => {
   let service: ExportPowerpointService
   let zipService: jest.Mocked<ZipService>
   let demographicEvolutionService: jest.Mocked<DemographicEvolutionService>
+  let chartGenerationService: jest.Mocked<ChartGenerationService>
+  let placeholderService: jest.Mocked<PlaceholderGenerationService>
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,12 +34,15 @@ describe('ExportPowerpointService', () => {
         { provide: RpInseeService, useValue: createMock<RpInseeService>() },
         { provide: AccommodationRatesService, useValue: createMock<AccommodationRatesService>() },
         { provide: DemographicEvolutionCustomService, useValue: createMock<DemographicEvolutionCustomService>() },
+        { provide: ChartGenerationService, useValue: createMock<ChartGenerationService>() },
       ],
     }).compile()
 
     service = await module.resolve<ExportPowerpointService>(ExportPowerpointService)
     zipService = module.get(ZipService)
     demographicEvolutionService = module.get(DemographicEvolutionService)
+    chartGenerationService = module.get(ChartGenerationService)
+    placeholderService = module.get(PlaceholderGenerationService)
   })
 
   it('should be defined', () => {
@@ -57,6 +63,26 @@ describe('ExportPowerpointService', () => {
     await service.generateFromTemplate({} as never)
 
     expect(generatePlaceholders).toHaveBeenCalledTimes(1)
+  })
+
+  it("rend tous les graphiques de l'export dans un même Chromium", async () => {
+    const browser = { id: 'chromium' }
+    chartGenerationService.withBrowser.mockImplementation(async (task) => task(browser as never))
+    zipService.unzipPptx.mockResolvedValue({
+      files: { 'ppt/slides/slide1.xml': { async: async () => '' }, 'ppt/slides/slide2.xml': { async: async () => '' } },
+      file: jest.fn(),
+    } as never)
+    zipService.generatePptx.mockResolvedValue(Buffer.from('pptx'))
+    placeholderService.processSlide.mockResolvedValue('')
+    jest.spyOn(service as never, 'generatePlaceholders').mockResolvedValue({} as never)
+
+    await service.generateFromTemplate({} as never)
+
+    expect(chartGenerationService.withBrowser).toHaveBeenCalledTimes(1)
+    expect(placeholderService.processSlide).toHaveBeenCalledTimes(2)
+    for (const call of placeholderService.processSlide.mock.calls) {
+      expect(call[4]).toBe(browser)
+    }
   })
 
   // Les périodes d'évolution annuelle commencent à l'année du millésime : un
