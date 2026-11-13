@@ -8,7 +8,6 @@ import { ExportExcelService } from '~/export-excel/export-excel.service'
 import { SimulationsService } from '~/simulations/simulations.service'
 import { ExportPowerpointController } from './export-powerpoint.controller'
 import { ExportPowerpointService } from './export-powerpoint.service'
-import { PowerpointDeliveries } from './powerpoint-deliveries'
 import { PowerpointRequestsService } from './powerpoint-requests.service'
 
 describe('ExportPowerpointController (contrat HTTP)', () => {
@@ -32,12 +31,7 @@ describe('ExportPowerpointController (contrat HTTP)', () => {
     ...overrides,
   })
 
-  // Le mail part après la réponse : on attend la fin de la livraison pour l'observer.
-  const post = async (body: Record<string, unknown>) => {
-    const response = await request(app.getHttpServer()).post('/export-powerpoint').send(body)
-    await app.get(PowerpointDeliveries).settled()
-    return response
-  }
+  const post = (body: Record<string, unknown>) => request(app.getHttpServer()).post('/export-powerpoint').send(body)
 
   const sentHtml = () => (emailService.sendEmail.mock.calls[0][0] as { html: string }).html
 
@@ -69,7 +63,6 @@ describe('ExportPowerpointController (contrat HTTP)', () => {
           { provide: ExportPowerpointService, useValue: exportPowerpointService },
           { provide: PowerpointRequestsService, useValue: powerpointRequestsService },
           { provide: SimulationsService, useValue: simulationsService },
-          PowerpointDeliveries,
         ],
       },
       { id: 'user-test', email: 'agent@ddt71.gouv.fr', firstname: 'Agnès', lastname: 'Martin', role: 'USER', hasAccess: true },

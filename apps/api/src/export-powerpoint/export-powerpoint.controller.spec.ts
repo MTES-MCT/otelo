@@ -9,7 +9,6 @@ import { TUser } from '~/schemas/users/user'
 import { SimulationsService } from '~/simulations/simulations.service'
 import { ExportPowerpointController } from './export-powerpoint.controller'
 import { ExportPowerpointService } from './export-powerpoint.service'
-import { PowerpointDeliveries } from './powerpoint-deliveries'
 import { PowerpointRequestsService, TReplaceablePowerpointRequest } from './powerpoint-requests.service'
 
 const user = { id: 'user-1', email: 'agent@ddt71.gouv.fr', firstname: 'Agnès', lastname: 'Martin' } as TUser
@@ -43,8 +42,6 @@ describe('ExportPowerpointController', () => {
   let controller: ExportPowerpointController
   let powerpointRequests: jest.Mocked<PowerpointRequestsService>
   let emailService: jest.Mocked<EmailService>
-  let powerpoint: jest.Mocked<ExportPowerpointService>
-  let deliveries: PowerpointDeliveries
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -56,20 +53,18 @@ describe('ExportPowerpointController', () => {
         { provide: SimulationsService, useValue: createMock<SimulationsService>() },
         { provide: PowerpointRequestsService, useValue: createMock<PowerpointRequestsService>() },
         { provide: EmailService, useValue: createMock<EmailService>() },
-        PowerpointDeliveries,
       ],
     }).compile()
 
     controller = module.get(ExportPowerpointController)
     powerpointRequests = module.get(PowerpointRequestsService)
     emailService = module.get(EmailService)
-    deliveries = module.get(PowerpointDeliveries)
 
     const simulations = module.get<jest.Mocked<SimulationsService>>(SimulationsService)
     simulations.hasUserAccessToAll.mockResolvedValue(true)
     simulations.getMany.mockResolvedValue([])
 
-    powerpoint = module.get(ExportPowerpointService)
+    const powerpoint = module.get<jest.Mocked<ExportPowerpointService>>(ExportPowerpointService)
     powerpoint.generateFromTemplate.mockResolvedValue(Buffer.from('pptx'))
 
     Object.defineProperty(powerpointRequests, 'windowMinutes', { value: 30 })
@@ -97,7 +92,6 @@ describe('ExportPowerpointController', () => {
     emailService.sendEmail.mockResolvedValue(undefined as never)
 
     const result = await controller.requestPowerpoint(user, request({ replacesRequestId: 'request-1' }))
-    await deliveries.settled()
 
     expect(result.success).toBe(true)
     expect(powerpointRequests.supersede).toHaveBeenCalledWith('request-1', 'request-2')
@@ -112,46 +106,14 @@ describe('ExportPowerpointController', () => {
     expect(email.text).toContain('demande faite il y a moins de 30 minutes')
   })
 
-  it("laisse la demande précédente active et retire la nouvelle quand l'envoi du mail échoue", async () => {
+  it("laisse la demande précédente active quand l'envoi du mail échoue", async () => {
     powerpointRequests.findReplaceable.mockResolvedValue(previousRequest)
     emailService.sendEmail.mockRejectedValue(new Error('Brevo indisponible'))
 
-    await controller.requestPowerpoint(user, request({ replacesRequestId: 'request-1' }))
-    await deliveries.settled()
+    const result = await controller.requestPowerpoint(user, request({ replacesRequestId: 'request-1' }))
 
+    expect(result.success).toBe(false)
     expect(powerpointRequests.supersede).not.toHaveBeenCalled()
-    // Jamais livrée, la demande ne doit ni compter dans les statistiques ni faire
-    // passer pour un doublon la nouvelle tentative de l'agent.
-    expect(powerpointRequests.discard).toHaveBeenCalledWith('request-2')
-  })
-
-  it('retire la demande quand la génération du PowerPoint échoue', async () => {
-    powerpointRequests.findReplaceable.mockResolvedValue(null)
-    powerpoint.generateFromTemplate.mockRejectedValue(new Error('Chrome introuvable'))
-
-    await controller.requestPowerpoint(user, request())
-    await deliveries.settled()
-
-    expect(emailService.sendEmail).not.toHaveBeenCalled()
-    expect(powerpointRequests.discard).toHaveBeenCalledWith('request-2')
-  })
-
-  // La génération et l'envoi dépassent le délai du routeur Scalingo (30 s avant le
-  // premier octet) : la réponse partait en 504 alors que le mail arrivait bien.
-  it("répond dès la demande enregistrée, sans attendre la génération ni l'envoi", async () => {
-    powerpointRequests.findReplaceable.mockResolvedValue(null)
-    let finishGeneration: (pptx: Buffer) => void = () => undefined
-    powerpoint.generateFromTemplate.mockReturnValue(new Promise((resolve) => (finishGeneration = resolve)))
-
-    const result = await controller.requestPowerpoint(user, request())
-
-    expect(result.success).toBe(true)
-    expect(powerpointRequests.record).toHaveBeenCalled()
-    expect(emailService.sendEmail).not.toHaveBeenCalled()
-
-    finishGeneration(Buffer.from('pptx'))
-    await deliveries.settled()
-    expect(emailService.sendEmail).toHaveBeenCalledTimes(1)
   })
 
   it("n'annonce aucun remplacement pour une première demande", async () => {
@@ -159,10 +121,8 @@ describe('ExportPowerpointController', () => {
     emailService.sendEmail.mockResolvedValue(undefined as never)
 
     await controller.requestPowerpoint(user, request())
-    await deliveries.settled()
 
     expect(powerpointRequests.supersede).not.toHaveBeenCalled()
-    expect(powerpointRequests.discard).not.toHaveBeenCalled()
     expect(emailService.sendEmail.mock.calls[0][0].subject).toBe('Nouvelle demande de PowerPoint')
   })
 })

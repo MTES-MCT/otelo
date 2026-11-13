@@ -15,7 +15,6 @@ import { ChartGenerationService } from './chart-generation/chart-generation.serv
 import { ExportPowerpointController } from './export-powerpoint.controller'
 import { ExportPowerpointService } from './export-powerpoint.service'
 import { PlaceholderGenerationService } from './placeholder-generation/placeholder-generation.service'
-import { PowerpointDeliveries } from './powerpoint-deliveries'
 import { PowerpointRequestsService } from './powerpoint-requests.service'
 import { ZipService } from './zip/zip.service'
 
@@ -71,7 +70,7 @@ describe('Export PowerPoint (e2e, vrai Chrome)', () => {
       {
         imports: [ConfigModule.forRoot({ isGlobal: true, load: [() => env] })],
         controllers: [ExportPowerpointController],
-        providers: [ExportPowerpointService, PlaceholderGenerationService, ChartGenerationService, ZipService, PowerpointDeliveries],
+        providers: [ExportPowerpointService, PlaceholderGenerationService, ChartGenerationService, ZipService],
       },
       { id: 'user-e2e', role: 'USER', hasAccess: true, email: 'agent@ddt71.gouv.fr', firstname: 'Agnès', lastname: 'Martin' },
       {
@@ -126,10 +125,7 @@ describe('Export PowerPoint (e2e, vrai Chrome)', () => {
       })
 
     expect(response.status).toBe(200)
-    expect(response.body).toEqual({ success: true, message: 'PowerPoint request accepted' })
-
-    // Le mail part après la réponse.
-    await app.get(PowerpointDeliveries).settled()
+    expect(response.body).toEqual({ success: true, message: 'Email sent successfully' })
 
     const { attachments } = emailService.sendEmail.mock.calls[0][0]
     const pptx = attachments?.find((attachment) => attachment.name.endsWith('.pptx'))

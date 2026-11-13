@@ -13,7 +13,6 @@ import { TUser } from '~/schemas/users/user'
 import { SimulationsService } from '~/simulations/simulations.service'
 import { ExportPowerpointController } from './export-powerpoint.controller'
 import { ExportPowerpointService } from './export-powerpoint.service'
-import { PowerpointDeliveries } from './powerpoint-deliveries'
 import { PowerpointRequestsService } from './powerpoint-requests.service'
 
 /**
@@ -28,7 +27,6 @@ describe('ExportPowerpointController (intégration)', () => {
   let prisma: PrismaService
   let controller: ExportPowerpointController
   let emailService: jest.Mocked<EmailService>
-  let deliveries: PowerpointDeliveries
 
   let user: TUser
   let scenarioHaut: string
@@ -57,7 +55,6 @@ describe('ExportPowerpointController (intégration)', () => {
         { provide: ExportExcelService, useValue: createMock<ExportExcelService>() },
         { provide: SimulationsService, useValue: createMock<SimulationsService>() },
         { provide: EmailService, useValue: createMock<EmailService>() },
-        PowerpointDeliveries,
       ],
     }).compile()
 
@@ -65,7 +62,6 @@ describe('ExportPowerpointController (intégration)', () => {
     prisma = module.get(PrismaService)
     controller = module.get(ExportPowerpointController)
     emailService = module.get(EmailService)
-    deliveries = module.get(PowerpointDeliveries)
 
     module.get<jest.Mocked<ExportPowerpointService>>(ExportPowerpointService).generateFromTemplate.mockResolvedValue(Buffer.from('pptx'))
     module.get<jest.Mocked<ExportExcelService>>(ExportExcelService).exportScenario.mockResolvedValue({
@@ -100,13 +96,6 @@ describe('ExportPowerpointController (intégration)', () => {
     emailService.sendEmail.mockResolvedValue(undefined as never)
   })
 
-  // Le mail part après la réponse : on attend la fin de la livraison pour l'observer.
-  const demander = async (...args: Parameters<ExportPowerpointController['requestPowerpoint']>) => {
-    const result = await controller.requestPowerpoint(...args)
-    await deliveries.settled()
-    return result
-  }
-
   const activeRequestIds = async () => {
     const rows = await prisma.export.findMany({ where: { supersededAt: null }, select: { requestId: true } })
     return [...new Set(rows.map((row) => row.requestId))]
@@ -120,7 +109,7 @@ describe('ExportPowerpointController (intégration)', () => {
   })
 
   it('enregistre la demande et envoie le mail sans mention de remplacement', async () => {
-    const result = await demander(user, demande())
+    const result = await controller.requestPowerpoint(user, demande())
 
     expect(result.success).toBe(true)
 
@@ -136,7 +125,7 @@ describe('ExportPowerpointController (intégration)', () => {
   })
 
   it('signale ensuite la demande précédente avec ses motifs', async () => {
-    await demander(user, demande())
+    await controller.requestPowerpoint(user, demande())
 
     const result = await controller.checkDuplicate(user, { selectedSimulations: [scenarioHaut], epciCodes: [GRAND_CHALON.code] })
 
@@ -145,29 +134,31 @@ describe('ExportPowerpointController (intégration)', () => {
   })
 
   it("refuse une seconde demande non confirmée et n'écrit rien", async () => {
-    await demander(user, demande())
+    await controller.requestPowerpoint(user, demande())
     const avant = await prisma.export.count()
 
-    await expect(demander(user, demande({ selectedSimulations: [scenarioBas] }))).rejects.toBeInstanceOf(ConflictException)
+    await expect(controller.requestPowerpoint(user, demande({ selectedSimulations: [scenarioBas] }))).rejects.toBeInstanceOf(
+      ConflictException,
+    )
 
     expect(await prisma.export.count()).toBe(avant)
   })
 
   it("refuse un remplacement désignant une demande qui n'est plus la dernière", async () => {
-    await demander(user, demande())
+    await controller.requestPowerpoint(user, demande())
     const [premiere] = await activeRequestIds()
 
-    await demander(user, demande({ replacesRequestId: premiere }))
+    await controller.requestPowerpoint(user, demande({ replacesRequestId: premiere }))
 
     // `premiere` est désormais remplacée : la redésigner ne doit plus passer.
-    await expect(demander(user, demande({ replacesRequestId: premiere }))).rejects.toBeInstanceOf(ConflictException)
+    await expect(controller.requestPowerpoint(user, demande({ replacesRequestId: premiere }))).rejects.toBeInstanceOf(ConflictException)
   })
 
   it('remplace la demande précédente et le signale dans le mail', async () => {
-    await demander(user, demande())
+    await controller.requestPowerpoint(user, demande())
     const [premiere] = await activeRequestIds()
 
-    const result = await demander(user, demande({ selectedSimulations: [scenarioBas], replacesRequestId: premiere }))
+    const result = await controller.requestPowerpoint(user, demande({ selectedSimulations: [scenarioBas], replacesRequestId: premiere }))
 
     expect(result.success).toBe(true)
 
@@ -188,22 +179,22 @@ describe('ExportPowerpointController (intégration)', () => {
   })
 
   it('laisse la demande précédente active quand le mail ne part pas', async () => {
-    await demander(user, demande())
+    await controller.requestPowerpoint(user, demande())
     const [premiere] = await activeRequestIds()
 
     emailService.sendEmail.mockRejectedValueOnce(new Error('Brevo indisponible'))
-    await demander(user, demande({ selectedSimulations: [scenarioBas], replacesRequestId: premiere }))
+    const result = await controller.requestPowerpoint(user, demande({ selectedSimulations: [scenarioBas], replacesRequestId: premiere }))
+
+    expect(result.success).toBe(false)
 
     const premieres = await prisma.export.findMany({ where: { requestId: premiere } })
     expect(premieres.every((row) => row.supersededAt === null)).toBe(true)
-    // La demande jamais livrée est retirée : seule la première subsiste.
-    expect(await activeRequestIds()).toEqual([premiere])
   })
 
   it('ne compte pas une demande remplacée dans les PowerPoint livrés', async () => {
-    await demander(user, demande())
+    await controller.requestPowerpoint(user, demande())
     const [premiere] = await activeRequestIds()
-    await demander(user, demande({ replacesRequestId: premiere }))
+    await controller.requestPowerpoint(user, demande({ replacesRequestId: premiere }))
 
     const livres = await prisma.export.count({
       where: { type: 'POWERPOINT', isPrivileged: true, supersededAt: null, simulation: { NOT: { user: { role: 'ADMIN' } } } },
