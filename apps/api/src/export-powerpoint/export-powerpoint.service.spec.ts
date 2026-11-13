@@ -14,6 +14,7 @@ import { ExportPowerpointService } from './export-powerpoint.service'
 
 describe('ExportPowerpointService', () => {
   let service: ExportPowerpointService
+  let zipService: jest.Mocked<ZipService>
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -33,9 +34,26 @@ describe('ExportPowerpointService', () => {
     }).compile()
 
     service = await module.resolve<ExportPowerpointService>(ExportPowerpointService)
+    zipService = module.get(ZipService)
   })
 
   it('should be defined', () => {
     expect(service).toBeDefined()
+  })
+
+  // Les données des diapositives ne dépendent que de la demande : les recalculer
+  // pour chaque diapositive multipliait la durée de l'export par leur nombre.
+  it('calcule les données des diapositives une seule fois par PowerPoint', async () => {
+    const zip = {
+      files: { 'ppt/slides/slide1.xml': { async: async () => '' }, 'ppt/slides/slide2.xml': { async: async () => '' } },
+      file: jest.fn(),
+    }
+    zipService.unzipPptx.mockResolvedValue(zip as never)
+    zipService.generatePptx.mockResolvedValue(Buffer.from('pptx'))
+    const generatePlaceholders = jest.spyOn(service as never, 'generatePlaceholders').mockResolvedValue({} as never)
+
+    await service.generateFromTemplate({} as never)
+
+    expect(generatePlaceholders).toHaveBeenCalledTimes(1)
   })
 })
