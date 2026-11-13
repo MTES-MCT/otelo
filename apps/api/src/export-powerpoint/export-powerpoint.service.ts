@@ -14,6 +14,22 @@ import { TResults } from '~/schemas/results/results'
 import { TSimulationWithEpciAndScenario } from '~/schemas/simulations/simulation'
 import { SimulationsService } from '~/simulations/simulations.service'
 
+type TProjectionVariant = 'basse' | 'central' | 'haute'
+type TAnnualEvolutionByPeriod = Record<string, Partial<Record<TProjectionVariant, { percent: string } | null>>>
+
+/**
+ * Périodes des tableaux d'évolution annuelle des diapositives 10 et 11.
+ *
+ * La première part de l'année du millésime, comme les données de projection
+ * (`[millésime, 2030, 2040, 2050]`) : un scénario 2022 n'a pas de période
+ * « 2021-2030 ».
+ */
+const projectionPeriods = (millesime: string) => [`${millesime}-2030`, '2030-2040', '2040-2050'] as const
+
+/** Taux annuel d'une période, ou « N/D » quand la période ou la variante manque. */
+const annualPercent = (evolution: TAnnualEvolutionByPeriod | undefined, period: string, variant: TProjectionVariant) =>
+  evolution?.[period]?.[variant]?.percent ?? 'N/D'
+
 interface CommonSlideData {
   baseLayout: TLayout
   privilegedScenario: TSimulationWithEpciAndScenario
@@ -218,19 +234,21 @@ export class ExportPowerpointService {
     const evolutionData = data.tableData[epciCode]?.annualEvolution
     const demographicData = await this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCode, millesime)
     const chartData = demographicData[epciCode]
+    const [p1, p2, p3] = projectionPeriods(millesime)
 
     return {
       text: {
         ...commonData.baseLayout,
-        pb1: evolutionData['2021-2030'].basse?.percent ?? 'N/D',
-        pb2: evolutionData['2030-2040'].basse?.percent ?? 'N/D',
-        pb3: evolutionData['2040-2050'].basse?.percent ?? 'N/D',
-        pc1: evolutionData['2021-2030'].central?.percent ?? 'N/D',
-        pc2: evolutionData['2030-2040'].central?.percent ?? 'N/D',
-        pc3: evolutionData['2040-2050'].central?.percent ?? 'N/D',
-        ph1: evolutionData['2021-2030'].haute?.percent ?? 'N/D',
-        ph2: evolutionData['2030-2040'].haute?.percent ?? 'N/D',
-        ph3: evolutionData['2040-2050'].haute?.percent ?? 'N/D',
+        firstPeriodStart: millesime,
+        pb1: annualPercent(evolutionData, p1, 'basse'),
+        pb2: annualPercent(evolutionData, p2, 'basse'),
+        pb3: annualPercent(evolutionData, p3, 'basse'),
+        pc1: annualPercent(evolutionData, p1, 'central'),
+        pc2: annualPercent(evolutionData, p2, 'central'),
+        pc3: annualPercent(evolutionData, p3, 'central'),
+        ph1: annualPercent(evolutionData, p1, 'haute'),
+        ph2: annualPercent(evolutionData, p2, 'haute'),
+        ph3: annualPercent(evolutionData, p3, 'haute'),
       },
       charts: [
         {
@@ -287,29 +305,35 @@ export class ExportPowerpointService {
     }
 
     const chartData = selectedDemographicEvolution.linearChart
+    const centralEvolution = centralData?.annualEvolution
+    const hauteEvolution = hauteData?.annualEvolution
+    const basseEvolution = basseData?.annualEvolution
+    const [p1, p2, p3] = projectionPeriods(millesime)
+
     return {
       text: {
         ...commonData.baseLayout,
+        firstPeriodStart: millesime,
         // Pop. Centrale - Décohabitation accélérée (haute)
-        pcA1: centralData.annualEvolution['2021-2030'].haute?.percent ?? 'N/D',
-        pcA2: centralData.annualEvolution['2030-2040'].haute?.percent ?? 'N/D',
-        pcA3: centralData.annualEvolution['2040-2050'].haute?.percent ?? 'N/D',
+        pcA1: annualPercent(centralEvolution, p1, 'haute'),
+        pcA2: annualPercent(centralEvolution, p2, 'haute'),
+        pcA3: annualPercent(centralEvolution, p3, 'haute'),
         // Pop. Centrale - Décohabitation tendancielle (central)
-        pcT1: centralData.annualEvolution['2021-2030'].central?.percent ?? 'N/D',
-        pcT2: centralData.annualEvolution['2030-2040'].central?.percent ?? 'N/D',
-        pcT3: centralData.annualEvolution['2040-2050'].central?.percent ?? 'N/D',
+        pcT1: annualPercent(centralEvolution, p1, 'central'),
+        pcT2: annualPercent(centralEvolution, p2, 'central'),
+        pcT3: annualPercent(centralEvolution, p3, 'central'),
         // Pop. Centrale - Décohabitation décélérée (basse)
-        pcD1: centralData.annualEvolution['2021-2030'].basse?.percent ?? 'N/D',
-        pcD2: centralData.annualEvolution['2030-2040'].basse?.percent ?? 'N/D',
-        pcD3: centralData.annualEvolution['2040-2050'].basse?.percent ?? 'N/D',
+        pcD1: annualPercent(centralEvolution, p1, 'basse'),
+        pcD2: annualPercent(centralEvolution, p2, 'basse'),
+        pcD3: annualPercent(centralEvolution, p3, 'basse'),
         // Pop. Haute - Décohabitation tendancielle
-        phT1: hauteData.annualEvolution['2021-2030'].central?.percent ?? 'N/D',
-        phT2: hauteData.annualEvolution['2030-2040'].central?.percent ?? 'N/D',
-        phT3: hauteData.annualEvolution['2040-2050'].central?.percent ?? 'N/D',
+        phT1: annualPercent(hauteEvolution, p1, 'central'),
+        phT2: annualPercent(hauteEvolution, p2, 'central'),
+        phT3: annualPercent(hauteEvolution, p3, 'central'),
         // Pop. Basse - Décohabitation tendancielle
-        pbT1: basseData.annualEvolution['2021-2030'].central?.percent ?? 'N/D',
-        pbT2: basseData.annualEvolution['2030-2040'].central?.percent ?? 'N/D',
-        pbT3: basseData.annualEvolution['2040-2050'].central?.percent ?? 'N/D',
+        pbT1: annualPercent(basseEvolution, p1, 'central'),
+        pbT2: annualPercent(basseEvolution, p2, 'central'),
+        pbT3: annualPercent(basseEvolution, p3, 'central'),
       },
       charts: [
         {
