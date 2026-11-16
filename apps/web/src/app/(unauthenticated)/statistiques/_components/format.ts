@@ -32,5 +32,6 @@ export function formatDay(iso: string): string {
 
 /** « une réduction de 15 % » ou, si l'objectif est une hausse, « une hausse de 4 % ». */
 export function describeReduction(median: number): string {
-  return median >= 0 ? `une réduction de ${formatDecimal(median)} %` : `une hausse de ${formatDecimal(-median)} %`
+  if (median === 0) return 'le maintien'
+  return median > 0 ? `une réduction de ${formatDecimal(median)} %` : `une hausse de ${formatDecimal(-median)} %`
 }

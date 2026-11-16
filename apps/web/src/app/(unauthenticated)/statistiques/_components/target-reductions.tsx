@@ -11,12 +11,14 @@ export function TargetReductions({ targetReductions }: { targetReductions: TPubl
   return (
     <ul className={styles.reductions}>
       {domains.map((reduction) => (
-        <li key={reduction.domain} className={styles.figure}>
-          <p className={styles.figureLabel}>{TARGET_REDUCTION_LABELS[reduction.domain]}</p>
-          <p className={styles.figureDetail}>
-            Objectif médian : {describeReduction(reduction.median)} du taux observé, sur {formatInteger(reduction.scenarios)}{' '}
-            {plural(reduction.scenarios, 'scénario exporté', 'scénarios exportés')}.
-          </p>
+        <li key={reduction.domain}>
+          <div className={styles.figure}>
+            <p className={styles.figureLabel}>{TARGET_REDUCTION_LABELS[reduction.domain]}</p>
+            <p className={styles.figureDetail}>
+              Objectif médian : {describeReduction(reduction.median)} du taux observé, sur {formatInteger(reduction.scenarios)}{' '}
+              {plural(reduction.scenarios, 'scénario exporté', 'scénarios exportés')}.
+            </p>
+          </div>
         </li>
       ))}
     </ul>
