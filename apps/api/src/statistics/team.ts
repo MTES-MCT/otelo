@@ -31,7 +31,9 @@ import { Role } from '~/generated/prisma/enums'
 export const IS_ROLE_USER = { role: Role.USER, excludedFromStatistics: false } as const
 
 /** Filtre Prisma sur un modèle qui porte une relation `user` facultative. */
-export const OWNER_IS_NOT_TEAM = { NOT: { user: { OR: [{ role: Role.ADMIN }, { excludedFromStatistics: true }] } } } as const
+export const OWNER_IS_NOT_TEAM: { NOT: { user: Prisma.UserWhereInput } } = {
+  NOT: { user: { OR: [{ role: Role.ADMIN }, { excludedFromStatistics: true }] } },
+}
 
 /**
  * Condition SQL sur une colonne portant un identifiant d'utilisateur.
