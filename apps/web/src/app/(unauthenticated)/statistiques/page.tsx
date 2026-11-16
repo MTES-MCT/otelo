@@ -93,8 +93,7 @@ function Statistics({ statistics }: { statistics: TPublicStatistics }) {
         <h2 id="map-title">Les territoires qui utilisent Otelo</h2>
         <p>
           {formatInteger(statistics.epcis.length)} {plural(statistics.epcis.length, 'EPCI a déjà été étudié', 'EPCI ont déjà été étudiés')}{' '}
-          avec Otelo, dont
-          {formatInteger(statistics.keyFigures.epcisWithExport)} avec au moins un scénario exporté.
+          avec Otelo, dont {formatInteger(statistics.keyFigures.epcisWithExport)} avec au moins un scénario exporté.
         </p>
         <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
           <div className={fr.cx('fr-col-12', 'fr-col-lg-8')}>

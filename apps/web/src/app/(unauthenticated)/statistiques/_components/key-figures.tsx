@@ -76,14 +76,16 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
       <li>
         <SurveyFigure />
       </li>
-      <li>
-        <Figure
-          value={`${formatInteger(engagedDepartments)} / ${formatInteger(totalDepartments)}`}
-          label="Départements où la DDT est engagée"
-        >
-          <p className={styles.figureDetail}>Départements d'au moins un EPCI sur lequel une DDT a lancé une simulation.</p>
-        </Figure>
-      </li>
+      {totalDepartments > 0 && (
+        <li>
+          <Figure
+            value={`${formatInteger(engagedDepartments)} / ${formatInteger(totalDepartments)}`}
+            label="Départements où la DDT est engagée"
+          >
+            <p className={styles.figureDetail}>Départements d'au moins un EPCI sur lequel une DDT a lancé une simulation.</p>
+          </Figure>
+        </li>
+      )}
     </ul>
   )
 }

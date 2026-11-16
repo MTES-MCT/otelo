@@ -22,9 +22,9 @@ export function Methodology() {
           l'objet d'au moins une simulation ne compte que les simulations non supprimées.
         </p>
         <p className="fr-mb-0">
-          Sur la carte et dans la liste, un EPCI « a exporté au moins un scénario » s'il figure dans un scénario exporté ; sinon, il « a
-          réalisé au moins une simulation » s'il figure dans une simulation non supprimée. Un EPCI absent du fond de carte reste présent
-          dans la liste.
+          La carte et la liste montrent tous les EPCI étudiés avec Otelo, utilisateurs ou non au sens ci-dessus. Un EPCI « a exporté au
+          moins un scénario » s'il figure dans un scénario exporté ; sinon, il « a réalisé au moins une simulation » s'il figure dans une
+          simulation non supprimée. Un EPCI absent du fond de carte reste présent dans la liste.
         </p>
       </Accordion>
       <Accordion label="Habitants couverts">
