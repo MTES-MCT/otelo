@@ -52,7 +52,10 @@ export async function seedReferenceData(prisma: PrismaService): Promise<void> {
   })
 }
 
-export async function createUser(prisma: PrismaService, overrides: { role?: Role; type?: UserType; engaged?: boolean } = {}) {
+export async function createUser(
+  prisma: PrismaService,
+  overrides: { role?: Role; type?: UserType; engaged?: boolean; excludedFromStatistics?: boolean } = {},
+) {
   return prisma.user.create({
     data: {
       email: `agent-${randomUUID()}@ddt71.gouv.fr`,
@@ -62,6 +65,7 @@ export async function createUser(prisma: PrismaService, overrides: { role?: Role
       role: overrides.role ?? Role.USER,
       type: overrides.type,
       engaged: overrides.engaged,
+      excludedFromStatistics: overrides.excludedFromStatistics,
     },
   })
 }
@@ -97,10 +101,13 @@ export async function createSimulation(
 }
 
 /** Export PowerPoint d'une simulation, une ligne comme en écrit une demande à un seul scénario. */
-export async function createExport(prisma: PrismaService, options: { simulationId: string; createdAt?: Date }) {
+export async function createExport(
+  prisma: PrismaService,
+  options: { simulationId: string; createdAt?: Date; type?: 'POWERPOINT' | 'EXCEL' },
+) {
   return prisma.export.create({
     data: {
-      type: 'POWERPOINT',
+      type: options.type ?? 'POWERPOINT',
       simulationId: options.simulationId,
       createdAt: options.createdAt,
       epciCodes: [],

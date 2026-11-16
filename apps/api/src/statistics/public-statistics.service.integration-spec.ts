@@ -150,6 +150,47 @@ describe('PublicStatisticsService (intégration)', () => {
     expect(s.targetReductions.every((row) => row.scenarios === 0)).toBe(true)
   })
 
+  it('export Excel seul : SIMULATED, ni couverture ni dossier ni réduction', async () => {
+    const user = await createUser(prisma)
+    const group = await createEpciGroup(prisma, user.id)
+    await prisma.epciGroup.update({ where: { id: group.id }, data: { planningDocumentType: 'PLH_PLUI' } })
+    const sim = await createSimulation(prisma, { userId: user.id, epciGroupId: group.id, name: 'Excel', epciCodes: [GRAND_CHALON.code] })
+    await createExport(prisma, { simulationId: sim.id, createdAt: NOW, type: 'EXCEL' })
+
+    const s = await service.getPublicStatistics(NOW)
+
+    expect(s.epcis).toEqual([territory(GRAND_CHALON, 'SIMULATED')])
+    expect(s.keyFigures).toMatchObject({ epcisWithSimulation: 1, epcisWithExport: 0, coveredPopulation: 0, planningDocuments: 0 })
+    expect(s.targetReductions.every((row) => row.scenarios === 0)).toBe(true)
+    expect(s.monthly.every((row) => row.exports === 0)).toBe(true)
+  })
+
+  it('compte exclu des statistiques : rien de compté, comme un compte de l’équipe', async () => {
+    const excluded = await createUser(prisma, { type: UserType.EPCI, engaged: true, excludedFromStatistics: true })
+    const group = await createEpciGroup(prisma, excluded.id)
+    await prisma.epciGroup.update({ where: { id: group.id }, data: { planningDocumentType: 'PLH_PLUI' } })
+    const sim = await createSimulation(prisma, {
+      userId: excluded.id,
+      epciGroupId: group.id,
+      name: 'Usage en masse',
+      epciCodes: [GRAND_CHALON.code, AUTUNOIS.code],
+    })
+    await createExport(prisma, { simulationId: sim.id, createdAt: NOW })
+    await prisma.simulation.update({ where: { id: sim.id }, data: { createdAt: NOW } })
+
+    const s = await service.getPublicStatistics(NOW)
+
+    expect(s.epcis).toEqual([])
+    expect(s.keyFigures).toMatchObject({
+      epcisWithSimulation: 0,
+      epcisWithExport: 0,
+      planningDocuments: 0,
+      engagedLocalAuthorityAccounts: 0,
+    })
+    expect(s.monthly.every((row) => row.simulations === 0 && row.exports === 0 && row.activeEpcis === 0)).toBe(true)
+    expect(s.targetReductions.every((row) => row.scenarios === 0)).toBe(true)
+  })
+
   it('collectivités utilisatrices : comptes de collectivités engagés, hors DDT et équipe', async () => {
     await createUser(prisma, { type: UserType.EPCI, engaged: true })
     await createUser(prisma, { type: UserType.Commune, engaged: true })
