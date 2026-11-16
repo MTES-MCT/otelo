@@ -3,7 +3,7 @@
 import { Table } from '@codegouvfr/react-dsfr/Table'
 import type { TPublicStatistics } from '@otelo/shared'
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { formatInteger, formatMonth } from '~/utils/format-statistics'
+import { formatInteger, formatMonth, plural } from '~/utils/format-statistics'
 import styles from '../statistiques.module.css'
 
 /** Dimension utilisée au rendu serveur, avant la mesure du conteneur. */
@@ -29,8 +29,9 @@ export function MonthlyChart({ monthly }: { monthly: TPublicStatistics['monthly'
           : "Simulations et demandes d'export par mois"}
       </figcaption>
       <p>
-        Sur la période, {formatInteger(totalSimulations)} simulations ont été créées et {formatInteger(totalExports)} demandes d'export
-        PowerPoint envoyées.
+        Sur la période, {formatInteger(totalSimulations)} {plural(totalSimulations, 'simulation a été créée', 'simulations ont été créées')}{' '}
+        et {formatInteger(totalExports)}{' '}
+        {plural(totalExports, "demande d'export PowerPoint envoyée", "demandes d'export PowerPoint envoyées")}.
       </p>
       <div className={styles.chart} aria-hidden="true">
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 800, height: CHART_HEIGHT }}>
