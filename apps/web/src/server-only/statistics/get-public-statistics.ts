@@ -8,13 +8,14 @@ export function toPublicStatisticsOrNull(payload: unknown): TPublicStatistics | 
 
 /**
  * Statistiques publiques, sans authentification, mises en cache une heure par Next.
- * Ne lève jamais : erreur réseau, statut non OK ou réponse invalide renvoient `null`,
- * et la page affiche alors un encart d'indisponibilité.
+ * Ne lève jamais : erreur réseau, délai de 5 secondes dépassé, statut non OK ou réponse
+ * invalide renvoient `null`, et la page affiche alors un encart d'indisponibilité.
  */
 export async function getPublicStatistics(): Promise<TPublicStatistics | null> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/api/statistics/public`, {
       next: { revalidate: 3600, tags: ['public-statistics'] },
+      signal: AbortSignal.timeout(5000),
     })
     if (!res.ok) {
       console.error(`Statistiques publiques indisponibles (${res.status})`)
