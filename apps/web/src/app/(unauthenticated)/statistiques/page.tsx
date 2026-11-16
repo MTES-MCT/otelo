@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import { getPublicStatistics } from '~/server-only/statistics/get-public-statistics'
 import { formatInteger, plural } from '~/utils/format-statistics'
 import { EpciList } from './_components/epci-list'
-import { describeReduction, EPCI_STATUS_COLORS, EPCI_STATUS_LABELS, formatDay } from './_components/format'
+import { describeReduction, EPCI_NOT_STUDIED_LABEL, EPCI_STATUS_COLORS, EPCI_STATUS_LABELS, formatDay } from './_components/format'
 import { KeyFigures, SurveyFigure } from './_components/key-figures'
 import { Methodology } from './_components/methodology'
 import { MonthlyChart } from './_components/monthly-chart'
@@ -17,7 +17,7 @@ import styles from './statistiques.module.css'
 
 export const metadata: Metadata = {
   title: "Statistiques de l'application Otelo",
-  description: "Usage d'Otelo par les territoires : EPCI utilisateurs, population couverte, documents d'urbanisme et DDT engagées.",
+  description: "Usage d'Otelo par les territoires : EPCI couverts, population couverte, documents d'urbanisme et DDT engagées.",
 }
 
 // Rendu à la requête : les données sont mises en cache une heure, rien n'est figé au build.
@@ -48,13 +48,16 @@ function HeadlineSentence({ targetReductions }: { targetReductions: TPublicStati
   )
 }
 
+/** Minuscule initiale seulement : « Pas encore étudié avec Otelo » garde la majuscule d'Otelo. */
+const lowerFirst = (label: string) => label.charAt(0).toLowerCase() + label.slice(1)
+
 function MapLegend({ epcis }: { epcis: TPublicStatistics['epcis'] }) {
   const exported = epcis.filter((epci) => epci.status === 'EXPORTED').length
   const simulated = epcis.length - exported
   const items = [
-    { color: EPCI_STATUS_COLORS.EXPORTED.fill, label: `Bleu foncé : ${EPCI_STATUS_LABELS.EXPORTED.toLowerCase()}`, count: exported },
-    { color: EPCI_STATUS_COLORS.SIMULATED.fill, label: `Bleu clair : ${EPCI_STATUS_LABELS.SIMULATED.toLowerCase()}`, count: simulated },
-    { color: '#CCCCCC', label: "Gris : n'utilise pas encore Otelo", count: null },
+    { color: EPCI_STATUS_COLORS.EXPORTED.fill, label: `Bleu foncé : ${lowerFirst(EPCI_STATUS_LABELS.EXPORTED)}`, count: exported },
+    { color: EPCI_STATUS_COLORS.SIMULATED.fill, label: `Bleu clair : ${lowerFirst(EPCI_STATUS_LABELS.SIMULATED)}`, count: simulated },
+    { color: '#CCCCCC', label: `Gris : ${lowerFirst(EPCI_NOT_STUDIED_LABEL)}`, count: null },
   ]
   return (
     <div>
@@ -91,10 +94,11 @@ function Statistics({ statistics }: { statistics: TPublicStatistics }) {
       </section>
 
       <section className={fr.cx('fr-mb-8v')} aria-labelledby="map-title">
-        <h2 id="map-title">Les territoires qui utilisent Otelo</h2>
+        <h2 id="map-title">Les territoires étudiés avec Otelo</h2>
         <p>
           {formatInteger(statistics.epcis.length)} {plural(statistics.epcis.length, 'EPCI a déjà été étudié', 'EPCI ont déjà été étudiés')}{' '}
-          avec Otelo, dont {formatInteger(statistics.keyFigures.epcisWithExport)} avec au moins un scénario exporté.
+          avec Otelo, dont {formatInteger(statistics.keyFigures.epcisWithExport)}{' '}
+          {plural(statistics.keyFigures.epcisWithExport, 'couvert', 'couverts')} par un scénario Otelo exporté.
         </p>
         <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
           <div className={fr.cx('fr-col-12', 'fr-col-lg-8')}>

@@ -1,9 +1,12 @@
 import type { TPublicEpciStatus, TPublicPlanningDocumentType } from '@otelo/shared'
 
 export const EPCI_STATUS_LABELS: Record<TPublicEpciStatus, string> = {
-  EXPORTED: 'A exporté au moins un scénario',
-  SIMULATED: 'A réalisé au moins une simulation',
+  EXPORTED: 'Scénario exporté',
+  SIMULATED: 'Étudié dans une simulation',
 }
+
+/** Statut d'un EPCI absent des statistiques. */
+export const EPCI_NOT_STUDIED_LABEL = 'Pas encore étudié avec Otelo'
 
 export const EPCI_STATUS_COLORS: Record<TPublicEpciStatus, { fill: string; stroke: string; opacity: number }> = {
   EXPORTED: { fill: '#000091', stroke: '#00006B', opacity: 0.75 },

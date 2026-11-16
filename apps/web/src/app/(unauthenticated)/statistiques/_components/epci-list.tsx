@@ -12,7 +12,7 @@ export function EpciList({ epcis }: { epcis: TPublicStatistics['epcis'] }) {
   return (
     <details className={styles.disclosure}>
       <summary className="fr-link">
-        Voir la liste des EPCI utilisateurs ({formatInteger(epcis.length)} étudiés, dont {formatInteger(exported)} avec un scénario exporté)
+        Voir la liste des EPCI couverts ({formatInteger(epcis.length)} étudiés, dont {formatInteger(exported)} avec un scénario exporté)
       </summary>
       <Table
         className="fr-mt-2w"

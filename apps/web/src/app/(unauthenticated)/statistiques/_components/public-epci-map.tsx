@@ -3,7 +3,7 @@
 import type { TPublicStatistics } from '@otelo/shared'
 import { useMemo } from 'react'
 import { EpciMap, type EpciMapProps } from '~/components/map/epci-map'
-import { EPCI_STATUS_COLORS, EPCI_STATUS_LABELS } from './format'
+import { EPCI_NOT_STUDIED_LABEL, EPCI_STATUS_COLORS, EPCI_STATUS_LABELS } from './format'
 
 export type PublicEpciMapProps = {
   epcis: TPublicStatistics['epcis']
@@ -69,7 +69,7 @@ export function PublicEpciMap({ epcis }: PublicEpciMapProps) {
           </>
         )}
         <br />
-        <span className="fr-text--xs">{epci ? EPCI_STATUS_LABELS[epci.status] : "N'utilise pas encore Otelo"}</span>
+        <span className="fr-text--xs">{epci ? EPCI_STATUS_LABELS[epci.status] : EPCI_NOT_STUDIED_LABEL}</span>
       </>
     )
   }

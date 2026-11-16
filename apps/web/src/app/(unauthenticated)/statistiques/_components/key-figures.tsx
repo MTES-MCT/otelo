@@ -47,9 +47,12 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
   return (
     <ul className={styles.figures}>
       <li>
-        <Figure value={formatInteger(epcisWithExport)} label={plural(epcisWithExport, 'EPCI utilisateur', 'EPCI utilisateurs')}>
+        <Figure
+          value={formatInteger(epcisWithExport)}
+          label={plural(epcisWithExport, 'EPCI couvert par un scénario Otelo', 'EPCI couverts par un scénario Otelo')}
+        >
           <p className={styles.figureDetail}>
-            Couverts par au moins un scénario exporté. {formatInteger(epcisWithSimulation)}{' '}
+            Présents dans au moins un scénario exporté, quel qu'en soit l'auteur. {formatInteger(epcisWithSimulation)}{' '}
             {plural(epcisWithSimulation, 'EPCI a', 'EPCI ont')} fait l'objet d'au moins une simulation.
           </p>
         </Figure>

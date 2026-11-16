@@ -16,21 +16,22 @@ export function Methodology() {
           mensuelle. Les chiffres affichés datent d'une heure au plus.
         </p>
       </Accordion>
-      <Accordion label="EPCI utilisateurs">
+      <Accordion label="EPCI couverts par un scénario Otelo">
         <p>
-          Un EPCI est utilisateur dès qu'il figure dans au moins un scénario exporté (PowerPoint ou Excel). Le nombre d'EPCI ayant fait
-          l'objet d'au moins une simulation ne compte que les simulations non supprimées.
+          Un EPCI est couvert dès qu'il figure dans au moins un scénario exporté (PowerPoint ou Excel), quel qu'en soit l'auteur : c'est
+          souvent la DDT, qui étudie l'ensemble des EPCI de son département. Être couvert ne signifie donc pas que l'EPCI utilise lui-même
+          Otelo. Le nombre d'EPCI ayant fait l'objet d'au moins une simulation ne compte que les simulations non supprimées.
         </p>
         <p className="fr-mb-0">
-          La carte et la liste montrent tous les EPCI étudiés avec Otelo, utilisateurs ou non au sens ci-dessus. Un EPCI « a exporté au
-          moins un scénario » s'il figure dans un scénario exporté ; sinon, il « a réalisé au moins une simulation » s'il figure dans une
-          simulation non supprimée. Un EPCI absent du fond de carte reste présent dans la liste.
+          La carte et la liste montrent tous les EPCI étudiés avec Otelo, couverts ou non au sens ci-dessus. Un EPCI a le statut « scénario
+          exporté » s'il figure dans un scénario exporté ; sinon, il est « étudié dans une simulation » s'il figure dans une simulation non
+          supprimée. Un EPCI absent du fond de carte reste présent dans la liste.
         </p>
       </Accordion>
       <Accordion label="Habitants couverts">
         <p className="fr-mb-0">
-          Population du dernier recensement disponible des EPCI utilisateurs. La part est rapportée à la population de l'ensemble des EPCI
-          de France.
+          Population du dernier recensement disponible des EPCI couverts par un scénario Otelo. La part est rapportée à la population de
+          l'ensemble des EPCI de France.
         </p>
       </Accordion>
       <Accordion label="Dossiers d'études pour un document d'urbanisme">

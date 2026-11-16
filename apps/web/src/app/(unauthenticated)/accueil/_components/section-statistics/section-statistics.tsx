@@ -33,7 +33,9 @@ export async function SectionStatistics() {
             <div className={fr.cx('fr-col-12', 'fr-col-lg-6')}>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>{formatInteger(epcisWithExport)}</div>
-                <p className={styles.statDescription}>{plural(epcisWithExport, 'EPCI utilisateur', 'EPCI utilisateurs')}</p>
+                <p className={styles.statDescription}>
+                  {plural(epcisWithExport, 'EPCI couvert par un scénario Otelo', 'EPCI couverts par un scénario Otelo')}
+                </p>
               </div>
             </div>
           )}
