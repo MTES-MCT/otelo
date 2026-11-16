@@ -3,7 +3,7 @@ import { SURVEY_INFLUENCED_DOCUMENTS } from '~/constants/survey-statistics'
 import { formatMonth } from '~/utils/format-statistics'
 
 const COMMON =
-  "Les comptes de l'équipe Otelo sont exclus de tous les indicateurs. Un scénario exporté puis supprimé reste compté : l'export a eu lieu."
+  "Les comptes de l'équipe Otelo, et ceux écartés pour un usage en masse ou de démonstration, sont exclus de tous les indicateurs. Un scénario est dit exporté lorsqu'il a fait l'objet d'un export PowerPoint, le document de restitution destiné à la concertation ; les exports Excel ne sont pas comptés. Un scénario exporté puis supprimé reste compté : l'export a eu lieu."
 
 /** Définition de chaque indicateur de la page. */
 export function Methodology() {
@@ -22,22 +22,22 @@ export function Methodology() {
           collectivité peut avoir plusieurs comptes. Les comptes des DDT, des agences et des bureaux d'études ne sont pas comptés.
         </p>
       </Accordion>
-      <Accordion label="EPCI couverts par un scénario Otelo">
+      <Accordion label="EPCI étudiés et EPCI couverts">
         <p>
-          Un EPCI est couvert dès qu'il figure dans au moins un scénario exporté (PowerPoint ou Excel), quel qu'en soit l'auteur : c'est
-          souvent la DDT, qui étudie l'ensemble des EPCI de son département. Être couvert ne signifie donc pas que l'EPCI utilise lui-même
-          Otelo. Le nombre d'EPCI ayant fait l'objet d'au moins une simulation ne compte que les simulations non supprimées.
+          Un EPCI est étudié dès qu'il figure dans une simulation non supprimée, et couvert dès qu'il figure dans au moins un scénario
+          exporté en PowerPoint, quel qu'en soit l'auteur : c'est souvent la DDT, qui étudie l'ensemble des EPCI de son département. Être
+          étudié ou couvert ne signifie donc pas que l'EPCI utilise lui-même Otelo.
         </p>
         <p className="fr-mb-0">
           La carte et la liste montrent tous les EPCI étudiés avec Otelo, couverts ou non au sens ci-dessus. Un EPCI a le statut « scénario
-          exporté » s'il figure dans un scénario exporté ; sinon, il est « étudié dans une simulation » s'il figure dans une simulation non
-          supprimée. Un EPCI absent du fond de carte reste présent dans la liste.
+          exporté en PowerPoint » s'il figure dans un scénario exporté ; sinon, il est « étudié dans une simulation » s'il figure dans une
+          simulation non supprimée. Un EPCI absent du fond de carte reste présent dans la liste.
         </p>
       </Accordion>
       <Accordion label="Habitants couverts">
         <p className="fr-mb-0">
-          Population du dernier recensement disponible des EPCI couverts par un scénario Otelo. La part est rapportée à la population de
-          l'ensemble des EPCI de France.
+          Population du dernier recensement disponible des EPCI couverts par un scénario exporté en PowerPoint. La part est rapportée à la
+          population de l'ensemble des EPCI de France.
         </p>
       </Accordion>
       <Accordion label="Dossiers d'études pour un document d'urbanisme">

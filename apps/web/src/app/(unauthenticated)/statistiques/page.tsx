@@ -43,8 +43,8 @@ function HeadlineSentence({ targetReductions }: { targetReductions: TPublicStati
   if (!vacancy || vacancy.median === null) return null
   return (
     <p className={styles.headline}>
-      Dans les scénarios exportés, les territoires visent en médiane {describeReduction(vacancy.median)} du taux de vacance de longue durée
-      ({formatInteger(vacancy.scenarios)} {plural(vacancy.scenarios, 'scénario', 'scénarios')}).
+      Dans les scénarios exportés en PowerPoint, les territoires visent en médiane {describeReduction(vacancy.median)} du taux de vacance de
+      longue durée ({formatInteger(vacancy.scenarios)} {plural(vacancy.scenarios, 'scénario', 'scénarios')}).
     </p>
   )
 }
@@ -99,7 +99,7 @@ function Statistics({ statistics }: { statistics: TPublicStatistics }) {
         <p>
           {formatInteger(statistics.epcis.length)} {plural(statistics.epcis.length, 'EPCI a déjà été étudié', 'EPCI ont déjà été étudiés')}{' '}
           avec Otelo, dont {formatInteger(statistics.keyFigures.epcisWithExport)}{' '}
-          {plural(statistics.keyFigures.epcisWithExport, 'couvert', 'couverts')} par un scénario Otelo exporté.
+          {plural(statistics.keyFigures.epcisWithExport, 'couvert', 'couverts')} par un scénario exporté en PowerPoint.
         </p>
         <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
           <div className={fr.cx('fr-col-12', 'fr-col-lg-8')}>
@@ -127,7 +127,7 @@ function Statistics({ statistics }: { statistics: TPublicStatistics }) {
       {statistics.targetReductions.some((reduction) => reduction.median !== null) && (
         <section className={fr.cx('fr-mb-8v')} aria-labelledby="reductions-title">
           <h2 id="reductions-title">Des leviers au-delà de la construction neuve</h2>
-          <p>Objectifs fixés par les territoires dans leurs scénarios exportés, en écart au taux observé.</p>
+          <p>Objectifs fixés par les territoires dans leurs scénarios exportés en PowerPoint, en écart au taux observé.</p>
           <TargetReductions targetReductions={statistics.targetReductions} />
         </section>
       )}

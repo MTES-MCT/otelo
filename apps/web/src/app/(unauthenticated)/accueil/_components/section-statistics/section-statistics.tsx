@@ -55,11 +55,7 @@ export async function SectionStatistics() {
                 singular="collectivité utilisatrice"
                 pluralForm="collectivités utilisatrices"
               />
-              <StatItem
-                value={keyFigures.epcisWithExport}
-                singular="EPCI couvert par un scénario Otelo"
-                pluralForm="EPCI couverts par un scénario Otelo"
-              />
+              <StatItem value={keyFigures.epcisWithSimulation} singular="EPCI étudié avec Otelo" pluralForm="EPCI étudiés avec Otelo" />
             </>
           )}
         </div>

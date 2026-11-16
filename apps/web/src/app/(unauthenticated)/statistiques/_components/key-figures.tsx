@@ -57,12 +57,12 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
       </li>
       <li>
         <Figure
-          value={formatInteger(epcisWithExport)}
-          label={plural(epcisWithExport, 'EPCI couvert par un scénario Otelo', 'EPCI couverts par un scénario Otelo')}
+          value={formatInteger(epcisWithSimulation)}
+          label={plural(epcisWithSimulation, 'EPCI étudié avec Otelo', 'EPCI étudiés avec Otelo')}
         >
           <p className={styles.figureDetail}>
-            Présents dans au moins un scénario exporté, quel qu'en soit l'auteur. {formatInteger(epcisWithSimulation)}{' '}
-            {plural(epcisWithSimulation, 'EPCI a', 'EPCI ont')} fait l'objet d'au moins une simulation.
+            Présents dans au moins une simulation, quel qu'en soit l'auteur, dont {formatInteger(epcisWithExport)}{' '}
+            {plural(epcisWithExport, 'couvert', 'couverts')} par un scénario exporté en PowerPoint.
           </p>
         </Figure>
       </li>
@@ -70,7 +70,8 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
         <Figure value={formatPopulation(coveredPopulation)} label="Habitants couverts">
           <p className={styles.figureDetail}>
             {formatInteger(coveredPopulation)} {plural(coveredPopulation, 'habitant', 'habitants')}, soit{' '}
-            {formatDecimal(coveredPopulationShare)} % de la population des EPCI de France, dans les EPCI couverts par un scénario exporté.
+            {formatDecimal(coveredPopulationShare)} % de la population des EPCI de France, dans les EPCI couverts par un scénario exporté en
+            PowerPoint.
           </p>
         </Figure>
       </li>
@@ -83,7 +84,9 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
             "Dossiers d'études pour un document d'urbanisme",
           )}
         >
-          <p className={styles.figureDetail}>PLH, PLUi-H, SCoT ou autre document déclaré, avec au moins un scénario exporté.</p>
+          <p className={styles.figureDetail}>
+            PLH, PLUi-H, SCoT ou autre document déclaré, avec au moins un scénario exporté en PowerPoint.
+          </p>
         </Figure>
       </li>
       <li>

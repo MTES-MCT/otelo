@@ -1,7 +1,7 @@
 import type { TPublicEpciStatus, TPublicPlanningDocumentType } from '@otelo/shared'
 
 export const EPCI_STATUS_LABELS: Record<TPublicEpciStatus, string> = {
-  EXPORTED: 'Scénario exporté',
+  EXPORTED: 'Scénario exporté en PowerPoint',
   SIMULATED: 'Étudié dans une simulation',
 }
 
