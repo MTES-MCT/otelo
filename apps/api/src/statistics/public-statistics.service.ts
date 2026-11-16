@@ -73,6 +73,8 @@ export class PublicStatisticsService {
         epcisWithExport: epcis.filter((epci) => epci.status === 'EXPORTED').length,
         coveredPopulation: coverage.covered,
         coveredPopulationShare: percentage(coverage.covered, coverage.total),
+        studiedPopulation: coverage.studied,
+        studiedPopulationShare: percentage(coverage.studied, coverage.total),
         planningDocuments: planningDocuments.reduce((sum, row) => sum + row.count, 0),
         engagedDepartments: departments.engaged,
         totalDepartments: departments.total,
@@ -117,17 +119,23 @@ export class PublicStatisticsService {
     }))
   }
 
-  /** Population des EPCI ayant un export, rapportée à celle de l'ensemble des EPCI. */
+  /** Population des EPCI couverts (export PowerPoint) et des EPCI étudiés, rapportées à celle de l'ensemble des EPCI. */
   private async getCoverage(exported: Prisma.Sql) {
-    const [row] = await this.prisma.$queryRaw<Array<{ covered: number | null; total: number | null }>>`
+    const [row] = await this.prisma.$queryRaw<Array<{ covered: number | null; studied: number | null; total: number | null }>>`
       WITH population AS (${LATEST_POPULATION}),
-      exported_epcis AS (${epcisOf(exported)})
+      exported_epcis AS (${epcisOf(exported)}),
+      studied_epcis AS (${epcisOf(ACTIVE_SIMULATIONS)})
       SELECT
         (SELECT SUM(p.population) FROM exported_epcis ee INNER JOIN population p ON p.epci_code = ee.epci_code) AS covered,
+        (SELECT SUM(p.population) FROM studied_epcis se INNER JOIN population p ON p.epci_code = se.epci_code) AS studied,
         (SELECT SUM(p.population) FROM epcis ep INNER JOIN population p ON p.epci_code = ep.code) AS total
     `
 
-    return { covered: Math.round(toNumber(row?.covered)), total: toNumber(row?.total) }
+    return {
+      covered: Math.round(toNumber(row?.covered)),
+      studied: Math.round(toNumber(row?.studied)),
+      total: toNumber(row?.total),
+    }
   }
 
   /** Dossiers déclarant un document d'urbanisme et ayant au moins un scénario exporté. */

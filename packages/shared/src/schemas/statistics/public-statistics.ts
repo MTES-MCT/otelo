@@ -18,9 +18,14 @@ export const ZPublicStatistics = z.strictObject({
   keyFigures: z.strictObject({
     epcisWithSimulation: z.number(),
     epcisWithExport: z.number(),
+    /** Population des EPCI couverts par un scénario exporté en PowerPoint. */
     coveredPopulation: z.number(),
     /** Part de la population couverte, de 0 à 100, avec une décimale. */
     coveredPopulationShare: z.number(),
+    /** Population des EPCI étudiés (présents dans une simulation non supprimée). */
+    studiedPopulation: z.number(),
+    /** Part de la population étudiée, de 0 à 100, avec une décimale. */
+    studiedPopulationShare: z.number(),
     planningDocuments: z.number(),
     engagedDepartments: z.number(),
     totalDepartments: z.number(),

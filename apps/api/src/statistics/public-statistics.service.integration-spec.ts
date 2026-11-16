@@ -70,6 +70,8 @@ describe('PublicStatisticsService (intégration)', () => {
       epcisWithExport: 0,
       coveredPopulation: 0,
       coveredPopulationShare: 0,
+      studiedPopulation: 0,
+      studiedPopulationShare: 0,
       planningDocuments: 0,
       engagedDepartments: 0,
       totalDepartments: 1,
@@ -101,6 +103,8 @@ describe('PublicStatisticsService (intégration)', () => {
       epcisWithExport: 1,
       coveredPopulation: 110000,
       coveredPopulationShare: 75.9,
+      studiedPopulation: 145000,
+      studiedPopulationShare: 100,
       engagedDepartments: 1,
     })
   })
@@ -139,6 +143,8 @@ describe('PublicStatisticsService (intégration)', () => {
       epcisWithExport: 0,
       coveredPopulation: 0,
       coveredPopulationShare: 0,
+      studiedPopulation: 0,
+      studiedPopulationShare: 0,
       planningDocuments: 0,
       engagedDepartments: 0,
       totalDepartments: 1,
@@ -160,7 +166,14 @@ describe('PublicStatisticsService (intégration)', () => {
     const s = await service.getPublicStatistics(NOW)
 
     expect(s.epcis).toEqual([territory(GRAND_CHALON, 'SIMULATED')])
-    expect(s.keyFigures).toMatchObject({ epcisWithSimulation: 1, epcisWithExport: 0, coveredPopulation: 0, planningDocuments: 0 })
+    expect(s.keyFigures).toMatchObject({
+      epcisWithSimulation: 1,
+      epcisWithExport: 0,
+      coveredPopulation: 0,
+      studiedPopulation: 110000,
+      studiedPopulationShare: 75.9,
+      planningDocuments: 0,
+    })
     expect(s.targetReductions.every((row) => row.scenarios === 0)).toBe(true)
     expect(s.monthly.every((row) => row.exports === 0)).toBe(true)
   })
