@@ -3,7 +3,7 @@ import classNames from 'classnames'
 import Link from 'next/link'
 import { SURVEY_INFLUENCED_DOCUMENTS } from '~/constants/survey-statistics'
 import { getPublicStatistics } from '~/server-only/statistics/get-public-statistics'
-import { formatInteger, plural } from '~/utils/format-statistics'
+import { formatInteger, formatMonth, plural } from '~/utils/format-statistics'
 import styles from './section-statistics.module.css'
 
 type StatItemProps = {
@@ -42,7 +42,7 @@ export async function SectionStatistics() {
                 <strong>
                   {plural(SURVEY_INFLUENCED_DOCUMENTS.value, "document d'urbanisme influencé", "documents d'urbanisme influencés")}
                 </strong>{' '}
-                depuis le 1er janvier 2025
+                depuis {formatMonth(SURVEY_INFLUENCED_DOCUMENTS.since)}
               </p>
               <p className={styles.statDescription}>({SURVEY_INFLUENCED_DOCUMENTS.source})</p>
             </div>
