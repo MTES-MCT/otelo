@@ -53,7 +53,8 @@ export class PublicStatisticsService {
   ) {}
 
   async getPublicStatistics(now: Date = new Date()): Promise<TPublicStatistics> {
-    const exported = simulationsExportedIn(ALL_TIME)
+    // « Exporté » s'entend d'un PowerPoint, comme la courbe mensuelle des demandes d'export.
+    const exported = simulationsExportedIn(ALL_TIME, { powerpointOnly: true })
 
     const [epcis, coverage, planningDocuments, departments, targetReductions, monthly, engagedLocalAuthorityAccounts] = await Promise.all([
       this.getEpcis(exported),
