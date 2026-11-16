@@ -13,7 +13,7 @@ export function Methodology() {
         <p>{COMMON}</p>
         <p className="fr-mb-0">
           Les chiffres sont calculés à partir de la base de données d'Otelo, en cumul depuis le lancement de l'application, sauf l'évolution
-          mensuelle. Les chiffres affichés datent d'une heure au plus.
+          mensuelle. Les chiffres sont rafraîchis toutes les heures ; la date de mise à jour figure en haut de page.
         </p>
       </Accordion>
       <Accordion label="Collectivités utilisatrices">
@@ -44,6 +44,7 @@ export function Methodology() {
         <p className="fr-mb-0">
           Dossiers d'études dont l'utilisateur a déclaré qu'ils servent à un PLH ou PLUi-H, un SCoT ou un autre document d'urbanisme, et
           dont au moins un scénario a été exporté. Les dossiers déclarés hors document d'urbanisme ou sans réponse ne sont pas comptés.
+          Comme un scénario, un dossier supprimé après un export reste compté.
         </p>
       </Accordion>
       <Accordion label="Documents d'urbanisme influencés">
@@ -56,7 +57,8 @@ export function Methodology() {
       <Accordion label="Départements où la DDT est engagée">
         <p className="fr-mb-0">
           Départements d'au moins un EPCI figurant dans une simulation non supprimée créée par un agent de DDT. Une DDT inscrite sans avoir
-          lancé de simulation n'est pas comptée. Le total correspond aux départements du référentiel des EPCI.
+          lancé de simulation n'est pas comptée. Le total correspond aux départements du référentiel des EPCI ; quand les départements ne
+          sont pas connus, l'indicateur n'est pas affiché.
         </p>
       </Accordion>
       <Accordion label="Évolution mensuelle">
