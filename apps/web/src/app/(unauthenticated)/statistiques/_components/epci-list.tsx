@@ -1,7 +1,8 @@
 import { Table } from '@codegouvfr/react-dsfr/Table'
 import type { TPublicStatistics } from '@otelo/shared'
+import { formatInteger } from '~/utils/format-statistics'
 import styles from '../statistiques.module.css'
-import { EPCI_STATUS_LABELS, formatInteger } from './format'
+import { EPCI_STATUS_LABELS } from './format'
 
 /** Alternative textuelle à la carte : tous les EPCI étudiés, y compris ceux absents du fond de carte. */
 export function EpciList({ epcis }: { epcis: TPublicStatistics['epcis'] }) {

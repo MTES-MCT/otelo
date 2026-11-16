@@ -1,8 +1,9 @@
 import type { TPublicStatistics } from '@otelo/shared'
 import type { ReactNode } from 'react'
 import { SURVEY_INFLUENCED_DOCUMENTS } from '~/constants/survey-statistics'
+import { formatInteger, formatMonth, plural } from '~/utils/format-statistics'
 import styles from '../statistiques.module.css'
-import { formatDecimal, formatInteger, formatMonth, plural } from './format'
+import { formatDecimal } from './format'
 
 type FigureProps = {
   value: string

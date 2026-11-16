@@ -1,6 +1,6 @@
 import { Accordion } from '@codegouvfr/react-dsfr/Accordion'
 import { SURVEY_INFLUENCED_DOCUMENTS } from '~/constants/survey-statistics'
-import { formatMonth } from './format'
+import { formatMonth } from '~/utils/format-statistics'
 
 const COMMON =
   "Les comptes de l'équipe Otelo sont exclus de tous les indicateurs. Un scénario exporté puis supprimé reste compté : l'export a eu lieu."

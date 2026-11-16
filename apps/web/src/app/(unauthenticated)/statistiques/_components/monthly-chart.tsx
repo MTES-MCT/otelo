@@ -3,8 +3,8 @@
 import { Table } from '@codegouvfr/react-dsfr/Table'
 import type { TPublicStatistics } from '@otelo/shared'
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { formatInteger, formatMonth } from '~/utils/format-statistics'
 import styles from '../statistiques.module.css'
-import { formatInteger, formatMonth } from './format'
 
 /** Dimension utilisée au rendu serveur, avant la mesure du conteneur. */
 const CHART_HEIGHT = 360

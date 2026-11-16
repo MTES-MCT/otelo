@@ -3,7 +3,7 @@ import classNames from 'classnames'
 import Link from 'next/link'
 import { SURVEY_INFLUENCED_DOCUMENTS } from '~/constants/survey-statistics'
 import { getPublicStatistics } from '~/server-only/statistics/get-public-statistics'
-import { formatInteger, plural } from '../../../statistiques/_components/format'
+import { formatInteger, plural } from '~/utils/format-statistics'
 import styles from './section-statistics.module.css'
 
 export async function SectionStatistics() {

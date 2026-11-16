@@ -1,6 +1,7 @@
 import { TARGET_REDUCTION_LABELS, type TPublicStatistics } from '@otelo/shared'
+import { formatInteger, plural } from '~/utils/format-statistics'
 import styles from '../statistiques.module.css'
-import { describeReduction, formatInteger, plural } from './format'
+import { describeReduction } from './format'
 
 /** Objectifs fixés hors construction neuve : un domaine n'apparaît que si sa médiane est calculable. */
 export function TargetReductions({ targetReductions }: { targetReductions: TPublicStatistics['targetReductions'] }) {
