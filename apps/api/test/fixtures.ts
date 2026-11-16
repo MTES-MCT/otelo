@@ -52,7 +52,7 @@ export async function seedReferenceData(prisma: PrismaService): Promise<void> {
   })
 }
 
-export async function createUser(prisma: PrismaService, overrides: { role?: Role; type?: UserType } = {}) {
+export async function createUser(prisma: PrismaService, overrides: { role?: Role; type?: UserType; engaged?: boolean } = {}) {
   return prisma.user.create({
     data: {
       email: `agent-${randomUUID()}@ddt71.gouv.fr`,
@@ -61,6 +61,7 @@ export async function createUser(prisma: PrismaService, overrides: { role?: Role
       lastname: 'Martin',
       role: overrides.role ?? Role.USER,
       type: overrides.type,
+      engaged: overrides.engaged,
     },
   })
 }

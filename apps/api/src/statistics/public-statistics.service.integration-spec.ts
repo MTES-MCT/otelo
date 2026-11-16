@@ -73,6 +73,7 @@ describe('PublicStatisticsService (intégration)', () => {
       planningDocuments: 0,
       engagedDepartments: 0,
       totalDepartments: 1,
+      engagedLocalAuthorityAccounts: 0,
     })
     expect(s.epcis).toEqual([])
     expect(s.monthly).toHaveLength(24)
@@ -141,11 +142,27 @@ describe('PublicStatisticsService (intégration)', () => {
       planningDocuments: 0,
       engagedDepartments: 0,
       totalDepartments: 1,
+      engagedLocalAuthorityAccounts: 0,
     })
     expect(s.epcis).toEqual([])
     expect(s.planningDocumentsByType.every((row) => row.count === 0)).toBe(true)
     expect(s.monthly.every((row) => row.simulations === 0 && row.exports === 0 && row.activeEpcis === 0)).toBe(true)
     expect(s.targetReductions.every((row) => row.scenarios === 0)).toBe(true)
+  })
+
+  it('collectivités utilisatrices : comptes de collectivités engagés, hors DDT et équipe', async () => {
+    await createUser(prisma, { type: UserType.EPCI, engaged: true })
+    await createUser(prisma, { type: UserType.Commune, engaged: true })
+    await createUser(prisma, { type: UserType.Collectivite, engaged: true })
+    await createUser(prisma, { type: UserType.SCOTPETR, engaged: true })
+    await createUser(prisma, { type: UserType.EPCI, engaged: false })
+    await createUser(prisma, { type: UserType.DDT, engaged: true })
+    await createUser(prisma, { type: UserType.BureauEtudes, engaged: true })
+    await createUser(prisma, { role: Role.ADMIN, type: UserType.EPCI, engaged: true })
+
+    const s = await service.getPublicStatistics(NOW)
+
+    expect(s.keyFigures.engagedLocalAuthorityAccounts).toBe(4)
   })
 
   it('dossier PLH_PLUI avec export compté, dossier SCOT sans export non compté', async () => {

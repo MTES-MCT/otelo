@@ -2,13 +2,17 @@ import { Injectable } from '@nestjs/common'
 import { PUBLIC_PLANNING_DOCUMENT_TYPES, type TPublicEpciStatus, type TPublicStatistics, ZPublicStatistics } from '@otelo/shared'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'
+import { UserType } from '~/generated/prisma/enums'
 import { ImpactStatisticsService } from './impact-statistics.service'
 import { percentage, toNumber } from './statistics-numbers'
 import { ALL_TIME, LATEST_POPULATION, simulationsExportedIn } from './statistics-sql'
-import { ownerIsNotTeam } from './team'
+import { IS_ROLE_USER, ownerIsNotTeam } from './team'
 
 /** Nombre de mois de la série d'activité, mois courant compris. */
 const MONTHLY_WINDOW = 24
+
+/** Types de comptes comptés comme collectivités : hors DDT, agences, bureaux d'études et autres. */
+const LOCAL_AUTHORITY_TYPES = [UserType.EPCI, UserType.Collectivite, UserType.Commune, UserType.SCOTPETR]
 
 /** Simulations en cours, hors équipe : ce qui fait le statut `SIMULATED`. */
 const ACTIVE_SIMULATIONS = Prisma.sql`
@@ -51,13 +55,14 @@ export class PublicStatisticsService {
   async getPublicStatistics(now: Date = new Date()): Promise<TPublicStatistics> {
     const exported = simulationsExportedIn(ALL_TIME)
 
-    const [epcis, coverage, planningDocuments, departments, targetReductions, monthly] = await Promise.all([
+    const [epcis, coverage, planningDocuments, departments, targetReductions, monthly, engagedLocalAuthorityAccounts] = await Promise.all([
       this.getEpcis(exported),
       this.getCoverage(exported),
       this.getPlanningDocuments(exported),
       this.getDepartments(),
       this.impactStatistics.getTargetReductions(exported),
       this.getMonthly(now),
+      this.getEngagedLocalAuthorityAccounts(),
     ])
 
     return ZPublicStatistics.parse({
@@ -70,6 +75,7 @@ export class PublicStatisticsService {
         planningDocuments: planningDocuments.reduce((sum, row) => sum + row.count, 0),
         engagedDepartments: departments.engaged,
         totalDepartments: departments.total,
+        engagedLocalAuthorityAccounts,
       },
       targetReductions,
       planningDocumentsByType: planningDocuments,
@@ -156,6 +162,16 @@ export class PublicStatisticsService {
     `
 
     return { engaged: toNumber(row?.engaged), total: toNumber(row?.total) }
+  }
+
+  /**
+   * Comptes de collectivités dont la demande d'accès a été acceptée (`engaged`).
+   * Une collectivité peut avoir plusieurs comptes ; le rôle `USER` écarte l'équipe.
+   */
+  private getEngagedLocalAuthorityAccounts(): Promise<number> {
+    return this.prisma.user.count({
+      where: { ...IS_ROLE_USER, engaged: true, type: { in: LOCAL_AUTHORITY_TYPES } },
+    })
   }
 
   /**

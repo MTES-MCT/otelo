@@ -24,6 +24,8 @@ export const ZPublicStatistics = z.strictObject({
     planningDocuments: z.number(),
     engagedDepartments: z.number(),
     totalDepartments: z.number(),
+    /** Comptes de collectivités (EPCI, communes, syndicats de SCoT…) dont la demande d'accès a été acceptée. */
+    engagedLocalAuthorityAccounts: z.number(),
   }),
   targetReductions: z.array(ZTargetReduction),
   planningDocumentsByType: z.array(
