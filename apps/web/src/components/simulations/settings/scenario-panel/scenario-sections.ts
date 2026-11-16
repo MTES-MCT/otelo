@@ -6,18 +6,19 @@ import { getStepIndex, getStepsForFlow, WizardFlow, WizardStepSlug } from '~/com
  * regroupent en lignes, à partir de quelle étape chaque ligne a un sens, et comment les blocs se
  * totalisent.
  *
- * Trois blocs, qui s'additionnent à l'écran :
- * - « Ménages à loger » : le besoin démographique et le mal-logement ;
- * - « Évolution de l'offre du parc » : ce que le parc consomme (vacance, résidences secondaires,
- *   disparitions) ;
- * - « Logements à trouver » = les deux premiers, répartis entre le parc existant, le renouvellement
- *   urbain et, pour le reste, la construction neuve.
+ * Quatre blocs, qui suivent le calcul `(A+B+C+D+E+F) − (G+H+I+J)` de `buildEstimationBreakdown` :
+ * - « Ménages à loger » (A+B) : le besoin démographique et le mal-logement ;
+ * - « Évolution de l'offre du parc » (C+D+E+F) : ce que le parc consomme (vacance, résidences
+ *   secondaires, disparitions) ;
+ * - « Logements mobilisables dans le parc existant » (G+H+I+J) : ce que le parc libère ;
+ * - « Besoin en logements supplémentaires » (I = A…F), réparti entre l'optimisation du parc
+ *   existant (II = G…J) et, pour le reste, la construction neuve (I − II).
  *
  * Le rattachement passe par le *slug* et jamais par un index en dur : le parcours de modification
  * n'a pas l'étape « choix du territoire » et décale tous les rangs (`wizard-steps.ts`).
  */
 
-export type ScenarioSectionKey = 'households' | 'parcOffer' | 'housingToFind'
+export type ScenarioSectionKey = 'households' | 'parcOffer' | 'mobilisable' | 'housingToFind'
 
 type ScenarioRowDefinition = {
   key: string
@@ -30,6 +31,8 @@ type ScenarioRowDefinition = {
   footnote?: boolean
   /** Hypothèse rappelée sous le libellé : scénario démographique, ou taux cible quand un seul EPCI est affiché. */
   detail?: ScenarioRowDetail
+  /** Une fois chiffrée, la ligne n'est affichée que si elle compte au moins un logement. */
+  onlyIfPositive?: boolean
 }
 
 export type ScenarioRowDetail = 'demographicScenario' | 'longTermVacancyRate' | 'secondaryResidenceRate'
@@ -46,39 +49,75 @@ const HOUSEHOLDS_ROWS: ScenarioRowDefinition[] = [
 ]
 
 const PARC_OFFER_ROWS: ScenarioRowDefinition[] = [
+  // C — la vacance courte durée (fluidité du parc) a sa propre ligne : la fondre dans la vacance
+  // longue durée laissait croire que celle-ci créait un besoin alors même que le scénario la remobilise.
+  { key: 'shortTermVacancy', label: 'Vacance courte durée', step: 'taux-cibles-logements-vacants', terms: ['fluidity'] },
+  // D
   {
     key: 'longTermVacancy',
     label: 'Vacance longue durée',
     step: 'taux-cibles-logements-vacants',
-    terms: ['fluidity', 'vacancyIncrease'],
+    terms: ['vacancyIncrease'],
     detail: 'longTermVacancyRate',
   },
+  // E
   {
     key: 'secondaryResidences',
     label: 'Résidences secondaires',
     step: 'taux-cibles-residences-secondaires',
     terms: ['secondaryIncrease'],
     detail: 'secondaryResidenceRate',
+    onlyIfPositive: true,
   },
-  { key: 'disappearance', label: 'Renouvellement urbain', step: 'taux-restructuration-disparition', terms: ['disappearanceSurplus'] },
+  // F
+  {
+    key: 'disappearance',
+    label: 'Renouvellement urbain',
+    step: 'taux-restructuration-disparition',
+    terms: ['disappearanceSurplus'],
+    onlyIfPositive: true,
+  },
 ]
 
-const EXISTING_PARC_ROW: ScenarioRowDefinition = {
-  key: 'existingParc',
-  label: 'Dans le parc existant',
-  step: 'taux-cibles-logements-vacants',
-  terms: ['vacancyRemobilised', 'fluidityReleased', 'secondaryDecrease'],
-}
+const MOBILISABLE_ROWS: ScenarioRowDefinition[] = [
+  // G
+  {
+    key: 'longTermVacancyRemobilised',
+    label: 'Vacance longue durée remobilisée',
+    step: 'taux-cibles-logements-vacants',
+    terms: ['vacancyRemobilised'],
+    onlyIfPositive: true,
+  },
+  // J — pendant de la ligne « Vacance courte durée » de l'offre : la fluidité que le parc libère.
+  {
+    key: 'shortTermVacancyReleased',
+    label: 'Vacance courte durée libérée',
+    step: 'taux-cibles-logements-vacants',
+    terms: ['fluidityReleased'],
+    onlyIfPositive: true,
+  },
+  // H
+  {
+    key: 'secondaryResidencesDecrease',
+    label: 'Baisse des résidences secondaires',
+    step: 'taux-cibles-residences-secondaires',
+    terms: ['secondaryDecrease'],
+    onlyIfPositive: true,
+  },
+  // I
+  {
+    key: 'appearance',
+    label: 'Renouvellement urbain',
+    step: 'taux-restructuration-disparition',
+    terms: ['appearanceSurplus'],
+    onlyIfPositive: true,
+  },
+]
 
-const URBAN_RENEWAL_ROW: ScenarioRowDefinition = {
-  key: 'urbanRenewal',
-  label: 'En renouvellement urbain',
-  step: 'taux-restructuration-disparition',
-  terms: ['appearanceSurplus'],
-}
-
-/** Le reste du besoin, une fois retirés le parc existant et le renouvellement urbain. */
-const NEW_CONSTRUCTION_STEP: WizardStepSlug = 'parametrages-demographique'
+/** Le récapitulatif se chiffre dès que le besoin démographique est connu. */
+const SUMMARY_STEP: WizardStepSlug = 'parametrages-demographique'
+/** Première étape qui chiffre un logement mobilisable dans le parc existant. */
+const OPTIMISATION_STEP: WizardStepSlug = 'taux-cibles-logements-vacants'
 
 export type ScenarioRow = {
   key: string
@@ -97,9 +136,12 @@ export type ScenarioSection = {
   title: string
   /** `null` tant qu'aucune ligne du bloc n'est chiffrée. */
   total: number | null
+  /** Lignes à afficher : celles qui ne valent rien sur ce scénario en sont retirées. */
   rows: ScenarioRow[]
   /** Le bloc contient la ligne en cours de paramétrage. */
   isEditing: boolean
+  /** Message affiché quand le bloc est chiffré mais qu'aucune de ses lignes n'est à afficher. */
+  emptyMessage?: string
 }
 
 const isStepReached = (
@@ -150,40 +192,74 @@ const buildTermRow = (definition: ScenarioRowDefinition, breakdown: EstimationBr
 const sumRows = (rows: ScenarioRow[]): number | null =>
   rows.some((row) => row.value !== null) ? rows.reduce((sum, row) => sum + (row.value ?? 0), 0) : null
 
-const buildSection = (key: ScenarioSectionKey, title: string, rows: ScenarioRow[], total = sumRows(rows)): ScenarioSection => ({
+/**
+ * Une ligne « si > 0 » reste visible tant qu'elle n'est pas chiffrée, pour annoncer l'étape qui la
+ * chiffrera ; une fois chiffrée, elle disparaît si elle ne compte aucun logement à l'arrondi.
+ */
+const isRowDisplayed = (definition: ScenarioRowDefinition, row: ScenarioRow): boolean =>
+  !definition.onlyIfPositive || row.value === null || Math.round(row.value) > 0
+
+const buildSection = (
+  key: ScenarioSectionKey,
+  title: string,
+  rows: ScenarioRow[],
+  options: { total?: number | null; emptyMessage?: string } = {},
+): ScenarioSection => ({
   isEditing: rows.some((row) => row.isEditing),
   key,
   rows,
   title,
-  total,
+  total: options.total === undefined ? sumRows(rows) : options.total,
+  emptyMessage: options.emptyMessage,
 })
 
+/** Le total porte sur toutes les lignes, les lignes masquées valant zéro ; l'affichage ne garde que les visibles. */
+const buildTermSection = (
+  key: ScenarioSectionKey,
+  title: string,
+  definitions: ScenarioRowDefinition[],
+  breakdown: EstimationBreakdown,
+  context: ScenarioContext,
+  emptyMessage?: string,
+): ScenarioSection => {
+  const rows = definitions.map((definition) => buildTermRow(definition, breakdown, context))
+  const section = buildSection(key, title, rows, { emptyMessage })
+  return { ...section, rows: rows.filter((row, index) => isRowDisplayed(definitions[index], row)) }
+}
+
 export const buildScenarioSections = (breakdown: EstimationBreakdown, context: ScenarioContext): ScenarioSection[] => {
-  const householdsRows = HOUSEHOLDS_ROWS.map((row) => buildTermRow(row, breakdown, context))
-  const parcOfferRows = PARC_OFFER_ROWS.map((row) => buildTermRow(row, breakdown, context))
-  const households = buildSection('households', 'Ménages à loger', householdsRows)
-  const parcOffer = buildSection('parcOffer', "Évolution de l'offre du parc", parcOfferRows)
+  const households = buildTermSection('households', 'Ménages à loger', HOUSEHOLDS_ROWS, breakdown, context)
+  const parcOffer = buildTermSection('parcOffer', "Évolution de l'offre du parc", PARC_OFFER_ROWS, breakdown, context)
+  // Affiché même à zéro : dire qu'aucun logement n'est mobilisable est une information en soi.
+  const mobilisable = buildTermSection(
+    'mobilisable',
+    'Logements mobilisables dans le parc existant',
+    MOBILISABLE_ROWS,
+    breakdown,
+    context,
+    'Aucun logement mobilisable à ce stade du paramétrage.',
+  )
 
-  const housingToFindTotal = households.total === null ? null : households.total + (parcOffer.total ?? 0)
+  // I = A + B + C + D + E + F
+  const additionalNeed = households.total === null ? null : households.total + (parcOffer.total ?? 0)
+  // II = G + H + I + J, à venir tant que le bloc des logements mobilisables n'est pas chiffré
+  const optimisation = additionalNeed === null ? null : mobilisable.total
 
-  const existingParc = buildTermRow(EXISTING_PARC_ROW, breakdown, context)
-  const urbanRenewal = buildTermRow(URBAN_RENEWAL_ROW, breakdown, context)
-  // La construction neuve est un solde, jamais « en cours » : elle bouge à chaque étape.
-  const newConstruction: ScenarioRow = {
-    ...buildRow(
-      { key: 'newConstruction', label: 'En construction neuve', step: NEW_CONSTRUCTION_STEP },
-      housingToFindTotal === null ? null : housingToFindTotal - (existingParc.value ?? 0) - (urbanRenewal.value ?? 0),
-      context,
-    ),
+  // Le récapitulatif est un solde, jamais « en cours » : il bouge à chaque étape.
+  const summaryRow = (key: string, label: string, value: number | null, step: WizardStepSlug = SUMMARY_STEP): ScenarioRow => ({
+    ...buildRow({ key, label, step }, value, context),
     isEditing: false,
-  }
+  })
 
   const housingToFind = buildSection(
     'housingToFind',
-    'Logements à trouver',
-    [existingParc, urbanRenewal, newConstruction],
-    housingToFindTotal,
+    'Besoin en logements supplémentaires',
+    [
+      summaryRow('optimisation', 'Optimisation du parc existant', optimisation, OPTIMISATION_STEP),
+      summaryRow('newConstruction', 'Constructions neuves', additionalNeed === null ? null : additionalNeed - (optimisation ?? 0)),
+    ],
+    { total: additionalNeed },
   )
 
-  return [households, parcOffer, housingToFind]
+  return [households, parcOffer, mobilisable, housingToFind]
 }
