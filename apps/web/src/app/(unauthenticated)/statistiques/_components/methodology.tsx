@@ -34,10 +34,11 @@ export function Methodology() {
           simulation non supprimée. Un EPCI absent du fond de carte reste présent dans la liste.
         </p>
       </Accordion>
-      <Accordion label="Habitants couverts">
+      <Accordion label="Habitants des EPCI étudiés et couverts">
         <p className="fr-mb-0">
-          Population du dernier recensement disponible des EPCI couverts par un scénario exporté en PowerPoint. La part est rapportée à la
-          population de l'ensemble des EPCI de France.
+          Population du dernier recensement disponible, d'une part des EPCI étudiés (présents dans une simulation non supprimée), d'autre
+          part des EPCI couverts par un scénario exporté en PowerPoint. Les parts sont rapportées à la population de l'ensemble des EPCI de
+          France.
         </p>
       </Accordion>
       <Accordion label="Dossiers d'études pour un document d'urbanisme">

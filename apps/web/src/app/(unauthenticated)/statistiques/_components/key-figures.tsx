@@ -39,6 +39,8 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
     epcisWithSimulation,
     coveredPopulation,
     coveredPopulationShare,
+    studiedPopulation,
+    studiedPopulationShare,
     planningDocuments,
     engagedDepartments,
     totalDepartments,
@@ -67,11 +69,11 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
         </Figure>
       </li>
       <li>
-        <Figure value={formatPopulation(coveredPopulation)} label="Habitants couverts">
+        <Figure value={formatPopulation(studiedPopulation)} label="Habitants des EPCI étudiés">
           <p className={styles.figureDetail}>
-            {formatInteger(coveredPopulation)} {plural(coveredPopulation, 'habitant', 'habitants')}, soit{' '}
-            {formatDecimal(coveredPopulationShare)} % de la population des EPCI de France, dans les EPCI couverts par un scénario exporté en
-            PowerPoint.
+            Soit {formatDecimal(studiedPopulationShare)} % de la population, dont {formatInteger(coveredPopulation)}{' '}
+            {plural(coveredPopulation, 'habitant', 'habitants')} ({formatDecimal(coveredPopulationShare)} %) dans les EPCI couverts par un
+            scénario exporté en PowerPoint.
           </p>
         </Figure>
       </li>

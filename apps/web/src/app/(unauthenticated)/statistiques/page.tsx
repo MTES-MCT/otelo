@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import { getPublicStatistics } from '~/server-only/statistics/get-public-statistics'
 import { formatInteger, plural } from '~/utils/format-statistics'
 import { EpciList } from './_components/epci-list'
-import { describeReduction, EPCI_NOT_STUDIED_LABEL, EPCI_STATUS_COLORS, EPCI_STATUS_LABELS, formatDay } from './_components/format'
+import { EPCI_NOT_STUDIED_LABEL, EPCI_STATUS_COLORS, EPCI_STATUS_LABELS, formatDay, formatDecimal } from './_components/format'
 import { KeyFigures, SurveyFigure } from './_components/key-figures'
 import { Methodology } from './_components/methodology'
 import { MonthlyChart } from './_components/monthly-chart'
@@ -38,13 +38,34 @@ function AccessCallToAction() {
   )
 }
 
-function HeadlineSentence({ targetReductions }: { targetReductions: TPublicStatistics['targetReductions'] }) {
-  const vacancy = targetReductions.find((reduction) => reduction.domain === 'longTermVacancy')
-  if (!vacancy || vacancy.median === null) return null
+/** Accroche d'usage : qui utilise Otelo, et quelle part du territoire a été étudiée ou couverte. */
+function HeadlineSentence({ keyFigures }: { keyFigures: TPublicStatistics['keyFigures'] }) {
+  const {
+    engagedLocalAuthorityAccounts,
+    engagedDepartments,
+    totalDepartments,
+    epcisWithSimulation,
+    epcisWithExport,
+    studiedPopulationShare,
+    coveredPopulationShare,
+  } = keyFigures
+  if (epcisWithSimulation === 0) return null
+
+  const actors = [
+    engagedLocalAuthorityAccounts > 0 &&
+      `${formatInteger(engagedLocalAuthorityAccounts)} ${plural(engagedLocalAuthorityAccounts, 'collectivité', 'collectivités')}`,
+    totalDepartments > 0 &&
+      engagedDepartments > 0 &&
+      `les DDT de ${formatInteger(engagedDepartments)} ${plural(engagedDepartments, 'département', 'départements')}`,
+  ].filter(Boolean)
+
   return (
     <p className={styles.headline}>
-      Dans les scénarios exportés en PowerPoint, les territoires visent en médiane {describeReduction(vacancy.median)} du taux de vacance de
-      longue durée ({formatInteger(vacancy.scenarios)} {plural(vacancy.scenarios, 'scénario', 'scénarios')}).
+      {actors.length > 0 ? `Otelo accompagne déjà ${actors.join(' et ')} : ` : 'Avec Otelo, '}
+      {formatInteger(epcisWithSimulation)} {plural(epcisWithSimulation, 'EPCI a été étudié', 'EPCI ont été étudiés')}, soit{' '}
+      {formatDecimal(studiedPopulationShare)} % de la population, dont {formatInteger(epcisWithExport)}{' '}
+      {plural(epcisWithExport, 'couvert', 'couverts')} par un scénario exporté en PowerPoint ({formatDecimal(coveredPopulationShare)} % de
+      la population).
     </p>
   )
 }
@@ -85,7 +106,7 @@ function MapLegend({ epcis }: { epcis: TPublicStatistics['epcis'] }) {
 function Statistics({ statistics }: { statistics: TPublicStatistics }) {
   return (
     <>
-      <HeadlineSentence targetReductions={statistics.targetReductions} />
+      <HeadlineSentence keyFigures={statistics.keyFigures} />
 
       <section className={fr.cx('fr-mb-8v')} aria-labelledby="key-figures-title">
         <h2 id="key-figures-title" className="fr-sr-only">
