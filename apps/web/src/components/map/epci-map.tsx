@@ -8,7 +8,7 @@ import { IgnBasemapLayer } from '~/components/map/ign-basemap-layer'
 import styles from './epci-map.module.css'
 
 type Bounds = [[number, number], [number, number]]
-type EpciStyle = { fill: string; stroke: string; opacity: number }
+export type EpciStyle = { fill: string; stroke: string; opacity: number }
 
 export const FRANCE_CENTER: [number, number] = [46.5, 2.3]
 export const FRANCE_ZOOM = 5
@@ -25,7 +25,7 @@ export type EpciMapProps = {
   /** null = territoire non coloré (gris) */
   styleFor: (code: string, feature: GeoJSON.Feature) => EpciStyle | null
   tooltipFor: (code: string, name: string, feature: GeoJSON.Feature) => ReactNode | null
-  /** Recadrage explicite sur ces entités */
+  /** Recadrage explicite sur ces entités (à mémoïser : une nouvelle référence relance le recadrage) */
   fitTo?: GeoJSON.Feature[]
   /** Recadre sur les entités retenues par `featureFilter` */
   fitToFiltered?: boolean
@@ -165,8 +165,15 @@ export function EpciMap({ geoJsonUrl, styleFor, tooltipFor, fitTo, fitToFiltered
     const controller = new AbortController()
     setGeoJsonData(null)
     fetch(geoJsonUrl, { signal: controller.signal })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`GeoJSON indisponible (${r.status})`)
+        return r.json()
+      })
       .then((data: GeoJSON.FeatureCollection) => setGeoJsonData(data))
+      .catch((error: unknown) => {
+        // Échec ou annulation : la carte reste affichée, sans contours.
+        if (!controller.signal.aborted) console.error('Contours des EPCI indisponibles :', error)
+      })
     return () => controller.abort()
   }, [geoJsonUrl])
 
