@@ -1,7 +1,7 @@
 import type { TPublicStatistics } from '@otelo/shared'
 import type { ReactNode } from 'react'
 import { SURVEY_INFLUENCED_DOCUMENTS } from '~/constants/survey-statistics'
-import { formatInteger, formatMonth, plural } from '~/utils/format-statistics'
+import { formatInteger, formatMonth, formatPopulation, plural } from '~/utils/format-statistics'
 import styles from '../statistiques.module.css'
 import { formatDecimal } from './format'
 
@@ -67,10 +67,10 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
         </Figure>
       </li>
       <li>
-        <Figure value={formatInteger(coveredPopulation)} label="Habitants couverts">
+        <Figure value={formatPopulation(coveredPopulation)} label="Habitants couverts">
           <p className={styles.figureDetail}>
-            Soit {formatDecimal(coveredPopulationShare)} % de la population des EPCI de France, dans les EPCI couverts par un scénario
-            exporté.
+            {formatInteger(coveredPopulation)} {plural(coveredPopulation, 'habitant', 'habitants')}, soit{' '}
+            {formatDecimal(coveredPopulationShare)} % de la population des EPCI de France, dans les EPCI couverts par un scénario exporté.
           </p>
         </Figure>
       </li>
