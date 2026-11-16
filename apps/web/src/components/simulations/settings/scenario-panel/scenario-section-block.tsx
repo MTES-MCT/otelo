@@ -35,6 +35,11 @@ export const ScenarioSectionBlock: FC<ScenarioSectionBlockProps> = ({ section, d
         {section.total !== null && <span className={styles.totalBadge}>{format(section.total)}</span>}
       </button>
       <ul id={contentId} className={styles.rows} hidden={!isOpen}>
+        {section.rows.length === 0 && section.total !== null && section.emptyMessage && (
+          <li className={styles.row}>
+            <span className={classNames(styles.rowLabel, 'fr-text-mention--grey')}>{section.emptyMessage}</span>
+          </li>
+        )}
         {section.rows.map((row) => {
           const detail = row.value !== null ? renderRowDetail?.(row) : null
           return (
