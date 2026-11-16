@@ -17,7 +17,8 @@ import styles from './statistiques.module.css'
 
 export const metadata: Metadata = {
   title: "Statistiques de l'application Otelo",
-  description: "Usage d'Otelo par les territoires : EPCI couverts, population couverte, documents d'urbanisme et DDT engagées.",
+  description:
+    "Usage d'Otelo par les territoires : collectivités utilisatrices, EPCI couverts, population couverte, documents d'urbanisme et DDT engagées.",
 }
 
 // Rendu à la requête : les données sont mises en cache une heure, rien n'est figé au build.

@@ -6,9 +6,28 @@ import { getPublicStatistics } from '~/server-only/statistics/get-public-statist
 import { formatInteger, plural } from '~/utils/format-statistics'
 import styles from './section-statistics.module.css'
 
+type StatItemProps = {
+  value: number
+  singular: string
+  pluralForm: string
+}
+
+function StatItem({ value, singular, pluralForm }: StatItemProps) {
+  return (
+    <div className={fr.cx('fr-col-12', 'fr-col-lg-4')}>
+      <div className={styles.statItem}>
+        <div className={styles.statValue}>{formatInteger(value)}</div>
+        <p className={styles.statDescription}>
+          <strong>{plural(value, singular, pluralForm)}</strong>
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export async function SectionStatistics() {
   const statistics = await getPublicStatistics()
-  const epcisWithExport = statistics?.keyFigures.epcisWithExport
+  const keyFigures = statistics?.keyFigures
 
   return (
     <section className={classNames(fr.cx('fr-py-16v'), styles.statisticsSection)}>
@@ -16,7 +35,7 @@ export async function SectionStatistics() {
         <h2 className={styles.statisticsTitle}>Une solution qui fait ses preuves</h2>
 
         <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-          <div className={fr.cx('fr-col-12', 'fr-col-lg-6')}>
+          <div className={fr.cx('fr-col-12', keyFigures ? 'fr-col-lg-4' : 'fr-col-lg-6')}>
             <div className={styles.statItem}>
               <div className={styles.statValue}>{SURVEY_INFLUENCED_DOCUMENTS.value}</div>
               <p className={styles.statDescription}>
@@ -29,15 +48,19 @@ export async function SectionStatistics() {
             </div>
           </div>
 
-          {epcisWithExport !== undefined && (
-            <div className={fr.cx('fr-col-12', 'fr-col-lg-6')}>
-              <div className={styles.statItem}>
-                <div className={styles.statValue}>{formatInteger(epcisWithExport)}</div>
-                <p className={styles.statDescription}>
-                  {plural(epcisWithExport, 'EPCI couvert par un scénario Otelo', 'EPCI couverts par un scénario Otelo')}
-                </p>
-              </div>
-            </div>
+          {keyFigures && (
+            <>
+              <StatItem
+                value={keyFigures.engagedLocalAuthorityAccounts}
+                singular="collectivité utilisatrice"
+                pluralForm="collectivités utilisatrices"
+              />
+              <StatItem
+                value={keyFigures.epcisWithExport}
+                singular="EPCI couvert par un scénario Otelo"
+                pluralForm="EPCI couverts par un scénario Otelo"
+              />
+            </>
           )}
         </div>
 

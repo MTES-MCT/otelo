@@ -16,6 +16,12 @@ export function Methodology() {
           mensuelle. Les chiffres affichés datent d'une heure au plus.
         </p>
       </Accordion>
+      <Accordion label="Collectivités utilisatrices">
+        <p className="fr-mb-0">
+          Comptes ouverts par des EPCI, communes, syndicats de SCoT et autres collectivités, dont la demande d'accès a été acceptée. Une
+          collectivité peut avoir plusieurs comptes. Les comptes des DDT, des agences et des bureaux d'études ne sont pas comptés.
+        </p>
+      </Accordion>
       <Accordion label="EPCI couverts par un scénario Otelo">
         <p>
           Un EPCI est couvert dès qu'il figure dans au moins un scénario exporté (PowerPoint ou Excel), quel qu'en soit l'auteur : c'est

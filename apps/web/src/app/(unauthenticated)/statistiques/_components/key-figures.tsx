@@ -42,10 +42,19 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
     planningDocuments,
     engagedDepartments,
     totalDepartments,
+    engagedLocalAuthorityAccounts,
   } = keyFigures
 
   return (
     <ul className={styles.figures}>
+      <li>
+        <Figure
+          value={formatInteger(engagedLocalAuthorityAccounts)}
+          label={plural(engagedLocalAuthorityAccounts, 'Collectivité utilisatrice', 'Collectivités utilisatrices')}
+        >
+          <p className={styles.figureDetail}>Comptes ouverts par des EPCI, communes, syndicats de SCoT et autres collectivités.</p>
+        </Figure>
+      </li>
       <li>
         <Figure
           value={formatInteger(epcisWithExport)}
