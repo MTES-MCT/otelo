@@ -15,6 +15,7 @@ import type { DateRange } from '~/common/utils/date-range'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'
 import { percentage, round, toNumber } from './statistics-numbers'
+import { LATEST_POPULATION, simulationsExportedIn } from './statistics-sql'
 import { ownerIsNotTeam } from './team'
 
 /** Délai au-delà duquel un retour sur un dossier traduit un usage installé plutôt qu'une session de travail. */
@@ -31,18 +32,6 @@ const simulationsCreatedIn = ({ from, toExclusive }: DateRange): Prisma.Sql => P
   FROM simulations s
   WHERE s.deleted IS NULL
     AND s.created_at >= ${from} AND s.created_at < ${toExclusive}
-    AND ${ownerIsNotTeam('s.user_id')}
-`
-
-/**
- * Simulations exportées sur la période, qu'il s'agisse d'un PowerPoint ou d'un Excel.
- * Un export est le signe qu'un scénario sort d'Otelo pour servir ailleurs.
- */
-const simulationsExportedIn = ({ from, toExclusive }: DateRange): Prisma.Sql => Prisma.sql`
-  SELECT DISTINCT s.id, s.scenario_id, s.epci_group_id
-  FROM exports e
-  INNER JOIN simulations s ON s.id = e.simulation_id
-  WHERE e.created_at >= ${from} AND e.created_at < ${toExclusive}
     AND ${ownerIsNotTeam('s.user_id')}
 `
 
@@ -258,7 +247,7 @@ export class ImpactStatisticsService {
    * à la distinction courte / longue ont les deux colonnes à zéro et sont écartés : un
    * utilisateur qui supprime toute la vacance longue garde, lui, sa vacance courte.
    */
-  private async getTargetReductions(sims: Prisma.Sql): Promise<TTargetReduction[]> {
+  async getTargetReductions(sims: Prisma.Sql): Promise<TTargetReduction[]> {
     const [row] = await this.prisma.$queryRaw<
       Array<Record<`${'avg' | 'median' | 'count'}_${TTargetReductionDomain}`, number | bigint | null>>
     >`
@@ -440,13 +429,6 @@ export class ImpactStatisticsService {
       ORDER BY s.user_id, e.created_at, e.is_privileged DESC
     `
 
-    // Population du dernier recensement disponible pour chaque EPCI.
-    const latestPopulation = Prisma.sql`
-      SELECT DISTINCT ON (epci_code) epci_code, population
-      FROM rp
-      ORDER BY epci_code, millesime DESC, year DESC
-    `
-
     const [byNextStep, byDocumentType, coverage, sharing, sharedEpcis, longTermUse, exportedNeeds, allNeeds] = await Promise.all([
       this.prisma.$queryRaw<Array<{ label: string | null; count: bigint }>>`
           WITH requests AS (${requests})
@@ -460,7 +442,7 @@ export class ImpactStatisticsService {
         Array<{ exported_epcis: bigint; covered_population: string | null; total_epcis: bigint; total_population: string | null }>
       >`
           WITH exported AS (${exported}),
-          population AS (${latestPopulation}),
+          population AS (${LATEST_POPULATION}),
           exported_epcis AS (
             SELECT DISTINCT es.epci_code
             FROM exported
