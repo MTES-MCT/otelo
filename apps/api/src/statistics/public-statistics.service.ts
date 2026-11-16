@@ -69,7 +69,7 @@ export class PublicStatisticsService {
     return ZPublicStatistics.parse({
       generatedAt: now.toISOString(),
       keyFigures: {
-        epcisWithSimulation: epcis.filter((epci) => epci.simulated).length,
+        epcisWithSimulation: epcis.length,
         epcisWithExport: epcis.filter((epci) => epci.status === 'EXPORTED').length,
         coveredPopulation: coverage.covered,
         coveredPopulationShare: percentage(coverage.covered, coverage.total),
@@ -83,17 +83,17 @@ export class PublicStatisticsService {
       targetReductions,
       planningDocumentsByType: planningDocuments,
       monthly,
-      epcis: epcis.map(({ simulated: _simulated, ...epci }) => epci),
+      epcis,
     })
   }
 
   /**
-   * EPCI ayant une simulation en cours ou exportée. Un export l'emporte sur une simulation :
-   * un scénario exporté puis supprimé a quand même servi hors d'Otelo.
+   * EPCI étudiés : présents dans une simulation en cours ou dans un scénario exporté. Un export
+   * l'emporte sur une simulation : un scénario exporté puis supprimé a quand même servi hors d'Otelo.
    */
   private async getEpcis(exported: Prisma.Sql) {
     const rows = await this.prisma.$queryRaw<
-      Array<{ code: string; name: string; department: string | null; region: string; simulated: boolean; exported: boolean }>
+      Array<{ code: string; name: string; department: string | null; region: string; exported: boolean }>
     >`
       WITH simulated_epcis AS (${epcisOf(ACTIVE_SIMULATIONS)}),
       exported_epcis AS (${epcisOf(exported)})
@@ -102,7 +102,6 @@ export class PublicStatisticsService {
         ep.name,
         ep.department_name AS department,
         COALESCE(ep.region_name, ep.region) AS region,
-        EXISTS (SELECT 1 FROM simulated_epcis se WHERE se.epci_code = ep.code) AS simulated,
         EXISTS (SELECT 1 FROM exported_epcis ee WHERE ee.epci_code = ep.code) AS exported
       FROM epcis ep
       WHERE ep.code IN (SELECT epci_code FROM simulated_epcis UNION SELECT epci_code FROM exported_epcis)
@@ -115,16 +114,19 @@ export class PublicStatisticsService {
       department: row.department,
       region: row.region,
       status: (row.exported ? 'EXPORTED' : 'SIMULATED') satisfies TPublicEpciStatus,
-      simulated: row.simulated,
     }))
   }
 
-  /** Population des EPCI couverts (export PowerPoint) et des EPCI étudiés, rapportées à celle de l'ensemble des EPCI. */
+  /**
+   * Population des EPCI couverts (export PowerPoint) et des EPCI étudiés, rapportées à celle de
+   * l'ensemble des EPCI. Les étudiés incluent les couverts, comme dans `getEpcis` : un EPCI exporté
+   * puis supprimé reste étudié, sans quoi la population couverte pourrait dépasser l'étudiée.
+   */
   private async getCoverage(exported: Prisma.Sql) {
     const [row] = await this.prisma.$queryRaw<Array<{ covered: number | null; studied: number | null; total: number | null }>>`
       WITH population AS (${LATEST_POPULATION}),
       exported_epcis AS (${epcisOf(exported)}),
-      studied_epcis AS (${epcisOf(ACTIVE_SIMULATIONS)})
+      studied_epcis AS (${epcisOf(ACTIVE_SIMULATIONS)} UNION SELECT epci_code FROM exported_epcis)
       SELECT
         (SELECT SUM(p.population) FROM exported_epcis ee INNER JOIN population p ON p.epci_code = ee.epci_code) AS covered,
         (SELECT SUM(p.population) FROM studied_epcis se INNER JOIN population p ON p.epci_code = se.epci_code) AS studied,

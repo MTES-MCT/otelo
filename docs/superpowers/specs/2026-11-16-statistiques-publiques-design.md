@@ -65,7 +65,7 @@ Réponse (`ZPublicStatistics` dans `packages/shared`) :
 {
   generatedAt: string                // ISO
   keyFigures: {
-    epcisWithSimulation: number      // EPCI ayant au moins une simulation non supprimée
+    epcisWithSimulation: number      // EPCI étudiés : au moins une simulation non supprimée ou un scénario exporté (= epcis.length)
     epcisWithExport: number          // EPCI ayant au moins un scénario exporté
     coveredPopulation: number        // population (dernier RP) des EPCI avec export
     coveredPopulationShare: number   // % de la population des EPCI de France

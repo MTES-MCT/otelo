@@ -63,7 +63,7 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
           label={plural(epcisWithSimulation, 'EPCI étudié avec Otelo', 'EPCI étudiés avec Otelo')}
         >
           <p className={styles.figureDetail}>
-            Présents dans au moins une simulation, quel qu'en soit l'auteur, dont {formatInteger(epcisWithExport)}{' '}
+            Présents dans au moins une simulation ou un scénario exporté, quel qu'en soit l'auteur, dont {formatInteger(epcisWithExport)}{' '}
             {plural(epcisWithExport, 'couvert', 'couverts')} par un scénario exporté en PowerPoint.
           </p>
         </Figure>

@@ -120,7 +120,13 @@ describe('PublicStatisticsService (intégration)', () => {
     const s = await service.getPublicStatistics(NOW)
 
     expect(s.epcis).toEqual([territory(GRAND_CHALON, 'EXPORTED')])
-    expect(s.keyFigures).toMatchObject({ epcisWithSimulation: 0, epcisWithExport: 1, coveredPopulation: 110000 })
+    // L'EPCI exporté reste étudié : les couverts sont un sous-ensemble des étudiés.
+    expect(s.keyFigures).toMatchObject({
+      epcisWithSimulation: 1,
+      epcisWithExport: 1,
+      coveredPopulation: 110000,
+      studiedPopulation: 110000,
+    })
   })
 
   it('usage uniquement par un ADMIN : rien de compté', async () => {

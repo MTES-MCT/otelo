@@ -24,21 +24,22 @@ export function Methodology() {
       </Accordion>
       <Accordion label="EPCI étudiés et EPCI couverts">
         <p>
-          Un EPCI est étudié dès qu'il figure dans une simulation non supprimée, et couvert dès qu'il figure dans au moins un scénario
-          exporté en PowerPoint, quel qu'en soit l'auteur : c'est souvent la DDT, qui étudie l'ensemble des EPCI de son département. Être
-          étudié ou couvert ne signifie donc pas que l'EPCI utilise lui-même Otelo.
+          Un EPCI est couvert dès qu'il figure dans au moins un scénario exporté en PowerPoint, et étudié dès qu'il figure dans une
+          simulation non supprimée ou qu'il est couvert : tout EPCI couvert est donc aussi étudié. Ces statuts valent quel qu'en soit
+          l'auteur : c'est souvent la DDT, qui étudie l'ensemble des EPCI de son département. Être étudié ou couvert ne signifie donc pas
+          que l'EPCI utilise lui-même Otelo.
         </p>
         <p className="fr-mb-0">
-          La carte et la liste montrent tous les EPCI étudiés avec Otelo, couverts ou non au sens ci-dessus. Un EPCI a le statut « scénario
-          exporté en PowerPoint » s'il figure dans un scénario exporté ; sinon, il est « étudié dans une simulation » s'il figure dans une
-          simulation non supprimée. Un EPCI absent du fond de carte reste présent dans la liste.
+          La carte et la liste montrent tous les EPCI étudiés avec Otelo, couverts ou non. Un EPCI a le statut « scénario exporté en
+          PowerPoint » s'il figure dans un scénario exporté ; sinon, il est « étudié dans une simulation » s'il figure dans une simulation
+          non supprimée. Un EPCI absent du fond de carte reste présent dans la liste.
         </p>
       </Accordion>
       <Accordion label="Habitants des EPCI étudiés et couverts">
         <p className="fr-mb-0">
-          Population du dernier recensement disponible, d'une part des EPCI étudiés (présents dans une simulation non supprimée), d'autre
-          part des EPCI couverts par un scénario exporté en PowerPoint. Les parts sont rapportées à la population de l'ensemble des EPCI de
-          France.
+          Population du dernier recensement disponible, d'une part des EPCI étudiés (présents dans une simulation non supprimée ou un
+          scénario exporté), d'autre part des EPCI couverts par un scénario exporté en PowerPoint, qui en sont une partie. Les parts sont
+          rapportées à la population de l'ensemble des EPCI de France.
         </p>
       </Accordion>
       <Accordion label="Dossiers d'études pour un document d'urbanisme">
