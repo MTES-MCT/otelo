@@ -21,11 +21,19 @@ import { Role } from '~/generated/prisma/enums'
  * deux gardent les lignes dont l'utilisateur est nul.
  */
 
+/*
+ * Même règle pour les comptes marqués `excluded_from_statistics` : un usage en masse
+ * (des milliers de simulations générées par un seul compte) ou un compte de démonstration
+ * fausserait les chiffres autant que l'équipe. Le marquage se fait en base, pas dans le code.
+ */
+
 /** Filtre Prisma sur le modèle `user` lui-même. */
-export const IS_ROLE_USER = { role: Role.USER } as const
+export const IS_ROLE_USER = { role: Role.USER, excludedFromStatistics: false } as const
 
 /** Filtre Prisma sur un modèle qui porte une relation `user` facultative. */
-export const OWNER_IS_NOT_TEAM = { NOT: { user: { role: Role.ADMIN } } } as const
+export const OWNER_IS_NOT_TEAM: { NOT: { user: Prisma.UserWhereInput } } = {
+  NOT: { user: { OR: [{ role: Role.ADMIN }, { excludedFromStatistics: true }] } },
+}
 
 /**
  * Condition SQL sur une colonne portant un identifiant d'utilisateur.
@@ -34,4 +42,4 @@ export const OWNER_IS_NOT_TEAM = { NOT: { user: { role: Role.ADMIN } } } as cons
  * interpolé tel quel, ce que `Prisma.raw` autorise et que le reste du fichier interdit.
  */
 export const ownerIsNotTeam = (column: string): Prisma.Sql =>
-  Prisma.sql`NOT EXISTS (SELECT 1 FROM users otelo_team WHERE otelo_team.id = ${Prisma.raw(column)} AND otelo_team.role = 'ADMIN')`
+  Prisma.sql`NOT EXISTS (SELECT 1 FROM users otelo_team WHERE otelo_team.id = ${Prisma.raw(column)} AND (otelo_team.role = 'ADMIN' OR otelo_team.excluded_from_statistics))`

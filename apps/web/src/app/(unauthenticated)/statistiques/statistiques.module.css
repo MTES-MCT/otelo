@@ -1,39 +1,109 @@
-.section1 {
-  min-height: 600px;
+.headline {
+  font-size: 1.375rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
 }
 
-.cardStatContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.cardStat {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 12rem;
-  height: 100%;
-}
-
-.cardStatContent {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  justify-content: center;
-  border-radius: 0.5rem;
-  align-items: center;
-  text-align: center;
+.figures,
+.reductions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
   gap: 1rem;
-  padding: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
 }
 
-.stat {
-  font-size: 3rem;
+.figures > li,
+.reductions > li {
+  padding: 0;
+}
+
+.figure {
+  height: 100%;
+  padding: 1.5rem;
+  background-color: var(--background-default-grey);
+  border-bottom: 3px solid var(--border-plain-blue-france);
+  box-shadow: 0 2px 6px rgba(0, 0, 18, 0.12);
+}
+
+.figureValue {
+  font-size: 2.5rem;
   line-height: 1.2;
+  font-weight: 700;
+  color: var(--text-title-blue-france);
+  margin-bottom: 0.25rem;
 }
 
-.metric {
-  font-size: 1.2rem;
-  font-weight: bold;
+.figureLabel {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.figureDetail {
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  margin-bottom: 0;
+  color: var(--text-mention-grey);
+}
+
+.mapContainer {
+  height: 560px;
+  border: 1px solid var(--border-default-grey);
+  background-color: var(--background-default-grey);
+}
+
+.legend {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.legend > li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.legendSwatch {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border-default-grey);
+}
+
+.disclosure {
+  margin-top: 1.5rem;
+}
+
+.disclosure > summary {
+  cursor: pointer;
+}
+
+.chartFigure {
+  margin: 0;
+  padding: 1.5rem;
+  background-color: var(--background-default-grey);
+}
+
+.chartCaption {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.chart {
+  height: 360px;
+}
+
+.chartSmall {
+  height: 280px;
+  max-width: 40rem;
+}
+
+.cta {
+  margin-top: 2rem;
+  padding: 2rem;
+  background-color: var(--background-alt-blue-france);
 }
