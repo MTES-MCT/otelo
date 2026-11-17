@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { type TPublicStatistics, ZPublicStatistics } from '@otelo/shared'
 import {
   AUTUNOIS,
+  createApiConsumer,
   createEpciGroup,
   createExport,
   createSimulation,
@@ -208,6 +209,35 @@ describe('PublicStatisticsService (intégration)', () => {
     })
     expect(s.monthly.every((row) => row.simulations === 0 && row.exports === 0 && row.activeEpcis === 0)).toBe(true)
     expect(s.targetReductions.every((row) => row.scenarios === 0)).toBe(true)
+  })
+
+  it('clé d’API exclue des statistiques : rien de compté', async () => {
+    const consumer = await createApiConsumer(prisma, { excludedFromStatistics: true })
+    const sim = await createSimulation(prisma, {
+      apiConsumerId: consumer.id,
+      name: 'Génération en masse',
+      epciCodes: [GRAND_CHALON.code, AUTUNOIS.code],
+    })
+    await createExport(prisma, { simulationId: sim.id, createdAt: NOW })
+    await prisma.simulation.update({ where: { id: sim.id }, data: { createdAt: NOW } })
+
+    const s = await service.getPublicStatistics(NOW)
+
+    expect(s.epcis).toEqual([])
+    expect(s.keyFigures).toMatchObject({ epcisWithSimulation: 0, epcisWithExport: 0 })
+    expect(s.monthly.every((row) => row.simulations === 0 && row.exports === 0 && row.activeEpcis === 0)).toBe(true)
+    expect(s.targetReductions.every((row) => row.scenarios === 0)).toBe(true)
+  })
+
+  it('clé d’API non exclue : son usage reste compté', async () => {
+    const consumer = await createApiConsumer(prisma)
+    const sim = await createSimulation(prisma, { apiConsumerId: consumer.id, name: 'Usage via l’API' })
+    await createExport(prisma, { simulationId: sim.id, createdAt: NOW })
+
+    const s = await service.getPublicStatistics(NOW)
+
+    expect(s.epcis).toEqual([territory(GRAND_CHALON, 'EXPORTED')])
+    expect(s.keyFigures).toMatchObject({ epcisWithSimulation: 1, epcisWithExport: 1 })
   })
 
   it('collectivités utilisatrices : comptes de collectivités engagés, hors DDT et équipe', async () => {

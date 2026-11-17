@@ -32,7 +32,7 @@ const simulationsCreatedIn = ({ from, toExclusive }: DateRange): Prisma.Sql => P
   FROM simulations s
   WHERE s.deleted IS NULL
     AND s.created_at >= ${from} AND s.created_at < ${toExclusive}
-    AND ${ownerIsNotTeam('s.user_id')}
+    AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
 `
 
 /** Type de document d'urbanisme d'un dossier (`g`), ramené aux clés de `IMPACT_PLANNING_DOCUMENT_KEYS`. */
@@ -335,7 +335,7 @@ export class ImpactStatisticsService {
       LEFT JOIN users u ON u.id = g.user_id
       WHERE g.deleted IS NULL
         AND g.created_at >= ${from} AND g.created_at < ${toExclusive}
-        AND ${ownerIsNotTeam('g.user_id')}
+        AND ${ownerIsNotTeam('g.user_id', 'g.api_consumer_id')}
     `
 
     const [byType, byMonth, byUserType] = await Promise.all([
@@ -425,7 +425,7 @@ export class ImpactStatisticsService {
       INNER JOIN simulations s ON s.id = e.simulation_id
       WHERE e.type = 'POWERPOINT'
         AND e.created_at >= ${from} AND e.created_at < ${toExclusive}
-        AND ${ownerIsNotTeam('s.user_id')}
+        AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       ORDER BY s.user_id, e.created_at, e.is_privileged DESC
     `
 
@@ -463,7 +463,7 @@ export class ImpactStatisticsService {
           FROM simulation_share_links sl
           INNER JOIN simulations s ON s.id = sl.simulation_id
           WHERE s.deleted IS NULL
-            AND ${ownerIsNotTeam('s.user_id')}
+            AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
         `,
       // Un EPCI travaillé par plusieurs types d'acteurs signale un dialogue entre services
       // de l'État et collectivités autour des mêmes chiffres.
@@ -501,7 +501,7 @@ export class ImpactStatisticsService {
             WHERE c.created_at >= ${from} AND c.created_at < ${toExclusive}
               AND c.action <> 'simulation.deleted'
               AND g.deleted IS NULL
-              AND ${ownerIsNotTeam('g.user_id')}
+              AND ${ownerIsNotTeam('g.user_id', 'g.api_consumer_id')}
           )
           SELECT
             COUNT(DISTINCT id) AS active_dossiers,
@@ -575,7 +575,7 @@ export class ImpactStatisticsService {
         SELECT s.id
         FROM simulations s
         WHERE s.deleted IS NULL
-          AND ${ownerIsNotTeam('s.user_id')}
+          AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       ),
       requests AS (
         SELECT s.user_id, e.created_at, e.simulation_id, e.is_privileged

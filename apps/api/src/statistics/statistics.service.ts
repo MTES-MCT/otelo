@@ -195,7 +195,7 @@ export class StatisticsService {
       JOIN simulations s ON s.id = e.simulation_id
       WHERE e.type = 'POWERPOINT'
         AND e.superseded_at IS NULL
-        AND ${ownerIsNotTeam('s.user_id')}
+        AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
     `
 
     const excelCount = await this.prisma.export.count({
@@ -548,7 +548,7 @@ export class StatisticsService {
       FROM simulation_results sr
       INNER JOIN simulations s ON sr.simulation_id = s.id AND s.deleted IS NULL
       INNER JOIN epcis e ON sr.epci_code = e.code
-      WHERE ${ownerIsNotTeam('s.user_id')}
+      WHERE ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       ${locationFilter}
       GROUP BY COALESCE(e.region_name, e.region)
       ORDER BY COALESCE(e.region_name, e.region)
@@ -572,7 +572,7 @@ export class StatisticsService {
         INNER JOIN epci_scenarios es ON e.code = es.epci_code
         INNER JOIN scenarios sc ON es.scenario_id = sc.id
         INNER JOIN simulations s ON s.scenario_id = sc.id AND s.deleted IS NULL
-        WHERE ${ownerIsNotTeam('s.user_id')}
+        WHERE ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       ) active_e ON all_e.code = active_e.code
       WHERE 1=1
       ${region ? Prisma.sql`AND COALESCE(all_e.region_name, all_e.region) = ${region}` : Prisma.sql``}
@@ -588,7 +588,7 @@ export class StatisticsService {
       INNER JOIN epci_scenarios es ON e.code = es.epci_code
       INNER JOIN scenarios sc ON es.scenario_id = sc.id
       INNER JOIN simulations s ON s.scenario_id = sc.id AND s.deleted IS NULL
-      WHERE ${ownerIsNotTeam('s.user_id')}
+      WHERE ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       ORDER BY region
     `
 
@@ -599,7 +599,7 @@ export class StatisticsService {
       INNER JOIN scenarios sc ON es.scenario_id = sc.id
       INNER JOIN simulations s ON s.scenario_id = sc.id AND s.deleted IS NULL
       WHERE e.department_name IS NOT NULL
-        AND ${ownerIsNotTeam('s.user_id')}
+        AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       ORDER BY department
     `
 
@@ -613,13 +613,13 @@ export class StatisticsService {
       this.prisma.$queryRaw<Array<{ count: number }>>`
         SELECT COUNT(DISTINCT s.id)::int AS count
         FROM simulations s
-        WHERE s.deleted IS NULL AND ${ownerIsNotTeam('s.user_id')}
+        WHERE s.deleted IS NULL AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       `,
       this.prisma.$queryRaw<Array<{ count: number }>>`
         SELECT COUNT(ex.id)::int AS count
         FROM exports ex
         INNER JOIN simulations s ON s.id = ex.simulation_id
-        WHERE s.deleted IS NULL AND ${ownerIsNotTeam('s.user_id')}
+        WHERE s.deleted IS NULL AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       `,
     ])
     const totalScenarios = Number(totalScenariosRow?.count ?? 0)
@@ -696,7 +696,7 @@ export class StatisticsService {
       LEFT JOIN epci_scenarios es ON e.code = es.epci_code
       LEFT JOIN scenarios sc ON es.scenario_id = sc.id
       LEFT JOIN simulations sim ON sim.scenario_id = sc.id AND sim.deleted IS NULL
-        AND ${ownerIsNotTeam('sim.user_id')} ${typologyJoin}
+        AND ${ownerIsNotTeam('sim.user_id', 'sim.api_consumer_id')} ${typologyJoin}
       LEFT JOIN simulation_results sr ON sr.epci_code = e.code AND sr.simulation_id = sim.id
       WHERE 1=1
       ${regionFilter}

@@ -19,7 +19,7 @@ const ACTIVE_SIMULATIONS = Prisma.sql`
   SELECT s.id, s.scenario_id, s.user_id, s.created_at
   FROM simulations s
   WHERE s.deleted IS NULL
-    AND ${ownerIsNotTeam('s.user_id')}
+    AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
 `
 
 /** EPCI couverts par un ensemble de simulations exposant `scenario_id`, par `epci_scenarios` comme la page Impact. */
@@ -211,7 +211,7 @@ export class PublicStatisticsService {
         INNER JOIN simulations s ON s.id = e.simulation_id
         WHERE e.type = 'POWERPOINT'
           AND e.created_at >= ${from}::timestamp AND e.created_at < ${toExclusive}::timestamp
-          AND ${ownerIsNotTeam('s.user_id')}
+          AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       )
       SELECT 'simulations' AS kind, month, COUNT(*) AS count FROM created GROUP BY month
       UNION ALL
