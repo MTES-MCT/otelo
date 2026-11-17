@@ -41,7 +41,7 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
     coveredPopulationShare,
     studiedPopulation,
     studiedPopulationShare,
-    planningDocuments,
+    powerpointRequests,
     engagedDepartments,
     totalDepartments,
     engagedLocalAuthorityAccounts,
@@ -79,15 +79,11 @@ export function KeyFigures({ keyFigures }: { keyFigures: TPublicStatistics['keyF
       </li>
       <li>
         <Figure
-          value={formatInteger(planningDocuments)}
-          label={plural(
-            planningDocuments,
-            "Dossier d'études pour un document d'urbanisme",
-            "Dossiers d'études pour un document d'urbanisme",
-          )}
+          value={formatInteger(powerpointRequests)}
+          label={plural(powerpointRequests, "Demande d'export PowerPoint", "Demandes d'export PowerPoint")}
         >
           <p className={styles.figureDetail}>
-            PLH, PLUi-H, SCoT ou autre document déclaré, avec au moins un scénario exporté en PowerPoint.
+            Document de restitution destiné à la concertation. Une seule demande comptée par personne et par territoire.
           </p>
         </Figure>
       </li>

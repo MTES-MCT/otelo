@@ -73,7 +73,7 @@ describe('PublicStatisticsService (intégration)', () => {
       coveredPopulationShare: 0,
       studiedPopulation: 0,
       studiedPopulationShare: 0,
-      planningDocuments: 0,
+      powerpointRequests: 0,
       engagedDepartments: 0,
       totalDepartments: 1,
       engagedLocalAuthorityAccounts: 0,
@@ -152,7 +152,7 @@ describe('PublicStatisticsService (intégration)', () => {
       coveredPopulationShare: 0,
       studiedPopulation: 0,
       studiedPopulationShare: 0,
-      planningDocuments: 0,
+      powerpointRequests: 0,
       engagedDepartments: 0,
       totalDepartments: 1,
       engagedLocalAuthorityAccounts: 0,
@@ -179,7 +179,7 @@ describe('PublicStatisticsService (intégration)', () => {
       coveredPopulation: 0,
       studiedPopulation: 110000,
       studiedPopulationShare: 75.9,
-      planningDocuments: 0,
+      powerpointRequests: 0,
     })
     expect(s.targetReductions.every((row) => row.scenarios === 0)).toBe(true)
     expect(s.monthly.every((row) => row.exports === 0)).toBe(true)
@@ -204,7 +204,7 @@ describe('PublicStatisticsService (intégration)', () => {
     expect(s.keyFigures).toMatchObject({
       epcisWithSimulation: 0,
       epcisWithExport: 0,
-      planningDocuments: 0,
+      powerpointRequests: 0,
       engagedLocalAuthorityAccounts: 0,
     })
     expect(s.monthly.every((row) => row.simulations === 0 && row.exports === 0 && row.activeEpcis === 0)).toBe(true)
@@ -274,7 +274,37 @@ describe('PublicStatisticsService (intégration)', () => {
       { key: 'SCOT', count: 0 },
       { key: 'AUTRES', count: 0 },
     ])
-    expect(s.keyFigures.planningDocuments).toBe(1)
+  })
+
+  it('demandes d’export PowerPoint : une par personne et par territoire, hors Excel, équipe et clés d’API', async () => {
+    const alice = await createUser(prisma)
+    const bob = await createUser(prisma)
+    const excelOnly = await createUser(prisma)
+    const admin = await createUser(prisma, { role: Role.ADMIN })
+    const consumer = await createApiConsumer(prisma)
+    // Alice : trois demandes successives sur le Grand Chalon, une sur l'Autunois → 2
+    const aliceChalon = await createSimulation(prisma, { userId: alice.id, name: 'Chalon haut' })
+    const aliceChalonBis = await createSimulation(prisma, { userId: alice.id, name: 'Chalon bas' })
+    const aliceAutun = await createSimulation(prisma, { userId: alice.id, name: 'Autun', epciCodes: [AUTUNOIS.code] })
+    await createExport(prisma, { simulationId: aliceChalon.id })
+    await createExport(prisma, { simulationId: aliceChalon.id })
+    await createExport(prisma, { simulationId: aliceChalonBis.id })
+    await createExport(prisma, { simulationId: aliceAutun.id })
+    // Bob : même territoire qu'Alice, mais une autre personne → 1, même après suppression du scénario
+    const bobChalon = await createSimulation(prisma, { userId: bob.id, name: 'Bob' })
+    await createExport(prisma, { simulationId: bobChalon.id })
+    await softDeleteSimulation(prisma, bobChalon.id)
+    // Non comptés : export Excel, équipe, clé d'API
+    const excelSim = await createSimulation(prisma, { userId: excelOnly.id, name: 'Excel' })
+    await createExport(prisma, { simulationId: excelSim.id, type: 'EXCEL' })
+    const adminSim = await createSimulation(prisma, { userId: admin.id, name: 'Équipe' })
+    await createExport(prisma, { simulationId: adminSim.id })
+    const apiSim = await createSimulation(prisma, { apiConsumerId: consumer.id, name: 'API' })
+    await createExport(prisma, { simulationId: apiSim.id })
+
+    const s = await service.getPublicStatistics(NOW)
+
+    expect(s.keyFigures.powerpointRequests).toBe(3)
   })
 
   it('utilisateur non DDT : engagedDepartments à 0', async () => {

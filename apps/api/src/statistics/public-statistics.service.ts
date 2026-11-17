@@ -56,15 +56,17 @@ export class PublicStatisticsService {
     // « Exporté » s'entend d'un PowerPoint, comme la courbe mensuelle des demandes d'export.
     const exported = simulationsExportedIn(ALL_TIME, { powerpointOnly: true })
 
-    const [epcis, coverage, planningDocuments, departments, targetReductions, monthly, engagedLocalAuthorityAccounts] = await Promise.all([
-      this.getEpcis(exported),
-      this.getCoverage(exported),
-      this.getPlanningDocuments(exported),
-      this.getDepartments(),
-      this.impactStatistics.getTargetReductions(exported),
-      this.getMonthly(now),
-      this.getEngagedLocalAuthorityAccounts(),
-    ])
+    const [epcis, coverage, planningDocuments, departments, targetReductions, monthly, engagedLocalAuthorityAccounts, powerpointRequests] =
+      await Promise.all([
+        this.getEpcis(exported),
+        this.getCoverage(exported),
+        this.getPlanningDocuments(exported),
+        this.getDepartments(),
+        this.impactStatistics.getTargetReductions(exported),
+        this.getMonthly(now),
+        this.getEngagedLocalAuthorityAccounts(),
+        this.getPowerpointRequests(),
+      ])
 
     return ZPublicStatistics.parse({
       generatedAt: now.toISOString(),
@@ -75,7 +77,7 @@ export class PublicStatisticsService {
         coveredPopulationShare: percentage(coverage.covered, coverage.total),
         studiedPopulation: coverage.studied,
         studiedPopulationShare: percentage(coverage.studied, coverage.total),
-        planningDocuments: planningDocuments.reduce((sum, row) => sum + row.count, 0),
+        powerpointRequests,
         engagedDepartments: departments.engaged,
         totalDepartments: departments.total,
         engagedLocalAuthorityAccounts,
@@ -155,6 +157,36 @@ export class PublicStatisticsService {
       key,
       count: toNumber(rows.find((row) => row.type === key)?.count),
     }))
+  }
+
+  /**
+   * Demandes d'export PowerPoint, une seule par personne et par territoire, depuis le début.
+   *
+   * Des utilisateurs relancent l'export plusieurs fois sur le même territoire, le temps d'ajuster
+   * leurs scénarios : compter chaque demande gonflerait le chiffre sans refléter un usage de plus.
+   * Le territoire est l'ensemble des EPCI de la simulation exportée ; une demande portant sur
+   * plusieurs scénarios du même territoire compte donc aussi pour une.
+   *
+   * Une demande porte sur les scénarios de son auteur : le propriétaire de la simulation est la
+   * personne qui l'a demandée. Un scénario supprimé depuis compte encore, comme pour les EPCI couverts.
+   * Les clés d'API, qui ne sont pas des personnes, ne comptent pas.
+   */
+  private async getPowerpointRequests(): Promise<number> {
+    const [row] = await this.prisma.$queryRaw<Array<{ count: bigint }>>`
+      SELECT COUNT(*) AS count
+      FROM (
+        SELECT DISTINCT
+          s.user_id,
+          (SELECT string_agg(st."A", ',' ORDER BY st."A") FROM "_EpciToSimulation" st WHERE st."B" = s.id) AS territory
+        FROM exports e
+        INNER JOIN simulations s ON s.id = e.simulation_id
+        WHERE e.type = 'POWERPOINT'
+          AND s.user_id IS NOT NULL
+          AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
+      ) requests
+    `
+
+    return toNumber(row?.count)
   }
 
   /** Départements où une DDT a une simulation en cours, sur l'ensemble des départements connus. */
