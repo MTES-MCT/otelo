@@ -48,15 +48,13 @@ jobs:
           name: 'Lint'
           command: pnpm lint
 
+  # Les jobs de test ne compilent pas @otelo/shared : les configs jest le résolvent vers ses sources.
   test_api:
     executor: node
     steps:
       - checkout
       - install_dependencies
       - prisma_generate
-      - run:
-          name: 'Build shared'
-          command: pnpm build:shared
       - run:
           name: 'Test API'
           command: pnpm -F api test
@@ -71,9 +69,6 @@ jobs:
       - checkout
       - install_dependencies
       - prisma_generate
-      - run:
-          name: 'Build shared'
-          command: pnpm build:shared
       - run:
           name: 'Wait for database'
           command: |
@@ -94,9 +89,6 @@ jobs:
       - checkout
       - install_dependencies
       - prisma_generate
-      - run:
-          name: 'Build shared'
-          command: pnpm build:shared
       # Seules les sources Ubuntu main/universe sont lues : l'image déclare aussi Docker, git-lfs
       # et un PPA git, et l'index complet coûtait ~25 s de `apt-get update` à chaque exécution.
       - run:
