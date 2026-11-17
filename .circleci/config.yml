@@ -58,6 +58,8 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - run_if_affected:
+          area: api
       - install_dependencies
       - prisma_generate
       - run:
@@ -73,6 +75,8 @@ jobs:
           name: 'Check INTEGRATION_DATABASE_URL'
           command: '[ -n "$INTEGRATION_DATABASE_URL" ] || { echo "INTEGRATION_DATABASE_URL manque dans les variables du projet CircleCI"; exit 1; }'
       - checkout
+      - run_if_affected:
+          area: api
       - install_dependencies
       - prisma_generate
       - run:
@@ -94,6 +98,8 @@ jobs:
     resource_class: medium
     steps:
       - checkout
+      - run_if_affected:
+          area: api
       - install_dependencies
       - prisma_generate
       # Seules les sources Ubuntu main/universe sont lues : l'image déclare aussi Docker, git-lfs
@@ -130,6 +136,8 @@ jobs:
     resource_class: medium
     steps:
       - checkout
+      - run_if_affected:
+          area: api
       - install_dependencies
       - prisma_generate
       - run:
@@ -144,6 +152,8 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - run_if_affected:
+          area: web
       - install_dependencies
       - create_dotenv_file
       - run:
@@ -154,6 +164,17 @@ jobs:
           command: pnpm build:web
 
 commands:
+  # Sur une branche de fonctionnalité, arrête le job en succès si rien dans sa zone ni dans
+  # les fichiers partagés n'a changé depuis dev. Toujours exécuté sur dev et main.
+  run_if_affected:
+    parameters:
+      area:
+        type: enum
+        enum: [api, web]
+    steps:
+      - run:
+          name: 'Sélection par chemins (<< parameters.area >>)'
+          command: .circleci/affected.sh << parameters.area >> || circleci-agent step halt
   install_pnpm:
     steps:
       - run:
