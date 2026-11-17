@@ -12,11 +12,13 @@ executors:
   node_with_database:
     docker:
       - image: cimg/node:24
+      # Base jetable, propre au job : CircleCI ne transmet pas les variables du projet aux conteneurs
+      # secondaires, d'où l'authentification sans mot de passe.
       - image: cimg/postgres:16.4
         environment:
           POSTGRES_USER: otelo
-          POSTGRES_PASSWORD: otelo # ggignore
           POSTGRES_DB: otelo-test
+          POSTGRES_HOST_AUTH_METHOD: trust
 
 parameters:
   lockfile:
@@ -93,10 +95,12 @@ jobs:
           command: pnpm -F api test
 
   test_api_integration:
+    # INTEGRATION_DATABASE_URL est définie dans les variables d'environnement du projet CircleCI.
     executor: node_with_database
-    environment:
-      INTEGRATION_DATABASE_URL: 'postgresql://otelo:otelo@localhost:5432/otelo-test' # ggignore
     steps:
+      - run:
+          name: 'Check INTEGRATION_DATABASE_URL'
+          command: '[ -n "$INTEGRATION_DATABASE_URL" ] || { echo "INTEGRATION_DATABASE_URL manque dans les variables du projet CircleCI"; exit 1; }'
       - checkout
       - install_dependencies
       - prisma_generate
