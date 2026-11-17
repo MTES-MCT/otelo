@@ -27,7 +27,8 @@ export const ZPublicStatistics = z.strictObject({
     studiedPopulation: z.number(),
     /** Part de la population étudiée, de 0 à 100, avec une décimale. */
     studiedPopulationShare: z.number(),
-    planningDocuments: z.number(),
+    /** Demandes d'export PowerPoint, une par personne et par territoire, hors équipe et comptes exclus. */
+    powerpointRequests: z.number(),
     engagedDepartments: z.number(),
     totalDepartments: z.number(),
     /** Comptes de collectivités (EPCI, communes, syndicats de SCoT…) dont la demande d'accès a été acceptée. */

@@ -1,6 +1,6 @@
 /**
  * Documents d'urbanisme influencés par Otelo, chiffre déclaratif tenu par l'équipe.
- * Distinct du chiffre calculé `planningDocuments` de l'API (dossiers d'études déclarant un document).
+ * Distinct de la répartition calculée `planningDocumentsByType` de l'API (dossiers d'études déclarant un document).
  */
 export const SURVEY_INFLUENCED_DOCUMENTS = {
   value: 15,
