@@ -6,7 +6,7 @@ import { UnauthenticatedBreadcrumb } from '~/components/breadcrumbs/unauthentica
 
 export default function UnauthenticatedLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const isFullWidthPage = pathname.startsWith('/partage') || pathname === '/amf' || pathname.startsWith('/amf/')
+  const isFullWidthPage = pathname.startsWith('/partage') || pathname === '/flash' || pathname.startsWith('/flash/')
 
   if (isFullWidthPage) {
     return (

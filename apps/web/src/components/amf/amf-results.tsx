@@ -5,7 +5,7 @@ import Alert from '@codegouvfr/react-dsfr/Alert'
 import { FC } from 'react'
 import { AmfShareForm } from '~/components/amf/amf-share-form'
 import { formatNumber } from '~/components/amf/amf-steps'
-import { TAmfResult } from '~/components/amf/amf-types'
+import { TAmfRange, TAmfResult } from '~/components/amf/amf-types'
 import styles from './amf.module.css'
 
 type AmfResultsProps = {
@@ -13,8 +13,17 @@ type AmfResultsProps = {
   leadId: string
 }
 
-/** Signe d'une contribution : « + » pour une valeur positive ou nulle, « − » sinon. */
-const signOf = (value: number) => (value < 0 ? '−' : '+')
+/** Signe d'une contribution : « − » pour une fourchette négative, « + » sinon. */
+const isNegative = (range: TAmfRange) => range.min < 0
+
+/** « moins de 50 » ou « 1 000 à 1 500 », sur la valeur absolue des bornes. */
+const formatRange = (range: TAmfRange) => {
+  const low = Math.min(Math.abs(range.min), Math.abs(range.max))
+  const high = Math.max(Math.abs(range.min), Math.abs(range.max))
+  return low === 0 ? `moins de ${formatNumber(high)}` : `${formatNumber(low)} à ${formatNumber(high)}`
+}
+
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
 
 export const AmfResults: FC<AmfResultsProps> = ({ result, leadId }) => {
   const { total, annualAverage, horizon, baseYear, peakYear, blocks } = result
@@ -24,10 +33,10 @@ export const AmfResults: FC<AmfResultsProps> = ({ result, leadId }) => {
 
   const lines = blocks
     ? [
-        { symbol: '=', label: 'Évolution de la population', value: blocks.population, signed: false },
-        { symbol: signOf(blocks.vacancy), label: 'Logements vacants', value: blocks.vacancy, signed: true },
-        { symbol: signOf(blocks.secondaryResidences), label: 'Résidences secondaires', value: blocks.secondaryResidences, signed: true },
-        { symbol: signOf(blocks.badHousing), label: 'Résorption du mal-logement', value: blocks.badHousing, signed: true },
+        { label: 'Évolution de la population', range: blocks.population },
+        { label: 'Logements vacants', range: blocks.vacancy },
+        { label: 'Résidences secondaires', range: blocks.secondaryResidences },
+        { label: 'Résorption du mal-logement', range: blocks.badHousing },
       ]
     : []
 
@@ -36,13 +45,13 @@ export const AmfResults: FC<AmfResultsProps> = ({ result, leadId }) => {
       <h1 className={fr.cx('fr-h3')}>Votre besoin en logements</h1>
 
       <div className={styles.total}>
-        <p className={fr.cx('fr-display--sm', 'fr-mb-1v')}>{formatNumber(total)}</p>
+        <p className={fr.cx('fr-display--sm', 'fr-mb-1v')}>{total ? capitalize(formatRange(total)) : 'Aucun'}</p>
         <p className={fr.cx('fr-text--lead', 'fr-mb-1v')}>
-          {total > 1 ? 'logements' : 'logement'} à construire d&apos;ici {horizon}
+          {total ? 'logements' : 'logement'} à construire d&apos;ici {horizon}
         </p>
-        {blocks && (
+        {annualAverage && (
           <p className={fr.cx('fr-mb-0')}>
-            soit environ {formatNumber(annualAverage)} par an{hasPeakBeforeHorizon && <> jusqu&apos;en {peakYear}</>}
+            soit {formatRange(annualAverage)} par an{hasPeakBeforeHorizon && <> jusqu&apos;en {peakYear}</>}
           </p>
         )}
       </div>
@@ -67,13 +76,13 @@ export const AmfResults: FC<AmfResultsProps> = ({ result, leadId }) => {
           {lines.map((line) => (
             <li key={line.label} className={styles.block}>
               <span className={styles.symbol} aria-hidden="true">
-                {line.symbol}
+                {isNegative(line.range) ? '−' : '+'}
               </span>
               <span className={styles.label}>{line.label}</span>
               <span className={styles.value}>
                 {/* Le signe porté par le symbole n'est pas vocalisé : on le restitue pour les lecteurs d'écran. */}
-                {line.signed && <span className={fr.cx('fr-sr-only')}>{line.value < 0 ? 'moins ' : 'plus '}</span>}
-                {formatNumber(line.signed ? Math.abs(line.value) : line.value)}
+                <span className={fr.cx('fr-sr-only')}>{isNegative(line.range) ? 'en moins : ' : 'en plus : '}</span>
+                {formatRange(line.range)}
               </span>
             </li>
           ))}
@@ -92,7 +101,7 @@ export const AmfResults: FC<AmfResultsProps> = ({ result, leadId }) => {
       )}
 
       <p className={fr.cx('fr-text--sm', 'fr-mt-3w')}>
-        Ces premiers chiffres ne sont pas encore précis. Invitez votre chef de service habitat à les affiner dans Otelo pour définir un
+        Ces fourchettes donnent un premier ordre de grandeur. Invitez votre chef de service habitat à les affiner dans Otelo pour définir un
         scénario pleinement pertinent pour votre territoire.
       </p>
 

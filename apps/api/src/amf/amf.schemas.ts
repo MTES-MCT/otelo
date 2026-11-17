@@ -17,18 +17,23 @@ export const ZAmfCreateSimulationBody = ZAmfAnswers.extend({ email: z.email() })
 export type TAmfAnswers = z.output<typeof ZAmfAnswers>
 export type TAmfCreateSimulationBody = z.output<typeof ZAmfCreateSimulationBody>
 
+export const ZAmfRange = z
+  .object({ min: z.number(), max: z.number() })
+  .describe('Fourchette à paliers fixes ; min vaut 0 pour « moins de max », et une contribution négative a ses deux bornes ≤ 0')
+export type TAmfRange = z.output<typeof ZAmfRange>
+
 export const ZAmfResult = z.object({
   baseYear: z.number(),
   horizon: z.number(),
   peakYear: z.number().nullable().describe("Année du pic de ménages quand elle précède l'horizon, sinon null"),
-  total: z.number(),
-  annualAverage: z.number(),
+  total: ZAmfRange.nullable().describe('null quand le besoin est nul'),
+  annualAverage: ZAmfRange.nullable(),
   blocks: z
     .object({
-      population: z.number(),
-      vacancy: z.number(),
-      secondaryResidences: z.number(),
-      badHousing: z.number(),
+      population: ZAmfRange,
+      vacancy: ZAmfRange,
+      secondaryResidences: ZAmfRange,
+      badHousing: ZAmfRange,
     })
     .nullable(),
 })

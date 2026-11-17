@@ -181,7 +181,7 @@ describe('AmfService.createSimulation et addContacts', () => {
   it('renvoie leadId et le résultat calculé', async () => {
     const response = await service.createSimulation('consumer-1', body)
     expect(response.leadId).toBe('11111111-1111-4111-8111-111111111111')
-    expect(response.result.total).toBe(1000)
+    expect(response.result.total).toEqual({ min: 1000, max: 1200 })
     expect(response.result.baseYear).toBe(2022)
   })
 
