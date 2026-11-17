@@ -215,18 +215,20 @@ model Export {
 }
 
 model ApiConsumer {
-  id          String                  @id @default(uuid())
-  name        String
+  id                     String                  @id @default(uuid())
+  name                   String
   /// Empreinte SHA-256 : la clé en clair n'est jamais stockée. Perdue, elle se régénère.
-  hashedKey   String                  @unique @map("hashed_key")
-  prefix      String
-  active      Boolean                 @default(true)
-  createdAt   DateTime                @default(now()) @map("created_at")
-  lastUsedAt  DateTime?               @map("last_used_at")
-  scenarios   Scenario[]
-  simulations Simulation[]
-  epciGroups  EpciGroup[]
-  dailyUsage  ApiConsumerUsageDaily[]
+  hashedKey              String                  @unique @map("hashed_key")
+  prefix                 String
+  active                 Boolean                 @default(true)
+  createdAt              DateTime                @default(now()) @map("created_at")
+  lastUsedAt             DateTime?               @map("last_used_at")
+  /// Écartée des statistiques d'usage. Le marquage se fait en base, comme pour `User.excludedFromStatistics`.
+  excludedFromStatistics Boolean                 @default(false) @map("excluded_from_statistics")
+  scenarios              Scenario[]
+  simulations            Simulation[]
+  epciGroups             EpciGroup[]
+  dailyUsage             ApiConsumerUsageDaily[]
 
   @@map("api_consumers")
 }

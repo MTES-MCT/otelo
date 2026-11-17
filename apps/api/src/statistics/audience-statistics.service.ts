@@ -14,7 +14,7 @@ import {
 import type { DateRange } from '~/common/utils/date-range'
 import { PrismaService } from '~/db/prisma.service'
 import { percentage, round, toNumber } from './statistics-numbers'
-import { OWNER_IS_NOT_TEAM, ownerIsNotTeam } from './team'
+import { OWNER_IS_NOT_TEAM, ownerIsNotTeam, USER_IS_NOT_TEAM } from './team'
 
 @Injectable()
 export class AudienceStatisticsService {
@@ -124,7 +124,7 @@ export class AudienceStatisticsService {
       FROM simulation_share_links sl
       INNER JOIN simulations s ON s.id = sl.simulation_id
       WHERE sl.created_at >= ${from} AND sl.created_at < ${toExclusive}
-        AND ${ownerIsNotTeam('s.user_id')}
+        AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
     `
 
     const topShared = await this.prisma.$queryRaw<
@@ -150,7 +150,7 @@ export class AudienceStatisticsService {
       INNER JOIN simulations s ON s.id = sl.simulation_id
       LEFT JOIN users u ON u.id = s.user_id
       WHERE sl.created_at >= ${from} AND sl.created_at < ${toExclusive}
-        AND ${ownerIsNotTeam('s.user_id')}
+        AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       ORDER BY sl.view_count DESC, sl.created_at DESC
       LIMIT 10
     `
@@ -380,7 +380,7 @@ export class AudienceStatisticsService {
 
     const where = {
       createdAt: { gte: range.from, lt: range.toExclusive },
-      ...OWNER_IS_NOT_TEAM,
+      ...USER_IS_NOT_TEAM,
       ...(action ? { action } : {}),
       ...(search
         ? {

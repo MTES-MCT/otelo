@@ -18,7 +18,7 @@ export const simulationsExportedIn = ({ from, toExclusive }: DateRange, { powerp
   INNER JOIN simulations s ON s.id = e.simulation_id
   WHERE e.created_at >= ${from} AND e.created_at < ${toExclusive}
     ${powerpointOnly ? Prisma.sql`AND e.type = 'POWERPOINT'` : Prisma.empty}
-    AND ${ownerIsNotTeam('s.user_id')}
+    AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
 `
 
 /** Population du dernier recensement disponible pour chaque EPCI. */

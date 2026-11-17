@@ -30,16 +30,35 @@ import { Role } from '~/generated/prisma/enums'
 /** Filtre Prisma sur le modèle `user` lui-même. */
 export const IS_ROLE_USER = { role: Role.USER, excludedFromStatistics: false } as const
 
-/** Filtre Prisma sur un modèle qui porte une relation `user` facultative. */
-export const OWNER_IS_NOT_TEAM: { NOT: { user: Prisma.UserWhereInput } } = {
-  NOT: { user: { OR: [{ role: Role.ADMIN }, { excludedFromStatistics: true }] } },
+const EXCLUDED_USER: Prisma.UserWhereInput = { OR: [{ role: Role.ADMIN }, { excludedFromStatistics: true }] }
+
+/*
+ * Une clé d'API marquée `excluded_from_statistics` est écartée de la même façon : ses scénarios,
+ * simulations et dossiers ne comptent plus. Les lignes d'une clé non marquée restent comptées.
+ */
+
+/** Filtre Prisma sur un modèle qui ne porte qu'une relation `user` facultative (journal des modifications). */
+export const USER_IS_NOT_TEAM: { NOT: { user: Prisma.UserWhereInput } } = { NOT: { user: EXCLUDED_USER } }
+
+/**
+ * Filtre Prisma sur un modèle appartenant à un utilisateur ou à une clé d'API (scénario, simulation, dossier).
+ * `NOT` sur une liste exige que chaque condition soit fausse, et une relation nulle n'en remplit aucune.
+ */
+export const OWNER_IS_NOT_TEAM: {
+  NOT: [{ user: Prisma.UserWhereInput }, { apiConsumer: Prisma.ApiConsumerWhereInput }]
+} = {
+  NOT: [{ user: EXCLUDED_USER }, { apiConsumer: { excludedFromStatistics: true } }],
 }
 
 /**
- * Condition SQL sur une colonne portant un identifiant d'utilisateur.
+ * Condition SQL sur une colonne portant un identifiant d'utilisateur et, pour les tables qui en ont une,
+ * sur celle portant l'identifiant d'une clé d'API.
  *
- * `column` est un nom de colonne écrit dans le code, jamais une donnée reçue : il est
- * interpolé tel quel, ce que `Prisma.raw` autorise et que le reste du fichier interdit.
+ * Les colonnes sont des noms écrits dans le code, jamais une donnée reçue : elles sont
+ * interpolées telles quelles, ce que `Prisma.raw` autorise et que le reste du fichier interdit.
  */
-export const ownerIsNotTeam = (column: string): Prisma.Sql =>
-  Prisma.sql`NOT EXISTS (SELECT 1 FROM users otelo_team WHERE otelo_team.id = ${Prisma.raw(column)} AND (otelo_team.role = 'ADMIN' OR otelo_team.excluded_from_statistics))`
+export const ownerIsNotTeam = (userColumn: string, apiConsumerColumn?: string): Prisma.Sql => {
+  const user = Prisma.sql`NOT EXISTS (SELECT 1 FROM users otelo_team WHERE otelo_team.id = ${Prisma.raw(userColumn)} AND (otelo_team.role = 'ADMIN' OR otelo_team.excluded_from_statistics))`
+  if (!apiConsumerColumn) return user
+  return Prisma.sql`${user} AND NOT EXISTS (SELECT 1 FROM api_consumers otelo_excluded WHERE otelo_excluded.id = ${Prisma.raw(apiConsumerColumn)} AND otelo_excluded.excluded_from_statistics)`
+}

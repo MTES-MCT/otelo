@@ -24,6 +24,7 @@ export async function resetDatabase(prisma: PrismaService): Promise<void> {
   await prisma.scenario.deleteMany()
   await prisma.epciGroupEpcis.deleteMany()
   await prisma.epciGroup.deleteMany()
+  await prisma.apiConsumer.deleteMany()
   await prisma.user.deleteMany()
   await prisma.ePCIScenario.deleteMany()
   await prisma.rP.deleteMany()
@@ -74,9 +75,22 @@ export async function createEpciGroup(prisma: PrismaService, userId: string, nam
   return prisma.epciGroup.create({ data: { name, userId } })
 }
 
+/** Clé d'API externe : ses simulations n'appartiennent à aucun utilisateur. */
+export async function createApiConsumer(prisma: PrismaService, overrides: { excludedFromStatistics?: boolean } = {}) {
+  const id = randomUUID()
+  return prisma.apiConsumer.create({
+    data: {
+      name: `Bureau d'études ${id}`,
+      hashedKey: id,
+      prefix: id.slice(0, 8),
+      excludedFromStatistics: overrides.excludedFromStatistics,
+    },
+  })
+}
+
 export async function createSimulation(
   prisma: PrismaService,
-  options: { userId: string; epciGroupId?: string; name: string; epciCodes?: string[] },
+  options: { userId?: string; apiConsumerId?: string; epciGroupId?: string; name: string; epciCodes?: string[] },
 ) {
   const epciCodes = options.epciCodes ?? [GRAND_CHALON.code]
   const scenario = await prisma.scenario.create({
@@ -85,6 +99,7 @@ export async function createSimulation(
       b2_scenario: 'Central_C',
       millesime: MILLESIME,
       userId: options.userId,
+      apiConsumerId: options.apiConsumerId,
       epciScenarios: { create: epciCodes.map((epciCode, index) => ({ epciCode, baseEpci: index === 0 })) },
     },
   })
@@ -93,6 +108,7 @@ export async function createSimulation(
     data: {
       name: options.name,
       userId: options.userId,
+      apiConsumerId: options.apiConsumerId,
       epciGroupId: options.epciGroupId,
       scenarioId: scenario.id,
       epcis: { connect: epciCodes.map((code) => ({ code })) },
