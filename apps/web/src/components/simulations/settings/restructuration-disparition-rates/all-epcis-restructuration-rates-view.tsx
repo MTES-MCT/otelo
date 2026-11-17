@@ -1,9 +1,10 @@
 'use client'
 
-import { parseAsString, useQueryState } from 'nuqs'
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
 import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { CreateAllRestructurationDisparitionRatesInput } from '~/components/simulations/settings/restructuration-disparition-rates/create-all-restructuration-disparition-rates-input'
+import { ChoiceHelpButton } from '~/components/simulations/tutorial/tutorial-button'
 
 const getObservedRatesPeriodLabel = (millesime?: string): string => {
   const year = Number(millesime)
@@ -13,6 +14,7 @@ const getObservedRatesPeriodLabel = (millesime?: string): string => {
 export const AllEpcisRestructurationRatesView: FC = () => {
   const { defaultRates } = useEpcisRates()
   const [millesime] = useQueryState('millesime', parseAsString)
+  const [projection] = useQueryState('projection', parseAsInteger)
   const epciIds = Object.keys(defaultRates)
   const observedPeriodLabel = getObservedRatesPeriodLabel(millesime ?? undefined)
 
@@ -25,12 +27,15 @@ export const AllEpcisRestructurationRatesView: FC = () => {
 
   return (
     <div className="fr-p-4w shadow">
-      <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-        <span className="fr-text-mention--grey fr-mb-3v">
-          Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre {observedPeriodLabel}. Les taux moyens observés sur
-          l'ensemble du territoire sont de <strong>{(averageRestructuringRate * 100).toFixed(2)} %</strong> pour la restructuration et{' '}
-          <strong>{(averageDisappearanceRate * 100).toFixed(2)} %</strong> pour la disparition.
-        </span>
+      <div className="fr-flex fr-direction-column fr-flex-gap-4v fr-justify-content-space-between">
+        <ChoiceHelpButton />
+        {/* Introduit le renouvellement urbain plutôt que d'inciter à reconduire les taux par défaut. */}
+        <p className="fr-mb-1v">
+          Entre {observedPeriodLabel}, le parc de logements de votre territoire a évolué sous l&apos;effet des démolitions, fusions,
+          divisions et changements d&apos;usage, à un rythme moyen de <strong>{(averageRestructuringRate * 100).toFixed(2)} %</strong> par
+          an pour la restructuration et <strong>{(averageDisappearanceRate * 100).toFixed(2)} %</strong> pour la disparition. Quel rythme
+          anticipez-vous d&apos;ici {projection} ?
+        </p>
         <CreateAllRestructurationDisparitionRatesInput />
       </div>
     </div>

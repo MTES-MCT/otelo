@@ -1,4 +1,4 @@
-import { ZResultsBase, ZStockRequirementsResults as ZStockRequirementsResultsBase } from '@shared'
+import { ZResultsBase, ZStockRequirementsResults as ZStockRequirementsResultsBase } from '@otelo/shared'
 import { z } from 'zod'
 
 export const ZStockRequirementsResults = ZStockRequirementsResultsBase

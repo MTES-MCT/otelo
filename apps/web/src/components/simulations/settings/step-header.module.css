@@ -1,0 +1,27 @@
+.header {
+  background-color: var(--background-default-grey);
+  border-bottom: 1px solid var(--border-default-grey);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.text {
+  min-width: 0;
+}
+
+/*
+ * Sous 48em, le libellé du bouton est trop long pour cohabiter avec le titre de l'étape : il reprend
+ * sa place dans le flux, sous le titre.
+ */
+@media (min-width: 48em) {
+  .header {
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .action {
+    flex-shrink: 0;
+  }
+}

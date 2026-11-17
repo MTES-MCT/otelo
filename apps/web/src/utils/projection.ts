@@ -14,6 +14,17 @@ export const getMinProjectionYear = (millesime?: string | number | null): number
   return (Number.isFinite(year) && year > 0 ? year : FALLBACK_MILLESIME) + 1
 }
 
+/**
+ * Période sur laquelle les taux de renouvellement urbain reconduits par défaut ont été mesurés.
+ *
+ * Elle suit le millésime des données : le pack 2022 porte des taux mesurés jusqu'en 2022, les
+ * packs antérieurs jusqu'en 2021.
+ */
+export const getObservedRatesPeriodLabel = (millesime?: string | number | null): string => {
+  const year = Number(millesime)
+  return Number.isFinite(year) && year >= 2022 ? '2015 et 2022' : '2015 et 2021'
+}
+
 /** Ramène une projection dans les bornes autorisées par le millésime. */
 export const clampProjectionYear = (projection: number, millesime?: string | number | null): number => {
   const minYear = getMinProjectionYear(millesime)

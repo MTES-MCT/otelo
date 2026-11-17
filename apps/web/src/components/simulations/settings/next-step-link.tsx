@@ -13,6 +13,8 @@ type NextStepLinkProps = {
   isDisabled?: boolean
   priority?: 'secondary' | 'primary' | 'tertiary' | 'tertiary no outline' | undefined
   touchedQueryParam?: string
+  /** Remplace la navigation directe, par exemple pour intercaler une modale avant l'étape suivante. */
+  onNext?: () => void
 }
 
 export const NextStepLinkWithoutValidation: FC<Pick<NextStepLinkProps, 'href' | 'label' | 'priority'>> = ({ href, label = 'Suivant' }) => {
@@ -26,7 +28,15 @@ export const NextStepLinkWithoutValidation: FC<Pick<NextStepLinkProps, 'href' | 
   )
 }
 
-export const NextStepLink: FC<NextStepLinkProps> = ({ defaultValue, href, label = 'Suivant', query, isDisabled, touchedQueryParam }) => {
+export const NextStepLink: FC<NextStepLinkProps> = ({
+  defaultValue,
+  href,
+  label = 'Suivant',
+  query,
+  isDisabled,
+  touchedQueryParam,
+  onNext,
+}) => {
   const [queryState, setQueryState] = useQueryStates({
     [query]: parseAsString.withDefault(defaultValue ?? ''),
     ...(touchedQueryParam ? { [touchedQueryParam]: parseAsString } : {}),
@@ -47,6 +57,14 @@ export const NextStepLink: FC<NextStepLinkProps> = ({ defaultValue, href, label 
   if (disabled) {
     return (
       <Button disabled size="large" iconId="ri-arrow-right-line" iconPosition="right" onClick={handleClick}>
+        {label}
+      </Button>
+    )
+  }
+
+  if (onNext) {
+    return (
+      <Button size="large" iconId="ri-arrow-right-line" iconPosition="right" onClick={onNext}>
         {label}
       </Button>
     )

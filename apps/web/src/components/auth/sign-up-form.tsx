@@ -53,8 +53,8 @@ export const SignUpForm: FC = () => {
 
   const onProConnectSignIn = async () => {
     try {
-      await signIn.oauth2({
-        providerId: 'proconnect',
+      await signIn.social({
+        provider: 'proconnect',
       })
     } catch (error) {
       console.error('Error signing in with ProConnect', error)

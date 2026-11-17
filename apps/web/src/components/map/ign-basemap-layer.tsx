@@ -22,8 +22,13 @@ export function IgnBasemapLayer() {
 
     void (async () => {
       const { default: L } = await import('leaflet')
+      const { setWorkerUrl } = await import('maplibre-gl')
       await import('@maplibre/maplibre-gl-leaflet')
       if (cancelled) return
+
+      // Depuis la v6, maplibre ne retrouve plus son worker derrière un bundler : sans URL explicite, il
+      // charge la page HTML à la place. Next émet le fichier comme asset haché à partir de ce `new URL`.
+      setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString())
 
       layer = L.maplibreGL({
         style: IGN_STYLE_URL,

@@ -1,4 +1,3 @@
-import Alert from '@codegouvfr/react-dsfr/Alert'
 import type { Metadata } from 'next'
 import { SearchParams } from 'nuqs'
 import { searchParamsCache } from '~/app/(authenticated)/simulation/(creation)/searchParams'
@@ -8,14 +7,16 @@ import { PopulationScenariosChart } from '~/components/charts/population-scenari
 import { PrefetchCreationSimulationPreview } from '~/components/simulations/preview/prefetch-creation-simulation-preview'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { DemographicSettingsHeader } from '~/components/simulations/settings/demographic-settings-header'
-import { NextStepLink } from '~/components/simulations/settings/next-step-link'
+import { DemographicNextStep } from '~/components/simulations/settings/demographic-transition-modal'
+import { FragileProjectionAlert } from '~/components/simulations/settings/fragile-projection-alert'
+import { InfographieLink } from '~/components/simulations/settings/infographie-link'
 import { PreviousStepLink } from '~/components/simulations/settings/previous-step-link'
 import { getEpcisWithoutInseeProjection } from '~/server-only/demographic-evolution/get-epcis-without-insee-projection'
 import { getOmphaleDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-omphale-evolution-by-epci'
 import { getPopulationDemographicEvolutionByEpci } from '~/server-only/demographic-evolution/get-population-evolution-by-epci'
 
 export const metadata: Metadata = {
-  title: 'Elaborer scenario - étape 3 sur 6 - Otelo',
+  title: 'Élaborer un scénario - étape 3 sur 6 - Otelo',
 }
 
 type PageProps = {
@@ -30,45 +31,27 @@ export default async function DemographicSettingsPage({ searchParams }: PageProp
     getEpcisWithoutInseeProjection(epcis),
   ])
   const href = `/simulation/taux-cibles-logements-vacants`
-  const hasEpcisWithoutInseeProjection = epcisWithoutInseeProjection.length > 0
 
   return (
     <>
       <PrefetchCreationSimulationPreview />
-      {hasEpcisWithoutInseeProjection && (
-        <div className="fr-py-2w fr-pt-2w">
-          <Alert
-            severity="warning"
-            small
-            description={
-              <>
-                Pour ce territoire, l'INSEE ne propose pas de projections démographiques robustes. Les projections affichées ont été
-                recalculées en ventilant les projections départementales — ménages ou population — au prorata du poids de l'EPCI dans le
-                département.{' '}
-                <a href="/guide#elaboration-projections" target="_blank" rel="noopener noreferrer">
-                  En savoir plus
-                </a>
-              </>
-            }
-          />
-        </div>
-      )}
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
-        <DemographicSettingsHeader>
-          <ChartDownloadWrapper fileName="scenarios-population">
+        <DemographicSettingsHeader notice={<FragileProjectionAlert epciCodes={epcisWithoutInseeProjection} epcisCount={epcis.length} />}>
+          <ChartDownloadWrapper fileName="scenarios-population" withFloatingButton={false}>
             <PopulationScenariosChart demographicEvolution={populationEvolution} />
           </ChartDownloadWrapper>
-          <ChartDownloadWrapper fileName="scenarios-omphale">
-            <OmphaleScenariosChart demographicEvolution={omphaleEvolution} />
+          <ChartDownloadWrapper fileName="scenarios-omphale" withFloatingButton={false}>
+            <OmphaleScenariosChart demographicEvolution={omphaleEvolution} fragileEpciCodes={epcisWithoutInseeProjection} />
           </ChartDownloadWrapper>
         </DemographicSettingsHeader>
       </div>
-      <div className="fr-px-2w fr-pt-2w">
+      <div className="fr-flex fr-flex-gap-2v fr-px-2w fr-pt-2w">
+        <InfographieLink />
         <DataSourceLink anchor="#projections-demographiques" />
       </div>
       <div className="fr-flex fr-flex-gap-6v fr-justify-content-end fr-py-4w fr-px-2w">
         <PreviousStepLink />
-        <NextStepLink href={href} query="omphale" touchedQueryParam="omphaleTouched" />
+        <DemographicNextStep href={href} />
       </div>
     </>
   )

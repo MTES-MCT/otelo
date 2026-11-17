@@ -3,7 +3,12 @@ import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Prisma, Role } from '~/generated/prisma/client'
 import { PreviewService } from '~/preview/preview.service'
-import { TPreviewSimulationDto, ZPreviewSimulationDto } from '~/schemas/simulations/simulation'
+import {
+  TPreviewForSimulationBody,
+  TPreviewSimulationDto,
+  ZPreviewForSimulationBody,
+  ZPreviewSimulationDto,
+} from '~/schemas/simulations/simulation'
 import { TUser } from '~/schemas/users/user'
 
 @Controller('simulations')
@@ -15,8 +20,7 @@ export class PreviewController {
   })
   @Post('preview')
   @HttpCode(HttpStatus.OK)
-  async preview(@Body() body: TPreviewSimulationDto, @User() { id: userId }: TUser) {
-    const dto = ZPreviewSimulationDto.parse(body)
+  async preview(@Body({ schema: ZPreviewSimulationDto }) dto: TPreviewSimulationDto, @User() { id: userId }: TUser) {
     return this.previewService.calculate(dto, userId)
   }
 
@@ -29,10 +33,9 @@ export class PreviewController {
   @HttpCode(HttpStatus.OK)
   async previewForSimulation(
     @Param('simulationId') simulationId: string,
-    @Body() body: Omit<TPreviewSimulationDto, 'simulationId'>,
+    @Body({ schema: ZPreviewForSimulationBody }) body: TPreviewForSimulationBody,
     @User() { id: userId }: TUser,
   ) {
-    const dto = ZPreviewSimulationDto.parse({ ...body, simulationId })
-    return this.previewService.calculate(dto, userId)
+    return this.previewService.calculate({ ...body, simulationId }, userId)
   }
 }

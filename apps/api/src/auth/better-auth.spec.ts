@@ -1,6 +1,16 @@
 jest.unmock('~/auth/better-auth')
 
-import { checkWhitelistBeforeCreate, recordLoginEvent, resolveLoginProvider, touchLoginEvent, updateLastLoginAt } from './better-auth'
+import {
+  mapProConnectProfileToUser,
+  prepareTwoFactorForSignIn,
+  prepareUserBeforeCreate,
+  recordLoginEvent,
+  resolveLoginProvider,
+  sendTwoFactorCode,
+  toProConnectProfile,
+  touchLoginEvent,
+  updateLastLoginAt,
+} from './better-auth'
 
 jest.mock('better-auth', () => ({
   betterAuth: jest.fn().mockReturnValue({
@@ -9,13 +19,175 @@ jest.mock('better-auth', () => ({
   }),
 }))
 jest.mock('better-auth/adapters/prisma', () => ({ prismaAdapter: jest.fn() }))
-jest.mock('better-auth/plugins', () => ({ admin: jest.fn(), genericOAuth: jest.fn() }))
+jest.mock('better-auth/api', () => ({ createAuthMiddleware: (fn: unknown) => fn }))
+jest.mock('better-auth/crypto', () => ({
+  generateRandomString: jest.fn(() => 'secret-aleatoire'),
+  symmetricEncrypt: jest.fn(async ({ data }: { data: string }) => `chiffre(${data})`),
+}))
+jest.mock('better-auth/plugins', () => ({ admin: jest.fn(), genericOAuth: jest.fn(), twoFactor: jest.fn() }))
 jest.mock('better-auth/plugins/admin/access', () => ({ adminAc: {}, userAc: {} }))
 jest.mock('@prisma/adapter-pg', () => ({ PrismaPg: jest.fn() }))
 jest.mock('~/generated/prisma/client', () => ({ PrismaClient: jest.fn() }))
 
 describe('better-auth hooks', () => {
-  describe('checkWhitelistBeforeCreate', () => {
+  describe('sendTwoFactorCode', () => {
+    const user = { email: 'agent@test.com', id: 'user-1' }
+    let fetchSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true, text: async () => '' } as Response)
+    })
+
+    afterEach(() => {
+      fetchSpy.mockRestore()
+    })
+
+    const dbWith = (account: unknown) => ({ user: { findUnique: jest.fn().mockResolvedValue(account) } })
+
+    it('should send the link and the code to an account with access', async () => {
+      await sendTwoFactorCode(dbWith({ firstname: 'Camille', hasAccess: true, role: 'USER' }), user, '482917')
+
+      expect(fetchSpy).toHaveBeenCalledTimes(1)
+      const body = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.params).toEqual({
+        code: '482917',
+        firstname: 'Camille',
+        // Seul chemin de changement de mot de passe accessible à quelqu'un à qui l'on
+        // demande justement de ne pas terminer sa connexion.
+        resetPasswordUrl: 'https://otelo.test/mot-de-passe-oublie',
+        verificationUrl: 'https://otelo.test/connexion/double-authentification?code=482917',
+      })
+    })
+
+    /**
+     * Le prénom vient de la colonne `firstname`, pas d'un découpage de `name` sur la
+     * première espace : ce découpage amputait « Marie Claire » en « Marie », et se
+     * trompait complètement pour les comptes ProConnect, où `name` concatène le prénom
+     * et le nom d'usage.
+     */
+    it('should take the first name from the model, spaces included', async () => {
+      await sendTwoFactorCode(dbWith({ firstname: 'Marie Claire', hasAccess: true, role: 'USER' }), user, '482917')
+
+      const body = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.params.firstname).toBe('Marie Claire')
+    })
+
+    // `/two-factor/send-otp` accepte aussi les requêtes portant une session ouverte :
+    // un compte non validé, qui en obtient une sans aucun droit, pouvait déclencher
+    // l'envoi en appelant l'endpoint directement.
+    it('should send nothing to an account still awaiting validation', async () => {
+      await sendTwoFactorCode(dbWith({ firstname: 'Camille', hasAccess: false, role: 'USER' }), user, '482917')
+
+      expect(fetchSpy).not.toHaveBeenCalled()
+    })
+
+    it('should send to an admin even without hasAccess', async () => {
+      await sendTwoFactorCode(dbWith({ firstname: 'Camille', hasAccess: false, role: 'ADMIN' }), user, '482917')
+
+      expect(fetchSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should send nothing when the account no longer exists', async () => {
+      await sendTwoFactorCode(dbWith(null), user, '482917')
+
+      expect(fetchSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('prepareTwoFactorForSignIn', () => {
+    const mockDb = {
+      user: { findUnique: jest.fn(), update: jest.fn() },
+      twoFactor: { findFirst: jest.fn(), create: jest.fn() },
+    }
+
+    const granted = { hasAccess: true, id: 'user-1', role: 'USER', twoFactorEnabled: true }
+
+    beforeEach(() => jest.clearAllMocks())
+
+    it('should create the record when the account has none', async () => {
+      mockDb.user.findUnique.mockResolvedValue(granted)
+      mockDb.twoFactor.findFirst.mockResolvedValue(null)
+
+      await prepareTwoFactorForSignIn(mockDb, 'agent@test.com', 'secret-app')
+
+      expect(mockDb.twoFactor.create).toHaveBeenCalledWith({
+        data: {
+          // Liste vide : `/two-factor/verify-backup-code` ne peut jamais aboutir.
+          backupCodes: '[]',
+          secret: 'chiffre(secret-aleatoire)',
+          userId: 'user-1',
+        },
+      })
+    })
+
+    it('should not duplicate an existing record', async () => {
+      mockDb.user.findUnique.mockResolvedValue(granted)
+      mockDb.twoFactor.findFirst.mockResolvedValue({ id: 'tf-1' })
+
+      await prepareTwoFactorForSignIn(mockDb, 'agent@test.com', 'secret-app')
+
+      expect(mockDb.twoFactor.create).not.toHaveBeenCalled()
+    })
+
+    it('should do nothing for an unknown email', async () => {
+      mockDb.user.findUnique.mockResolvedValue(null)
+
+      await prepareTwoFactorForSignIn(mockDb, 'inconnu@test.com', 'secret-app')
+
+      expect(mockDb.twoFactor.findFirst).not.toHaveBeenCalled()
+      expect(mockDb.twoFactor.create).not.toHaveBeenCalled()
+    })
+
+    // Un compte en attente de validation ne doit recevoir aucun code : il serait
+    // orienté vers la page d'accès non autorisé de toute façon.
+    it('should disable two-factor for an account still awaiting validation', async () => {
+      mockDb.user.findUnique.mockResolvedValue({ hasAccess: false, id: 'user-2', role: 'USER', twoFactorEnabled: true })
+
+      await prepareTwoFactorForSignIn(mockDb, 'en-attente@test.com', 'secret-app')
+
+      expect(mockDb.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-2' },
+        data: { twoFactorEnabled: false },
+      })
+      expect(mockDb.twoFactor.create).not.toHaveBeenCalled()
+    })
+
+    // Les administrateurs entrent sans `hasAccess`, ici comme ailleurs : ils doivent
+    // donc bien passer par la seconde étape.
+    it('should keep two-factor for an admin without hasAccess', async () => {
+      mockDb.user.findUnique.mockResolvedValue({ hasAccess: false, id: 'user-3', role: 'ADMIN', twoFactorEnabled: false })
+      mockDb.twoFactor.findFirst.mockResolvedValue(null)
+
+      await prepareTwoFactorForSignIn(mockDb, 'admin@test.com', 'secret-app')
+
+      expect(mockDb.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-3' },
+        data: { twoFactorEnabled: true },
+      })
+      expect(mockDb.twoFactor.create).toHaveBeenCalled()
+    })
+
+    // Une connexion sur deux ne doit pas écrire en base pour rien.
+    it('should not write when the flag already matches', async () => {
+      mockDb.user.findUnique.mockResolvedValue(granted)
+      mockDb.twoFactor.findFirst.mockResolvedValue({ id: 'tf-1' })
+
+      await prepareTwoFactorForSignIn(mockDb, 'agent@test.com', 'secret-app')
+
+      expect(mockDb.user.update).not.toHaveBeenCalled()
+    })
+
+    // La préparation de la seconde étape ne doit jamais faire échouer la connexion
+    // elle-même : l'étape de vérification signalera le problème.
+    it('should swallow database errors', async () => {
+      mockDb.user.findUnique.mockRejectedValue(new Error('base indisponible'))
+
+      await expect(prepareTwoFactorForSignIn(mockDb, 'agent@test.com', 'secret-app')).resolves.toBeUndefined()
+    })
+  })
+
+  describe('prepareUserBeforeCreate', () => {
     const mockDb = {
       userWhitelist: { findUnique: jest.fn() },
       user: { update: jest.fn() },
@@ -27,23 +199,36 @@ describe('better-auth hooks', () => {
       mockDb.userWhitelist.findUnique.mockResolvedValue({ email: 'whitelisted@test.com' })
 
       const user = { email: 'whitelisted@test.com', name: 'Test', firstname: 'Test', lastname: 'User' }
-      const result = await checkWhitelistBeforeCreate(mockDb, user)
+      const result = await prepareUserBeforeCreate(mockDb, user)
 
       expect(result).toEqual({
         data: {
           ...user,
           hasAccess: true,
+          twoFactorEnabled: true,
         },
       })
     })
 
-    it('should return undefined (no modification) when email is NOT in whitelist', async () => {
+    it('should not grant access when email is NOT in whitelist', async () => {
       mockDb.userWhitelist.findUnique.mockResolvedValue(null)
 
       const user = { email: 'unknown@test.com', name: 'Test', firstname: 'Test', lastname: 'User' }
-      const result = await checkWhitelistBeforeCreate(mockDb, user)
+      const result = await prepareUserBeforeCreate(mockDb, user)
 
-      expect(result).toBeUndefined()
+      expect(result?.data).not.toHaveProperty('hasAccess')
+    })
+
+    // Le plugin de double authentification déclare `twoFactorEnabled: false` par défaut
+    // et better-auth écrit cette valeur à l'insertion, écrasant le défaut de la base.
+    // Sans ce hook, tout compte naîtrait sans seconde authentification.
+    it('should enable two-factor authentication on every new account', async () => {
+      mockDb.userWhitelist.findUnique.mockResolvedValue(null)
+
+      const user = { email: 'unknown@test.com', name: 'Test', firstname: 'Test', lastname: 'User' }
+      const result = await prepareUserBeforeCreate(mockDb, user)
+
+      expect(result?.data.twoFactorEnabled).toBe(true)
     })
 
     it('should preserve all original user fields when setting hasAccess', async () => {
@@ -58,7 +243,7 @@ describe('better-auth hooks', () => {
         engaged: false,
         hasAccess: false,
       }
-      const result = await checkWhitelistBeforeCreate(mockDb, user)
+      const result = await prepareUserBeforeCreate(mockDb, user)
 
       expect(result!.data).toMatchObject({
         email: 'user@test.com',
@@ -74,7 +259,7 @@ describe('better-auth hooks', () => {
     it('should query whitelist with the exact email provided', async () => {
       mockDb.userWhitelist.findUnique.mockResolvedValue(null)
 
-      await checkWhitelistBeforeCreate(mockDb, { email: 'Specific@Email.com' })
+      await prepareUserBeforeCreate(mockDb, { email: 'Specific@Email.com' })
 
       expect(mockDb.userWhitelist.findUnique).toHaveBeenCalledWith({
         where: { email: 'Specific@Email.com' },
@@ -98,6 +283,32 @@ describe('better-auth hooks', () => {
       expect(mockDb.user.update).toHaveBeenCalledWith({
         where: { id: 'user-123' },
         data: { lastLoginAt: expect.any(Date) },
+      })
+    })
+  })
+
+  describe('toProConnectProfile', () => {
+    it('expose le sub ProConnect comme identifiant et compose le nom', () => {
+      expect(toProConnectProfile({ sub: 'pc-123', email: 'Agent@Example.GOUV.fr', given_name: 'Ada', usual_name: 'Lovelace' })).toEqual({
+        sub: 'pc-123',
+        email: 'agent@example.gouv.fr',
+        name: 'Ada Lovelace',
+        emailVerified: true,
+        firstname: 'Ada',
+        lastname: 'Lovelace',
+      })
+    })
+
+    it('tolère des noms absents', () => {
+      expect(toProConnectProfile({ sub: 'pc-123' })).toMatchObject({ name: '', firstname: '', lastname: '', email: undefined })
+    })
+  })
+
+  describe('mapProConnectProfileToUser', () => {
+    it('reporte prénom et nom sur l’utilisateur', () => {
+      expect(mapProConnectProfileToUser({ sub: 'pc-123', firstname: 'Ada', lastname: 'Lovelace' })).toEqual({
+        firstname: 'Ada',
+        lastname: 'Lovelace',
       })
     })
   })
@@ -215,6 +426,106 @@ describe('better-auth hooks', () => {
       expect(consoleError).toHaveBeenCalled()
 
       consoleError.mockRestore()
+    })
+  })
+
+  /** Quand l'envoi est désactivé, le contenu du courriel part dans les logs. */
+  describe('sendBrevoTemplatedEmail, envoi désactivé', () => {
+    const initialEmailEnabled = process.env.EMAIL_ENABLED
+    const initialDebugSecrets = process.env.EMAIL_DEBUG_SECRETS
+
+    /** Tous les paramètres passés par les quatre appelants du module. */
+    const params = {
+      code: '482917',
+      confirmationUrl: 'https://otelo.test/verifier?token=jeton-de-verification',
+      email: 'agent@collectivite.fr',
+      firstname: 'Camille',
+      resetPasswordUrl: 'https://otelo.test/mot-de-passe-oublie',
+      resetUrl: 'https://otelo.test/reinitialiser?token=jeton-de-reinitialisation',
+      verificationUrl: 'https://otelo.test/connexion/double-authentification?code=482917',
+    }
+
+    const skippedLog = async (debugSecrets?: string) => {
+      jest.resetModules()
+      process.env.EMAIL_ENABLED = 'false'
+      if (debugSecrets === undefined) {
+        delete process.env.EMAIL_DEBUG_SECRETS
+      } else {
+        process.env.EMAIL_DEBUG_SECRETS = debugSecrets
+      }
+
+      const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+      const fetchSpy = jest.spyOn(global, 'fetch')
+
+      const { sendBrevoTemplatedEmail } = require('./better-auth')
+      await sendBrevoTemplatedEmail('7', params, 'agent@collectivite.fr', 'Votre code de connexion Otelo')
+
+      expect(fetchSpy).not.toHaveBeenCalled()
+      const line = consoleLog.mock.calls[0][0] as string
+      consoleLog.mockRestore()
+      fetchSpy.mockRestore()
+      return line
+    }
+
+    const restore = (key: string, value: string | undefined) => {
+      if (value === undefined) {
+        delete process.env[key]
+      } else {
+        process.env[key] = value
+      }
+    }
+
+    afterAll(() => {
+      restore('EMAIL_ENABLED', initialEmailEnabled)
+      restore('EMAIL_DEBUG_SECRETS', initialDebugSecrets)
+      jest.resetModules()
+    })
+
+    it('should never log a secret by default', async () => {
+      const line = await skippedLog()
+
+      expect(line).not.toContain('482917')
+      expect(line).not.toContain('jeton-de-reinitialisation')
+      expect(line).not.toContain('jeton-de-verification')
+      expect(line).toContain('code=<masqué>')
+      expect(line).toContain('resetUrl=<masqué>')
+      expect(line).toContain('confirmationUrl=<masqué>')
+      expect(line).toContain('verificationUrl=<masqué>')
+    })
+
+    /** `resetPasswordUrl` est l'adresse fixe du formulaire, sans jeton. */
+    it('should keep the metadata needed to make the log useful', async () => {
+      const line = await skippedLog()
+
+      expect(line).toContain('templateId=7')
+      expect(line).toContain('to=agent@collectivite.fr')
+      expect(line).toContain('firstname="Camille"')
+      expect(line).toContain('resetPasswordUrl="https://otelo.test/mot-de-passe-oublie"')
+    })
+
+    /** Sans cette sortie, impossible de se connecter en local : aucun courriel n'est envoyé. */
+    it('should show everything when a developer opts in explicitly', async () => {
+      const line = await skippedLog('true')
+
+      expect(line).toContain('482917')
+      expect(line).toContain('jeton-de-reinitialisation')
+    })
+
+    /** Liste blanche : un paramètre ajouté plus tard est masqué par défaut. */
+    it('should mask a parameter it has never seen', async () => {
+      jest.resetModules()
+      process.env.EMAIL_ENABLED = 'false'
+      delete process.env.EMAIL_DEBUG_SECRETS
+      const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+
+      const { sendBrevoTemplatedEmail } = require('./better-auth')
+      await sendBrevoTemplatedEmail('9', { invitationToken: 'jeton-a-venir' }, 'agent@collectivite.fr', 'Sujet')
+
+      const line = consoleLog.mock.calls[0][0] as string
+      consoleLog.mockRestore()
+
+      expect(line).not.toContain('jeton-a-venir')
+      expect(line).toContain('invitationToken=<masqué>')
     })
   })
 })

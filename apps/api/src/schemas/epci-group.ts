@@ -1,4 +1,4 @@
-import { ZCommonDateFields } from '@shared'
+import { ZCommonDateFields } from '@otelo/shared'
 import { z } from 'zod'
 
 /** Miroir de l'enum Prisma `PlanningDocumentType`. */

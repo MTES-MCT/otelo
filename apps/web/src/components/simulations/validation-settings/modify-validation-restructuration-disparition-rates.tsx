@@ -3,7 +3,7 @@
 import { fr, RiIconClassName } from '@codegouvfr/react-dsfr'
 import Input from '@codegouvfr/react-dsfr/Input'
 import Tabs from '@codegouvfr/react-dsfr/Tabs'
-import { TEpcisAccommodationRates } from '@shared'
+import { TEpcisAccommodationRates } from '@otelo/shared'
 import { parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
 import { tss } from 'tss-react'

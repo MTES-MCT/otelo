@@ -1,8 +1,13 @@
 import { Controller, Get, Query } from '@nestjs/common'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import {
+  TEpciCodesQuery,
+  TEpciCodesWithMillesimeQuery,
+  ZEpciCodesQuery,
+  ZEpciCodesWithMillesimeQuery,
+} from '~/demographic-evolution/demographic-evolution.dto'
 import { DemographicEvolutionService } from '~/demographic-evolution/demographic-evolution.service'
 import { Role } from '~/generated/prisma/enums'
-import { TGetDemographicEvolutionByEpciQuery } from '~/schemas/demographic-evolution/demographic-evolution'
 
 @Controller('demographic-evolution')
 export class DemographicEvolutionController {
@@ -12,23 +17,25 @@ export class DemographicEvolutionController {
     roles: [Role.ADMIN, Role.USER],
   })
   @Get('/omphale')
-  async getDemographicEvolution(@Query() { epciCodes, millesime }: TGetDemographicEvolutionByEpciQuery) {
-    return this.demographicEvolutionService.getDemographicEvolution(epciCodes, millesime)
+  async getDemographicEvolution(@Query({ schema: ZEpciCodesWithMillesimeQuery }) { epciCodes, millesime }: TEpciCodesWithMillesimeQuery) {
+    return this.demographicEvolutionService.getDemographicEvolution(epciCodes.join(','), millesime)
   }
 
   @AccessControl({
     roles: [Role.ADMIN, Role.USER],
   })
   @Get('/population')
-  async getPopulationDemographicEvolution(@Query() { epciCodes, millesime }: TGetDemographicEvolutionByEpciQuery) {
-    return this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCodes, millesime)
+  async getPopulationDemographicEvolution(
+    @Query({ schema: ZEpciCodesWithMillesimeQuery }) { epciCodes, millesime }: TEpciCodesWithMillesimeQuery,
+  ) {
+    return this.demographicEvolutionService.getDemographicEvolutionPopulationByEpci(epciCodes.join(','), millesime)
   }
 
   @AccessControl({
     roles: [Role.ADMIN, Role.USER],
   })
   @Get('/no-insee-projection')
-  async getEpcisWithoutInseeProjection(@Query() { epciCodes }: TGetDemographicEvolutionByEpciQuery) {
-    return this.demographicEvolutionService.getEpcisWithoutInseeProjection(epciCodes)
+  async getEpcisWithoutInseeProjection(@Query({ schema: ZEpciCodesQuery }) { epciCodes }: TEpciCodesQuery) {
+    return this.demographicEvolutionService.getEpcisWithoutInseeProjection(epciCodes.join(','))
   }
 }

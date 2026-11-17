@@ -3,7 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
+import { Role } from '~/generated/prisma/enums'
 import { ScenariosService } from '~/scenarios/scenarios.service'
+import { TInitSimulation } from '~/schemas/simulations/create-simulation'
 import { TCloneSimulationDto } from '~/schemas/simulations/simulation'
 import { SimulationChangesService } from './simulation-changes.service'
 import { SimulationsService } from './simulations.service'
@@ -12,17 +14,19 @@ describe('SimulationsService', () => {
   let service: SimulationsService
   let mockPrismaService: DeepMocked<PrismaService>
   let mockScenariosService: DeepMocked<ScenariosService>
+  let mockEpciGroupsService: DeepMocked<EpciGroupsService>
 
   beforeEach(async () => {
     mockPrismaService = createMock<PrismaService>()
     mockScenariosService = createMock<ScenariosService>()
+    mockEpciGroupsService = createMock<EpciGroupsService>()
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SimulationsService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: ScenariosService, useValue: mockScenariosService },
-        { provide: EpciGroupsService, useValue: createMock<EpciGroupsService>() },
+        { provide: EpciGroupsService, useValue: mockEpciGroupsService },
         { provide: AccommodationRatesService, useValue: createMock<AccommodationRatesService>() },
         { provide: SimulationChangesService, useValue: createMock<SimulationChangesService>() },
       ],
@@ -168,6 +172,130 @@ describe('SimulationsService', () => {
     })
   })
 
+  describe('create', () => {
+    const userId = 'user-1'
+
+    const buildInitSimulation = (overrides: Partial<TInitSimulation>): TInitSimulation =>
+      ({
+        name: 'Scénario',
+        epci: [{ code: '200040392' }],
+        scenario: {},
+        ...overrides,
+      }) as TInitSimulation
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockScenariosService.create = jest.fn().mockResolvedValue({ id: 'scenario-1' })
+      mockPrismaService.simulation.create = jest.fn().mockResolvedValue({ id: 'simulation-1' })
+      // Par défaut aucun homonyme : les tests qui en veulent un le déclarent explicitement.
+      mockEpciGroupsService.findByName = jest.fn().mockResolvedValue(null)
+    })
+
+    it('should refuse a territory in Île-de-France to a non-admin user', async () => {
+      await expect(service.create(userId, buildInitSimulation({ epci: [{ code: '200054781' }] }), Role.USER)).rejects.toThrow(
+        'Otelo ne permet pas de réaliser de scénario en Île-de-France.',
+      )
+      expect(mockScenariosService.create).not.toHaveBeenCalled()
+      expect(mockPrismaService.simulation.create).not.toHaveBeenCalled()
+    })
+
+    it('should allow a territory in Île-de-France to an admin', async () => {
+      await service.create(userId, buildInitSimulation({ epci: [{ code: '200054781' }] }), Role.ADMIN)
+
+      expect(mockPrismaService.simulation.create).toHaveBeenCalled()
+    })
+
+    it('should forward the planning document when creating a new group', async () => {
+      mockEpciGroupsService.create = jest.fn().mockResolvedValue({ id: 'group-1' })
+
+      await service.create(
+        userId,
+        buildInitSimulation({
+          epciGroupName: 'SCoT du Grand Périgueux',
+          worksOnPlanningDocument: true,
+          planningDocumentType: 'SCOT',
+          planningDocumentName: null,
+        }),
+      )
+
+      expect(mockEpciGroupsService.create).toHaveBeenCalledWith(userId, {
+        name: 'SCoT du Grand Périgueux',
+        epciCodes: ['200040392'],
+        worksOnPlanningDocument: true,
+        planningDocumentType: 'SCOT',
+        planningDocumentName: null,
+      })
+    })
+
+    it('should mark an existing group with the document the user declared', async () => {
+      mockEpciGroupsService.hasUserAccessTo = jest.fn().mockResolvedValue(true)
+
+      await service.create(
+        userId,
+        buildInitSimulation({
+          epciGroupId: 'group-1',
+          worksOnPlanningDocument: true,
+          planningDocumentType: 'PLH_PLUI',
+          planningDocumentName: 'PLUiH — CA Seine-Eure',
+        }),
+      )
+
+      expect(mockEpciGroupsService.markWorksOnPlanningDocument).toHaveBeenCalledWith('group-1', userId, {
+        planningDocumentType: 'PLH_PLUI',
+        planningDocumentName: 'PLUiH — CA Seine-Eure',
+      })
+    })
+
+    it.each([[false], [null], [undefined]])('should not downgrade an existing group when the answer is %s', async (answer) => {
+      mockEpciGroupsService.hasUserAccessTo = jest.fn().mockResolvedValue(true)
+
+      await service.create(userId, buildInitSimulation({ epciGroupId: 'group-1', worksOnPlanningDocument: answer }))
+
+      expect(mockEpciGroupsService.markWorksOnPlanningDocument).not.toHaveBeenCalled()
+    })
+
+    it('should attach the simulation to the group already carrying that name instead of creating a twin', async () => {
+      mockEpciGroupsService.findByName = jest.fn().mockResolvedValue({ id: 'group-1' })
+
+      await service.create(userId, buildInitSimulation({ epciGroupName: 'SCoT du Grand Périgueux' }))
+
+      expect(mockEpciGroupsService.findByName).toHaveBeenCalledWith(userId, 'SCoT du Grand Périgueux')
+      expect(mockEpciGroupsService.create).not.toHaveBeenCalled()
+      expect(mockPrismaService.simulation.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ epciGroup: { connect: { id: 'group-1' } } }) }),
+      )
+    })
+
+    it('should mark the group found by name with the document the user declared', async () => {
+      mockEpciGroupsService.findByName = jest.fn().mockResolvedValue({ id: 'group-1' })
+
+      await service.create(
+        userId,
+        buildInitSimulation({
+          epciGroupName: 'SCoT du Grand Périgueux',
+          worksOnPlanningDocument: true,
+          planningDocumentType: 'SCOT',
+          planningDocumentName: null,
+        }),
+      )
+
+      expect(mockEpciGroupsService.markWorksOnPlanningDocument).toHaveBeenCalledWith('group-1', userId, {
+        planningDocumentType: 'SCOT',
+        planningDocumentName: null,
+      })
+    })
+
+    it('should not look up a name when the group is explicitly designated', async () => {
+      mockEpciGroupsService.hasUserAccessTo = jest.fn().mockResolvedValue(true)
+      mockEpciGroupsService.findByName = jest.fn()
+
+      await service.create(userId, buildInitSimulation({ epciGroupId: 'group-1', epciGroupName: 'SCoT du Grand Périgueux' }))
+
+      expect(mockEpciGroupsService.findByName).not.toHaveBeenCalled()
+      expect(mockEpciGroupsService.create).not.toHaveBeenCalled()
+    })
+  })
+
   describe('hasUserAccessTo', () => {
     it('should return true when a simulation is found', async () => {
       mockPrismaService.simulation.findFirst = jest.fn().mockResolvedValue({ id: 'simulation-1' })
@@ -225,6 +353,25 @@ describe('SimulationsService', () => {
         where: { epciGroupId: 'group-1', deleted: null },
       })
       expect(mockPrismaService.epciGroup.update).not.toHaveBeenCalled()
+    })
+  })
+
+  /** La cible de l'écriture vient de la simulation vérifiée par le guard, jamais du corps. */
+  describe('update', () => {
+    it('should write to the scenario of the simulation named in the URL', async () => {
+      mockPrismaService.simulation.findUniqueOrThrow = jest.fn().mockResolvedValue({ scenarioId: 'scenario-a-moi' })
+      const changes = createMock<SimulationChangesService>()
+      ;(service as unknown as { simulationChangesService: SimulationChangesService }).simulationChangesService = changes
+      ;(changes.getScenarioSnapshot as jest.Mock).mockResolvedValue(null)
+      service.get = jest.fn().mockResolvedValue({ id: 'ma-simulation' })
+
+      await service.update('ma-simulation', { projection: 2050 } as never, 'user-1')
+
+      expect(mockPrismaService.simulation.findUniqueOrThrow).toHaveBeenCalledWith({
+        where: { id: 'ma-simulation' },
+        select: { scenarioId: true },
+      })
+      expect(mockScenariosService.update).toHaveBeenCalledWith('scenario-a-moi', { projection: 2050 })
     })
   })
 })

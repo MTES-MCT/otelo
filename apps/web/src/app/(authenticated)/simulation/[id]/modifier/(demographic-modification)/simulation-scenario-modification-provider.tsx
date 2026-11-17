@@ -1,4 +1,4 @@
-import { TEpcisAccommodationRates } from '@shared'
+import { TEpcisAccommodationRates } from '@otelo/shared'
 import { createContext, useContext, useState } from 'react'
 import { TScenario } from '~/schemas/scenario'
 

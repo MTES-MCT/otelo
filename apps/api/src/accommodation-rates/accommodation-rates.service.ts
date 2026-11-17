@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { TEpcisAccommodationRates } from '@shared'
+import { TEpcisAccommodationRates } from '@otelo/shared'
 import { PrismaService } from '~/db/prisma.service'
 import { VacancyService } from '~/vacancy/vacancy.service'
 

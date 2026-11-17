@@ -1,16 +1,19 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common'
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
+import { z } from 'zod'
 import { Consumer } from '~/common/decorators/api-consumer'
 import { ApiKeyGuard } from '~/common/guards/api-key.guard'
 import { ApiConsumer } from '~/generated/prisma/client'
+import { TExternalUpdateScenario } from '~/schemas/scenarios/scenario'
 import {
-  CreateSimulationDto,
-  NotFoundResponseDto,
-  SimulationListItemDto,
-  SimulationWithResultsDto,
-  UnauthorizedResponseDto,
-  UpdateScenarioDto,
+  TCreateSimulationBody,
+  ZCreateSimulationBody,
+  ZNotFoundResponse,
+  ZSimulationListItem,
+  ZSimulationWithResults,
+  ZUnauthorizedResponse,
+  ZUpdateScenarioBody,
 } from './external.dto'
 import { ExternalService } from './external.service'
 
@@ -30,10 +33,9 @@ export class ExternalController {
       'Crée un scénario, une simulation sur les EPCI sélectionnés, ' +
       'calcule les besoins en logements (stock B1 + flux B2) et retourne les résultats complets.',
   })
-  @ApiBody({ type: CreateSimulationDto })
-  @ApiResponse({ status: 201, description: 'Simulation créée avec résultats', type: SimulationWithResultsDto })
-  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', type: UnauthorizedResponseDto })
-  async createSimulation(@Consumer() consumer: ApiConsumer, @Body() body: CreateSimulationDto) {
+  @ApiResponse({ status: 201, description: 'Simulation créée avec résultats', standardSchema: ZSimulationWithResults })
+  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', standardSchema: ZUnauthorizedResponse })
+  async createSimulation(@Consumer() consumer: ApiConsumer, @Body({ schema: ZCreateSimulationBody }) body: TCreateSimulationBody) {
     return this.externalService.createSimulation(consumer.id, body)
   }
 
@@ -46,11 +48,14 @@ export class ExternalController {
       'et/ou les taux par EPCI (B2). Recalcule et retourne les résultats.',
   })
   @ApiParam({ name: 'simulationId', description: 'ID de la simulation', format: 'uuid' })
-  @ApiBody({ type: UpdateScenarioDto })
-  @ApiResponse({ status: 200, description: 'Résultats recalculés', type: SimulationWithResultsDto })
-  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, description: 'Simulation non trouvée', type: NotFoundResponseDto })
-  async updateSimulation(@Consumer() consumer: ApiConsumer, @Param('simulationId') simulationId: string, @Body() body: UpdateScenarioDto) {
+  @ApiResponse({ status: 200, description: 'Résultats recalculés', standardSchema: ZSimulationWithResults })
+  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', standardSchema: ZUnauthorizedResponse })
+  @ApiResponse({ status: 404, description: 'Simulation non trouvée', standardSchema: ZNotFoundResponse })
+  async updateSimulation(
+    @Consumer() consumer: ApiConsumer,
+    @Param('simulationId') simulationId: string,
+    @Body({ schema: ZUpdateScenarioBody }) body: TExternalUpdateScenario,
+  ) {
     return this.externalService.updateSimulation(consumer.id, simulationId, body)
   }
 
@@ -61,9 +66,9 @@ export class ExternalController {
     description: 'Calcule (ou recalcule) les besoins en logements et retourne les résultats complets.',
   })
   @ApiParam({ name: 'simulationId', description: 'ID de la simulation', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Résultats de la simulation', type: SimulationWithResultsDto })
-  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, description: 'Simulation non trouvée', type: NotFoundResponseDto })
+  @ApiResponse({ status: 200, description: 'Résultats de la simulation', standardSchema: ZSimulationWithResults })
+  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', standardSchema: ZUnauthorizedResponse })
+  @ApiResponse({ status: 404, description: 'Simulation non trouvée', standardSchema: ZNotFoundResponse })
   async getResults(@Consumer() consumer: ApiConsumer, @Param('simulationId') simulationId: string) {
     return this.externalService.getResults(consumer.id, simulationId)
   }
@@ -74,8 +79,8 @@ export class ExternalController {
     summary: 'Lister les simulations du consommateur',
     description: 'Retourne toutes les simulations créées par ce consommateur API, triées par date de modification.',
   })
-  @ApiResponse({ status: 200, description: 'Liste des simulations', type: [SimulationListItemDto] })
-  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', type: UnauthorizedResponseDto })
+  @ApiResponse({ status: 200, description: 'Liste des simulations', standardSchema: z.array(ZSimulationListItem) })
+  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', standardSchema: ZUnauthorizedResponse })
   async listSimulations(@Consumer() consumer: ApiConsumer) {
     return this.externalService.listSimulations(consumer.id)
   }
@@ -88,8 +93,8 @@ export class ExternalController {
   })
   @ApiParam({ name: 'simulationId', description: 'ID de la simulation', format: 'uuid' })
   @ApiResponse({ status: 204, description: 'Simulation supprimée' })
-  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, description: 'Simulation non trouvée', type: NotFoundResponseDto })
+  @ApiResponse({ status: 401, description: 'Clé API invalide ou inactive', standardSchema: ZUnauthorizedResponse })
+  @ApiResponse({ status: 404, description: 'Simulation non trouvée', standardSchema: ZNotFoundResponse })
   async deleteSimulation(@Consumer() consumer: ApiConsumer, @Param('simulationId') simulationId: string) {
     return this.externalService.deleteSimulation(consumer.id, simulationId)
   }

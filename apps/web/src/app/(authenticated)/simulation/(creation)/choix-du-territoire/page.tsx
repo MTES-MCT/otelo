@@ -1,4 +1,4 @@
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import classNames from 'classnames'
 import type { Metadata } from 'next'
 import { getBassinEpcis } from '~/server-only/epcis/get-bassin-epcis'
@@ -6,7 +6,7 @@ import classes from './choix-du-territoire.module.css'
 import { WrapperSimulationTypePage } from './wrapper-simulation-type-page'
 
 export const metadata: Metadata = {
-  title: 'Elaborer un scenario - étape 1 sur 6 - Otelo',
+  title: 'Élaborer un scénario - étape 1 sur 6 - Otelo',
 }
 
 type TerritorialChoicePageProps = {

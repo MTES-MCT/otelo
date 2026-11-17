@@ -1,4 +1,4 @@
-import { USER_TYPE_LABELS } from '@shared'
+import { USER_TYPE_LABELS } from '@otelo/shared'
 import { UserType } from '~/generated/prisma/client'
 
 export function resolveUserTypeLabel(value: string): UserType | null {

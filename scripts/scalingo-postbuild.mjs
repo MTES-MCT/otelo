@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { cpSync, existsSync, rmSync } from 'node:fs'
+import { cpSync, existsSync, readdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
 const BUILD_TARGET = process.env.BUILD_TARGET
@@ -17,7 +17,7 @@ console.log(`\n[scalingo-postbuild] BUILD_TARGET=${BUILD_TARGET}\n`)
 // scalingo-postbuild replaces "build" — run the build first
 console.log('Running build...\n')
 try {
-  execSync(`pnpm --filter @shared build && pnpm --filter ${BUILD_TARGET} build`, {
+  execSync(`pnpm --filter @otelo/shared build && pnpm --filter ${BUILD_TARGET} build`, {
     stdio: 'inherit',
     cwd: ROOT,
     env: { ...process.env, CI: 'true' },
@@ -59,6 +59,13 @@ if (BUILD_TARGET === '@otelo/web') {
   rm('apps/api/src')
   rm('apps/api/test')
   rm('apps/api/prisma/migrations')
+
+  // Web-only packages left in the shared virtual store (devDependencies pruning is skipped by the buildpack).
+  // next is only reachable through better-auth's optional next-js integration, unused by the API.
+  const webOnly = /^(next@|@next\+|@img\+|@gouvfr\+|@codegouvfr\+|maplibre-gl@|@maplibre\+|@biomejs\+)/
+  for (const entry of readdirSync(join(ROOT, 'node_modules/.pnpm'))) {
+    if (webOnly.test(entry)) rm(`node_modules/.pnpm/${entry}`)
+  }
 }
 
 console.log('\n[scalingo-postbuild] done.\n')

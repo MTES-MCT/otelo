@@ -1,4 +1,4 @@
-import { TAccommodationRates } from '@shared'
+import { TAccommodationRates } from '@otelo/shared'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
 export interface RateSettings {

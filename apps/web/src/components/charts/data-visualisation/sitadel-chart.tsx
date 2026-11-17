@@ -140,7 +140,7 @@ export const SitadelChart: FC<SitadelChartProps> = ({ data }) => {
             <XAxis dataKey="year" />
             <Tooltip content={customTooltip} />
             <Legend content={customLegend} />
-            <YAxis domain={[0, maxValue]} allowDecimals={false} includeHidden={true} />
+            <YAxis domain={[0, maxValue]} allowDecimals={false} includeHidden={true} width="auto" tickFormatter={formatNumber} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

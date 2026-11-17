@@ -1,9 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
 import { resolveDateRange } from '~/common/utils/date-range'
 import { Role } from '~/generated/prisma/enums'
 import { ImpactStatisticsService } from './impact-statistics.service'
 
+@ExcludeOpenApi()
 @Controller('statistics')
 export class ImpactStatisticsController {
   constructor(private readonly impactStatisticsService: ImpactStatisticsService) {}

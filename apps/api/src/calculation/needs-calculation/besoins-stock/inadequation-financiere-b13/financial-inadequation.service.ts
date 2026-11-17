@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { TCalculationResult, TEpci } from '@shared'
+import { TCalculationResult, TEpci } from '@otelo/shared'
 import { BaseCalculator, CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { BadQualityService } from '~/calculation/needs-calculation/besoins-stock/mauvaise-qualite-b14/bad-quality.service'
 import { RatioCalculationService } from '~/calculation/ratio-calculation/ratio-calculation.service'

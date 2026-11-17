@@ -11,9 +11,10 @@ import { toast } from 'sonner'
 interface UploadDemographicEvolutionProps {
   epciCode: string
   scenarioId?: string
+  onUploaded?: () => void
 }
 
-export const UploadDemographicEvolutionCustom = ({ epciCode, scenarioId }: UploadDemographicEvolutionProps) => {
+export const UploadDemographicEvolutionCustom = ({ epciCode, scenarioId, onUploaded }: UploadDemographicEvolutionProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedFileName, setSelectedFileName] = useState<string>('Aucun fichier choisi...')
@@ -73,6 +74,7 @@ export const UploadDemographicEvolutionCustom = ({ epciCode, scenarioId }: Uploa
         fileInputRef.current.value = ''
       }
       setSelectedFileName('Aucun fichier choisi...')
+      onUploaded?.()
     } catch (error) {
       console.error('Error processing file:', error)
       toast.error('Erreur lors de la création des données démographiques personnalisées', {
@@ -99,7 +101,7 @@ export const UploadDemographicEvolutionCustom = ({ epciCode, scenarioId }: Uploa
       <div className="fr-flex fr-align-items-center fr-flex-gap-2v">
         <Input
           hintText="Déposez un fichier Excel (.xlsx, .xls) ou CSV."
-          label="Ou ajoutez vos données personnalisées"
+          label="Fichier de données personnalisées"
           nativeInputProps={{
             value: selectedFileName,
             readOnly: true,

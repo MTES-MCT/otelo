@@ -1,4 +1,4 @@
-import { TEpcisAccommodationRates } from '@shared'
+import { TEpcisAccommodationRates } from '@otelo/shared'
 import { useQuery } from '@tanstack/react-query'
 
 export const useAccommodationRatesByEpci = (epcis: Array<string>, millesime?: string) => {

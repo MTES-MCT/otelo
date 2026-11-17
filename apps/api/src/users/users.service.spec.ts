@@ -35,15 +35,16 @@ describe('UsersService', () => {
     expect(service).toBeDefined()
   })
 
-  describe('hasUserAccessTo', () => {
-    it('should return true when a user is found', async () => {
-      prismaService.user.findFirst = jest.fn().mockResolvedValue({ id: 'user-1' })
-    })
+  describe('markTutorialCompleted', () => {
+    it('ne date que la première fin du didacticiel', async () => {
+      prismaService.user.updateMany = jest.fn().mockResolvedValue({ count: 1 })
 
-    it('should return false when no user is found', async () => {
-      prismaService.user.findFirst = jest.fn().mockResolvedValue(null)
-      const result = await service.hasUserAccessTo('user-1')
-      expect(result).toBe(false)
+      await service.markTutorialCompleted('user-1')
+
+      expect(prismaService.user.updateMany).toHaveBeenCalledWith({
+        data: { tutorialCompletedAt: expect.any(Date) },
+        where: { id: 'user-1', tutorialCompletedAt: null },
+      })
     })
   })
 

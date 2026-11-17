@@ -34,6 +34,9 @@ export const useSimulationPreview = (payload: SimulationPreviewPayload, options:
     queryKey,
     queryFn: () => postPreview(debouncedPayload),
     enabled: enabled && hasInput,
+    // Chaque paramètre modifié change la queryKey : sans ça, `data` repasserait à undefined à chaque
+    // frappe et l'aperçu clignoterait. On garde la dernière valeur connue pendant le recalcul.
+    placeholderData: (previousData) => previousData,
     staleTime: 30_000,
     retry: false,
   })

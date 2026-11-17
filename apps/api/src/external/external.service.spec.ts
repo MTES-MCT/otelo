@@ -71,6 +71,21 @@ describe('ExternalService', () => {
         }),
       })
     })
+
+    it('should refuse a territory in Île-de-France', async () => {
+      mockPrismaService.scenario.create = jest.fn()
+      mockPrismaService.simulation.create = jest.fn()
+
+      await expect(
+        service.createSimulation('consumer-1', {
+          name: 'Test Simulation',
+          epci: [{ code: '200054781' }],
+          scenario: { projection: 2030, epcis: { '200054781': { baseEpci: true } } } as any,
+        }),
+      ).rejects.toThrow('Otelo ne permet pas de réaliser de scénario en Île-de-France.')
+      expect(mockPrismaService.scenario.create).not.toHaveBeenCalled()
+      expect(mockPrismaService.simulation.create).not.toHaveBeenCalled()
+    })
   })
 
   describe('listSimulations', () => {

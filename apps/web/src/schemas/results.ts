@@ -6,7 +6,7 @@ import {
   ZFlowRequirementChartDataResult,
   ZSitadelData,
   ZSitadelDataResult,
-} from '@shared'
+} from '@otelo/shared'
 import { z } from 'zod'
 
 export const ZDemographicEvolution = z.object({
@@ -30,8 +30,6 @@ export const ZDemographicEvolution = z.object({
 
 export type TDemographicEvolutionOmphale = z.infer<typeof ZDemographicEvolution>
 
-// Re-export shared schemas
-export { ZChartData, ZChartDataResult, ZFlowRequirementChartData, ZFlowRequirementChartDataResult, ZSitadelData, ZSitadelDataResult }
 export type {
   TChartData,
   TChartDataResult,
@@ -39,7 +37,9 @@ export type {
   TFlowRequirementChartDataResult,
   TSitadelData,
   TSitadelDataResult,
-} from '@shared'
+} from '@otelo/shared'
+// Re-export shared schemas
+export { ZChartData, ZChartDataResult, ZFlowRequirementChartData, ZFlowRequirementChartDataResult, ZSitadelData, ZSitadelDataResult }
 
 // Web version of ZEpciCalculationResult (same as shared)
 export const ZEpciCalculationResult = ZEpciCalculationResultBase

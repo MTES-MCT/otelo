@@ -39,7 +39,7 @@ const ParcsComparisonCharts = ({
   const defaultRatesByEpci = defaultRates[epci]
   const [{ millesime, parcEvolutionShown }, setQueryStates] = useQueryStates({
     millesime: parseAsString,
-    parcEvolutionShown: parseAsBoolean.withDefault(false),
+    parcEvolutionShown: parseAsBoolean.withDefault(true),
   })
   const baseYear = millesime
 

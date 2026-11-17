@@ -5,7 +5,7 @@ import { Request } from 'express'
 import { AuthService } from '~/auth/auth.service'
 import { auth } from '~/auth/better-auth'
 import { ACCESS_CONTROL_KEY, TModelAccess } from '~/common/decorators/control-access.decorator'
-import { Role } from '~/generated/prisma/enums'
+import { Role, UserType } from '~/generated/prisma/enums'
 import { TUser } from '~/schemas/users/user'
 
 @Injectable()
@@ -45,7 +45,11 @@ export class AuthorizationGuard implements CanActivate {
       return true
     }
 
-    if (!this.authService.hasRole(user as unknown as TUser, modelAccess.roles)) {
+    // Rôle *ou* type de compte : les deux voies sont alternatives, pas cumulatives.
+    const allowedByRole = this.authService.hasRole(user as unknown as TUser, modelAccess.roles)
+    const allowedByType = modelAccess.userTypes?.includes((user as unknown as TUser).type as UserType) ?? false
+
+    if (!allowedByRole && !allowedByType) {
       return false
     }
 

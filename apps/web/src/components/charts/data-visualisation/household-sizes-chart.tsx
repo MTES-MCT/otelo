@@ -170,6 +170,8 @@ export const HouseholdSizesChart: FC<HouseholdSizesChartProps> = ({ data: chartD
 
             {epcisLinearChart.length > 0 && (
               <YAxis
+                width="auto"
+                tickFormatter={formatNumber}
                 domain={(() => {
                   const allMetadata = epcisLinearChart.map((epci) => chartData.linearChart[epci].metadata)
                   const minValues = allMetadata.map((m) => m.min)

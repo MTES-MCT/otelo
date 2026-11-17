@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { TCalculationResult, TEpci } from '@shared'
+import { TCalculationResult, TEpci } from '@otelo/shared'
 import { BaseCalculator, CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { HostedService } from '~/calculation/needs-calculation/besoins-stock/heberges-b12/hosted.service'
 import { FinancialInadequationService } from '~/calculation/needs-calculation/besoins-stock/inadequation-financiere-b13/financial-inadequation.service'

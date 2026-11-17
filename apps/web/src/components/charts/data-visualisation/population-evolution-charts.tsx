@@ -122,6 +122,8 @@ export const PopulationEvolutionChart: FC<PopulationEvolutionChartProps> = ({ da
 
               {epcisLinearChart.length > 0 && (
                 <YAxis
+                  width="auto"
+                  tickFormatter={formatNumber}
                   dataKey={linearDataKey}
                   domain={(() => {
                     const allMetadata = epcisLinearChart.map((epci) => chartData.linearChart[epci].metadata)
@@ -163,7 +165,7 @@ export const PopulationEvolutionChart: FC<PopulationEvolutionChartProps> = ({ da
             <BarChart width={730} height={600} data={barChartData} margin={{ bottom: 130, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" angle={-30} textAnchor="end" interval={0} tick={{ fontSize: 12 }} />
-              <YAxis />
+              <YAxis width="auto" tickFormatter={formatNumber} />
               <Tooltip content={customBarTooltip} />
               {periods.map((p, i) => (
                 <Bar key={p} dataKey={p} name={p} fill={barChartColors[i]} />

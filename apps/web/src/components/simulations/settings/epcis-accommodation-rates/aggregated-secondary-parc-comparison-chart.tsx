@@ -30,7 +30,7 @@ export const AggregatedSecondaryParcsComparisonChart = ({ targetYear }: { target
   const { rates, defaultRates } = useEpcisRates()
   const [{ millesime, parcEvolutionShown }, setQueryStates] = useQueryStates({
     millesime: parseAsString,
-    parcEvolutionShown: parseAsBoolean.withDefault(false),
+    parcEvolutionShown: parseAsBoolean.withDefault(true),
   })
   const baseYear = millesime
 

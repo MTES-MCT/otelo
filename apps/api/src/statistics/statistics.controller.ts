@@ -3,14 +3,16 @@ import dayjs from 'dayjs'
 import { Response } from 'express'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
+import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
 import { sendCsv } from '~/common/utils/csv'
 import { resolveDateRange } from '~/common/utils/date-range'
-import { Role } from '~/generated/prisma/enums'
+import { Role, UserType } from '~/generated/prisma/enums'
 import { TUser } from '~/schemas/users/user'
 import { AudienceStatisticsService } from './audience-statistics.service'
 import { StatisticsService } from './statistics.service'
 
 @Controller('statistics')
+@ExcludeOpenApi()
 export class StatisticsController {
   constructor(
     private readonly statisticsService: StatisticsService,
@@ -122,12 +124,13 @@ export class StatisticsController {
     sendCsv(res, data, `export-scenarios-${dayjs().format('DD-MM-YYYY')}.csv`)
   }
 
+  @AccessControl({ roles: [Role.ADMIN], userTypes: [UserType.DREAL] })
   @Get('/pilotage')
   async getPilotageData(@User() user: TUser, @Query('region') region?: string, @Query('department') department?: string) {
-    this.assertPilotageAccess(user)
     return this.statisticsService.getPilotageData(this.resolveRegion(user, region), department)
   }
 
+  @AccessControl({ roles: [Role.ADMIN], userTypes: [UserType.DREAL] })
   @Get('/pilotage/epcis-coverage')
   async getEpcisCoverage(
     @User() user: TUser,
@@ -135,7 +138,6 @@ export class StatisticsController {
     @Query('department') department?: string,
     @Query('typology') typology?: string,
   ) {
-    this.assertPilotageAccess(user)
     return this.statisticsService.getEpcisCoverage(this.resolveRegion(user, region), department, typology)
   }
 
@@ -149,6 +151,7 @@ export class StatisticsController {
     return this.statisticsService.getPilotageScenariosList(userId, territoire, typology)
   }
 
+  @AccessControl({ roles: [Role.ADMIN], userTypes: [UserType.DREAL] })
   @Get('/pilotage/export')
   async getPilotageCsv(
     @User() user: TUser,
@@ -156,22 +159,28 @@ export class StatisticsController {
     @Query('region') region?: string,
     @Query('department') department?: string,
   ) {
-    this.assertPilotageAccess(user)
     const data = await this.statisticsService.getPilotageCsvData(this.resolveRegion(user, region), department)
 
     sendCsv(res, data, `export-pilotage-${dayjs().format('DD-MM-YYYY')}.csv`)
   }
 
-  private assertPilotageAccess(user: TUser): void {
-    if (user.role !== Role.ADMIN && user.type !== 'DREAL') {
-      throw new ForbiddenException('Accès réservé aux administrateurs et aux DREAL')
-    }
-  }
-
+  /**
+   * Le champ `type` est auto-déclaré : le privilège est rattaché à `region`, que seul un
+   * administrateur pose. Un DREAL sans région ne voit rien — `undefined` vaudrait
+   * « portée nationale ».
+   */
   private resolveRegion(user: TUser, requestedRegion?: string): string | undefined {
-    if (user.type === 'DREAL') {
-      return user.region ?? undefined
+    if (user.role === Role.ADMIN) {
+      return requestedRegion
     }
+
+    if (user.type === 'DREAL') {
+      if (!user.region) {
+        throw new ForbiddenException("Aucune région n'est rattachée à ce compte DREAL : contactez un administrateur.")
+      }
+      return user.region
+    }
+
     return requestedRegion
   }
 }

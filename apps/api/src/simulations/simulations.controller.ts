@@ -2,9 +2,16 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { Prisma, Role } from '~/generated/prisma/client'
-import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
-import { TInitSimulation } from '~/schemas/simulations/create-simulation'
-import { TActualizeSimulationDto, TCloneSimulationDto, TRenameSimulationDto } from '~/schemas/simulations/simulation'
+import { TUpdateSimulationDto, ZUpdateSimulationDto } from '~/schemas/scenarios/scenario'
+import { TInitSimulation, ZInitSimulation } from '~/schemas/simulations/create-simulation'
+import {
+  TActualizeSimulationDto,
+  TCloneSimulationDto,
+  TRenameSimulationDto,
+  ZActualizeSimulationDto,
+  ZCloneSimulationDto,
+  ZRenameSimulationDto,
+} from '~/schemas/simulations/simulation'
 import { TUser } from '~/schemas/users/user'
 import { SimulationsService } from '~/simulations/simulations.service'
 
@@ -48,8 +55,8 @@ export class SimulationsController {
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() data: TInitSimulation, @User() { id: userId }: TUser) {
-    return this.simulationsService.create(userId, data)
+  async create(@Body({ schema: ZInitSimulation }) data: TInitSimulation, @User() { id: userId, role }: TUser) {
+    return this.simulationsService.create(userId, data, role)
   }
 
   @AccessControl({
@@ -59,7 +66,11 @@ export class SimulationsController {
   })
   @Put(':id/scenario')
   @HttpCode(HttpStatus.ACCEPTED)
-  async updateSimulation(@Param('id') id: string, @Body() data: TUpdateSimulationDto, @User() { id: userId }: TUser) {
+  async updateSimulation(
+    @Param('id') id: string,
+    @Body({ schema: ZUpdateSimulationDto }) data: TUpdateSimulationDto,
+    @User() { id: userId }: TUser,
+  ) {
     return this.simulationsService.update(id, data, userId)
   }
 
@@ -70,7 +81,11 @@ export class SimulationsController {
   })
   @Patch(':id/name')
   @HttpCode(HttpStatus.OK)
-  async renameSimulation(@Param('id') id: string, @Body() data: TRenameSimulationDto, @User() { id: userId }: TUser) {
+  async renameSimulation(
+    @Param('id') id: string,
+    @Body({ schema: ZRenameSimulationDto }) data: TRenameSimulationDto,
+    @User() { id: userId }: TUser,
+  ) {
     return this.simulationsService.rename(userId, id, data.name)
   }
 
@@ -92,8 +107,12 @@ export class SimulationsController {
   })
   @Post(':id/clone')
   @HttpCode(HttpStatus.CREATED)
-  async cloneSimulation(@Param('id') id: string, @Body() data: TCloneSimulationDto, @User() { id: userId }: TUser) {
-    return this.simulationsService.clone(userId, id, data)
+  async cloneSimulation(
+    @Param('id') id: string,
+    @Body({ schema: ZCloneSimulationDto }) data: TCloneSimulationDto,
+    @User() { id: userId, role }: TUser,
+  ) {
+    return this.simulationsService.clone(userId, id, data, role)
   }
 
   @AccessControl({
@@ -103,7 +122,11 @@ export class SimulationsController {
   })
   @Post(':id/actualize')
   @HttpCode(HttpStatus.CREATED)
-  async actualizeSimulation(@Param('id') id: string, @Body() data: TActualizeSimulationDto, @User() { id: userId }: TUser) {
-    return this.simulationsService.actualize(userId, id, data.millesime, data.name)
+  async actualizeSimulation(
+    @Param('id') id: string,
+    @Body({ schema: ZActualizeSimulationDto }) data: TActualizeSimulationDto,
+    @User() { id: userId, role }: TUser,
+  ) {
+    return this.simulationsService.actualize(userId, id, data.millesime, data.name, role)
   }
 }

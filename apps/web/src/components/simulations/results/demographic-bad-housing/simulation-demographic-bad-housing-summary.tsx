@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 import { SimulationDemographicBadHousingChartSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-chart-summary'
 import { SimulationResultPresentationHighlight } from '~/components/simulations/results/simulation-result-presentation-highlight'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { formatNumber } from '~/utils/format-numbers'
 import styles from './simulation-demographic-bad-housing-summary.module.css'
 
@@ -45,7 +46,10 @@ export const SimulationDemographicBadHousingSummary = ({
   }
 
   return (
-    <div className="fr-background-default--grey fr-flex fr-direction-column fr-py-8w fr-px-5w shadow">
+    <div
+      className="fr-background-default--grey fr-flex fr-direction-column fr-py-8w fr-px-5w shadow"
+      {...tutorialAnchor('results-needs-split')}
+    >
       <h3 className="fr-h4">À quels besoins répondront ces logements ?</h3>
 
       <SimulationDemographicBadHousingChartSummary totalFlux={totalFlux} totalStock={totalStock} epci={epci} />
@@ -90,7 +94,7 @@ export const SimulationDemographicBadHousingSummary = ({
         <div className="fr-border fr-p-4w fr-flex fr-direction-column fr-width-full">
           <span className="fr-text--medium fr-text--lg fr-mb-0">Ménages en situation de mal logement</span>
           <span className="fr-h4 fr-text-title--blue-france fr-mt-1v fr-mb-0">
-            {!!epci && prepeakTotalStock ? formatNumber(prepeakTotalStock) : formatNumber(totalStock)} logements
+            {epci && prepeakTotalStock ? formatNumber(prepeakTotalStock) : formatNumber(totalStock)} logements
           </span>
           <div className="fr-my-2w">
             <SimulationResultPresentationHighlight>

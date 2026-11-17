@@ -18,6 +18,14 @@ export class EpciGroupsService {
     }))
   }
 
+  async findByName(userId: string, name: string): Promise<{ id: string } | null> {
+    return this.prisma.epciGroup.findFirst({
+      where: { userId, deleted: null, name: { equals: name.trim(), mode: 'insensitive' } },
+      select: { id: true },
+      orderBy: { createdAt: 'desc' },
+    })
+  }
+
   async findAll(userId: string, withActiveSimulations?: boolean): Promise<TEpciGroupWithEpcis[]> {
     return this.prisma.epciGroup.findMany({
       where: {

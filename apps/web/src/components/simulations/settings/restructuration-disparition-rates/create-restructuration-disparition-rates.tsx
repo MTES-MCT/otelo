@@ -1,16 +1,18 @@
 'use client'
 
-import { RiIconClassName } from '@codegouvfr/react-dsfr'
-import Tabs from '@codegouvfr/react-dsfr/Tabs'
-import { TEpcisAccommodationRates } from '@shared'
+import { TEpcisAccommodationRates } from '@otelo/shared'
 import classNames from 'classnames'
-import { parseAsString, useQueryState } from 'nuqs'
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
+import { EpciTabs } from '~/components/simulations/settings/epci-tabs'
 import styles from '~/components/simulations/settings/epcis-accommodation-rates/epcis-accommodation-rates.module.css'
 import { AllEpcisRestructurationRatesView } from '~/components/simulations/settings/restructuration-disparition-rates/all-epcis-restructuration-rates-view'
 import { CreateRestructurationDisparitionRatesInput } from '~/components/simulations/settings/restructuration-disparition-rates/create-restructuration-disparition-rates.input'
 import { RestructurationRatesToggleSwitch } from '~/components/simulations/settings/restructuration-disparition-rates/restructuration-rates-toggle-switch'
+import { ChoiceHelpButton } from '~/components/simulations/tutorial/tutorial-button'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useAccommodationRatesByEpci } from '~/hooks/use-accommodation-rate-epci'
+import { getObservedRatesPeriodLabel } from '~/utils/projection'
 
 interface CreateRestructurationDisparitionRatesProps {
   epcis: Array<{ code: string; name: string; region: string }>
@@ -18,24 +20,24 @@ interface CreateRestructurationDisparitionRatesProps {
 
 interface TabChildrenProps {
   epci: string
+  epciName: string
   rates: TEpcisAccommodationRates
   observedPeriodLabel: string
 }
 
-const getObservedRatesPeriodLabel = (millesime?: string): string => {
-  const year = Number(millesime)
-  return Number.isFinite(year) && year >= 2022 ? '2015 et 2022' : '2015 et 2021'
-}
-
-const TabChildren: FC<TabChildrenProps> = ({ epci, rates, observedPeriodLabel }) => {
+const TabChildren: FC<TabChildrenProps> = ({ epci, epciName, rates, observedPeriodLabel }) => {
+  const [projection] = useQueryState('projection', parseAsInteger)
   const epciRates = rates?.[epci]
   if (!epciRates) return null
 
   return (
-    <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-      <span className="fr-text-mention--grey fr-mb-5v">
-        Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre {observedPeriodLabel}.
-      </span>
+    <div className="fr-flex fr-direction-column fr-flex-gap-4v fr-justify-content-space-between">
+      <ChoiceHelpButton />
+      {/* Introduit le renouvellement urbain plutôt que d'inciter à reconduire les taux par défaut. */}
+      <p className="fr-mb-1v" {...tutorialAnchor('observed-rates-note')}>
+        Entre {observedPeriodLabel}, le parc de logements de {epciName} a évolué sous l&apos;effet des démolitions, fusions, divisions et
+        changements d&apos;usage. Quel rythme anticipez-vous d&apos;ici {projection} ?
+      </p>
       <CreateRestructurationDisparitionRatesInput epci={epci} />
     </div>
   )
@@ -52,18 +54,26 @@ export const CreateRestructurationDisparitionRates: FC<CreateRestructurationDisp
 
   const isAllMode = ratesMode === 'all'
 
-  const tabs = epcis.map((epci) => ({
-    content: <TabChildren epci={epci.code} rates={rates} observedPeriodLabel={observedPeriodLabel} />,
-    iconId: 'ri-road-map-line' as RiIconClassName,
-    label: epci.name,
-  }))
-
   return (
     <>
       <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
         <RestructurationRatesToggleSwitch />
       </div>
-      {isAllMode ? <AllEpcisRestructurationRatesView /> : <Tabs classes={{ panel: 'fr-background-default--grey' }} tabs={tabs} />}
+      {isAllMode ? (
+        <AllEpcisRestructurationRatesView />
+      ) : (
+        <EpciTabs
+          epcis={epcis}
+          renderTab={(epciCode) => (
+            <TabChildren
+              epci={epciCode}
+              epciName={epcis.find((epci) => epci.code === epciCode)?.name ?? epciCode}
+              rates={rates}
+              observedPeriodLabel={observedPeriodLabel}
+            />
+          )}
+        />
+      )}
     </>
   )
 }

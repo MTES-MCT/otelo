@@ -1,3 +1,4 @@
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { formatNumber } from '~/utils/format-numbers'
 import { sPluriel } from '~/utils/sPluriel'
 
@@ -41,8 +42,14 @@ export const SimulationSecondaryVacantsAccommodationsSummary = ({
       <p className="fr-text--lg fr-text--bold fr-mb-0">
         Le parc actuel pourrait répondre à une partie de la demande en nouveaux logements :
       </p>
-      <div className="fr-flex fr-justify-content-space-between fr-align-items-stretch fr-flex-gap-6v">
-        <div className="shadow fr-width-full fr-py-8w fr-px-5w fr-background-default--grey fr-justify-content-space-between fr-align-items-center">
+      <div
+        className="fr-flex fr-justify-content-space-between fr-align-items-stretch fr-flex-gap-6v"
+        {...tutorialAnchor('results-existing-parc')}
+      >
+        <div
+          className="shadow fr-width-full fr-py-8w fr-px-5w fr-background-default--grey fr-justify-content-space-between fr-align-items-center"
+          {...tutorialAnchor('results-vacancy-card')}
+        >
           <div className="fr-flex fr-direction-column fr-justify-content-space-between fr-width-full">
             <span className="fr-text-default--grey">
               D'ici <strong>{epci ? epci.peakYear : projection}</strong>, {epci ? `l'EPCI du ${epci.name}` : 'le territoire'} pourra{' '}
@@ -65,7 +72,10 @@ export const SimulationSecondaryVacantsAccommodationsSummary = ({
           </div>
         </div>
         {!!renewalNeeds && renewalNeeds < 0 && (
-          <div className="shadow fr-width-full fr-py-8w fr-px-5w fr-background-default--grey fr-justify-content-space-between fr-align-items-center">
+          <div
+            className="shadow fr-width-full fr-py-8w fr-px-5w fr-background-default--grey fr-justify-content-space-between fr-align-items-center"
+            {...tutorialAnchor('results-renewal-card')}
+          >
             <div className="fr-flex fr-direction-column fr-justify-content-space-between fr-width-full">
               <span className="fr-text-default--grey">
                 D'ici <strong>{epci ? epci.peakYear : projection}</strong>, le rythme retenu de renouvellement urbain pourrait permettre de

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { TFlowRequirementChartData, TFlowRequirementChartDataResult } from '@shared'
+import { TFlowRequirementChartData, TFlowRequirementChartDataResult } from '@otelo/shared'
 import { BaseCalculator, CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import {
   DemographicEvolutionService,

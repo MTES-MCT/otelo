@@ -1,6 +1,8 @@
 import Button from '@codegouvfr/react-dsfr/Button'
 import { RiIconClassName } from '@codegouvfr/react-dsfr/fr/generatedFromCss/classNames'
+import { sumRenewalSurplus } from '@otelo/shared'
 import { SynthesisCnEvolutionChart } from '~/components/charts/synthesis-cn-evolution-chart'
+import { ScotInfoDrawer } from '~/components/simulations/docurba/scot-info-drawer'
 import { SimulationAnnualsNeedsSummary } from '~/components/simulations/results/annual-needs/simulation-annual-needs'
 import { SimulationBadHousing } from '~/components/simulations/results/bad-housing/simulation-bad-housing'
 import { SimulationDemographicBadHousingSummary } from '~/components/simulations/results/demographic-bad-housing/simulation-demographic-bad-housing-summary'
@@ -13,6 +15,8 @@ import { SimulationSecondaryVacantsAccommodationsSummary } from '~/components/si
 import { SimulationEpcisDetails } from '~/components/simulations/results/simulation-epcis-details'
 import { SimulationResultsTabs } from '~/components/simulations/results/simulation-results-tabs'
 import { SimulationNeedsSummary } from '~/components/simulations/results/summary/simulation-needs-summary'
+import { ResultsTutorialButton } from '~/components/simulations/tutorial/results-tutorial-button'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { TEpciCalculationResult, TEpciTotalCalculationResult, TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
 import { getEpciContours } from '~/server-only/simulation/get-epci-contours'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
@@ -87,7 +91,10 @@ export default async function Resultats({ params }: SimulationPageProps) {
     return {
       content: (
         <div key={epci.code} className="fr-container fr-flex fr-direction-column fr-flex-gap-8v">
-          <SimulationSettingsDropdown simulation={simulation} epci={epci} />
+          <div className="fr-flex fr-flex-gap-4v fr-justify-content-space-between fr-align-items-start">
+            <SimulationSettingsDropdown simulation={simulation} epci={epci} />
+            <ScotInfoDrawer epcis={[{ code: epci.code, name: epci.name }]} />
+          </div>
           <SimulationNeedsSummary contours={contours} projection={simulation.scenario.projection} results={epciResults} epci={epciData} />
           <SimulationDemographicBadHousingSummary
             simulationId={simulation.id}
@@ -123,6 +130,8 @@ export default async function Resultats({ params }: SimulationPageProps) {
       tabId: epci.code,
     }
   })
+  const peakYearsByEpci = Object.fromEntries(simulation.results.flowRequirement.epcis.map((epci) => [epci.code, epci.data.peakYear]))
+
   const epcisFlowData = simulation.epcis.map((epci) => ({
     code: epci.code,
     name: epci.name,
@@ -132,7 +141,10 @@ export default async function Resultats({ params }: SimulationPageProps) {
   const bassinTab = {
     content: (
       <div key="territory" className="fr-container-md fr-flex fr-direction-column fr-flex-gap-8v">
-        <SimulationSettingsDropdown simulation={simulation} />
+        <div className="fr-flex fr-flex-gap-4v fr-justify-content-space-between fr-align-items-start">
+          <SimulationSettingsDropdown simulation={simulation} />
+          <ScotInfoDrawer epcis={simulation.epcis} label="Voir la planification territoriale du bassin d'habitat" />
+        </div>
         <SimulationNeedsSummary
           contours={contours}
           projection={simulation.scenario.projection}
@@ -149,7 +161,7 @@ export default async function Resultats({ params }: SimulationPageProps) {
         <SimulationSecondaryVacantsAccommodationsSummary
           results={results}
           projection={simulation.scenario.projection}
-          renewalNeeds={simulation.results.flowRequirement.epcis.reduce((sum, e) => sum + Math.min(0, e.totals.renewalNeeds), 0)}
+          renewalNeeds={sumRenewalSurplus(simulation.results)}
         />
 
         {epcisFlowData.length > 1 && (
@@ -177,7 +189,10 @@ export default async function Resultats({ params }: SimulationPageProps) {
   return (
     <>
       <div className="fr-container fr-direction-column fr-flex fr-flex-gap-8v">
-        <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
+        <div className="fr-flex fr-flex-gap-4v fr-align-items-center fr-justify-content-space-between">
+          <SimulationHeaderTitle name={name} projection={simulation.scenario.projection} millesime={simulation.scenario.millesime} />
+          <ResultsTutorialButton peakYears={peakYearsByEpci} />
+        </div>
         <div className="fr-col-md-12 fr-flex fr-direction-column fr-direction-sm-row fr-align-items-center fr-mb-4w">
           <div className="fr-col-md-8 fr-mb-2w fr-mb-md-0">
             <SimulationHeaderSegmentedControls segments={segments} activeId={id} />
@@ -192,7 +207,9 @@ export default async function Resultats({ params }: SimulationPageProps) {
               >
                 Élaborer un autre scénario
               </Button>
-              <ExportExcelSimulationButton id={id} />
+              <div {...tutorialAnchor('results-export')}>
+                <ExportExcelSimulationButton id={id} />
+              </div>
             </div>
           </div>
         </div>

@@ -1,0 +1,3 @@
+# Snapshots jest : repliés dans les revues GitHub et exclus des statistiques de langage.
+# Une modification reste signalée par la CI, qui échoue tant que le snapshot n'est pas mis à jour.
+**/__snapshots__/*.snap linguist-generated=true

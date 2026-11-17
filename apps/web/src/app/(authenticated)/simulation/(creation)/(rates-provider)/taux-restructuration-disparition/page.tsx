@@ -7,7 +7,7 @@ import { RestructurationDisparitionFooter } from '~/components/simulations/setti
 import { getEpcis } from '~/server-only/epcis/get-epcis'
 
 export const metadata: Metadata = {
-  title: 'Elaborer scenario - étape 5 sur 6 - Otelo',
+  title: 'Élaborer un scénario - étape 6 sur 6 - Otelo',
 }
 
 type PageProps = {

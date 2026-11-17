@@ -3,7 +3,9 @@
 import { createModal } from '@codegouvfr/react-dsfr/Modal'
 import { Select } from '@codegouvfr/react-dsfr/Select'
 import { parseAsString, useQueryStates } from 'nuqs'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
+import { getMillesimeDefinition } from '~/components/simulations/tutorial/definitions'
+import { DefinitionTooltip } from '~/components/ui/definition-tooltip'
 import { useDataPackVersions } from '~/hooks/use-data-pack-versions'
 
 const warningModal = createModal({
@@ -19,12 +21,9 @@ export const SelectMillesimeModal = () => {
 
   const pendingMillesimeRef = useRef<string | null>(null)
   const activeVersion = dataPackVersions?.find((dp) => dp.isActive)
+  const selectedMillesime = queryStates.millesime || activeVersion?.millesime
 
-  useEffect(() => {
-    if (!queryStates.millesime && activeVersion) {
-      setQueryStates({ millesime: activeVersion.millesime })
-    }
-  }, [activeVersion, queryStates.millesime, setQueryStates])
+  // L'amorçage du paramètre est assuré par <MillesimeInitializer /> (monté dans le layout de création)
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -64,10 +63,16 @@ export const SelectMillesimeModal = () => {
   return (
     <>
       <Select
-        label="Millésime des données utilisées pour le scénario"
+        label={
+          <>
+            <strong>Millésime</strong> <DefinitionTooltip definition={getMillesimeDefinition(selectedMillesime)} /> des données utilisées
+            pour votre scénario
+          </>
+        }
+        hint="Le millésime fixe l'année de départ de l'horizon de temps ci-dessous."
         nativeSelectProps={{
           onChange: handleChange,
-          value: queryStates.millesime || activeVersion?.millesime || '',
+          value: selectedMillesime ?? '',
         }}
       >
         {dataPackVersions.map((dp) => (

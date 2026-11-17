@@ -5,6 +5,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { firstValueFrom } from 'rxjs'
 import { z } from 'zod'
 import { anonymizeEmail } from '~/common/utils/email-anonymizer'
+import { describeHttpError } from '~/common/utils/http-error'
 import { PrismaService } from '~/db/prisma.service'
 import { DossierNode, GraphQLResponse } from './interfaces/demarches-simplifiees.interface'
 
@@ -122,7 +123,7 @@ export class CronService {
         cursor = dossiers.pageInfo.endCursor
         this.logger.log(`Processed page, hasNextPage: ${hasNextPage}`)
       } catch (error) {
-        this.logger.error('Error fetching dossiers:', error)
+        this.logger.error('Error fetching dossiers:', describeHttpError(error))
         break
       }
     }

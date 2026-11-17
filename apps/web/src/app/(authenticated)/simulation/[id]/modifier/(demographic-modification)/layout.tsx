@@ -1,8 +1,10 @@
-import { AuthenticatedBreadcrumb } from '~/components/breadcrumbs/authenticated-breadcrumb'
-import { DemographicSettingsSimulationStepper } from '~/components/simulations/settings/demographic-settings-simulation-stepper'
 import { SimulationSettingsFormContextWrapper } from '~/components/simulations/settings/modification/simulation-settings-form-context-wrapper'
-import UpdateDemographicSettingsSimulationSideMenu from '~/components/simulations/settings/modification/update-demographic-settings-simulation-side-menu'
+import { ModificationScenarioPanel } from '~/components/simulations/settings/scenario-panel/modification-scenario-panel'
 import { SimulationFormRatesProviderContextWrapper } from '~/components/simulations/settings/simulation-form-context-wrapper'
+import { WizardLayout } from '~/components/simulations/settings/wizard-layout'
+import { WizardStepHeader } from '~/components/simulations/settings/wizard-step-header'
+import { WizardStepTracker } from '~/components/simulations/settings/wizard-step-tracker'
+import { WizardStepper } from '~/components/simulations/settings/wizard-stepper'
 import { getGroupedSimulationWithResults } from '~/server-only/simulation/get-grouped-simulations-with-results'
 import type { SimulationLayoutProps } from '~/types/simulation-page-props'
 
@@ -14,6 +16,12 @@ export default async function ModifySimulationLayout({ children, params }: Simul
 
   const epcis = simulation.scenario.epciScenarios.map((e) => e.epciCode)
 
+  // Le contexte de paramétrage ne porte que les taux : les noms des EPCI viennent d'ici. L'EPCI de
+  // référence ouvre la liste, comme dans le libellé du territoire.
+  const epciOptions = [...simulation.epcis]
+    .sort((a, b) => Number(Boolean(b.baseEpci)) - Number(Boolean(a.baseEpci)))
+    .map((epci) => ({ code: epci.code, name: epci.name }))
+
   const peakYears = simulation.results?.flowRequirement?.epcis?.reduce(
     (acc, epci) => {
       acc[epci.code] = epci.data.peakYear
@@ -23,25 +31,17 @@ export default async function ModifySimulationLayout({ children, params }: Simul
   )
 
   return (
-    <div className="fr-container">
-      <SimulationSettingsFormContextWrapper peakYears={peakYears}>
-        <SimulationFormRatesProviderContextWrapper epcis={epcis}>
-          <div className="fr-flex fr-flex-gap-12v">
-            <nav className="fr-col-md-3">
-              <AuthenticatedBreadcrumb />
-              <UpdateDemographicSettingsSimulationSideMenu id={id} />
-            </nav>
-
-            <div className="fr-col-md-9">
-              <main className="fr-container">
-                <DemographicSettingsSimulationStepper />
-                {children}
-                {/*<DemographicPreview />*/}
-              </main>
-            </div>
-          </div>
-        </SimulationFormRatesProviderContextWrapper>
-      </SimulationSettingsFormContextWrapper>
-    </div>
+    <SimulationSettingsFormContextWrapper peakYears={peakYears}>
+      <SimulationFormRatesProviderContextWrapper epcis={epcis}>
+        <WizardStepTracker />
+        <WizardLayout
+          stepper={<WizardStepper />}
+          panel={<ModificationScenarioPanel epciOptions={epciOptions} />}
+          header={<WizardStepHeader />}
+        >
+          {children}
+        </WizardLayout>
+      </SimulationFormRatesProviderContextWrapper>
+    </SimulationSettingsFormContextWrapper>
   )
 }

@@ -1,4 +1,4 @@
-import { TEpciNeighborsResponse } from '@shared'
+import { TEpciNeighborsResponse } from '@otelo/shared'
 import { useQuery } from '@tanstack/react-query'
 
 const fetchNeighbors = async (code: string, category: string): Promise<TEpciNeighborsResponse> => {

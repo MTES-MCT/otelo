@@ -5,6 +5,7 @@ import { Bar, BarChart, CartesianGrid, Label, Legend, ResponsiveContainer, Toolt
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { DATA_TYPE_OPTIONS } from '~/components/data-visualisation/select-data-type'
 import { TAccommodationLovacEvolution } from '~/schemas/accommodation-evolution'
+import { formatNumber } from '~/utils/format-numbers'
 import headerStyles from './accommodation-evolution-charts.module.css'
 import styles from './lovac-evolution-charts.module.css'
 
@@ -172,7 +173,7 @@ export const LovacAccommodationEvolutionChart: FC<LovacAccommodationEvolutionCha
             <XAxis dataKey="year" ticks={[2014, 2019, 2024]}>
               <Label value="Nombre de logements vacants par durée de vacance" offset={-10} position="insideBottom" />
             </XAxis>
-            <YAxis />
+            <YAxis width="auto" tickFormatter={formatNumber} />
             <Tooltip content={<CustomTooltip />} />
             <Legend content={<CustomLegend />} />
             {epcisLinearChart.map((epci, index) => [
@@ -201,6 +202,8 @@ export const LovacAccommodationEvolutionChart: FC<LovacAccommodationEvolutionCha
               <Label value="Évolution annuelle moyenne du nombre de logements vacants" offset={-10} position="insideBottom" />
             </XAxis>
             <YAxis
+              width="auto"
+              tickFormatter={formatNumber}
               domain={(() => {
                 const minNbLogVac2Less = Math.min(...barChartData.map((d) => d.nbLogVac2Less))
                 const minNbLogVac2More = Math.min(...barChartData.map((d) => d.nbLogVac2More))

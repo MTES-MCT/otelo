@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common'
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import {
   omphaleMap,
@@ -7,7 +7,9 @@ import {
 } from '~/calculation/needs-calculation/besoins-flux/evolution-demographique-b21/demographic-evolution.service'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
+import { assertTerritoryAllowed } from '~/epcis/ile-de-france'
 import { Simulation } from '~/generated/prisma/client'
+import { Role } from '~/generated/prisma/enums'
 import { ScenariosService } from '~/scenarios/scenarios.service'
 import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
@@ -125,7 +127,12 @@ export class SimulationsService {
     return { id, scenario }
   }
 
-  async create(userId: string, data: TInitSimulation): Promise<Simulation> {
+  async create(userId: string, data: TInitSimulation, role?: Role): Promise<Simulation> {
+    assertTerritoryAllowed(
+      data.epci.map((epci) => epci.code),
+      role,
+    )
+
     let epciGroupId = data.epciGroupId
 
     if (epciGroupId) {
@@ -133,14 +140,19 @@ export class SimulationsService {
       if (!hasAccess) {
         throw new ForbiddenException()
       }
+    } else if (data.epciGroupName) {
+      // Un nom déjà porté par un groupe de l'utilisateur rattache la simulation à ce groupe plutôt
+      // que d'en créer un homonyme : c'est ce que l'écran de choix du territoire annonce.
+      epciGroupId = (await this.epciGroupsService.findByName(userId, data.epciGroupName))?.id
+    }
 
-      // Le groupe existe déjà : on ne peut qu'ajouter l'information, jamais la retirer.
-      if (data.worksOnPlanningDocument === true) {
-        await this.epciGroupsService.markWorksOnPlanningDocument(epciGroupId, userId, {
-          planningDocumentName: data.planningDocumentName,
-          planningDocumentType: data.planningDocumentType,
-        })
-      }
+    // Sur un groupe existant — désigné ou retrouvé par son nom — on ne peut qu'ajouter l'information,
+    // jamais la retirer.
+    if (epciGroupId && data.worksOnPlanningDocument === true) {
+      await this.epciGroupsService.markWorksOnPlanningDocument(epciGroupId, userId, {
+        planningDocumentName: data.planningDocumentName,
+        planningDocumentType: data.planningDocumentType,
+      })
     }
 
     const scenario = await this.scenariosService.create(userId, data.scenario, data.millesime)
@@ -149,6 +161,9 @@ export class SimulationsService {
       const epciGroup = await this.epciGroupsService.create(userId, {
         name: data.epciGroupName,
         epciCodes: data.epci.map((epci) => epci.code),
+        worksOnPlanningDocument: data.worksOnPlanningDocument,
+        planningDocumentType: data.planningDocumentType,
+        planningDocumentName: data.planningDocumentName,
       })
       epciGroupId = epciGroup.id
     }
@@ -171,11 +186,17 @@ export class SimulationsService {
   }
 
   async update(id: string, data: TUpdateSimulationDto, userId?: string): Promise<TSimulationWithEpciAndScenario> {
+    // Depuis l'URL, jamais depuis le corps : le contrôle d'accès porte sur `id`.
+    const { scenarioId } = await this.prismaService.simulation.findUniqueOrThrow({
+      where: { id },
+      select: { scenarioId: true },
+    })
+
     // L'instantané doit être pris AVANT l'écriture : les paramètres sont écrasés en place,
     // l'état précédent est irrécupérable ensuite.
-    const before = await this.simulationChangesService.getScenarioSnapshot(data.id)
+    const before = await this.simulationChangesService.getScenarioSnapshot(scenarioId)
 
-    await this.scenariosService.update(data.id, data)
+    await this.scenariosService.update(scenarioId, data)
 
     if (before) {
       const changes = computeScenarioDiff(
@@ -234,7 +255,7 @@ export class SimulationsService {
     return simulation
   }
 
-  async clone(userId: string, originalId: string, data: TCloneSimulationDto): Promise<Simulation> {
+  async clone(userId: string, originalId: string, data: TCloneSimulationDto, role?: Role): Promise<Simulation> {
     const originalSimulation = await this.prismaService.simulation.findUniqueOrThrow({
       include: {
         scenario: { include: { epciScenarios: true } },
@@ -242,6 +263,11 @@ export class SimulationsService {
       },
       where: { id: originalId, userId },
     })
+
+    assertTerritoryAllowed(
+      originalSimulation.epcis.map((epci) => epci.code),
+      role,
+    )
 
     const { userId: _, id, millesime: originalMillesime, ...scenarioData } = originalSimulation.scenario
 
@@ -300,6 +326,7 @@ export class SimulationsService {
     originalId: string,
     targetMillesime: string,
     name?: string,
+    role?: Role,
   ): Promise<Simulation & { actualization: { total: number; updated: number; skippedEpcis: string[] } }> {
     const original = await this.prismaService.simulation.findUniqueOrThrow({
       where: { id: originalId, userId },
@@ -309,9 +336,14 @@ export class SimulationsService {
       },
     })
     const cloneName = name || `${original.name} (millésime ${targetMillesime})`
-    const cloned = await this.clone(userId, originalId, {
-      name: cloneName,
-    })
+    const cloned = await this.clone(
+      userId,
+      originalId,
+      {
+        name: cloneName,
+      },
+      role,
+    )
     const clonedSimulation = await this.prismaService.simulation.findUniqueOrThrow({
       where: { id: cloned.id },
       select: { scenarioId: true },
@@ -695,38 +727,5 @@ export class SimulationsService {
       householdsAtProjection,
       peakYear: peakYearMax,
     }
-  }
-
-  /**
-   * Journalise une demande de PowerPoint dans `exports`.
-   *
-   * Les réponses déclaratives du formulaire (type de document, prochaine étape,
-   * période d'étude) sont persistées : c'est la seule information dont on dispose
-   * sur l'usage réel du livrable, et elle n'existait jusqu'ici que dans l'email
-   * envoyé à l'équipe.
-   */
-  async markAsExported(
-    simulationIds: string[],
-    options: {
-      privilegedSimulationId?: string
-      documentType?: string
-      nextStep?: string
-      periodStart?: number
-      periodEnd?: number
-    } = {},
-  ): Promise<void> {
-    const { documentType, nextStep, periodEnd, periodStart, privilegedSimulationId } = options
-
-    await this.prismaService.export.createMany({
-      data: simulationIds.map((simulationId) => ({
-        type: 'POWERPOINT',
-        simulationId,
-        isPrivileged: privilegedSimulationId === simulationId,
-        documentType: documentType ?? null,
-        nextStep: nextStep ?? null,
-        periodStart: periodStart ?? null,
-        periodEnd: periodEnd ?? null,
-      })),
-    })
   }
 }

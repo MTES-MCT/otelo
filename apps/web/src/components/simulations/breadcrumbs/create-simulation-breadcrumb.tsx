@@ -7,6 +7,6 @@ export const CreateSimulationBreadcrumb = () => (
       href: '/',
     }}
     segments={[]}
-    className="fr-mb-4w"
+    className="fr-mb-3w"
   />
 )

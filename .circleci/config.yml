@@ -9,6 +9,17 @@ executors:
     docker:
       - image: cimg/node:24
 
+  node_with_database:
+    docker:
+      - image: cimg/node:24
+      # Base jetable, propre au job : CircleCI ne transmet pas les variables du projet aux conteneurs
+      # secondaires, d'où l'authentification sans mot de passe.
+      - image: cimg/postgres:16.4
+        environment:
+          POSTGRES_USER: otelo
+          POSTGRES_DB: otelo-test
+          POSTGRES_HOST_AUTH_METHOD: trust
+
 parameters:
   lockfile:
     type: string
@@ -29,6 +40,12 @@ workflows:
           requires:
             - prepare_workspace_dependencies
       - test_api:
+          requires:
+            - prepare_workspace_dependencies
+      - test_api_integration:
+          requires:
+            - prepare_workspace_dependencies
+      - test_api_e2e:
           requires:
             - prepare_workspace_dependencies
       - build_api:
@@ -76,6 +93,52 @@ jobs:
       - run:
           name: 'Test API'
           command: pnpm -F api test
+
+  test_api_integration:
+    # INTEGRATION_DATABASE_URL est définie dans les variables d'environnement du projet CircleCI.
+    executor: node_with_database
+    steps:
+      - run:
+          name: 'Check INTEGRATION_DATABASE_URL'
+          command: '[ -n "$INTEGRATION_DATABASE_URL" ] || { echo "INTEGRATION_DATABASE_URL manque dans les variables du projet CircleCI"; exit 1; }'
+      - checkout
+      - install_dependencies
+      - prisma_generate
+      - run:
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: 'Wait for database'
+          command: |
+            for _ in $(seq 1 30); do
+              nc -z localhost 5432 && exit 0
+              sleep 1
+            done
+            echo 'Postgres injoignable après 30 s' && exit 1
+      - run:
+          name: 'Integration tests API'
+          command: pnpm -F api test:integration
+
+  # Lance un vrai Chrome pour l'export PowerPoint. Les bibliothèques système sont
+  # celles de l'Aptfile, comme au build Scalingo : un paquet retiré à tort casse ici.
+  test_api_e2e:
+    executor: node
+    steps:
+      - checkout
+      - install_dependencies
+      - prisma_generate
+      - run:
+          name: 'Build shared'
+          command: pnpm build:shared
+      - run:
+          name: "Bibliothèques système de l'Aptfile"
+          command: sudo apt-get update && xargs -a Aptfile sudo apt-get install -y --no-install-recommends
+      - run:
+          name: 'Install chrome-headless-shell'
+          command: pnpm -F api exec puppeteer browsers install chrome-headless-shell
+      - run:
+          name: 'E2E tests API'
+          command: pnpm -F api test:e2e
 
   build_api:
     executor: node

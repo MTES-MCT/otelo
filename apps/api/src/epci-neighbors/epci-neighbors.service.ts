@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { TEpciGeoData, TEpciNeighborsResponse } from '@shared'
+import { TEpciGeoData, TEpciNeighborsResponse } from '@otelo/shared'
 import { PrismaService } from '~/db/prisma.service'
 import { NeighborCategory } from '~/generated/prisma/client'
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { ACTIVATION_STEP_LABELS, type TActivationStep } from '@shared'
+import { ACTIVATION_STEP_LABELS, type TActivationStep } from '@otelo/shared'
 import classNames from 'classnames'
 import type { FC } from 'react'
 import styles from '~/app/(authenticated)/admin/admin.module.css'

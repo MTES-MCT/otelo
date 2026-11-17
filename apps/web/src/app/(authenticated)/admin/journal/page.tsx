@@ -3,7 +3,7 @@
 import Alert from '@codegouvfr/react-dsfr/Alert'
 import Input from '@codegouvfr/react-dsfr/Input'
 import Pagination from '@codegouvfr/react-dsfr/Pagination'
-import { SIMULATION_CHANGE_ACTION_LABELS, SIMULATION_CHANGE_ACTIONS } from '@shared'
+import { SIMULATION_CHANGE_ACTION_LABELS, SIMULATION_CHANGE_ACTIONS } from '@otelo/shared'
 import classNames from 'classnames'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { useDebounce } from 'use-debounce'

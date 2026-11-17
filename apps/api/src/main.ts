@@ -1,63 +1,88 @@
 import { Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { cleanupOpenApiDoc } from 'nestjs-zod'
-import { ExternalModule } from '~/external/external.module'
+import { NestExpressApplication } from '@nestjs/platform-express'
+import { SwaggerModule } from '@nestjs/swagger'
+import helmet from 'helmet'
+import { legacyOAuthCallbackRedirect } from '~/auth/legacy-oauth-callback'
+import { env } from '~/config/env'
 import { MainModule } from '~/main.module'
+import { createExternalDocument, createInternalDocument } from '~/openapi'
 
 const bootstrap = async () => {
-  const app = await NestFactory.create(MainModule, { bodyParser: false })
+  const app = await NestFactory.create<NestExpressApplication>(MainModule, { bodyParser: false })
   const globalPrefix = 'api'
 
-  // Swagger complet (tous les endpoints)
-  const fullConfig = new DocumentBuilder()
-    .setTitle('Otelo - API interne')
-    .setDescription("Documentation complete de l'API Otelo (endpoints internes + externes).")
-    .setVersion('1.0')
-    .addBearerAuth({
-      type: 'http',
-      scheme: 'bearer',
-      description: 'API Key au format otelo_xxx',
-    })
-    .build()
+  /**
+   * Détermine l'adresse du visiteur derrière les intermédiaires réseau.
+   *
+   * Sans cela, `req.ip` vaut l'adresse du proxy et non celle du visiteur : tous les
+   * appels partagent alors un unique compteur de débit, et les plafonds se retournent
+   * contre les utilisateurs légitimes — trois envois du formulaire de contact, quels
+   * qu'en soient les auteurs, bloqueraient le formulaire pour tout le monde.
+   *
+   * On déclare la liste des intermédiaires de confiance plutôt qu'un nombre de sauts :
+   * un compte fixe devient faux dès que la chaîne s'allonge, et il est ici partagé avec
+   * better-auth, qui n'accepte qu'une liste. Le parcours est le même de part et d'autre :
+   * de droite à gauche, on saute les intermédiaires connus, on retient la première
+   * adresse non fiable.
+   *
+   * Ce réglage ne gouverne plus le comptage du débit : celui-ci passe désormais par
+   * `getTracker` (voir main.module.ts), qui lit l'en-tête directement. La distinction
+   * compte, car Express fait entrer dans la chaîne l'adresse du pair qui ouvre la
+   * connexion — celle du routeur de la plateforme, interne et non documentée. S'y fier
+   * imposait de deviner son plan d'adressage, et un mauvais pari y faisait retomber tous
+   * les visiteurs sur un compteur commun, sans le moindre signal.
+   *
+   * Il reste utile pour `req.protocol` et `req.secure`, qui décrivent la connexion
+   * d'origine et non son auteur.
+   */
+  app.set('trust proxy', 1)
 
-  const fullDocumentFactory = () => cleanupOpenApiDoc(SwaggerModule.createDocument(app, fullConfig))
-  SwaggerModule.setup('swagger', app, fullDocumentFactory, {
-    useGlobalPrefix: true,
-  })
+  // Avant le gestionnaire better-auth : l'ancienne URL de retour ProConnect n'y existe plus.
+  app.use(legacyOAuthCallbackRedirect(globalPrefix))
 
-  const externalConfig = new DocumentBuilder()
-    .setTitle('Otelo - API externe')
-    .setDescription(
-      'API Otelo pour les consommateurs externes.\n\n' +
-        'Authentification : `Authorization: Bearer otelo_xxx`\n\n' +
-        'Contactez un administrateur pour obtenir une clé API par mail : otelo@beta.gouv.fr',
-    )
-    .setVersion('1.0')
-    .addBearerAuth({
-      type: 'http',
-      scheme: 'bearer',
-      description: 'API Key au format otelo_xxx',
-    })
-    .build()
+  SwaggerModule.setup('swagger', app, () => createInternalDocument(app), { useGlobalPrefix: true })
+  SwaggerModule.setup('swagger-external', app, () => createExternalDocument(app), { useGlobalPrefix: true })
 
-  const externalDocumentFactory = () =>
-    cleanupOpenApiDoc(
-      SwaggerModule.createDocument(app, externalConfig, {
-        include: [ExternalModule],
-      }),
-    )
-  SwaggerModule.setup('swagger-external', app, externalDocumentFactory, {
-    useGlobalPrefix: true,
-  })
+  /**
+   * En-têtes de sécurité HTTP.
+   *
+   * `crossOriginResourcePolicy` est desserré à `cross-origin` : le site est sur un autre
+   * domaine que l'API, et la valeur par défaut (`same-origin`) bloquerait le
+   * téléchargement des exports Excel et PowerPoint.
+   */
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          fontSrc: ["'self'", 'data:'],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+        },
+      },
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      // 6 mois, sous-domaines inclus. `preload` volontairement omis : l'inscription à la
+      // liste des navigateurs est difficile à défaire et engage tous les sous-domaines.
+      hsts: {
+        maxAge: 15_552_000,
+        includeSubDomains: true,
+      },
+    }),
+  )
 
   app.enableCors({
-    origin: process.env.CLIENT_BASE_URL || 'http://localhost:3000',
+    origin: env.CLIENT_BASE_URL,
     credentials: true,
   })
 
   app.setGlobalPrefix(globalPrefix)
-  const port = process.env.PORT || 3000
+  const port = env.PORT
   await app.listen(port)
 
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`)

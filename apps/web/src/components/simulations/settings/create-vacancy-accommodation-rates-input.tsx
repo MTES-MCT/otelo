@@ -6,17 +6,18 @@ import { CreateLongTermAccomodationRange } from '~/components/simulations/settin
 
 type CreateVacancyAccommodationRatesInputProps = {
   epci: string
+  epciName: string
 }
 
-export const CreateVacancyAccommodationRatesInput: FC<CreateVacancyAccommodationRatesInputProps> = ({ epci }) => {
+export const CreateVacancyAccommodationRatesInput: FC<CreateVacancyAccommodationRatesInputProps> = ({ epci, epciName }) => {
   const { rates } = useEpcisRates()
   const ratesByEpci = rates[epci]
 
   if (!ratesByEpci) return null
 
   return (
-    <div className="fr-col-8">
-      <CreateLongTermAccomodationRange epci={epci} />
+    <div>
+      <CreateLongTermAccomodationRange epci={epci} epciName={epciName} />
     </div>
   )
 }

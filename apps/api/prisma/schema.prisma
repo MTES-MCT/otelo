@@ -1,7 +1,6 @@
 generator client {
-  provider   = "prisma-client"
-  output     = "../src/generated/prisma"
-  engineType = "client"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 generator json {
@@ -10,7 +9,6 @@ generator json {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model DataPackVersion {
@@ -30,30 +28,44 @@ model DataPackVersion {
   demographicEvolutionOmphale    DemographicEvolutionOmphale[]
   demographicEvolutionPopulation DemographicEvolutionPopulation[]
   householdSizes                 HouseholdSizes[]
+  projectionZoneMillesimes       ProjectionZoneMillesime[]
+  projectionPopulationTotals     ProjectionPopulationTotal[]
+  projectionPopulationBySex      ProjectionPopulationBySex[]
+  projectionPopulationByAgeSex   ProjectionPopulationByAgeSex[]
+  projectionPopulationByAgeGroup ProjectionPopulationByAgeGroup[]
+  projectionHouseholdTotals      ProjectionHouseholdTotal[]
+  projectionHouseholdByType      ProjectionHouseholdByType[]
 
   @@map("data_pack_versions")
 }
 
 model User {
-  id                                String                              @id @default(uuid())
-  email                             String                              @unique
-  name                              String
-  image                             String?
-  emailVerified                     Boolean                             @default(false)
-  createdAt                         DateTime                            @default(now()) @map("created_at")
-  updatedAt                         DateTime                            @updatedAt @map("updated_at")
+  id                     String    @id @default(uuid())
+  email                  String    @unique
+  name                   String
+  image                  String?
+  emailVerified          Boolean   @default(false)
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
   // Custom fields
-  firstname                         String
-  lastname                          String
-  role                              Role                                @default(USER)
-  banned                            Boolean                             @default(false)
-  banReason                         String?                             @map("ban_reason")
-  lastLoginAt                       DateTime                            @default(now()) @map("last_login_at")
-  hasAccess                         Boolean                             @default(false)
-  engaged                           Boolean                             @default(false)
-  type                              UserType?
-  referent                          String?
-  region                            String?
+  firstname              String
+  lastname               String
+  role                   Role      @default(USER)
+  // Compte écarté des statistiques d'usage comme ceux de l'équipe (usage en masse, démonstration).
+  excludedFromStatistics Boolean   @default(false) @map("excluded_from_statistics")
+  banned                 Boolean   @default(false)
+  banReason              String?   @map("ban_reason")
+  banExpires             DateTime? @map("ban_expires")
+  lastLoginAt            DateTime  @default(now()) @map("last_login_at")
+  hasAccess              Boolean   @default(false)
+  engaged                Boolean   @default(false)
+  type                   UserType?
+  referent               String?
+  region                 String?
+  /// Fin du didacticiel de création suivi en entier. Nul tant qu'il ne l'a pas été : le parcours l'impose alors.
+  tutorialCompletedAt    DateTime? @map("tutorial_completed_at")
+
+  twoFactorEnabled                  Boolean                             @default(true) @map("two_factor_enabled")
   // Relations
   accounts                          Account[]
   sessions                          Session[]
@@ -64,8 +76,24 @@ model User {
   feedback                          UserFeedback?
   loginEvents                       LoginEvent[]
   simulationChanges                 SimulationChange[]
+  twoFactors                        TwoFactor[]
 
   @@map("users")
+}
+
+model TwoFactor {
+  id                      String    @id @default(uuid())
+  secret                  String
+  backupCodes             String    @map("backup_codes")
+  userId                  String    @map("user_id")
+  verified                Boolean   @default(true)
+  failedVerificationCount Int       @default(0) @map("failed_verification_count")
+  lockedUntil             DateTime? @map("locked_until")
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@index([userId])
+  @@map("two_factors")
 }
 
 model LoginEvent {
@@ -137,6 +165,23 @@ model Verification {
   @@map("verifications")
 }
 
+/// Compteurs de limitation de débit de better-auth.
+///
+/// Stockage en base plutôt qu'en mémoire : les compteurs doivent être partagés entre
+/// les conteneurs et survivre à un redémarrage, sinon une attaque par force brute
+/// suffit à relancer l'API pour remettre le compteur à zéro.
+///
+/// `lastRequest` est un horodatage Unix en millisecondes (et non un `DateTime`) :
+/// c'est le format qu'attend better-auth, qui compare des entiers.
+model RateLimit {
+  id          String @id @default(uuid())
+  key         String @unique
+  count       Int
+  lastRequest BigInt @map("last_request")
+
+  @@map("rate_limits")
+}
+
 model Export {
   simulationId String     @map("simulation_id")
   createdAt    DateTime   @default(now()) @map("created_at")
@@ -147,25 +192,43 @@ model Export {
   nextStep     String?    @map("next_step")
   periodStart  Int?       @map("period_start")
   periodEnd    Int?       @map("period_end")
-  simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  /// Identifiant partagé par toutes les lignes issues d'une même demande : un
+  /// POST /export-powerpoint crée une ligne par scénario sélectionné (jusqu'à 3).
+  /// Sans lui, une « demande » ne se reconstitue qu'en regroupant sur created_at,
+  /// ce qui rend impossible de compter ou de remplacer une demande de façon fiable.
+  requestId String @default(uuid()) @map("request_id")
+
+  epciCodes String[] @map("epci_codes")
+
+  /// Renseignés lorsque l'utilisateur a explicitement remplacé cette demande par
+  /// une demande ultérieure sur le même territoire
+  supersededAt          DateTime? @map("superseded_at")
+  supersededByRequestId String?   @map("superseded_by_request_id")
+
+  simulation Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
+  @@index([requestId])
+  @@index([supersededAt])
   @@map("exports")
 }
 
 model ApiConsumer {
-  id           String                  @id @default(uuid())
-  name         String
-  hashedKey    String                  @unique @map("hashed_key")
-  encryptedKey String                  @map("encrypted_key")
-  prefix       String
-  active       Boolean                 @default(true)
-  createdAt    DateTime                @default(now()) @map("created_at")
-  lastUsedAt   DateTime?               @map("last_used_at")
-  scenarios    Scenario[]
-  simulations  Simulation[]
-  epciGroups   EpciGroup[]
-  dailyUsage   ApiConsumerUsageDaily[]
+  id                     String                  @id @default(uuid())
+  name                   String
+  /// Empreinte SHA-256 : la clé en clair n'est jamais stockée. Perdue, elle se régénère.
+  hashedKey              String                  @unique @map("hashed_key")
+  prefix                 String
+  active                 Boolean                 @default(true)
+  createdAt              DateTime                @default(now()) @map("created_at")
+  lastUsedAt             DateTime?               @map("last_used_at")
+  /// Écartée des statistiques d'usage. Le marquage se fait en base, comme pour `User.excludedFromStatistics`.
+  excludedFromStatistics Boolean                 @default(false) @map("excluded_from_statistics")
+  scenarios              Scenario[]
+  simulations            Simulation[]
+  epciGroups             EpciGroup[]
+  dailyUsage             ApiConsumerUsageDaily[]
 
   @@map("api_consumers")
 }
@@ -216,8 +279,9 @@ model Scenario {
 }
 
 model Bassin {
-  name  String @id @unique
-  epcis Epci[]
+  name            String           @id @unique
+  epcis           Epci[]
+  projectionZones ProjectionZone[]
 
   @@map("bassin")
 }
@@ -279,6 +343,7 @@ model Epci {
   neighborsTo                       EPCINeighbor[]                      @relation("EPCINeighborTo")
   noInseeProjection                 Boolean                             @default(false) @map("no_insee_projection")
   contour                           EpciContour?
+  projectionZones                   ProjectionZone[]
 
   @@map("epcis")
 }
@@ -314,6 +379,7 @@ model Simulation {
   epcis                    Epci[]                     @relation("EpciToSimulation")
   shareLink                SimulationShareLink?
   changes                  SimulationChange[]
+  amfLead                  AmfLead?
 
   deleted DateTime?
 
@@ -797,7 +863,8 @@ model DemographicEvolutionOmphaleCustom {
   scenario   Scenario? @relation(fields: [scenarioId], references: [id])
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([epciCode, scenarioId])
+  /// Le propriétaire fait partie de la clé. Un index partiel couvre le cas `scenarioId IS NULL`.
+  @@unique([userId, epciCode, scenarioId], map: "demographic_evolution_omphale_custom_user_epci_scenario_key")
   @@map("demographic_evolution_omphale_custom")
 }
 
@@ -978,4 +1045,278 @@ enum B11Etablissement {
   malade
   maisonRelai
   horsMaisonRelai
+}
+
+model DocurbaFile {
+  filename  String   @id
+  content   Bytes
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Projections démographiques détaillées Omphale (EPCI + bassins d'habitat)
+//
+// Source : « Projections détaillées » — deux classeurs de 6 feuilles, l'un au niveau EPCI
+// (214 zones, les EPCI ≥ 50 000 hab. en 2018 — seuil de robustesse Omphale), l'autre au
+// niveau bassin d'habitat (347 zones). Les codes de zone des deux niveaux sont disjoints
+// par construction (SIREN à 9 chiffres vs `R11_01_23` / `Paris_23` / `ZZZZZZZZZ`), d'où
+// une table de mesures unique par feuille plutôt qu'un doublon par niveau.
+//
+// Les 9 scénarios (3 hypothèses de population × 3 hypothèses de cohabitation) reprennent
+// exactement le nommage de `demographic_evolution_omphale` et `household_sizes` :
+// `central_b/c/h`, `ph_b/c/h` (population haute), `pb_b/c/h` (population basse).
+// ---------------------------------------------------------------------------
+
+/// Niveau géographique d'une zone de projection Omphale.
+enum ProjectionZoneLevel {
+  EPCI
+  BH
+}
+
+enum ProjectionSex {
+  HOMME
+  FEMME
+}
+
+/// ⚠ Les tranches se RECOUVRENT : `85+` est inclus dans `65+`. Ce ne sont pas des parts
+/// sommables — le total se reconstitue avec MOINS_DE_18 + DE_18_A_29 + DE_30_A_44
+/// + DE_45_A_64 + PLUS_DE_65.
+enum ProjectionAgeGroup {
+  MOINS_DE_18 @map("<18")
+  DE_18_A_29  @map("18-29")
+  DE_30_A_44  @map("30-44")
+  DE_45_A_64  @map("45-64")
+  PLUS_DE_65  @map("65+")
+  PLUS_DE_85  @map("85+")
+}
+
+/// ⚠ `ENFANT` et `HORS_MENAGE` sont à 0 sur l'intégralité des deux fichiers source.
+/// Conservés par fidélité au source, à ne pas exposer comme des effectifs exploitables.
+enum ProjectionHouseholdType {
+  COUPLE
+  ENFANT
+  FAMILLE_MONOPARENTALE
+  HORS_MENAGE
+  MENAGE_COMPLEXE_2
+  MENAGE_COMPLEXE_3_PLUS @map("MENAGE_COMPLEXE_3+")
+  PERSONNE_SEULE
+}
+
+/// Référentiel des zones du fichier de projections détaillées.
+/// Non versionné : l'identité d'une zone (code + rattachement) est stable ; c'est
+/// `ProjectionZoneMillesime` qui porte ce qui varie d'un millésime à l'autre.
+model ProjectionZone {
+  code       String              @id
+  level      ProjectionZoneLevel
+  label      String
+  /// Renseigné pour les 214 zones EPCI et pour les 12 EPT du Grand Paris, qui existent
+  /// dans `epcis` sous les codes composites `200054781_T1` … `_T12`.
+  epciCode   String?             @map("epci_code")
+  /// Renseigné pour 346 des 347 zones BH. NULL pour `ZZZZZZZZZ` (zone résiduelle) seule.
+  bassinName String?             @map("bassin_name")
+
+  epci   Epci?   @relation(fields: [epciCode], references: [code])
+  bassin Bassin? @relation(fields: [bassinName], references: [name])
+
+  millesimes           ProjectionZoneMillesime[]
+  populationTotals     ProjectionPopulationTotal[]
+  populationBySex      ProjectionPopulationBySex[]
+  populationByAgeSex   ProjectionPopulationByAgeSex[]
+  populationByAgeGroup ProjectionPopulationByAgeGroup[]
+  householdTotals      ProjectionHouseholdTotal[]
+  householdByType      ProjectionHouseholdByType[]
+
+  @@index([level])
+  @@index([bassinName])
+  @@index([epciCode])
+  @@map("projection_zones")
+}
+
+/// Métadonnées de chargement d'une zone pour un millésime donné.
+model ProjectionZoneMillesime {
+  zoneCode  String  @map("zone_code")
+  millesime String
+  /// `ind_robust` de la source. false = zone hors seuil de robustesse Omphale : une seule
+  /// année (2018), valeur observée recopiée sur les 9 scénarios, AUCUNE projection.
+  isRobust  Boolean @map("is_robust")
+  firstYear Int     @map("first_year")
+  lastYear  Int     @map("last_year")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, millesime])
+  @@index([millesime])
+  @@map("projection_zone_millesimes")
+}
+
+/// Feuille `Population_totale`. Clé source : (ANNEE, ZONE).
+model ProjectionPopulationTotal {
+  zoneCode  String @map("zone_code")
+  year      Int
+  millesime String
+  // Nullable : les bassins R75_24-1_23 et R75_24-3_23 (Dordogne) n'ont pas de projection
+  // « population basse » au-delà de 2018 — cf. demographic_evolution_omphale.
+  centralB  Float? @map("central_b")
+  centralC  Float? @map("central_c")
+  centralH  Float? @map("central_h")
+  phB       Float? @map("ph_b")
+  phC       Float? @map("ph_c")
+  phH       Float? @map("ph_h")
+  pbB       Float? @map("pb_b")
+  pbC       Float? @map("pb_c")
+  pbH       Float? @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, millesime])
+  @@index([millesime])
+  @@map("projection_population_totals")
+}
+
+/// Feuille `Population_sexe`, dépliée : 18 colonnes source → 2 lignes × 9 colonnes.
+model ProjectionPopulationBySex {
+  zoneCode  String        @map("zone_code")
+  year      Int
+  sex       ProjectionSex
+  millesime String
+  centralB  Float?        @map("central_b")
+  centralC  Float?        @map("central_c")
+  centralH  Float?        @map("central_h")
+  phB       Float?        @map("ph_b")
+  phC       Float?        @map("ph_c")
+  phH       Float?        @map("ph_h")
+  pbB       Float?        @map("pb_b")
+  pbC       Float?        @map("pb_c")
+  pbH       Float?        @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, sex, millesime])
+  @@index([millesime])
+  @@map("projection_population_by_sex")
+}
+
+/// Feuille `Population_age_sexe`, dépliée : 18 colonnes source → 2 lignes × 9 colonnes.
+/// `age` va de 0 à 99, 99 regroupant « 99 ans et plus ».
+model ProjectionPopulationByAgeSex {
+  zoneCode  String        @map("zone_code")
+  year      Int
+  age       Int
+  sex       ProjectionSex
+  millesime String
+  centralB  Float?        @map("central_b")
+  centralC  Float?        @map("central_c")
+  centralH  Float?        @map("central_h")
+  phB       Float?        @map("ph_b")
+  phC       Float?        @map("ph_c")
+  phH       Float?        @map("ph_h")
+  pbB       Float?        @map("pb_b")
+  pbC       Float?        @map("pb_c")
+  pbH       Float?        @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, age, sex, millesime])
+  @@index([millesime])
+  @@map("projection_population_by_age_sex")
+}
+
+/// Feuille `Population_agegrp`.
+model ProjectionPopulationByAgeGroup {
+  zoneCode  String             @map("zone_code")
+  year      Int
+  ageGroup  ProjectionAgeGroup @map("age_group")
+  millesime String
+  centralB  Float?             @map("central_b")
+  centralC  Float?             @map("central_c")
+  centralH  Float?             @map("central_h")
+  phB       Float?             @map("ph_b")
+  phC       Float?             @map("ph_c")
+  phH       Float?             @map("ph_h")
+  pbB       Float?             @map("pb_b")
+  pbC       Float?             @map("pb_c")
+  pbH       Float?             @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, ageGroup, millesime])
+  @@index([millesime])
+  @@map("projection_population_by_age_group")
+}
+
+/// Feuille `Menages_totaux`.
+model ProjectionHouseholdTotal {
+  zoneCode  String @map("zone_code")
+  year      Int
+  millesime String
+  centralB  Float? @map("central_b")
+  centralC  Float? @map("central_c")
+  centralH  Float? @map("central_h")
+  phB       Float? @map("ph_b")
+  phC       Float? @map("ph_c")
+  phH       Float? @map("ph_h")
+  pbB       Float? @map("pb_b")
+  pbC       Float? @map("pb_c")
+  pbH       Float? @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, millesime])
+  @@index([millesime])
+  @@map("projection_household_totals")
+}
+
+/// Feuille `Menages_typologie`, dépliée : 63 colonnes source → 7 lignes × 9 colonnes.
+model ProjectionHouseholdByType {
+  zoneCode      String                  @map("zone_code")
+  year          Int
+  householdType ProjectionHouseholdType @map("household_type")
+  millesime     String
+  centralB      Float?                  @map("central_b")
+  centralC      Float?                  @map("central_c")
+  centralH      Float?                  @map("central_h")
+  phB           Float?                  @map("ph_b")
+  phC           Float?                  @map("ph_c")
+  phH           Float?                  @map("ph_h")
+  pbB           Float?                  @map("pb_b")
+  pbC           Float?                  @map("pb_c")
+  pbH           Float?                  @map("pb_h")
+
+  zone            ProjectionZone  @relation(fields: [zoneCode], references: [code], onDelete: Cascade)
+  dataPackVersion DataPackVersion @relation(fields: [millesime], references: [millesime])
+
+  @@id([zoneCode, year, householdType, millesime])
+  @@index([millesime])
+  @@map("projection_household_by_type")
+}
+
+model AmfLead {
+  id           String             @id @default(uuid())
+  email        String
+  epciCode     String             @map("epci_code")
+  simulationId String?            @unique @map("simulation_id")
+  answers      Json
+  createdAt    DateTime           @default(now()) @map("created_at")
+  simulation   Simulation?        @relation(fields: [simulationId], references: [id], onDelete: SetNull)
+  contacts     AmfSharedContact[]
+
+  @@map("amf_leads")
+}
+
+model AmfSharedContact {
+  id        String   @id @default(uuid())
+  leadId    String   @map("lead_id")
+  role      String
+  email     String
+  createdAt DateTime @default(now()) @map("created_at")
+  lead      AmfLead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@map("amf_shared_contacts")
 }

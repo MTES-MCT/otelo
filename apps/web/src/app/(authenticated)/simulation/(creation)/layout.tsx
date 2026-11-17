@@ -1,8 +1,11 @@
-import { AuthenticatedBreadcrumb } from '~/components/breadcrumbs/authenticated-breadcrumb'
-import DemographicSettingsSimulationSideMenu from '~/components/simulations/settings/demographic-settings-simulation-side-menu'
-import { DemographicSettingsSimulationStepper } from '~/components/simulations/settings/demographic-settings-simulation-stepper'
-import { SelectMillesimeModal } from '~/components/simulations/settings/select-millesime-modal'
+import { MillesimeInitializer } from '~/components/simulations/settings/millesime-initializer'
+import { CreationScenarioPanel } from '~/components/simulations/settings/scenario-panel/creation-scenario-panel'
 import { SimulationFormRatesProviderContextWrapper } from '~/components/simulations/settings/simulation-form-context-wrapper'
+import { WizardLayout } from '~/components/simulations/settings/wizard-layout'
+import { WizardStepHeader } from '~/components/simulations/settings/wizard-step-header'
+import { WizardStepTracker } from '~/components/simulations/settings/wizard-step-tracker'
+import { WizardStepper } from '~/components/simulations/settings/wizard-stepper'
+import { MandatoryCreationTutorial } from '~/components/simulations/tutorial/mandatory-creation-tutorial'
 
 type PageProps = {
   children: React.ReactNode
@@ -10,24 +13,13 @@ type PageProps = {
 
 export default function CreateSimulationLayout({ children }: PageProps) {
   return (
-    <div className="fr-container">
-      <SimulationFormRatesProviderContextWrapper>
-        <div className="fr-flex fr-flex-gap-12v">
-          <nav className="fr-col-md-3">
-            <AuthenticatedBreadcrumb />
-            <DemographicSettingsSimulationSideMenu />
-          </nav>
-
-          <div className="fr-col-md-9">
-            <main className="fr-container">
-              <SelectMillesimeModal />
-              <DemographicSettingsSimulationStepper />
-              {children}
-              {/*<CreationPreview />*/}
-            </main>
-          </div>
-        </div>
-      </SimulationFormRatesProviderContextWrapper>
-    </div>
+    <SimulationFormRatesProviderContextWrapper>
+      <WizardStepTracker />
+      <MillesimeInitializer />
+      <MandatoryCreationTutorial />
+      <WizardLayout stepper={<WizardStepper />} panel={<CreationScenarioPanel />} header={<WizardStepHeader />}>
+        {children}
+      </WizardLayout>
+    </SimulationFormRatesProviderContextWrapper>
   )
 }

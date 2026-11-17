@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
+import { describeHttpError } from '~/common/utils/http-error'
 import { TEmailDto } from '~/schemas/email/email'
 import { IEmailService } from './interfaces/email-service.interface'
 
@@ -58,7 +59,7 @@ export class EmailService implements IEmailService {
 
       this.logger.log(`Email sent successfully to ${options.to}`)
     } catch (error) {
-      this.logger.error(`Failed to send email:`, { error })
+      this.logger.error('Failed to send email:', describeHttpError(error))
       throw new InternalServerErrorException('Failed to send email')
     }
   }
@@ -92,7 +93,7 @@ export class EmailService implements IEmailService {
 
       this.logger.log(`Templated email sent successfully to ${to}`)
     } catch (error) {
-      this.logger.error(`Failed to send email:`, { error })
+      this.logger.error('Failed to send email:', describeHttpError(error))
       throw new InternalServerErrorException('Failed to send templated email')
     }
   }

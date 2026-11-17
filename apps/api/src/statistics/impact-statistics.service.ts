@@ -10,11 +10,12 @@ import {
   type TTargetReduction,
   type TTargetReductionDomain,
   type TTerritoryNeeds,
-} from '@shared'
+} from '@otelo/shared'
 import type { DateRange } from '~/common/utils/date-range'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma } from '~/generated/prisma/client'
 import { percentage, round, toNumber } from './statistics-numbers'
+import { LATEST_POPULATION, simulationsExportedIn } from './statistics-sql'
 import { ownerIsNotTeam } from './team'
 
 /** Délai au-delà duquel un retour sur un dossier traduit un usage installé plutôt qu'une session de travail. */
@@ -31,19 +32,7 @@ const simulationsCreatedIn = ({ from, toExclusive }: DateRange): Prisma.Sql => P
   FROM simulations s
   WHERE s.deleted IS NULL
     AND s.created_at >= ${from} AND s.created_at < ${toExclusive}
-    AND ${ownerIsNotTeam('s.user_id')}
-`
-
-/**
- * Simulations exportées sur la période, qu'il s'agisse d'un PowerPoint ou d'un Excel.
- * Un export est le signe qu'un scénario sort d'Otelo pour servir ailleurs.
- */
-const simulationsExportedIn = ({ from, toExclusive }: DateRange): Prisma.Sql => Prisma.sql`
-  SELECT DISTINCT s.id, s.scenario_id, s.epci_group_id
-  FROM exports e
-  INNER JOIN simulations s ON s.id = e.simulation_id
-  WHERE e.created_at >= ${from} AND e.created_at < ${toExclusive}
-    AND ${ownerIsNotTeam('s.user_id')}
+    AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
 `
 
 /** Type de document d'urbanisme d'un dossier (`g`), ramené aux clés de `IMPACT_PLANNING_DOCUMENT_KEYS`. */
@@ -258,7 +247,7 @@ export class ImpactStatisticsService {
    * à la distinction courte / longue ont les deux colonnes à zéro et sont écartés : un
    * utilisateur qui supprime toute la vacance longue garde, lui, sa vacance courte.
    */
-  private async getTargetReductions(sims: Prisma.Sql): Promise<TTargetReduction[]> {
+  async getTargetReductions(sims: Prisma.Sql): Promise<TTargetReduction[]> {
     const [row] = await this.prisma.$queryRaw<
       Array<Record<`${'avg' | 'median' | 'count'}_${TTargetReductionDomain}`, number | bigint | null>>
     >`
@@ -346,7 +335,7 @@ export class ImpactStatisticsService {
       LEFT JOIN users u ON u.id = g.user_id
       WHERE g.deleted IS NULL
         AND g.created_at >= ${from} AND g.created_at < ${toExclusive}
-        AND ${ownerIsNotTeam('g.user_id')}
+        AND ${ownerIsNotTeam('g.user_id', 'g.api_consumer_id')}
     `
 
     const [byType, byMonth, byUserType] = await Promise.all([
@@ -436,15 +425,8 @@ export class ImpactStatisticsService {
       INNER JOIN simulations s ON s.id = e.simulation_id
       WHERE e.type = 'POWERPOINT'
         AND e.created_at >= ${from} AND e.created_at < ${toExclusive}
-        AND ${ownerIsNotTeam('s.user_id')}
+        AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       ORDER BY s.user_id, e.created_at, e.is_privileged DESC
-    `
-
-    // Population du dernier recensement disponible pour chaque EPCI.
-    const latestPopulation = Prisma.sql`
-      SELECT DISTINCT ON (epci_code) epci_code, population
-      FROM rp
-      ORDER BY epci_code, millesime DESC, year DESC
     `
 
     const [byNextStep, byDocumentType, coverage, sharing, sharedEpcis, longTermUse, exportedNeeds, allNeeds] = await Promise.all([
@@ -460,7 +442,7 @@ export class ImpactStatisticsService {
         Array<{ exported_epcis: bigint; covered_population: string | null; total_epcis: bigint; total_population: string | null }>
       >`
           WITH exported AS (${exported}),
-          population AS (${latestPopulation}),
+          population AS (${LATEST_POPULATION}),
           exported_epcis AS (
             SELECT DISTINCT es.epci_code
             FROM exported
@@ -481,7 +463,7 @@ export class ImpactStatisticsService {
           FROM simulation_share_links sl
           INNER JOIN simulations s ON s.id = sl.simulation_id
           WHERE s.deleted IS NULL
-            AND ${ownerIsNotTeam('s.user_id')}
+            AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
         `,
       // Un EPCI travaillé par plusieurs types d'acteurs signale un dialogue entre services
       // de l'État et collectivités autour des mêmes chiffres.
@@ -519,7 +501,7 @@ export class ImpactStatisticsService {
             WHERE c.created_at >= ${from} AND c.created_at < ${toExclusive}
               AND c.action <> 'simulation.deleted'
               AND g.deleted IS NULL
-              AND ${ownerIsNotTeam('g.user_id')}
+              AND ${ownerIsNotTeam('g.user_id', 'g.api_consumer_id')}
           )
           SELECT
             COUNT(DISTINCT id) AS active_dossiers,
@@ -593,7 +575,7 @@ export class ImpactStatisticsService {
         SELECT s.id
         FROM simulations s
         WHERE s.deleted IS NULL
-          AND ${ownerIsNotTeam('s.user_id')}
+          AND ${ownerIsNotTeam('s.user_id', 's.api_consumer_id')}
       ),
       requests AS (
         SELECT s.user_id, e.created_at, e.simulation_id, e.is_privileged

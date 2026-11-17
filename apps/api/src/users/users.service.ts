@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { auth } from '~/auth/better-auth'
+import { env } from '~/config/env'
 import { PrismaService } from '~/db/prisma.service'
 import { Prisma, UserType } from '~/generated/prisma/client'
 import { TUpdateUserType } from '~/schemas/users/update-user'
@@ -37,13 +38,6 @@ export class UsersService {
   private readonly logger = new Logger(UsersService.name)
 
   constructor(private readonly prisma: PrismaService) {}
-
-  async hasUserAccessTo(email: string): Promise<boolean> {
-    const user = await this.prisma.user.findFirst({
-      where: { email },
-    })
-    return !!user && (user.role === 'ADMIN' || user.hasAccess)
-  }
 
   async isEmailInWhitelist(email: string): Promise<boolean> {
     const whitelistEntry = await this.prisma.userWhitelist.findUnique({
@@ -165,6 +159,14 @@ export class UsersService {
     })
   }
 
+  /** Idempotent : la première date de fin est conservée si le didacticiel est rejoué. */
+  async markTutorialCompleted(id: string): Promise<void> {
+    await this.prisma.user.updateMany({
+      data: { tutorialCompletedAt: new Date() },
+      where: { id, tutorialCompletedAt: null },
+    })
+  }
+
   async importUsersFromCsv(
     rows: Array<{ email: string; referent?: string; name: string; firstname: string; lastname: string; type?: UserType }>,
   ): Promise<{ created: number; skipped: number }> {
@@ -195,7 +197,7 @@ export class UsersService {
         await auth.api.requestPasswordReset({
           body: {
             email: row.email.toLowerCase().trim(),
-            redirectTo: `${process.env.CLIENT_BASE_URL}/modification-mot-de-passe`,
+            redirectTo: `${env.CLIENT_BASE_URL}/modification-mot-de-passe`,
           },
         })
       } catch (error) {

@@ -1,9 +1,19 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
-  "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  "rootDir": "../",
+  "roots": ["<rootDir>/src"],
+  "testRegex": ".*\\.e2e-spec\\.ts$",
+  "moduleNameMapper": {
+    "^@test/(.*)$": "<rootDir>/test/$1",
+    "^@otelo/shared$": "<rootDir>/../../packages/shared/src",
+    "^@otelo/shared/(.*)$": "<rootDir>/../../packages/shared/src/$1",
+    "^~/(.*)$": "<rootDir>/src/$1"
+  },
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
-  }
+    "^.+\\.(t|j)s$": "ts-jest",
+    "^.+\\.mjs$": "ts-jest"
+  },
+  "testEnvironment": "node",
+  "clearMocks": true,
+  "setupFiles": ["<rootDir>/test/jest-setup.ts"]
 }

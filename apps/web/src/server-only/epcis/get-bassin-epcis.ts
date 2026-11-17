@@ -1,4 +1,4 @@
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
 import { authFetch, getSession } from '~/lib/auth/server'
 
 export const getBassinEpcis = async (epci: string) => {

@@ -2,16 +2,22 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import Button from '@codegouvfr/react-dsfr/Button'
-import { TEpci } from '@shared'
+import { TEpci } from '@otelo/shared'
+import classNames from 'classnames'
 import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
 import { useState } from 'react'
+import { Drawer } from '~/components/common/drawer'
+import { ScotInfoTable } from '~/components/simulations/docurba/scot-info-table'
 import { NextStepLink } from '~/components/simulations/settings/next-step-link'
 import { useEpciGroups } from '~/hooks/use-epci-groups'
-import { parseUrbanismeDocType } from '~/utils/epci-group-name'
-import { BassinHabitatSelection } from './bassin-habitat-selection'
-import { CustomSelection } from './custom-selection'
+import { useEpcis } from '~/hooks/use-epcis'
+import { ZUrbanismeDoc } from '~/schemas/urbanisme-doc'
+import classes from './choix-du-territoire.module.css'
 import { ExistingGroupSelection } from './existing-group-selection'
-import { MethodSelectionCards, SelectionMethod } from './method-selection-cards'
+import { TerritorySearchSelection } from './territory-search-selection'
+
+/** La recherche est l'entrée par défaut ; un groupe d'EPCI déjà enregistré reste accessible à côté. */
+type SelectionMethod = 'search' | 'existing-group'
 
 type WrapperSimulationTypePageProps = {
   bassinEpcis: TEpci[]
@@ -22,53 +28,51 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
     useQueryStates({
       baseEpci: parseAsString,
       epcis: parseAsArrayOf(parseAsString).withDefault([]),
+      epcisExclus: parseAsArrayOf(parseAsString),
       epciGroupName: parseAsString,
       epciGroupNameAuto: parseAsString,
       epciGroupId: parseAsString,
       epciChart: parseAsString,
-      territoireTouched: parseAsString,
       urbanismeDoc: parseAsString,
       urbanismeDocType: parseAsString,
       urbanismeDocName: parseAsString,
+      territoireTouched: parseAsString,
     })
   const { data: groups } = useEpciGroups({ withActiveSimulations: true })
-  const [selectedMethod, setSelectedMethod] = useState<SelectionMethod>(() => {
-    if (epciGroupId) return 'existing-group'
-    if (epcis.length > 0) return 'custom-selection'
-    return null
-  })
+  const { data: selectedEpcis } = useEpcis(epcis)
+  const [selectedMethod, setSelectedMethod] = useState<SelectionMethod>(() => (epciGroupId ? 'existing-group' : 'search'))
+  const hasExistingGroups = (groups?.length ?? 0) > 0
+
+  const [isScotDrawerOpen, setIsScotDrawerOpen] = useState(false)
 
   const hasEpcis = !!epcis?.length
-
-  const isGroupNameTaken = groups?.some((group) => group.name.toLowerCase() === epciGroupName?.toLowerCase()) || false
+  const scotEpcis = (selectedEpcis ?? []).map(({ code, name }) => ({ code, name }))
+  const hasSelectedEpcis = scotEpcis.length > 0
 
   // Le document d'urbanisme conditionne le nom proposé : la question est obligatoire partout sauf sur
   // un groupe existant, qui porte déjà son nom et n'utilise la réponse que pour enrichir le groupe.
   const isUrbanismeDocRequired = selectedMethod !== 'existing-group'
-  const docType = parseUrbanismeDocType(urbanismeDocType)
-  const isUrbanismeDocAnswered =
-    urbanismeDoc === 'non' || (urbanismeDoc === 'oui' && !!docType && (docType !== 'plh-plui' || !!urbanismeDocName?.trim()))
+  const isUrbanismeDocAnswered = ZUrbanismeDoc.safeParse({ urbanismeDoc, urbanismeDocName, urbanismeDocType }).success
 
-  const canGoNextStep =
-    hasEpcis && !!(epciGroupName || epciGroupId) && !isGroupNameTaken && (!isUrbanismeDocRequired || isUrbanismeDocAnswered)
+  const canGoNextStep = hasEpcis && !!(epciGroupName || epciGroupId) && (!isUrbanismeDocRequired || isUrbanismeDocAnswered)
   const hasUrbanismeDocError = territoireTouched === 'true' && isUrbanismeDocRequired && !isUrbanismeDocAnswered
   const href = '/simulation/cadrage-temporel'
 
+  // Changer d'entrée repart d'une sélection vide : un groupe et une recherche ne se combinent pas.
   const handleMethodSelect = (method: SelectionMethod) => {
     setSelectedMethod(method)
-    if (method === null) {
-      setQueryStates({
-        epciGroupId: null,
-        epciGroupName: null,
-        epciGroupNameAuto: null,
-        epcis: [],
-        baseEpci: null,
-        territoireTouched: null,
-        urbanismeDoc: null,
-        urbanismeDocName: null,
-        urbanismeDocType: null,
-      })
-    }
+    setQueryStates({
+      epciGroupId: null,
+      epciGroupName: null,
+      epciGroupNameAuto: null,
+      epcis: [],
+      epcisExclus: null,
+      baseEpci: null,
+      territoireTouched: null,
+      urbanismeDoc: null,
+      urbanismeDocName: null,
+      urbanismeDocType: null,
+    })
   }
 
   return (
@@ -79,42 +83,61 @@ export const WrapperSimulationTypePage = ({ bassinEpcis = [] }: WrapperSimulatio
           background: fr.colors.decisions.background.default.grey.default,
         }}
       >
-        {!selectedMethod && (
-          <MethodSelectionCards
-            selectedMethod={selectedMethod}
-            onMethodSelect={handleMethodSelect}
-            existingGroupsCount={groups?.length || 0}
-          />
-        )}
-
-        {selectedMethod && (
-          <>
-            <div className={fr.cx('fr-mb-3w')}>
+        {(hasExistingGroups || hasSelectedEpcis) && (
+          <div className={classNames(classes.actionsBar, fr.cx('fr-mb-3w'))}>
+            {selectedMethod === 'search' && hasExistingGroups && (
               <Button
                 priority="tertiary no outline"
-                iconId="fr-icon-refresh-line"
+                iconId="fr-icon-folder-2-line"
                 iconPosition="left"
                 size="small"
-                onClick={() => handleMethodSelect(null)}
+                onClick={() => handleMethodSelect('existing-group')}
               >
-                Changer de méthode de sélection
+                Utiliser un groupe d&apos;EPCI enregistré
               </Button>
-            </div>
+            )}
+            {selectedMethod === 'existing-group' && (
+              <Button
+                priority="tertiary no outline"
+                iconId="fr-icon-search-line"
+                iconPosition="left"
+                size="small"
+                onClick={() => handleMethodSelect('search')}
+              >
+                Rechercher un autre territoire
+              </Button>
+            )}
 
-            {selectedMethod === 'existing-group' && <ExistingGroupSelection />}
-            {selectedMethod === 'bassin-habitat' && (
-              <BassinHabitatSelection bassinEpcis={bassinEpcis} hasUrbanismeDocError={hasUrbanismeDocError} />
+            {hasSelectedEpcis && (
+              <Button
+                priority="tertiary no outline"
+                iconId="fr-icon-file-text-line"
+                iconPosition="left"
+                size="small"
+                onClick={() => setIsScotDrawerOpen(true)}
+              >
+                Voir la planification territoriale
+              </Button>
             )}
-            {selectedMethod === 'custom-selection' && (
-              <CustomSelection bassinEpcis={bassinEpcis} hasUrbanismeDocError={hasUrbanismeDocError} />
-            )}
-          </>
+          </div>
+        )}
+
+        {selectedMethod === 'existing-group' ? (
+          <ExistingGroupSelection />
+        ) : (
+          <TerritorySearchSelection bassinEpcis={bassinEpcis} hasUrbanismeDocError={hasUrbanismeDocError} />
         )}
       </div>
 
       <div className={fr.cx('fr-ml-auto', 'fr-my-1w')}>
         <NextStepLink href={href} query="epcis" isDisabled={!canGoNextStep} touchedQueryParam="territoireTouched" />
       </div>
+
+      {hasSelectedEpcis && (
+        <Drawer isOpen={isScotDrawerOpen} onClose={() => setIsScotDrawerOpen(false)} title="Planification territoriale">
+          <ScotInfoTable epcis={scotEpcis} bare />
+        </Drawer>
+      )}
     </>
   )
 }

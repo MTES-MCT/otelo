@@ -1,23 +1,9 @@
 import { NextResponse } from 'next/server'
-import { authFetch, getSession, unauthFetch } from '~/lib/auth/server'
+import { proxyAdminJson } from '~/lib/api/admin-proxy'
+import { unauthFetch } from '~/lib/auth/server'
 
 export async function GET(request: Request) {
-  const session = await getSession()
-
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { searchParams } = new URL(request.url)
-  const query = searchParams.toString()
-  const res = await authFetch(`/users${query ? `?${query}` : ''}`)
-
-  if (!res.ok) {
-    return NextResponse.json({ error: 'Failed to fetch users list' }, { status: res.status })
-  }
-
-  const data = await res.json()
-  return NextResponse.json(data)
+  return proxyAdminJson('/users', request, ['page', 'limit', 'sortBy', 'sortOrder'])
 }
 
 export async function POST(request: Request) {

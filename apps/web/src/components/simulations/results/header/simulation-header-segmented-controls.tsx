@@ -2,6 +2,7 @@
 
 import Button from '@codegouvfr/react-dsfr/Button'
 import { useSearchParams } from 'next/navigation'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { useTracking } from '~/hooks/use-tracking'
 
 export const SimulationHeaderSegmentedControls = ({
@@ -15,7 +16,7 @@ export const SimulationHeaderSegmentedControls = ({
   const { trackEvent } = useTracking()
 
   return (
-    <div className="fr-flex fr-flex-gap-4v fr-align-items-center">
+    <div className="fr-flex fr-flex-gap-4v fr-align-items-center" {...tutorialAnchor('results-scenarios')}>
       <span className="fr-text--sm fr-mb-0 ">Scénario affiché</span>
       <div>
         {segments.map((segment) => (

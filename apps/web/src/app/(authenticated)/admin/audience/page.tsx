@@ -17,6 +17,7 @@ import { PeriodSelector, usePeriodRange } from '~/components/admin/shared/period
 import { StatCard } from '~/components/admin/shared/stat-card'
 import { useActivationStatistics, useAudienceStatistics } from '~/hooks/use-audience-statistics'
 import { formatChartMonth, formatDate, formatDuration } from '~/utils/date-helpers'
+import { formatNumber } from '~/utils/format-numbers'
 
 export default function AudiencePage() {
   const { range } = usePeriodRange()
@@ -92,7 +93,7 @@ export default function AudiencePage() {
           <LineChart data={audience?.connections.byMonth ?? []}>
             <CartesianGrid stroke={ADMIN_CHART_GRID} strokeDasharray="3 3" />
             <XAxis dataKey="month" fontSize={11} tickFormatter={formatChartMonth} />
-            <YAxis allowDecimals={false} fontSize={11} />
+            <YAxis allowDecimals={false} fontSize={11} width="auto" tickFormatter={formatNumber} />
             <Tooltip labelFormatter={(value) => formatChartMonth(String(value))} />
             <Legend />
             <Line dataKey="nbConnections" dot={false} name="Connexions" stroke={chartColor(0)} strokeWidth={2} type="monotone" />
@@ -109,7 +110,7 @@ export default function AudiencePage() {
           <BarChart data={audience?.connections.byUserType ?? []}>
             <CartesianGrid stroke={ADMIN_CHART_GRID} strokeDasharray="3 3" />
             <XAxis dataKey="userType" fontSize={11} />
-            <YAxis allowDecimals={false} fontSize={11} />
+            <YAxis allowDecimals={false} fontSize={11} width="auto" tickFormatter={formatNumber} />
             <Tooltip />
             <Bar dataKey="nbConnections" fill={chartColor(0)} name="Connexions" radius={[4, 4, 0, 0]} />
           </BarChart>

@@ -1,19 +1,23 @@
 'use client'
 
-import Badge from '@codegouvfr/react-dsfr/Badge'
 import Button from '@codegouvfr/react-dsfr/Button'
-import CallOut from '@codegouvfr/react-dsfr/CallOut'
-import classNames from 'classnames'
+import { ALL_EPCIS_KEY } from '@otelo/shared'
 import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC, useEffect } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { tss } from 'tss-react'
+import { ChartDownloadButton } from '~/components/charts/chart-download-wrapper'
 import { CustomizedDot } from '~/components/charts/customized-dot'
 import { getChartColor } from '~/components/charts/data-visualisation/colors'
 import { PopulationScenariosCustomTooltip } from '~/components/charts/population-scenarios-custom-tooltip'
 import { PopulationScenariosSelection } from '~/components/charts/population-scenarios-selection'
+import { getScenarioProjection } from '~/components/charts/scenario-projection-hint'
 import { DemographicSettingsSelectEpci } from '~/components/simulations/settings/demographic-settings-header'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
+import { ReadingKey } from '~/components/ui/reading-key'
+import { useChartTerritory } from '~/hooks/use-chart-territory'
 import { TPopulationDemographicEvolution, TPopulationEvolution } from '~/schemas/demographic-evolution'
+import { formatNumber } from '~/utils/format-numbers'
 import { roundPopulation } from '~/utils/round-chart-axis'
 import { sPluriel } from '~/utils/sPluriel'
 
@@ -24,6 +28,8 @@ interface PopulationEvolutionChartProps {
 }
 
 type TPopulationScenarioKey = 'basse' | 'central' | 'haute'
+
+const CHART_HEIGHT = 468
 
 const SCENARIOS: Array<{ dataKey: TPopulationScenarioKey; name: string; queryValue: TPopulationScenarioKey; stroke: string }> = [
   {
@@ -62,7 +68,9 @@ const getGroupAvailablePopulationScenarios = (
   demographicEvolution: TPopulationDemographicEvolution,
   millesime: number | null,
 ): TPopulationScenarioKey[] => {
-  const entries = Object.values(demographicEvolution)
+  const entries = Object.entries(demographicEvolution)
+    .filter(([code]) => code !== ALL_EPCIS_KEY)
+    .map(([, entry]) => entry)
   if (entries.length === 0) return []
   return (['haute', 'central', 'basse'] as const).filter((key) =>
     entries.every((entry) => getAvailablePopulationScenarios(entry.data, millesime).includes(key)),
@@ -77,11 +85,10 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
     projection: parseAsString,
     scenario: parseAsString,
     epcis: parseAsArrayOf(parseAsString).withDefault([]),
-    epciChart: parseAsString,
   })
 
-  const selectedEpci = queryStates.epciChart ?? queryStates.epcis[0]
-  const selectedData = selectedEpci ? demographicEvolution[selectedEpci] : null
+  const { dataKey: territoryKey, isAggregated } = useChartTerritory(epcis ?? queryStates.epcis)
+  const selectedData = territoryKey ? demographicEvolution[territoryKey] : null
 
   // Disponibilité calculée sur l'ensemble du bassin (intersection), pas sur le
   // seul EPCI affiché : un scénario n'est sélectionnable que s'il existe pour
@@ -105,8 +112,9 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
       <DemographicSettingsSelectEpci epcis={epcis ?? queryStates.epcis} />
       <div className="fr-flex fr-justify-content-center fr-align-items-center fr-my-4w">
         <div>
-          Aucune donnée disponible pour cet EPCI. Pour pouvoir choisir un scénario de projection, veuillez sélectionner un autre EPCI dans
-          la liste.
+          {isAggregated
+            ? "Aucune donnée de projection n'est disponible pour l'ensemble du territoire. Sélectionnez un EPCI dans la liste pour consulter sa trajectoire."
+            : 'Aucune donnée disponible pour cet EPCI. Pour pouvoir choisir un scénario de projection, veuillez sélectionner un autre EPCI dans la liste.'}
         </div>
       </div>
     </>
@@ -139,17 +147,20 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
   const evol =
     ((popEvolution[queryStates.population as keyof typeof popEvolution] as number | null) ?? 0) -
     ((basePopulation[queryStates.population as keyof typeof basePopulation] as number | null) ?? 0)
+  const projections = Object.fromEntries(
+    availableScenarioKeys.map((key) => [key, getScenarioProjection(basePopulation[key], popEvolution[key])]),
+  )
   const handleClick = () => {
     setQueryStates({ scenario: 'menages' })
     window.scrollTo({ top: 0 })
   }
   return (
     <>
-      <PopulationScenariosSelection availableScenarios={availableScenarioKeys} />
+      <PopulationScenariosSelection availableScenarios={availableScenarioKeys} projections={projections} horizon={period} />
       <DemographicSettingsSelectEpci epcis={epcis ?? queryStates.epcis} />
 
-      <div className={classes.chartContainer}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div className={classes.chartContainer} {...tutorialAnchor('population-chart')}>
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
           <LineChart width={500} height={300} data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             {displayedScenarios.map(({ dataKey, name, queryValue, stroke, strokeWidth }) => (
@@ -191,7 +202,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
               }}
             />
             <XAxis dataKey="year" />
-            <YAxis domain={[metadata.min, metadata.max]} tickFormatter={(value) => roundPopulation(value).toString()} />
+            <YAxis domain={[metadata.min, metadata.max]} tickFormatter={(value) => formatNumber(roundPopulation(value))} width="auto" />
             <Tooltip content={<PopulationScenariosCustomTooltip basePopulation={basePopulation} />} />
           </LineChart>
         </ResponsiveContainer>
@@ -204,6 +215,7 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
           ))}
         </div>
       </div>
+      <ChartDownloadButton className="fr-mt-1w" />
 
       {queryStates.population &&
         (() => {
@@ -214,29 +226,15 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
           const tcam = periodYears > 0 && popBase > 0 ? (Math.pow(popAtProjection / popBase, 1 / periodYears) - 1) * 100 : 0
 
           return (
-            <CallOut
-              className="fr-py-2w fr-mb-0 fr-mt-4w"
-              title={
-                <Badge severity="new" noIcon small>
-                  <span className={classNames(classes.badgeIcon, 'ri-lightbulb-line fr-mr-1v')} />
-                  <span className="fr-text--uppercase">Clé de lecture</span>
-                </Badge>
-              }
-            >
-              <span className="fr-text--md">
-                <span>
-                  Ce scénario anticipe une évolution de la population de <strong>{evol > 0 ? `+${evol}` : evol}</strong> habitant
-                  {sPluriel(evol)} sur la période {queryStates.millesime} - {period}.
-                </span>
-                <br />
-                <span>
-                  Soit un taux de croissance annuel moyen de <strong>{tcam.toFixed(2)} %</strong> sur la période {queryStates.millesime} -{' '}
-                  {period}.
-                </span>
-                <br />
-                <span className="fr-text--sm fr-text-mention--grey fr-mb-0">Source des données : INSEE</span>
-              </span>
-            </CallOut>
+            <ReadingKey className="fr-mt-4w">
+              La population {evol >= 0 ? 'augmentera' : 'diminuera'} de <strong>{formatNumber(Math.round(Math.abs(evol)))}</strong> habitant
+              {sPluriel(Math.abs(evol))} entre {queryStates.millesime} et {period}, soit{' '}
+              <strong>
+                {tcam > 0 ? '+' : ''}
+                {tcam.toFixed(2).replace('.', ',')} %
+              </strong>{' '}
+              par an en moyenne.
+            </ReadingKey>
           )
         })()}
 
@@ -250,19 +248,14 @@ export const PopulationScenariosChart: FC<PopulationEvolutionChartProps> = ({ de
 }
 
 const useStyles = tss.create({
-  badgeIcon: {
-    '&::before': {
-      '--icon-size': '12px',
-    },
-  },
   buttonContainer: {
     display: 'flex',
     justifyContent: 'flex-end',
     marginTop: '1rem',
   },
+  // Hauteur portée par le graphique, pas par le conteneur : la légende s'ajoute dessous sans déborder.
   chartContainer: {
     backgroundColor: 'white',
-    height: '500px',
     padding: '1rem',
     width: '100%',
   },

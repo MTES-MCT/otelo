@@ -5,7 +5,9 @@ import { parseAsBoolean, useQueryState } from 'nuqs'
 import { ComponentProps, FC, useState } from 'react'
 import { Bar, ComposedChart, Legend, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { dsfrHighlightColors, dsfrRealColors, getChartColor } from '~/components/charts/data-visualisation/colors'
+import { tutorialAnchor } from '~/components/simulations/tutorial/tutorial-content'
 import { TFlowRequirementChartData, TSitadelData } from '~/schemas/results'
+import { formatNumber } from '~/utils/format-numbers'
 import styles from './synthesis-cn-evolution-chart.module.css'
 
 interface EpciFlowData {
@@ -148,7 +150,7 @@ export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ 
   ]
 
   return (
-    <div className="fr-background-default--grey shadow" id="demographie-parc">
+    <div className="fr-background-default--grey shadow" id="demographie-parc" {...tutorialAnchor('results-synthesis-chart')}>
       <div className="fr-py-8w fr-px-5w">
         <div className="fr-flex fr-justify-content-space-between fr-align-items-center">
           <h3 className="fr-h4 fr-mb-0">Besoins en construction neuve annualisés</h3>
@@ -168,7 +170,7 @@ export const SynthesisCnEvolutionChart: FC<SynthesisCnEvolutionChartProps> = ({ 
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={mergedData}>
               <XAxis dataKey="year" />
-              <YAxis domain={[0, maxValue]} allowDecimals={false} />
+              <YAxis domain={[0, maxValue]} allowDecimals={false} width="auto" tickFormatter={formatNumber} />
 
               <ReferenceLine
                 x={horizon}

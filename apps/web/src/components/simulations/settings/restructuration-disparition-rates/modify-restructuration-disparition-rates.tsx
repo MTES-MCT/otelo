@@ -1,12 +1,11 @@
 'use client'
 
-import { RiIconClassName } from '@codegouvfr/react-dsfr'
-import Tabs from '@codegouvfr/react-dsfr/Tabs'
-import { TEpcisAccommodationRates } from '@shared'
+import { TEpcisAccommodationRates } from '@otelo/shared'
 import classNames from 'classnames'
 import { parseAsString, useQueryState } from 'nuqs'
 import { FC } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
+import { EpciTabs } from '~/components/simulations/settings/epci-tabs'
 import styles from '~/components/simulations/settings/epcis-accommodation-rates/epcis-accommodation-rates.module.css'
 import { ModifyAllEpcisRestructurationRatesView } from '~/components/simulations/settings/restructuration-disparition-rates/modify-all-epcis-restructuration-rates-view'
 import { ModifyRestructurationDisparitionRatesInput } from '~/components/simulations/settings/restructuration-disparition-rates/modify-restructuration-disparition-rates.input'
@@ -18,6 +17,8 @@ interface ModifyRestructurationDisparitionRatesProps {
 
 interface TabChildrenProps {
   epci: string
+  epciName: string
+  projection: number
   rates: TEpcisAccommodationRates
   observedPeriodLabel: string
 }
@@ -27,15 +28,17 @@ const getObservedRatesPeriodLabel = (millesime?: string): string => {
   return Number.isFinite(year) && year >= 2022 ? '2015 et 2022' : '2015 et 2021'
 }
 
-const TabChildren: FC<TabChildrenProps> = ({ epci, rates, observedPeriodLabel }) => {
+const TabChildren: FC<TabChildrenProps> = ({ epci, epciName, projection, rates, observedPeriodLabel }) => {
   const epciRates = rates?.[epci]
   if (!epciRates) return null
 
   return (
-    <div className="fr-flex fr-direction-column fr-flex-gap-2v fr-justify-content-space-between">
-      <span className="fr-text-mention--grey fr-mb-5v">
-        Par défaut, Otelo vous propose de reconduire les taux annuels mesurés entre {observedPeriodLabel}.
-      </span>
+    <div className="fr-flex fr-direction-column fr-flex-gap-4v fr-justify-content-space-between">
+      {/* Introduit le renouvellement urbain plutôt que d'inciter à reconduire les taux par défaut. */}
+      <p className="fr-mb-1v">
+        Entre {observedPeriodLabel}, le parc de logements de {epciName} a évolué sous l&apos;effet des démolitions, fusions, divisions et
+        changements d&apos;usage. Quel rythme anticipez-vous d&apos;ici {projection} ?
+      </p>
 
       <ModifyRestructurationDisparitionRatesInput epci={epci} />
     </div>
@@ -52,18 +55,27 @@ export const ModifyRestructurationDisparitionRates: FC<ModifyRestructurationDisp
 
   const isAllMode = ratesMode === 'all'
 
-  const tabs = epcis.map((epci) => ({
-    content: <TabChildren epci={epci.code} rates={rates} observedPeriodLabel={observedPeriodLabel} />,
-    iconId: 'ri-road-map-line' as RiIconClassName,
-    label: epci.name,
-  }))
-
   return (
     <>
       <div className={classNames('fr-px-md-4w fr-flex fr-pb-5w', styles.shadow, isAllMode && 'fr-border-bottom')}>
         <RestructurationRatesToggleSwitch />
       </div>
-      {isAllMode ? <ModifyAllEpcisRestructurationRatesView /> : <Tabs classes={{ panel: 'fr-background-default--grey' }} tabs={tabs} />}
+      {isAllMode ? (
+        <ModifyAllEpcisRestructurationRatesView />
+      ) : (
+        <EpciTabs
+          epcis={epcis}
+          renderTab={(epciCode) => (
+            <TabChildren
+              epci={epciCode}
+              epciName={epcis.find((epci) => epci.code === epciCode)?.name ?? epciCode}
+              projection={simulationSettings.projection}
+              rates={rates}
+              observedPeriodLabel={observedPeriodLabel}
+            />
+          )}
+        />
+      )}
     </>
   )
 }

@@ -3,11 +3,51 @@ packages:
   - packages/*
 
 catalog:
-  '@biomejs/biome': 2.3.13
-  '@types/node': ^25
-  dayjs: ^1.11.19
-  typescript: ^5.9.3
-  zod: ^4.3.6
+  '@biomejs/biome': 2.6.3
+  '@types/node': ^25.9.9
+  dayjs: ^1.11.23
+  typescript: ^6.0.3
+  zod: ^4.6.7
 
+minimumReleaseAge: 10080
+
+# Correctif de sécurité better-auth (GHSA du 2026-11-03) : exemption limitée à ces versions exactes.
 minimumReleaseAgeExclude:
-  - '@thallesp/nestjs-better-auth'
+  - better-auth@1.7.16
+  - '@better-auth/core@1.7.16'
+  - '@better-auth/drizzle-adapter@1.7.16'
+  - '@better-auth/kysely-adapter@1.7.16'
+  - '@better-auth/memory-adapter@1.7.16'
+  - '@better-auth/mongo-adapter@1.7.16'
+  - '@better-auth/prisma-adapter@1.7.16'
+  - '@better-auth/telemetry@1.7.16'
+  - better-call@1.4.5
+
+allowBuilds:
+  '@scarf/scarf': false
+  '@gouvfr/dsfr': false
+  '@parcel/watcher': false
+  '@prisma/client': false
+  '@prisma/engines': false
+  argon2: false
+  esbuild: false
+  prisma: false
+  puppeteer: false
+  unrs-resolver: false
+
+overrides:
+  '@prisma/config>deepmerge-ts': 8.0.0
+  'exceljs>uuid': 11.1.1
+  'tsup>esbuild': 0.28.1
+  multer: '>=2.3.0'
+  '@nestjs/swagger>js-yaml': 5.4.3
+  # GHSA-3g3m-2fjr-6pw4 (glob >=9 <=14.0.1) et GHSA-g3hv-75wg-m249 (minimatch <11.0.1).
+  'glob@>=9.0.0 <14.0.2': 14.0.2
+  'minimatch@>=9.0.0 <11.0.1': 11.0.1
+  'readdir-glob>minimatch': 11.0.1
+  # minimatch 3.x n'arrivait que par glob 7 (archiver-utils d'archiver 5, rimraf d'unzipper 0.10) et par fork-ts-checker.
+  # archiver-utils n'appelle que glob.sync, toujours exporté par glob 14. archiver 7 refuse les streams qu'exceljs lui passe.
+  # unzipper 0.12 garde Parse, seule API qu'exceljs appelle. fork-ts-checker ne sert qu'aux builders webpack/rspack.
+  'archiver-utils>glob': 14.0.2
+  'exceljs>unzipper': 0.12.5
+  '@nestjs/cli>fork-ts-checker-webpack-plugin': '-'

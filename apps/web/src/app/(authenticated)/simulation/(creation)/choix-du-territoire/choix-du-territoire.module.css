@@ -4,9 +4,8 @@
   height: 100%;
 }
 
-.typeSelectionContainer {
+.actionsBar {
   display: flex;
-  justify-content: center;
-  background-color: white;
-  padding: 2.5rem 1.5rem 1rem 2.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }

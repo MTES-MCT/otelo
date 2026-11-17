@@ -1,6 +1,6 @@
 import { Controller, Get, HttpCode, HttpStatus, NotFoundException, Param, Query, UseGuards } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { TEpciNeighborsResponse } from '@shared'
+import { TEpciNeighborsResponse } from '@otelo/shared'
 import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { EpciNeighborsService } from '~/epci-neighbors/epci-neighbors.service'
