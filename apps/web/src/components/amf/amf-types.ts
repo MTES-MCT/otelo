@@ -30,19 +30,26 @@ export type TAmfAnswers = {
 
 export type TAmfCreateSimulationBody = TAmfAnswers & { email: string }
 
+/** Fourchette à paliers fixes : `min` vaut 0 pour « moins de `max` » ; une contribution négative a ses deux bornes ≤ 0. */
+export type TAmfRange = {
+  min: number
+  max: number
+}
+
 export type TAmfResult = {
   baseYear: number
   horizon: number
   /** Année du pic de ménages quand elle précède l'horizon, sinon `null`. Égale à `baseYear` : territoire déjà en baisse. */
   peakYear: number | null
-  total: number
-  annualAverage: number
+  /** `null` quand le besoin est nul. */
+  total: TAmfRange | null
+  annualAverage: TAmfRange | null
   /** Contributions signées ; `null` quand le besoin est nul. */
   blocks: {
-    population: number
-    vacancy: number
-    secondaryResidences: number
-    badHousing: number
+    population: TAmfRange
+    vacancy: TAmfRange
+    secondaryResidences: TAmfRange
+    badHousing: TAmfRange
   } | null
 }
 

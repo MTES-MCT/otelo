@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "Obtenez une première estimation simplifiée du besoin en logement de votre territoire d'ici 2036.",
 }
 
-export default function AmfPage() {
+export default function FlashPage() {
   return (
     <div className={fr.cx('fr-container')}>
       <div className={fr.cx('fr-grid-row', 'fr-grid-row--center')}>

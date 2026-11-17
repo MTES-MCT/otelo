@@ -25,51 +25,49 @@ const makeResults = (overrides: { total?: number; totalFlux?: number; longTermVa
   }) satisfies EstimationBreakdownInput & { total: number }
 
 describe('buildAmfResult', () => {
-  it('arrondit le total à la dizaine et calcule la moyenne annuelle', () => {
+  it('renvoie le total et la moyenne annuelle en fourchettes fines', () => {
     const result = buildAmfResult(makeResults(), EPCI, 2022)
-    expect(result.total).toBe(4820)
-    expect(result.annualAverage).toBe(Math.round(4817 / 14))
+    expect(result.total).toEqual({ min: 4000, max: 5000 })
+    // 4 817 logements sur 14 ans : 344 par an.
+    expect(result.annualAverage).toEqual({ min: 300, max: 400 })
     expect(result.baseYear).toBe(2022)
     expect(result.horizon).toBe(2036)
   })
 
-  it('signe les blocs vacants et résidences secondaires', () => {
+  it('renvoie le détail par poste en fourchettes larges et signées', () => {
     const { blocks } = buildAmfResult(makeResults(), EPCI, 2022)
-    expect(blocks?.vacancy).toBe(-500)
-    expect(blocks?.secondaryResidences).toBe(200)
-    expect(blocks?.badHousing).toBe(1220)
-  })
-
-  it('fait tomber l’addition juste', () => {
-    const { total, blocks } = buildAmfResult(makeResults(), EPCI, 2022)
-    expect(blocks!.population).toBe(3900)
-    expect(blocks!.population + blocks!.vacancy + blocks!.secondaryResidences + blocks!.badHousing).toBe(total)
+    expect(blocks).toEqual({
+      population: { min: 2000, max: 5000 },
+      vacancy: { min: -1000, max: -500 },
+      secondaryResidences: { min: 200, max: 500 },
+      badHousing: { min: 1000, max: 2000 },
+    })
   })
 
   it('rend un bloc vacants positif quand la vacance augmente', () => {
-    expect(buildAmfResult(makeResults({ longTermVacant: 120 }), EPCI, 2022).blocks?.vacancy).toBe(120)
+    expect(buildAmfResult(makeResults({ longTermVacant: 120 }), EPCI, 2022).blocks?.vacancy.min).toBeGreaterThan(0)
   })
 
-  it.each([-300, 0])('renvoie total 0 et blocks null si le besoin vaut %i', (total) => {
+  it.each([-300, 0])('renvoie un résultat vide si le besoin vaut %i', (total) => {
     const result = buildAmfResult(makeResults({ total }), EPCI, 2022)
-    expect(result).toMatchObject({ total: 0, annualAverage: 0, blocks: null })
+    expect(result).toMatchObject({ total: null, annualAverage: null, blocks: null })
   })
 
-  it('renvoie blocks null quand le total arrondi tombe à 0', () => {
+  it("renvoie un résultat vide quand le besoin s'arrondit à 0", () => {
     const result = buildAmfResult(makeResults({ total: 4, totalFlux: 4 }), EPCI, 2022)
-    expect(result).toMatchObject({ total: 0, annualAverage: 0, blocks: null })
+    expect(result).toMatchObject({ total: null, annualAverage: null, blocks: null })
   })
 
-  it('met badHousing à 0 quand le stock est nul', () => {
+  it('met badHousing sous le plancher quand le stock est nul', () => {
     const { blocks } = buildAmfResult(makeResults({ totalFlux: 4817 }), EPCI, 2022)
-    expect(blocks?.badHousing).toBe(0)
+    expect(blocks?.badHousing).toEqual({ min: 0, max: 50 })
   })
 
   describe('pic de ménages', () => {
     it('renvoie peakYear null quand le pic est au-delà de 2036', () => {
       const result = buildAmfResult(makeResults({ peakYear: 2050 }), EPCI, 2022)
       expect(result.peakYear).toBeNull()
-      expect(result.annualAverage).toBe(Math.round(4817 / 14))
+      expect(result.annualAverage).toEqual({ min: 300, max: 400 })
     })
 
     it('renvoie peakYear null sans détail du pic', () => {
@@ -79,13 +77,14 @@ describe('buildAmfResult', () => {
     it("renvoie l'année du pic quand il précède 2036 et moyenne le besoin jusqu'au pic", () => {
       const result = buildAmfResult(makeResults({ peakYear: 2029 }), EPCI, 2022)
       expect(result.peakYear).toBe(2029)
-      expect(result.annualAverage).toBe(Math.round(4817 / 7))
+      // 4 817 logements sur 7 ans : 688 par an.
+      expect(result.annualAverage).toEqual({ min: 600, max: 700 })
     })
 
     it("signale un territoire déjà en baisse quand le pic est l'année de base", () => {
       const result = buildAmfResult(makeResults({ total: 0, totalFlux: 0, peakYear: 2022 }), EPCI, 2022)
       expect(result.blocks).toBeNull()
-      expect(result.total).toBe(0)
+      expect(result.total).toBeNull()
       expect(result.peakYear).toBe(2022)
     })
   })

@@ -1,5 +1,6 @@
 import { buildEstimationBreakdown, EstimationBreakdownInput } from '@otelo/shared'
 import { TAmfResult } from './amf.schemas'
+import { COARSE_STEPS, FINE_STEPS, toRange } from './amf-range'
 import { AMF_HORIZON } from './amf-scenario'
 
 export const roundToTen = (value: number) => Math.round(value / 10) * 10
@@ -25,33 +26,35 @@ export function buildAmfResult(
 ): TAmfResult {
   const rawTotal = results.epcisTotals.find((epci) => epci.epciCode === epciCode)?.total ?? 0
   const peakYear = peakYearBeforeHorizon(results, epciCode)
-  const empty = { baseYear, horizon: AMF_HORIZON, peakYear, total: 0, annualAverage: 0, blocks: null }
+  const empty = { baseYear, horizon: AMF_HORIZON, peakYear, total: null, annualAverage: null, blocks: null }
 
-  if (rawTotal <= 0) {
+  // Un besoin qui s'arrondit à 0 logement est traité comme nul.
+  if (roundToTen(rawTotal) <= 0) {
     return empty
   }
 
   const { values } = buildEstimationBreakdown(results, { epciCode })
-  const total = roundToTen(rawTotal)
-  if (total <= 0) {
-    return empty
-  }
-
-  const vacancy = roundToTen(values.vacancyIncrease - values.vacancyRemobilised)
-  const secondaryResidences = roundToTen(values.secondaryIncrease - values.secondaryDecrease)
-  const badHousing = roundToTen(values.badHousing)
-  const population = total - vacancy - secondaryResidences - badHousing
+  const vacancy = values.vacancyIncrease - values.vacancyRemobilised
+  const secondaryResidences = values.secondaryIncrease - values.secondaryDecrease
+  const badHousing = values.badHousing
+  const population = rawTotal - vacancy - secondaryResidences - badHousing
 
   // Le besoin se construit jusqu'au pic : la moyenne annuelle se calcule sur cette période.
   const lastYear = peakYear ?? AMF_HORIZON
   const years = Math.max(lastYear - baseYear, 1)
+  const coarse = (value: number) => toRange(value, COARSE_STEPS, 50)
 
   return {
     baseYear,
     horizon: AMF_HORIZON,
     peakYear,
-    total,
-    annualAverage: Math.round(rawTotal / years),
-    blocks: { population, vacancy, secondaryResidences, badHousing },
+    total: toRange(rawTotal, FINE_STEPS, 50),
+    annualAverage: toRange(rawTotal / years, FINE_STEPS, 10),
+    blocks: {
+      population: coarse(population),
+      vacancy: coarse(vacancy),
+      secondaryResidences: coarse(secondaryResidences),
+      badHousing: coarse(badHousing),
+    },
   }
 }
