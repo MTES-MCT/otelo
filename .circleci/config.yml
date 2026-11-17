@@ -1,9 +1,5 @@
 version: 2.1
 
-orbs:
-  skip: theodo/skip@0.1.2
-  queue: eddiewebb/queue@3.2.1
-
 executors:
   node:
     docker:
@@ -35,43 +31,14 @@ workflows:
   version: 2
   otelo:
     jobs:
-      - prepare_workspace_dependencies
-      - lint:
-          requires:
-            - prepare_workspace_dependencies
-      - test_api:
-          requires:
-            - prepare_workspace_dependencies
-      - test_api_integration:
-          requires:
-            - prepare_workspace_dependencies
-      - test_api_e2e:
-          requires:
-            - prepare_workspace_dependencies
-      - build_api:
-          requires:
-            - prepare_workspace_dependencies
-      - build_web:
-          requires:
-            - prepare_workspace_dependencies
+      - lint
+      - test_api
+      - test_api_integration
+      - test_api_e2e
+      - build_api
+      - build_web
 
 jobs:
-  prepare_workspace_dependencies:
-    executor: node
-    steps:
-      - checkout
-      - skip/skip_unchanged:
-          paths: pnpm-lock.yaml
-      - install_dependencies
-      - run:
-          name: 'Fetch dependencies'
-          command: pnpm install --virtual-store-dir << pipeline.parameters.virtual_store_dir >> --frozen-lockfile
-      - save_cache:
-          key: << pipeline.parameters.cache_version >>-pnpm-{{ checksum "<< pipeline.parameters.lockfile >>" }}
-          paths:
-            - << pipeline.parameters.virtual_store_dir >>
-            - ./node_modules
-
   lint:
     executor: node
     steps:
@@ -180,12 +147,20 @@ commands:
   install_dependencies:
     steps:
       - install_pnpm
+      # La clé de repli reprend le cache d'un autre lockfile : pnpm n'installe alors que l'écart.
       - restore_cache:
           keys:
             - << pipeline.parameters.cache_version >>-pnpm-{{ checksum "<< pipeline.parameters.lockfile >>" }}
+            - << pipeline.parameters.cache_version >>-pnpm-
       - run:
           name: 'Install dependencies'
           command: pnpm install --virtual-store-dir << pipeline.parameters.virtual_store_dir >> --frozen-lockfile
+      # Sans effet quand la clé existe déjà ; le premier job qui finit l'installation l'écrit.
+      - save_cache:
+          key: << pipeline.parameters.cache_version >>-pnpm-{{ checksum "<< pipeline.parameters.lockfile >>" }}
+          paths:
+            - << pipeline.parameters.virtual_store_dir >>
+            - ./node_modules
 
   prisma_generate:
     steps:
