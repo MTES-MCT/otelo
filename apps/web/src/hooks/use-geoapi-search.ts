@@ -2,6 +2,7 @@ import { useQueries } from '@tanstack/react-query'
 import { useQueryState } from 'nuqs'
 import { useEffect, useState } from 'react'
 import { useDebounce } from 'use-debounce'
+import { useSession } from '~/lib/auth/client'
 
 export interface GeoApiEpciResult {
   code: string
@@ -43,6 +44,7 @@ export interface GeoApiSearchResults {
 }
 
 export const useGeoApiSearch = (debounceTime = 200) => {
+  const { data: session } = useSession()
   const [shouldFetch, setShouldFetch] = useState(false)
   const [searchQueryState] = useQueryState('q')
 
@@ -74,9 +76,10 @@ export const useGeoApiSearch = (debounceTime = 200) => {
   const communes = results[0]?.data || []
   const epcis = results[1]?.data || []
 
-  // Filter out EPCIS and communes in IDF
-  const filteredCommunes = communes.filter((commune) => commune.codeRegion !== '11')
-  const filteredEpcis = epcis.filter((epci) => !epci.codesRegions.includes('11'))
+  // L'Île-de-France est hors périmètre : seuls les administrateurs peuvent y faire des scénarios (l'API l'impose aussi).
+  const canUseIleDeFrance = session?.user.role === 'ADMIN'
+  const filteredCommunes = canUseIleDeFrance ? communes : communes.filter((commune) => commune.codeRegion !== '11')
+  const filteredEpcis = canUseIleDeFrance ? epcis : epcis.filter((epci) => !epci.codesRegions.includes('11'))
 
   const data: GeoApiSearchResults = {
     communes: filteredCommunes,

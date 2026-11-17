@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { AccommodationRatesService } from '~/accommodation-rates/accommodation-rates.service'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
+import { Role } from '~/generated/prisma/enums'
 import { ScenariosService } from '~/scenarios/scenarios.service'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
 import { TCloneSimulationDto } from '~/schemas/simulations/simulation'
@@ -188,6 +189,20 @@ describe('SimulationsService', () => {
       mockPrismaService.simulation.create = jest.fn().mockResolvedValue({ id: 'simulation-1' })
       // Par défaut aucun homonyme : les tests qui en veulent un le déclarent explicitement.
       mockEpciGroupsService.findByName = jest.fn().mockResolvedValue(null)
+    })
+
+    it('should refuse a territory in Île-de-France to a non-admin user', async () => {
+      await expect(service.create(userId, buildInitSimulation({ epci: [{ code: '200054781' }] }), Role.USER)).rejects.toThrow(
+        'Otelo ne permet pas de réaliser de scénario en Île-de-France.',
+      )
+      expect(mockScenariosService.create).not.toHaveBeenCalled()
+      expect(mockPrismaService.simulation.create).not.toHaveBeenCalled()
+    })
+
+    it('should allow a territory in Île-de-France to an admin', async () => {
+      await service.create(userId, buildInitSimulation({ epci: [{ code: '200054781' }] }), Role.ADMIN)
+
+      expect(mockPrismaService.simulation.create).toHaveBeenCalled()
     })
 
     it('should forward the planning document when creating a new group', async () => {

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { NeedsCalculationService } from '~/calculation/needs-calculation/needs-calculation.service'
 import { PrismaService } from '~/db/prisma.service'
+import { assertTerritoryAllowed } from '~/epcis/ile-de-france'
 import { ResultsService } from '~/results/results.service'
 import { TExternalUpdateScenario } from '~/schemas/scenarios/scenario'
 import { SimulationsService } from '~/simulations/simulations.service'
@@ -17,6 +18,9 @@ export class ExternalService {
 
   async createSimulation(apiConsumerId: string, data: TCreateSimulationBody) {
     const { epcis, millesime, ...scenarioFields } = data.scenario
+
+    // Les consommateurs de l'API externe ne sont jamais administrateurs : l'Île-de-France leur est fermée.
+    assertTerritoryAllowed([...data.epci.map((e) => e.code), ...Object.keys(epcis)])
 
     const epciScenariosData = Object.entries(epcis).map(([code, epciScenario]) => ({
       epciCode: code,
