@@ -15,7 +15,7 @@ executors:
       - image: cimg/postgres:16.4
         environment:
           POSTGRES_USER: otelo
-          POSTGRES_PASSWORD: otelo
+          POSTGRES_PASSWORD: otelo # ggignore
           POSTGRES_DB: otelo-test
 
 parameters:
@@ -95,7 +95,7 @@ jobs:
   test_api_integration:
     executor: node_with_database
     environment:
-      INTEGRATION_DATABASE_URL: 'postgresql://otelo:otelo@localhost:5432/otelo-test'
+      INTEGRATION_DATABASE_URL: 'postgresql://otelo:otelo@localhost:5432/otelo-test' # ggignore
     steps:
       - checkout
       - install_dependencies
