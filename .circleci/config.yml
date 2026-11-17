@@ -38,9 +38,13 @@ workflows:
       - build_api
       - build_web
 
+# resource_class : medium (10 crédits/min) quand le job attend surtout le réseau et le disque,
+# large (20 crédits/min) quand le CPU fixe sa durée : jest (test_api) et next build (build_web,
+# le plus long des jobs).
 jobs:
   lint:
     executor: node
+    resource_class: medium
     steps:
       - checkout
       - install_dependencies
@@ -51,6 +55,7 @@ jobs:
   # Les jobs de test ne compilent pas @otelo/shared : les configs jest le résolvent vers ses sources.
   test_api:
     executor: node
+    resource_class: large
     steps:
       - checkout
       - install_dependencies
@@ -62,6 +67,7 @@ jobs:
   test_api_integration:
     # INTEGRATION_DATABASE_URL est définie dans les variables d'environnement du projet CircleCI.
     executor: node_with_database
+    resource_class: medium
     steps:
       - run:
           name: 'Check INTEGRATION_DATABASE_URL'
@@ -85,6 +91,7 @@ jobs:
   # celles de l'Aptfile, comme au build Scalingo : un paquet retiré à tort casse ici.
   test_api_e2e:
     executor: node
+    resource_class: medium
     steps:
       - checkout
       - install_dependencies
@@ -120,6 +127,7 @@ jobs:
 
   build_api:
     executor: node
+    resource_class: medium
     steps:
       - checkout
       - install_dependencies
@@ -133,6 +141,7 @@ jobs:
 
   build_web:
     executor: node
+    resource_class: large
     steps:
       - checkout
       - install_dependencies
