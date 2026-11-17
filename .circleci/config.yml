@@ -97,9 +97,28 @@ jobs:
       - run:
           name: 'Build shared'
           command: pnpm build:shared
+      # Seules les sources Ubuntu main/universe sont lues : l'image déclare aussi Docker, git-lfs
+      # et un PPA git, et l'index complet coûtait ~25 s de `apt-get update` à chaque exécution.
       - run:
           name: "Bibliothèques système de l'Aptfile"
-          command: sudo apt-get update && xargs -a Aptfile sudo apt-get install -y --no-install-recommends
+          command: |
+            mkdir -p /tmp/apt-sources
+            cat > /tmp/apt-sources/ubuntu.sources \<<EOF
+            Types: deb
+            URIs: http://archive.ubuntu.com/ubuntu/
+            Suites: $(. /etc/os-release && echo "$VERSION_CODENAME $VERSION_CODENAME-updates")
+            Components: main universe
+            Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+            Types: deb
+            URIs: http://security.ubuntu.com/ubuntu/
+            Suites: $(. /etc/os-release && echo "$VERSION_CODENAME-security")
+            Components: main universe
+            Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+            EOF
+            APT_OPTS='-o Dir::Etc::SourceList=/dev/null -o Dir::Etc::SourceParts=/tmp/apt-sources -o Acquire::Languages=none'
+            sudo apt-get update $APT_OPTS
+            xargs -a Aptfile sudo apt-get install -y --no-install-recommends $APT_OPTS
       - run:
           name: 'Install chrome-headless-shell'
           command: pnpm -F api exec puppeteer browsers install chrome-headless-shell
