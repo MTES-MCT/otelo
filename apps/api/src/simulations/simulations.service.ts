@@ -7,7 +7,9 @@ import {
 } from '~/calculation/needs-calculation/besoins-flux/evolution-demographique-b21/demographic-evolution.service'
 import { PrismaService } from '~/db/prisma.service'
 import { EpciGroupsService } from '~/epci-groups/epci-groups.service'
+import { assertTerritoryAllowed } from '~/epcis/ile-de-france'
 import { Simulation } from '~/generated/prisma/client'
+import { Role } from '~/generated/prisma/enums'
 import { ScenariosService } from '~/scenarios/scenarios.service'
 import { TUpdateSimulationDto } from '~/schemas/scenarios/scenario'
 import { TInitSimulation } from '~/schemas/simulations/create-simulation'
@@ -125,7 +127,12 @@ export class SimulationsService {
     return { id, scenario }
   }
 
-  async create(userId: string, data: TInitSimulation): Promise<Simulation> {
+  async create(userId: string, data: TInitSimulation, role?: Role): Promise<Simulation> {
+    assertTerritoryAllowed(
+      data.epci.map((epci) => epci.code),
+      role,
+    )
+
     let epciGroupId = data.epciGroupId
 
     if (epciGroupId) {
@@ -248,7 +255,7 @@ export class SimulationsService {
     return simulation
   }
 
-  async clone(userId: string, originalId: string, data: TCloneSimulationDto): Promise<Simulation> {
+  async clone(userId: string, originalId: string, data: TCloneSimulationDto, role?: Role): Promise<Simulation> {
     const originalSimulation = await this.prismaService.simulation.findUniqueOrThrow({
       include: {
         scenario: { include: { epciScenarios: true } },
@@ -256,6 +263,11 @@ export class SimulationsService {
       },
       where: { id: originalId, userId },
     })
+
+    assertTerritoryAllowed(
+      originalSimulation.epcis.map((epci) => epci.code),
+      role,
+    )
 
     const { userId: _, id, millesime: originalMillesime, ...scenarioData } = originalSimulation.scenario
 
@@ -314,6 +326,7 @@ export class SimulationsService {
     originalId: string,
     targetMillesime: string,
     name?: string,
+    role?: Role,
   ): Promise<Simulation & { actualization: { total: number; updated: number; skippedEpcis: string[] } }> {
     const original = await this.prismaService.simulation.findUniqueOrThrow({
       where: { id: originalId, userId },
@@ -323,9 +336,14 @@ export class SimulationsService {
       },
     })
     const cloneName = name || `${original.name} (millésime ${targetMillesime})`
-    const cloned = await this.clone(userId, originalId, {
-      name: cloneName,
-    })
+    const cloned = await this.clone(
+      userId,
+      originalId,
+      {
+        name: cloneName,
+      },
+      role,
+    )
     const clonedSimulation = await this.prismaService.simulation.findUniqueOrThrow({
       where: { id: cloned.id },
       select: { scenarioId: true },

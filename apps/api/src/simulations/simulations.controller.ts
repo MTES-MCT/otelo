@@ -55,8 +55,8 @@ export class SimulationsController {
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body({ schema: ZInitSimulation }) data: TInitSimulation, @User() { id: userId }: TUser) {
-    return this.simulationsService.create(userId, data)
+  async create(@Body({ schema: ZInitSimulation }) data: TInitSimulation, @User() { id: userId, role }: TUser) {
+    return this.simulationsService.create(userId, data, role)
   }
 
   @AccessControl({
@@ -110,9 +110,9 @@ export class SimulationsController {
   async cloneSimulation(
     @Param('id') id: string,
     @Body({ schema: ZCloneSimulationDto }) data: TCloneSimulationDto,
-    @User() { id: userId }: TUser,
+    @User() { id: userId, role }: TUser,
   ) {
-    return this.simulationsService.clone(userId, id, data)
+    return this.simulationsService.clone(userId, id, data, role)
   }
 
   @AccessControl({
@@ -125,8 +125,8 @@ export class SimulationsController {
   async actualizeSimulation(
     @Param('id') id: string,
     @Body({ schema: ZActualizeSimulationDto }) data: TActualizeSimulationDto,
-    @User() { id: userId }: TUser,
+    @User() { id: userId, role }: TUser,
   ) {
-    return this.simulationsService.actualize(userId, id, data.millesime, data.name)
+    return this.simulationsService.actualize(userId, id, data.millesime, data.name, role)
   }
 }

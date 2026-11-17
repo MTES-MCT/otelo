@@ -158,7 +158,7 @@ describe('SimulationsController (contrat HTTP)', () => {
       const response = await request(app.getHttpServer()).post('/simulations/sim-1/actualize').send({ millesime: '2021' })
 
       expect(response.status).toBe(201)
-      expect(service.actualize).toHaveBeenCalledWith('user-test', 'sim-1', '2021', undefined)
+      expect(service.actualize).toHaveBeenCalledWith('user-test', 'sim-1', '2021', undefined, 'USER')
     })
 
     it('should refuse an actualisation without its millésime', async () => {
@@ -218,7 +218,7 @@ describe('SimulationsController (contrat HTTP)', () => {
     it('should carry every rate through to the service, not just the two it used to declare', async () => {
       await post(realPayload())
 
-      const [, data] = service.create.mock.calls[0] as [string, { scenario: { epcis: Record<string, object> } }]
+      const [, data] = service.create.mock.calls[0] as unknown as [string, { scenario: { epcis: Record<string, object> } }]
       expect(data.scenario.epcis['200069672']).toEqual({
         b2_tx_disparition: 0.1,
         b2_tx_restructuration: 0.2,

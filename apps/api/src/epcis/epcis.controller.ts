@@ -1,11 +1,14 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Query } from '@nestjs/common'
+import { User } from '~/common/decorators/authenticated-user'
 import { AccessControl } from '~/common/decorators/control-access.decorator'
 import { ExcludeOpenApi } from '~/common/decorators/exclude-open-api.decorator'
 import { TCreateEpci, TUpdateEpci, ZCreateEpci, ZUpdateEpci } from '~/epcis/epcis.dto'
 import { EpcisService } from '~/epcis/epcis.service'
+import { isIleDeFranceEpci } from '~/epcis/ile-de-france'
 import { Epci } from '~/generated/prisma/client'
 import { Role } from '~/generated/prisma/enums'
 import { TEpciContour } from '~/schemas/epcis/epci-contour'
+import { TUser } from '~/schemas/users/user'
 
 @Controller('epcis')
 export class EpcisController {
@@ -42,9 +45,11 @@ export class EpcisController {
   @AccessControl({
     roles: [Role.ADMIN, Role.USER],
   })
-  async getContiguousEpcis(@Query('codes') codes: string): Promise<Epci[]> {
+  async getContiguousEpcis(@Query('codes') codes: string, @User() { role }: TUser): Promise<Epci[]> {
     const epciCodes = codes.split(',')
-    return this.epcisService.getContiguousEpcis(epciCodes)
+    const contiguous = await this.epcisService.getContiguousEpcis(epciCodes)
+    // Pas de voisin francilien à proposer à qui ne pourrait pas l'ajouter à son territoire.
+    return role === Role.ADMIN ? contiguous : contiguous.filter((epci) => !isIleDeFranceEpci(epci.code))
   }
 
   @AccessControl({
