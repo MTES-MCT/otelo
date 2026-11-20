@@ -15,6 +15,8 @@ export interface GeoApiCommuneResult {
   codeEpci: string
   codeRegion: string
   nom: string
+  /** Population municipale, renvoyée par défaut par l'API Géo. */
+  population?: number
 }
 
 export type GeoApiResults = GeoApiEpciResult[] | GeoApiCommuneResult[]

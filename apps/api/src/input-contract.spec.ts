@@ -51,7 +51,7 @@ const VALID_INPUTS: Record<string, Partial<Record<'body' | 'query' | 'param', Ma
       demography: 'tendance',
       vacancy: 'parmi-autres',
       badHousing: true,
-      secondaryResidences: 'neutre',
+      secondaryResidences: 'stable',
       email: 'elu@example.fr',
     },
   },
