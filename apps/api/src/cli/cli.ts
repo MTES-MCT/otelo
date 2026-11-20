@@ -3,6 +3,7 @@
 import { NestFactory } from '@nestjs/core'
 import { Command } from 'commander'
 import { CliModule } from './cli.module'
+import { AmfParityCommand } from './commands/amf-parity.command'
 import { BackfillEpciContoursCommand } from './commands/backfill-epci-contours.command'
 import { BackfillEpcisGeoCommand } from './commands/backfill-epcis-geo.command'
 import { ImportBackupCommand } from './commands/import-backup.command'
@@ -227,6 +228,50 @@ async function bootstrap() {
         await command.execute({ force: options.force || false })
         await app.close()
         process.exit(0)
+      } catch (error) {
+        console.error('✗ Erreur fatale:', error instanceof Error ? error.message : error)
+        await app.close()
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('amf-parity')
+    .description(
+      [
+        'Compare les résultats du questionnaire AMF (/flash) à ceux de simulations Otelo classiques paramétrées',
+        "à l'identique et calculées comme sur la page de résultats, sur un panel de territoires et de réponses.",
+        '',
+        "Crée des simulations temporaires, rattachées à un consommateur d'API supprimé en fin de course :",
+        'refuse de tourner si DATABASE_URL ne pointe pas sur une base locale.',
+        '',
+        'Code de sortie 1 dès qu’un poste dépasse la tolérance (1 logement/an ou --tolerance).',
+        '',
+        'Exemples :',
+        '  pnpm -F api cli amf-parity                                   # 10 EPCI tirés au sort, 6 jeux de réponses chacun',
+        '  pnpm -F api cli amf-parity --sample 40 --combos 3 --seed 7',
+        '  pnpm -F api cli amf-parity --epcis 243100518,200041507 --combos all --output parite.csv',
+      ].join('\n'),
+    )
+    .option('--epcis <codes>', 'Codes EPCI séparés par des virgules (remplace le tirage au sort)')
+    .option('--sample <n>', "Nombre d'EPCI tirés au sort", '10')
+    .option('--combos <n>', 'Jeux de réponses par EPCI, ou « all » pour les 72', '6')
+    .option('--seed <n>', 'Graine du tirage au sort', '1')
+    .option('--tolerance <ratio>', 'Écart relatif toléré, au-delà de 1 logement/an', '0.01')
+    .option('--output <path>', 'Écrire le détail poste par poste dans un CSV')
+    .action(async (options) => {
+      try {
+        const command = app.get(AmfParityCommand)
+        const ok = await command.execute({
+          epcis: options.epcis?.split(',').map((code: string) => code.trim()),
+          sample: Number(options.sample),
+          combos: options.combos === 'all' ? 'all' : Number(options.combos),
+          seed: Number(options.seed),
+          tolerance: Number(options.tolerance),
+          output: options.output,
+        })
+        await app.close()
+        process.exit(ok ? 0 : 1)
       } catch (error) {
         console.error('✗ Erreur fatale:', error instanceof Error ? error.message : error)
         await app.close()
