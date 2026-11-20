@@ -1,60 +1,98 @@
 import { buildEstimationBreakdown, EstimationBreakdownInput } from '@otelo/shared'
-import { TAmfResult } from './amf.schemas'
-import { COARSE_STEPS, FINE_STEPS, toRange } from './amf-range'
-import { AMF_HORIZON } from './amf-scenario'
+import { TAmfAnswers, TAmfResult } from './amf.schemas'
+import { roundForDisplay, toRange } from './amf-rounding'
+import { AMF_HORIZON, TAmfVariant } from './amf-scenario'
 
 export const roundToTen = (value: number) => Math.round(value / 10) * 10
 
-/** Le détail du pic de ménages, porté par `flowRequirement.epcis[].data` dans les résultats du moteur. */
-type TPeakYearInput = { flowRequirement: { epcis: Array<{ code: string; data?: { peakYear: number } }> } }
+/** Part du besoin total que représentent les résidences secondaires récupérées quand la baisse du taux n'y suffit pas. */
+const SECONDARY_RESIDENCES_RECOVERY_SHARE = 0.02
 
-/**
- * Année du pic de ménages quand elle précède l'horizon, `null` sinon.
- *
- * Le moteur ne compte les besoins que jusqu'au pic : au-delà, la baisse du nombre de ménages libère du
- * parc. Un pic égal à l'année de base signale un territoire déjà en baisse.
- */
-const peakYearBeforeHorizon = (results: TPeakYearInput, epciCode: string): number | null => {
-  const peakYear = results.flowRequirement.epcis.find((epci) => epci.code === epciCode)?.data?.peakYear
-  return peakYear !== undefined && peakYear < AMF_HORIZON ? peakYear : null
+export type TAnnualContributions = {
+  households: number
+  badHousing: number
+  fluidity: number
+  vacancyRemobilised: number
+  secondaryResidences: number
+  total: number
 }
 
-export function buildAmfResult(
-  results: EstimationBreakdownInput & TPeakYearInput & { total: number },
+/**
+ * Contributions annuelles d'une variante, moyennées sur la période de base à l'horizon.
+ *
+ * Le mal-logement arrive déjà proratisé par le moteur jusqu'à l'horizon de projection, selon l'année de résorption
+ * du scénario. Les résidences secondaires suivent la réponse : « stable » les neutralise, « récupération » garantit
+ * une contribution négative d'au moins 2 % du besoin.
+ */
+export function annualContributions(
+  results: EstimationBreakdownInput,
   epciCode: string,
   baseYear: number,
-): TAmfResult {
-  const rawTotal = results.epcisTotals.find((epci) => epci.epciCode === epciCode)?.total ?? 0
-  const peakYear = peakYearBeforeHorizon(results, epciCode)
-  const empty = { baseYear, horizon: AMF_HORIZON, peakYear, total: null, annualAverage: null, blocks: null }
+  secondaryResidences: TAmfAnswers['secondaryResidences'],
+): TAnnualContributions {
+  const { values } = buildEstimationBreakdown(results, { epciCode })
+  const years = Math.max(AMF_HORIZON - baseYear, 1)
 
-  // Un besoin qui s'arrondit à 0 logement est traité comme nul.
-  if (roundToTen(rawTotal) <= 0) {
-    return empty
+  const shortTerm = values.fluidity - values.fluidityReleased
+  const longTerm = values.vacancyIncrease - values.vacancyRemobilised
+
+  const households = (values.demographic + values.disappearanceSurplus - values.appearanceSurplus) / years
+  const badHousing = values.badHousing / years
+  const fluidity = (Math.max(0, shortTerm) + Math.max(0, longTerm)) / years
+  const vacancyRemobilised = (Math.max(0, -shortTerm) + Math.max(0, -longTerm)) / years
+
+  const withoutSecondary = households + badHousing + fluidity - vacancyRemobilised
+  const computedSecondary = (values.secondaryIncrease - values.secondaryDecrease) / years
+  let secondary = computedSecondary
+  if (secondaryResidences === 'stable') {
+    secondary = 0
+  } else if (secondaryResidences === 'recuperation' && computedSecondary >= 0) {
+    secondary = -SECONDARY_RESIDENCES_RECOVERY_SHARE * Math.max(0, withoutSecondary)
   }
 
-  const { values } = buildEstimationBreakdown(results, { epciCode })
-  const vacancy = values.vacancyIncrease - values.vacancyRemobilised
-  const secondaryResidences = values.secondaryIncrease - values.secondaryDecrease
-  const badHousing = values.badHousing
-  const population = rawTotal - vacancy - secondaryResidences - badHousing
+  return {
+    households,
+    badHousing,
+    fluidity,
+    vacancyRemobilised,
+    secondaryResidences: secondary,
+    total: withoutSecondary + secondary,
+  }
+}
 
-  // Le besoin se construit jusqu'au pic : la moyenne annuelle se calcule sur cette période.
-  const lastYear = peakYear ?? AMF_HORIZON
-  const years = Math.max(lastYear - baseYear, 1)
-  const coarse = (value: number) => toRange(value, COARSE_STEPS, 50)
+/** Contributions annuelles des deux variantes, avant arrondi. */
+export function amfVariantContributions(
+  results: Record<TAmfVariant, EstimationBreakdownInput>,
+  answers: Pick<TAmfAnswers, 'epciCode' | 'secondaryResidences'>,
+  baseYear: number,
+): Record<TAmfVariant, TAnnualContributions> {
+  return {
+    low: annualContributions(results.low, answers.epciCode, baseYear, answers.secondaryResidences),
+    high: annualContributions(results.high, answers.epciCode, baseYear, answers.secondaryResidences),
+  }
+}
+
+export function buildAmfResult(contributions: Record<TAmfVariant, TAnnualContributions>, baseYear: number): TAmfResult {
+  const { low, high } = contributions
+  const annual = toRange(Math.max(0, low.total), Math.max(0, high.total))
+
+  // Un besoin qui s'arrondit à 0 logement par an est traité comme nul.
+  if (!annual || annual.max <= 0) {
+    return { baseYear, horizon: AMF_HORIZON, annual: null, contributions: null }
+  }
+
+  const range = (key: keyof TAnnualContributions) => toRange(low[key], high[key])
 
   return {
     baseYear,
     horizon: AMF_HORIZON,
-    peakYear,
-    total: toRange(rawTotal, FINE_STEPS, 50),
-    annualAverage: toRange(rawTotal / years, FINE_STEPS, 10),
-    blocks: {
-      population: coarse(population),
-      vacancy: coarse(vacancy),
-      secondaryResidences: coarse(secondaryResidences),
-      badHousing: coarse(badHousing),
+    annual,
+    contributions: {
+      households: range('households'),
+      badHousing: range('badHousing'),
+      fluidity: roundForDisplay((low.fluidity + high.fluidity) / 2) || null,
+      vacancyRemobilised: range('vacancyRemobilised'),
+      secondaryResidences: range('secondaryResidences'),
     },
   }
 }

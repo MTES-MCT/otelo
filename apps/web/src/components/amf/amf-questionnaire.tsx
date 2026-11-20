@@ -37,6 +37,7 @@ const QUESTION_STEP_KEYS = AMF_STEPS.filter((step) => step in QUESTION_STEPS)
 
 const EMPTY_ANSWERS: TAmfDraftAnswers = {
   epci: null,
+  commune: null,
   demography: null,
   vacancy: null,
   badHousing: null,
@@ -165,22 +166,31 @@ export const AmfQuestionnaire: FC = () => {
         return <AmfIntroStep />
       case 'epci':
         // Changer de territoire invalide le choix démographique : les options proposées en dépendent.
-        return <AmfEpciStep epci={answers.epci} onChange={(epci) => update({ epci, demography: null })} />
+        return (
+          <AmfEpciStep
+            epci={answers.epci}
+            commune={answers.commune}
+            onChange={(epci, commune) => update({ epci, commune, demography: null })}
+          />
+        )
       case 'demography':
         return answers.epci ? (
           <AmfDemographyStep epci={answers.epci} value={answers.demography} onChange={(demography) => update({ demography })} />
         ) : null
       case 'vacancy':
-        return <AmfVacancyStep value={answers.vacancy} onChange={(vacancy) => update({ vacancy })} />
+        return answers.epci ? (
+          <AmfVacancyStep epci={answers.epci} value={answers.vacancy} onChange={(vacancy) => update({ vacancy })} />
+        ) : null
       case 'badHousing':
         return <AmfBadHousingStep value={answers.badHousing} onChange={(badHousing) => update({ badHousing })} />
       case 'secondaryResidences':
-        return (
+        return answers.epci ? (
           <AmfSecondaryResidencesStep
+            epci={answers.epci}
             value={answers.secondaryResidences}
             onChange={(secondaryResidences) => update({ secondaryResidences })}
           />
-        )
+        ) : null
       case 'email':
         return (
           <AmfEmailStep
@@ -197,10 +207,10 @@ export const AmfQuestionnaire: FC = () => {
     }
   }
 
-  if (step === 'results' && outcome) {
+  if (step === 'results' && outcome && answers.epci) {
     return (
       <div ref={topRef} tabIndex={-1} className={styles.card}>
-        <AmfResults result={outcome.result} leadId={outcome.leadId} />
+        <AmfResults result={outcome.result} epciName={answers.epci.name} leadId={outcome.leadId} />
         <ButtonsGroup
           className={fr.cx('fr-mt-5w')}
           inlineLayoutWhen="md and up"

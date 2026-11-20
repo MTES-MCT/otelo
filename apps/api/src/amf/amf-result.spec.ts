@@ -1,91 +1,103 @@
 import { EstimationBreakdownInput } from '@otelo/shared'
-import { buildAmfResult } from './amf-result'
+import { amfVariantContributions, buildAmfResult } from './amf-result'
 
 const EPCI = '200040715'
 
-const makeResults = (overrides: { total?: number; totalFlux?: number; longTermVacant?: number; peakYear?: number } = {}) =>
-  ({
-    total: overrides.total ?? 4817,
-    epcisTotals: [{ epciCode: EPCI, total: overrides.total ?? 4817, totalFlux: overrides.totalFlux ?? 3600 }],
+type TOverrides = {
+  total?: number
+  badHousing?: number
+  demographic?: number
+  secondary?: number
+  shortTerm?: number
+  longTerm?: number
+}
+
+/** Résultats du moteur sur 14 ans (2022 → 2036), dont le total est la somme des termes. */
+const makeResults = (overrides: TOverrides = {}): EstimationBreakdownInput => {
+  const demographic = overrides.demographic ?? 2800
+  const secondary = overrides.secondary ?? 280
+  const shortTerm = overrides.shortTerm ?? 140
+  const longTerm = overrides.longTerm ?? -420
+  const badHousing = overrides.badHousing ?? 560
+  const totalFlux = demographic + secondary + shortTerm + longTerm
+  const total = overrides.total ?? totalFlux + badHousing
+  return {
+    epcisTotals: [{ epciCode: EPCI, total, totalFlux }],
     flowRequirement: {
       epcis: [
         {
           code: EPCI,
-          ...(overrides.peakYear !== undefined && { data: { peakYear: overrides.peakYear } }),
           totals: {
-            demographicEvolution: 3900,
-            renewalNeeds: -150,
-            secondaryResidenceAccomodationEvolution: 203,
-            shortTermVacantAccomodation: 147,
-            longTermVacantAccomodation: overrides.longTermVacant ?? -500,
+            demographicEvolution: demographic,
+            renewalNeeds: 0,
+            secondaryResidenceAccomodationEvolution: secondary,
+            shortTermVacantAccomodation: shortTerm,
+            longTermVacantAccomodation: longTerm,
           },
         },
       ],
     },
-  }) satisfies EstimationBreakdownInput & { total: number }
+  }
+}
+
+const build = (low: TOverrides, high: TOverrides, secondaryResidences: 'hausse' | 'stable' | 'maitrise' | 'recuperation' = 'hausse') =>
+  buildAmfResult(
+    amfVariantContributions({ low: makeResults(low), high: makeResults(high) }, { epciCode: EPCI, secondaryResidences }, 2022),
+    2022,
+  )
 
 describe('buildAmfResult', () => {
-  it('renvoie le total et la moyenne annuelle en fourchettes fines', () => {
-    const result = buildAmfResult(makeResults(), EPCI, 2022)
-    expect(result.total).toEqual({ min: 4000, max: 5000 })
-    // 4 817 logements sur 14 ans : 344 par an.
-    expect(result.annualAverage).toEqual({ min: 300, max: 400 })
+  it('annualise chaque contribution sur 2022–2036 et encadre les deux variantes', () => {
+    const result = build({}, { demographic: 4200 })
     expect(result.baseYear).toBe(2022)
     expect(result.horizon).toBe(2036)
-  })
-
-  it('renvoie le détail par poste en fourchettes larges et signées', () => {
-    const { blocks } = buildAmfResult(makeResults(), EPCI, 2022)
-    expect(blocks).toEqual({
-      population: { min: 2000, max: 5000 },
-      vacancy: { min: -1000, max: -500 },
-      secondaryResidences: { min: 200, max: 500 },
-      badHousing: { min: 1000, max: 2000 },
+    expect(result.contributions).toMatchObject({
+      households: { min: 200, max: 300 },
+      fluidity: 10,
+      vacancyRemobilised: { min: 30, max: 30 },
+      secondaryResidences: { min: 20, max: 20 },
     })
   })
 
-  it('rend un bloc vacants positif quand la vacance augmente', () => {
-    expect(buildAmfResult(makeResults({ longTermVacant: 120 }), EPCI, 2022).blocks?.vacancy.min).toBeGreaterThan(0)
+  it('annualise sur 14 ans le mal-logement déjà proratisé par le moteur', () => {
+    // Résorption en 2050 (basse) : 280 logements d'ici 2036 ; en 2040 (haute) : 504.
+    expect(build({ badHousing: 280 }, { badHousing: 504 }).contributions?.badHousing).toEqual({ min: 20, max: 36 })
   })
 
-  it.each([-300, 0])('renvoie un résultat vide si le besoin vaut %i', (total) => {
-    const result = buildAmfResult(makeResults({ total }), EPCI, 2022)
-    expect(result).toMatchObject({ total: null, annualAverage: null, blocks: null })
+  it('fait la somme des contributions dans le total annuel', () => {
+    // 200 + 40 + 10 − 30 + 20 = 240 ; avec 3 220 ménages en haute : 230 + 40 + 10 − 30 + 20 = 270.
+    expect(build({}, { demographic: 3220 }).annual).toEqual({ min: 240, max: 270 })
   })
 
-  it("renvoie un résultat vide quand le besoin s'arrondit à 0", () => {
-    const result = buildAmfResult(makeResults({ total: 4, totalFlux: 4 }), EPCI, 2022)
-    expect(result).toMatchObject({ total: null, annualAverage: null, blocks: null })
+  it('range une vacance longue en hausse avec la fluidité', () => {
+    const { contributions } = build({ longTerm: 140 }, { longTerm: 140 })
+    expect(contributions?.fluidity).toBe(20)
+    expect(contributions?.vacancyRemobilised).toBeNull()
   })
 
-  it('met badHousing sous le plancher quand le stock est nul', () => {
-    const { blocks } = buildAmfResult(makeResults({ totalFlux: 4817 }), EPCI, 2022)
-    expect(blocks?.badHousing).toEqual({ min: 0, max: 50 })
+  it('neutralise les résidences secondaires quand elles ne sont pas un enjeu', () => {
+    const result = build({}, {}, 'stable')
+    expect(result.contributions?.secondaryResidences).toBeNull()
+    expect(result.annual).toEqual({ min: 220, max: 220 })
   })
 
-  describe('pic de ménages', () => {
-    it('renvoie peakYear null quand le pic est au-delà de 2036', () => {
-      const result = buildAmfResult(makeResults({ peakYear: 2050 }), EPCI, 2022)
-      expect(result.peakYear).toBeNull()
-      expect(result.annualAverage).toEqual({ min: 300, max: 400 })
+  it('garde une contribution négative calculée par le moteur pour la récupération', () => {
+    expect(build({ secondary: -420 }, { secondary: -280 }, 'recuperation').contributions?.secondaryResidences).toEqual({
+      min: -30,
+      max: -20,
     })
+  })
 
-    it('renvoie peakYear null sans détail du pic', () => {
-      expect(buildAmfResult(makeResults(), EPCI, 2022).peakYear).toBeNull()
-    })
+  it('récupère 2 % du besoin quand la baisse du taux ne suffit pas', () => {
+    // Besoin hors résidences secondaires : 220 par an, dont 2 % font 4,4.
+    expect(build({}, {}, 'recuperation').contributions?.secondaryResidences).toEqual({ min: -4, max: -4 })
+  })
 
-    it("renvoie l'année du pic quand il précède 2036 et moyenne le besoin jusqu'au pic", () => {
-      const result = buildAmfResult(makeResults({ peakYear: 2029 }), EPCI, 2022)
-      expect(result.peakYear).toBe(2029)
-      // 4 817 logements sur 7 ans : 688 par an.
-      expect(result.annualAverage).toEqual({ min: 600, max: 700 })
-    })
+  it('renvoie un résultat vide quand le moteur ne retient aucun besoin', () => {
+    expect(build({ total: -300 }, { total: 0 })).toEqual({ baseYear: 2022, horizon: 2036, annual: null, contributions: null })
+  })
 
-    it("signale un territoire déjà en baisse quand le pic est l'année de base", () => {
-      const result = buildAmfResult(makeResults({ total: 0, totalFlux: 0, peakYear: 2022 }), EPCI, 2022)
-      expect(result.blocks).toBeNull()
-      expect(result.total).toBeNull()
-      expect(result.peakYear).toBe(2022)
-    })
+  it('borne le total à 0 quand seule la variante haute dégage un besoin', () => {
+    expect(build({ total: -300 }, {}).annual).toEqual({ min: 0, max: 240 })
   })
 })
