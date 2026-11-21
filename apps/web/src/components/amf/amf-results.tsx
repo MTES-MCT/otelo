@@ -4,7 +4,7 @@ import { fr } from '@codegouvfr/react-dsfr'
 import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import { FC } from 'react'
 import { AmfShareForm } from '~/components/amf/amf-share-form'
-import { formatNumber } from '~/components/amf/amf-steps'
+import { AmfDidYouKnow, formatNumber } from '~/components/amf/amf-steps'
 import { TAmfRange, TAmfResult } from '~/components/amf/amf-types'
 import styles from './amf.module.css'
 
@@ -74,12 +74,13 @@ const NoNeedResult: FC<{ horizon: number }> = ({ horizon }) => (
 )
 
 export const AmfResults: FC<AmfResultsProps> = ({ result, epciName, leadId }) => {
-  const { annual, contributions, baseYear, horizon } = result
+  const { annual, contributions, horizon } = result
 
   if (!annual || !contributions) {
     return (
       <>
         <NoNeedResult horizon={horizon} />
+        <AmfDidYouKnow />
         <AmfShareForm leadId={leadId} />
       </>
     )
@@ -93,7 +94,7 @@ export const AmfResults: FC<AmfResultsProps> = ({ result, epciName, leadId }) =>
     ...(households && households.max > 0 ? [{ label: "L'évolution du nombre de ménages", value: perYear(households) }] : []),
     ...(badHousing ? [{ label: 'Mieux loger les personnes qui en ont déjà besoin', value: perYear(badHousing) }] : []),
     ...(fluidity
-      ? [{ label: 'Garder des logements disponibles pour faciliter les déménagements', value: `${formatNumber(fluidity)} par an` }]
+      ? [{ label: 'Garder des logements disponibles pour faciliter la mobilité', value: `${formatNumber(fluidity)} par an` }]
       : []),
     ...(secondaryResidences && secondaryResidences.max > 0
       ? [{ label: "L'évolution des résidences secondaires", value: perYear(secondaryResidences) }]
@@ -112,7 +113,7 @@ export const AmfResults: FC<AmfResultsProps> = ({ result, epciName, leadId }) =>
 
   return (
     <>
-      <h1 className={fr.cx('fr-h3')}>Combien de logements pour votre territoire ?</h1>
+      <h1 className={fr.cx('fr-h3')}>D&apos;ici à {horizon}, combien de logements pour votre territoire&nbsp;?</h1>
 
       <div className={styles.total}>
         <p className={fr.cx('fr-display--sm', 'fr-mb-1v')}>
@@ -121,9 +122,7 @@ export const AmfResults: FC<AmfResultsProps> = ({ result, epciName, leadId }) =>
             : `${annual.min === 0 ? 'Jusqu’à' : `Entre ${formatNumber(annual.min)} et`} ${formatNumber(annual.max)}`}
         </p>
         <p className={fr.cx('fr-text--lead', 'fr-mb-1v')}>logements à construire par an</p>
-        <p className={fr.cx('fr-mb-0')}>
-          Une première estimation pour {epciName}, sur la période {baseYear}–{horizon}.
-        </p>
+        <p className={fr.cx('fr-mb-0')}>Une première estimation pour {epciName}.</p>
       </div>
 
       <h2 className={fr.cx('fr-h5', 'fr-mt-4w')}>Qu&apos;est-ce qui explique ces besoins ?</h2>
@@ -154,6 +153,8 @@ export const AmfResults: FC<AmfResultsProps> = ({ result, epciName, leadId }) =>
         intercommunalité ou les services de votre collectivité pour approfondir l&apos;analyse et construire un scénario adapté à votre
         territoire dans Otelo.
       </p>
+
+      <AmfDidYouKnow />
 
       <AmfShareForm leadId={leadId} />
     </>

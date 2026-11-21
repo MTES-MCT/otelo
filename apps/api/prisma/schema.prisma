@@ -1298,7 +1298,7 @@ model ProjectionHouseholdByType {
 
 model AmfLead {
   id           String             @id @default(uuid())
-  email        String
+  email        String?
   epciCode     String             @map("epci_code")
   simulationId String?            @unique @map("simulation_id")
   answers      Json

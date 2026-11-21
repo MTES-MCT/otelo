@@ -17,6 +17,8 @@ type AutocompleteInputProps = {
   className?: string
   /** Catégorie du rapport « Recherche interne » de Matomo. Omise, la recherche n'est pas remontée. */
   searchCategory?: string
+  /** Propose les communes avant les EPCI. */
+  communesFirst?: boolean
 }
 
 /** Délai avant de considérer une saisie comme une recherche aboutie plutôt qu'une frappe en cours. */
@@ -30,6 +32,7 @@ export const AutocompleteInput: FC<AutocompleteInputProps> = ({
   defaultValue,
   className,
   searchCategory,
+  communesFirst,
 }: AutocompleteInputProps) => {
   const { classes } = useStyles()
   const { data, isError, searchQuery, setSearchQuery } = useGeoApiSearch()
@@ -77,7 +80,7 @@ export const AutocompleteInput: FC<AutocompleteInputProps> = ({
         state={isError ? 'error' : 'default'}
         style={{ marginBottom: 0 }}
       />
-      {hasResults && <AutocompleteResults onClick={handleInputClick} data={data} />}
+      {hasResults && <AutocompleteResults onClick={handleInputClick} data={data} communesFirst={communesFirst} />}
     </div>
   )
 }
