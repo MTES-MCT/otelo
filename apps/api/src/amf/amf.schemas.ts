@@ -10,32 +10,36 @@ export const ZAmfAnswers = z.object({
   demography: z.enum(['plus', 'tendance', 'moins']),
   vacancy: z.enum(['prioritaire', 'parmi-autres', 'non']),
   badHousing: z.boolean(),
-  secondaryResidences: z.enum(['neutre', 'reguler', 'developper']),
+  secondaryResidences: z.enum(['hausse', 'stable', 'maitrise', 'recuperation']),
 })
-export const ZAmfCreateSimulationBody = ZAmfAnswers.extend({ email: z.email() })
+export const ZAmfCreateSimulationBody = ZAmfAnswers.extend({
+  email: z.email().optional().describe('Facultatif : peut être renseigné après les résultats, avec les contacts'),
+})
 
 export type TAmfAnswers = z.output<typeof ZAmfAnswers>
 export type TAmfCreateSimulationBody = z.output<typeof ZAmfCreateSimulationBody>
 
 export const ZAmfRange = z
   .object({ min: z.number(), max: z.number() })
-  .describe('Fourchette à paliers fixes ; min vaut 0 pour « moins de max », et une contribution négative a ses deux bornes ≤ 0')
+  .describe(
+    'Fourchette annuelle arrondie, entre la simulation basse et la simulation haute ; une contribution négative a ses deux bornes ≤ 0',
+  )
 export type TAmfRange = z.output<typeof ZAmfRange>
 
 export const ZAmfResult = z.object({
   baseYear: z.number(),
   horizon: z.number(),
-  peakYear: z.number().nullable().describe("Année du pic de ménages quand elle précède l'horizon, sinon null"),
-  total: ZAmfRange.nullable().describe('null quand le besoin est nul'),
-  annualAverage: ZAmfRange.nullable(),
-  blocks: z
+  annual: ZAmfRange.nullable().describe('Logements à construire par an ; null quand aucun besoin supplémentaire'),
+  contributions: z
     .object({
-      population: ZAmfRange,
-      vacancy: ZAmfRange,
-      secondaryResidences: ZAmfRange,
-      badHousing: ZAmfRange,
+      households: ZAmfRange.nullable().describe('Évolution du nombre de ménages (signée)'),
+      badHousing: ZAmfRange.nullable().describe('Résorption du mal-logement'),
+      fluidity: z.number().nullable().describe('Logements disponibles pour faciliter les déménagements'),
+      vacancyRemobilised: ZAmfRange.nullable().describe('Logements vacants remis en occupation (en moins à construire, bornes positives)'),
+      secondaryResidences: ZAmfRange.nullable().describe('Évolution des résidences secondaires (signée)'),
     })
-    .nullable(),
+    .nullable()
+    .describe('Contributions annuelles ; null quand aucun besoin supplémentaire'),
 })
 export type TAmfResult = z.output<typeof ZAmfResult>
 
@@ -45,19 +49,25 @@ export const ZAmfEpci = z.object({
   fragileProjection: z.boolean(),
   baseYear: z.number(),
   horizon: z.number(),
-  populationChanges: z.object({
+  population: z.number().nullable().describe("Population de l'EPCI au recensement de l'année de base"),
+  recentEvolution: z
+    .object({ fromYear: z.number(), toYear: z.number(), rate: z.number() })
+    .nullable()
+    .describe('Évolution de la population entre les deux derniers recensements, en fraction'),
+  projectedPopulation: z.object({
     haute: z.number(),
     central: z.number(),
     basse: z.number().nullable(),
   }),
+  secondaryResidencesShare: z.number().describe('Part des résidences secondaires dans le parc, en fraction'),
+  secondaryResidencesCount: z.number().nullable().describe('Nombre approché de résidences secondaires (part × parc total Filocom)'),
+  longTermVacancy: z.object({ count: z.number(), year: z.number() }).nullable().describe('Logements vacants depuis au moins deux ans'),
 })
 export type TAmfEpci = z.output<typeof ZAmfEpci>
 
 export const ZAmfShareContactsBody = z.object({
-  contacts: z
-    .array(z.object({ role: z.string().trim().min(1).max(100), email: z.email() }))
-    .min(1)
-    .max(10),
+  email: z.email().describe("E-mail de la personne ayant répondu au questionnaire, s'il n'a pas été donné à la création"),
+  contacts: z.array(z.object({ role: z.string().trim().min(1).max(100), email: z.email() })).max(10),
 })
 export type TAmfShareContactsBody = z.output<typeof ZAmfShareContactsBody>
 

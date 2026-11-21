@@ -44,7 +44,7 @@ describe('AmfController', () => {
   })
 
   it('délègue l’ajout des contacts au service', async () => {
-    const body = { contacts: [{ role: 'Maire', email: 'a@b.fr' }] }
+    const body = { email: 'a@b.fr', contacts: [{ role: 'Maire', email: 'a@b.fr' }] }
     service.addContacts.mockResolvedValue(undefined)
     await controller.addContacts('lead-1', body)
     expect(service.addContacts).toHaveBeenCalledWith('lead-1', body)

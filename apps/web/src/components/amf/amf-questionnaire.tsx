@@ -1,6 +1,7 @@
 'use client'
 
 import { fr } from '@codegouvfr/react-dsfr'
+import Alert from '@codegouvfr/react-dsfr/Alert'
 import ButtonsGroup from '@codegouvfr/react-dsfr/ButtonsGroup'
 import Stepper from '@codegouvfr/react-dsfr/Stepper'
 import { FC, FormEvent, useEffect, useRef, useState } from 'react'
@@ -8,47 +9,35 @@ import { AmfResults } from '~/components/amf/amf-results'
 import {
   AmfBadHousingStep,
   AmfDemographyStep,
-  AmfEmailStep,
   AmfEpciStep,
   AmfIntroStep,
   AmfSecondaryResidencesStep,
   AmfVacancyStep,
 } from '~/components/amf/amf-steps'
-import {
-  AMF_STEPS,
-  isValidAmfEmail,
-  TAmfCreateSimulationBody,
-  TAmfCreateSimulationResponse,
-  TAmfDraftAnswers,
-  TAmfStep,
-} from '~/components/amf/amf-types'
+import { AMF_STEPS, TAmfCreateSimulationBody, TAmfCreateSimulationResponse, TAmfDraftAnswers, TAmfStep } from '~/components/amf/amf-types'
 import styles from './amf.module.css'
 
-/** Étapes suivies par la barre de progression : les questions, de l'EPCI à l'e-mail. */
+/** Étapes suivies par la barre de progression : les questions, du territoire au mal-logement. */
 const QUESTION_STEPS: Partial<Record<TAmfStep, string>> = {
   epci: 'Votre territoire',
   demography: 'Évolution de la population',
   vacancy: 'Logements vacants',
   secondaryResidences: 'Résidences secondaires',
   badHousing: 'Mal-logement',
-  email: 'Votre e-mail',
 }
 const QUESTION_STEP_KEYS = AMF_STEPS.filter((step) => step in QUESTION_STEPS)
 
 const EMPTY_ANSWERS: TAmfDraftAnswers = {
   epci: null,
+  commune: null,
   demography: null,
   vacancy: null,
   badHousing: null,
   secondaryResidences: null,
-  email: '',
 }
 
-/** Message d'erreur selon le statut : seul un 400 met en cause la saisie (l'e-mail). */
+/** Message d'erreur selon le statut de la réponse. */
 const errorMessageFor = (status: number): string => {
-  if (status === 400) {
-    return "Le calcul n'a pas pu aboutir. Veuillez vérifier votre e-mail et réessayer."
-  }
   if (status === 429) {
     return 'Trop de demandes en peu de temps. Veuillez patienter un instant avant de réessayer.'
   }
@@ -116,16 +105,10 @@ export const AmfQuestionnaire: FC = () => {
     if (!epci || !demography || !vacancy || badHousing === null || !secondaryResidences) {
       return
     }
-    const email = answers.email.trim()
-    if (!isValidAmfEmail(email)) {
-      setSubmission({ status: 'error', message: 'Veuillez saisir une adresse e-mail valide, par exemple nom@domaine.fr.' })
-      return
-    }
-
     submitting.current = true
     setSubmission({ status: 'submitting' })
 
-    const body: TAmfCreateSimulationBody = { epciCode: epci.code, demography, vacancy, badHousing, secondaryResidences, email }
+    const body: TAmfCreateSimulationBody = { epciCode: epci.code, demography, vacancy, badHousing, secondaryResidences }
 
     try {
       const res = await fetch('/api/amf/simulations', {
@@ -149,9 +132,13 @@ export const AmfQuestionnaire: FC = () => {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (step === 'email') {
+    if (!canContinue()) {
+      return
+    }
+    // La dernière question lance le calcul : les résultats s'affichent sans e-mail préalable.
+    if (step === 'badHousing') {
       void submit()
-    } else if (canContinue()) {
+    } else {
       goTo(1)
     }
   }
@@ -165,42 +152,48 @@ export const AmfQuestionnaire: FC = () => {
         return <AmfIntroStep />
       case 'epci':
         // Changer de territoire invalide le choix démographique : les options proposées en dépendent.
-        return <AmfEpciStep epci={answers.epci} onChange={(epci) => update({ epci, demography: null })} />
+        return (
+          <AmfEpciStep
+            epci={answers.epci}
+            commune={answers.commune}
+            onChange={(epci, commune) => update({ epci, commune, demography: null })}
+          />
+        )
       case 'demography':
         return answers.epci ? (
           <AmfDemographyStep epci={answers.epci} value={answers.demography} onChange={(demography) => update({ demography })} />
         ) : null
       case 'vacancy':
-        return <AmfVacancyStep value={answers.vacancy} onChange={(vacancy) => update({ vacancy })} />
+        return answers.epci ? (
+          <AmfVacancyStep epci={answers.epci} value={answers.vacancy} onChange={(vacancy) => update({ vacancy })} />
+        ) : null
       case 'badHousing':
-        return <AmfBadHousingStep value={answers.badHousing} onChange={(badHousing) => update({ badHousing })} />
-      case 'secondaryResidences':
         return (
+          <AmfBadHousingStep
+            value={answers.badHousing}
+            onChange={(badHousing) => {
+              update({ badHousing })
+              if (submission.status === 'error') setSubmission({ status: 'idle' })
+            }}
+          />
+        )
+      case 'secondaryResidences':
+        return answers.epci ? (
           <AmfSecondaryResidencesStep
+            epci={answers.epci}
             value={answers.secondaryResidences}
             onChange={(secondaryResidences) => update({ secondaryResidences })}
           />
-        )
-      case 'email':
-        return (
-          <AmfEmailStep
-            value={answers.email}
-            onChange={(email) => {
-              update({ email })
-              if (submission.status === 'error') setSubmission({ status: 'idle' })
-            }}
-            error={submission.status === 'error' ? submission.message : null}
-          />
-        )
+        ) : null
       case 'results':
         return null
     }
   }
 
-  if (step === 'results' && outcome) {
+  if (step === 'results' && outcome && answers.epci) {
     return (
       <div ref={topRef} tabIndex={-1} className={styles.card}>
-        <AmfResults result={outcome.result} leadId={outcome.leadId} />
+        <AmfResults result={outcome.result} epciName={answers.epci.name} leadId={outcome.leadId} />
         <ButtonsGroup
           className={fr.cx('fr-mt-5w')}
           inlineLayoutWhen="md and up"
@@ -217,7 +210,7 @@ export const AmfQuestionnaire: FC = () => {
     <div ref={topRef} tabIndex={-1} className={styles.card}>
       {isQuestion && (
         <>
-          <h1 className={fr.cx('fr-sr-only')}>Votre besoin en logements en 3 minutes</h1>
+          <h1 className={fr.cx('fr-sr-only')}>Quels besoins en logements d&apos;ici 2036&nbsp;?</h1>
           <Stepper
             currentStep={questionIndex + 1}
             stepCount={QUESTION_STEP_KEYS.length}
@@ -227,8 +220,10 @@ export const AmfQuestionnaire: FC = () => {
         </>
       )}
 
-      <form onSubmit={handleSubmit} noValidate={step === 'email'}>
+      <form onSubmit={handleSubmit}>
         {renderStep()}
+
+        {submission.status === 'error' && <Alert className={fr.cx('fr-mt-3w')} severity="error" small description={submission.message} />}
 
         <ButtonsGroup
           className={fr.cx('fr-mt-4w')}
@@ -246,11 +241,11 @@ export const AmfQuestionnaire: FC = () => {
                     onClick: () => goTo(-1),
                     disabled: submission.status === 'submitting',
                   },
-                  step === 'email'
+                  step === 'badHousing'
                     ? {
                         children: submission.status === 'submitting' ? 'Calcul en cours…' : 'Voir mes résultats',
                         type: 'submit',
-                        disabled: submission.status === 'submitting',
+                        disabled: !canContinue() || submission.status === 'submitting',
                       }
                     : { children: 'Suivant', type: 'submit', disabled: !canContinue() },
                 ]

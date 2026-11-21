@@ -2,54 +2,61 @@
 
 import { fr } from '@codegouvfr/react-dsfr'
 import Alert from '@codegouvfr/react-dsfr/Alert'
-import Input from '@codegouvfr/react-dsfr/Input'
+import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import { RadioButtons } from '@codegouvfr/react-dsfr/RadioButtons'
 import Link from 'next/link'
-import { FC, useRef, useState } from 'react'
-import { TAmfDemography, TAmfEpci, TAmfSecondaryResidences, TAmfVacancy } from '~/components/amf/amf-types'
+import { FC, ReactNode, useRef, useState } from 'react'
+import { TAmfCommune, TAmfDemography, TAmfEpci, TAmfSecondaryResidences, TAmfVacancy } from '~/components/amf/amf-types'
 import { AutocompleteInput } from '~/components/simulations/autocomplete/autocomplete-input'
 import { GeoApiCommuneResult, GeoApiEpciResult } from '~/hooks/use-geoapi-search'
+import styles from './amf.module.css'
 
 const numberFormatter = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 })
-
-/** Nombre formaté en `fr-FR`, précédé de son signe (« + », « − » ou rien pour zéro). */
-export const formatSigned = (value: number): string => {
-  const sign = value > 0 ? '+' : value < 0 ? '−' : ''
-  return `${sign}${numberFormatter.format(Math.abs(value))}`
-}
 
 export const formatNumber = (value: number): string => numberFormatter.format(value)
 
 export const AmfIntroStep: FC = () => (
   <>
-    <h1 className={fr.cx('fr-h2')}>Votre besoin en logements en 3 minutes !</h1>
-    <p className={fr.cx('fr-text--lead')}>
-      Obtenez une première estimation simplifiée de votre besoin en logement d&apos;ici 2036 sur votre territoire en seulement 5 questions.
-    </p>
+    <h1 className={fr.cx('fr-h2')}>Quels besoins en logements d&apos;ici 2036&nbsp;?</h1>
+    <p className={fr.cx('fr-text--lead')}>Découvrez une première estimation à l&apos;échelle de votre intercommunalité.</p>
   </>
 )
+
+/** Volume approché pour l'affichage (« ~1 200 ») : à l'unité sous 100, à deux chiffres significatifs au-delà. */
+export const formatApproximate = (value: number): string => {
+  if (Math.abs(value) < 100) {
+    return numberFormatter.format(value)
+  }
+  return numberFormatter.format(Number(value.toPrecision(2)))
+}
+
+const percentFormatter = new Intl.NumberFormat('fr-FR', { style: 'percent', maximumFractionDigits: 1 })
+const signedPercentFormatter = new Intl.NumberFormat('fr-FR', { style: 'percent', maximumFractionDigits: 1, signDisplay: 'exceptZero' })
 
 type EpciLookupState = { status: 'idle' } | { status: 'loading' } | { status: 'not-covered' } | { status: 'error' }
 
 type AmfEpciStepProps = {
   epci: TAmfEpci | null
-  onChange: (epci: TAmfEpci | null) => void
+  commune: TAmfCommune | null
+  onChange: (epci: TAmfEpci | null, commune: TAmfCommune | null) => void
 }
 
-export const AmfEpciStep: FC<AmfEpciStepProps> = ({ epci, onChange }) => {
+export const AmfEpciStep: FC<AmfEpciStepProps> = ({ epci, commune, onChange }) => {
   const [lookup, setLookup] = useState<EpciLookupState>({ status: 'idle' })
   // Seule la dernière sélection compte : une réponse plus lente d'un choix précédent est ignorée.
   const lastRequest = useRef(0)
 
   const handleSelect = async (item: GeoApiEpciResult | GeoApiCommuneResult) => {
     // Une commune porte l'EPCI auquel elle appartient ; sans EPCI, elle est ignorée.
-    const epciCode = 'codesRegions' in item ? item.code : item.codeEpci
+    const isEpci = 'codesRegions' in item
+    const epciCode = isEpci ? item.code : item.codeEpci
     if (!epciCode) {
       return
     }
+    const selectedCommune = isEpci ? null : { name: item.nom, population: item.population ?? null }
 
     const requestId = ++lastRequest.current
-    onChange(null)
+    onChange(null, null)
     setLookup({ status: 'loading' })
 
     try {
@@ -66,7 +73,7 @@ export const AmfEpciStep: FC<AmfEpciStepProps> = ({ epci, onChange }) => {
         setLookup({ status: 'error' })
         return
       }
-      onChange(body)
+      onChange(body, selectedCommune)
       setLookup({ status: 'idle' })
     } catch {
       if (requestId === lastRequest.current) {
@@ -75,14 +82,17 @@ export const AmfEpciStep: FC<AmfEpciStepProps> = ({ epci, onChange }) => {
     }
   }
 
+  const communeShare = commune?.population != null && epci?.population ? Math.min(commune.population / epci.population, 1) : null
+
   return (
     <>
-      <h2>Quel est votre EPCI ?</h2>
+      <h2>Renseignez votre territoire</h2>
       <AutocompleteInput
-        label="Nom de votre EPCI ou d'une commune"
-        hintText="Saisissez au moins 3 caractères, puis choisissez dans la liste"
-        defaultValue={epci?.name}
+        label="Nom de votre commune ou de votre EPCI"
+        hintText="Saisissez au moins 3 caractères, puis choisissez dans la liste. Vous pouvez également rechercher directement votre intercommunalité."
+        defaultValue={commune?.name ?? epci?.name}
         onClick={handleSelect}
+        communesFirst
       />
 
       <div aria-live="polite" className={fr.cx('fr-mt-3w')}>
@@ -106,9 +116,48 @@ export const AmfEpciStep: FC<AmfEpciStepProps> = ({ epci, onChange }) => {
 
         {epci && (
           <>
-            <p className={fr.cx('fr-mb-2w')}>
-              Territoire choisi : <strong>{epci.name}</strong>
+            <p className={fr.cx('fr-mb-1w')}>
+              Votre territoire est : <strong>{commune?.name ?? epci.name}</strong>
             </p>
+            {commune && (
+              <p className={fr.cx('fr-mb-2w')}>
+                Votre commune appartient à l&apos;intercommunalité <strong>{epci.name}</strong>.
+              </p>
+            )}
+
+            <dl className={styles.figures}>
+              {epci.population !== null && (
+                <div className={styles.figure}>
+                  <dt>Population de l&apos;EPCI</dt>
+                  <dd>{formatNumber(epci.population)} habitants</dd>
+                </div>
+              )}
+              {epci.recentEvolution && (
+                <div className={styles.figure}>
+                  <dt>
+                    Évolution récente ({epci.recentEvolution.fromYear}–{epci.recentEvolution.toYear})
+                  </dt>
+                  <dd>{signedPercentFormatter.format(epci.recentEvolution.rate).replace('-', '−')}</dd>
+                </div>
+              )}
+              {communeShare !== null && (
+                <div className={styles.figure}>
+                  <dt>Part de la commune dans l&apos;EPCI</dt>
+                  <dd>{percentFormatter.format(communeShare)}</dd>
+                </div>
+              )}
+            </dl>
+
+            <p className={fr.cx('fr-mt-2w', 'fr-mb-2w')}>
+              L&apos;estimation portera sur l&apos;ensemble de cette intercommunalité.
+              {commune && (
+                <>
+                  {' '}
+                  <strong>Elle ne constitue pas un objectif de construction pour votre seule commune.</strong>
+                </>
+              )}
+            </p>
+
             {epci.fragileProjection && (
               <Alert
                 severity="info"
@@ -128,20 +177,53 @@ type ChoiceStepProps<T extends string> = {
   onChange: (value: T) => void
 }
 
+const DidYouKnow: FC<{ children: ReactNode }> = ({ children }) => (
+  <CallOut className={fr.cx('fr-mt-3w', 'fr-mb-0')} title="Le saviez-vous ?" titleAs="h3">
+    {children}
+  </CallOut>
+)
+
+/** Encarts « Le saviez-vous ? » sur la démographie et la vacance, affichés en fin de résultats. */
+export const AmfDidYouKnow: FC = () => (
+  <>
+    <DidYouKnow>
+      Même à population identique, le nombre de logements nécessaires peut varier : vieillissement, séparation des couples ou départ des
+      jeunes du domicile familial modifient le nombre de personnes vivant dans chaque logement.
+      <br />
+      Pour chaque hypothèse de population, Otelo calcule un besoin compris entre une évolution tendancielle et une évolution accélérée des
+      modes de cohabitation.
+    </DidYouKnow>
+    <DidYouKnow>
+      Tous les logements vacants ne sont pas facilement mobilisables. Selon l&apos;ampleur de leur remise en occupation, les besoins en
+      construction neuve peuvent être plus ou moins importants.
+      <br />
+      En parallèle d&apos;Otelo, la DGALN met à votre disposition{' '}
+      <a href="https://zerologementvacant.beta.gouv.fr" target="_blank" rel="noopener noreferrer">
+        Zéro Logement Vacant
+      </a>
+      , un outil gratuit pour identifier les logements vacants, contacter leurs propriétaires et faciliter leur remise sur le marché.
+    </DidYouKnow>
+  </>
+)
+
 type AmfDemographyStepProps = ChoiceStepProps<TAmfDemography> & { epci: TAmfEpci }
 
 export const AmfDemographyStep: FC<AmfDemographyStepProps> = ({ epci, value, onChange }) => {
-  const { haute, central, basse } = epci.populationChanges
+  const { haute, central, basse } = epci.projectedPopulation
   const options: Array<{ value: TAmfDemography; label: string }> = [
-    { value: 'plus', label: `Une évolution plus favorable (${formatSigned(haute)} habitants)` },
-    { value: 'tendance', label: `Dans la tendance actuelle (${formatSigned(central)} habitants)` },
-    // Sans projection basse pour ce territoire, le scénario n'est pas proposé.
-    ...(basse === null ? [] : [{ value: 'moins' as const, label: `Une évolution moins favorable (${formatSigned(basse)} habitants)` }]),
+    // Sans projection basse pour ce territoire, l'hypothèse n'est pas proposée.
+    ...(basse === null ? [] : [{ value: 'moins' as const, label: `Hypothèse basse : ${formatNumber(basse)} habitants` }]),
+    { value: 'tendance', label: `Hypothèse centrale : ${formatNumber(central)} habitants` },
+    { value: 'plus', label: `Hypothèse haute : ${formatNumber(haute)} habitants` },
   ]
 
   return (
     <RadioButtons
-      legend={<h2 className={fr.cx('fr-mb-2w')}>D&apos;ici 2036, selon vous, la population de votre territoire connaîtra :</h2>}
+      legend={
+        <h2 className={fr.cx('fr-mb-2w')}>
+          <strong>D&apos;ici {epci.horizon},</strong> quelle évolution <strong>souhaitez-vous retenir</strong> sur votre territoire&nbsp;?
+        </h2>
+      }
       name="amf-demography"
       options={options.map((option) => ({
         label: option.label,
@@ -152,16 +234,59 @@ export const AmfDemographyStep: FC<AmfDemographyStepProps> = ({ epci, value, onC
 }
 
 const VACANCY_OPTIONS: Array<{ value: TAmfVacancy; label: string }> = [
-  { value: 'prioritaire', label: "Oui, c'est prioritaire" },
-  { value: 'parmi-autres', label: "Oui, parmi d'autres mesures" },
-  { value: 'non', label: "Ça n'est pas le plus utile pour mon territoire" },
+  { value: 'prioritaire', label: "Oui, c'est prioritaire." },
+  { value: 'parmi-autres', label: "Oui, parmi d'autres mesures." },
+  {
+    value: 'non',
+    label: 'Non, la remobilisation de ces logements me paraît difficile (logements vétustes, inadaptés aux besoins, mal situés…).',
+  },
 ]
 
-export const AmfVacancyStep: FC<ChoiceStepProps<TAmfVacancy>> = ({ value, onChange }) => (
+type AmfVacancyStepProps = ChoiceStepProps<TAmfVacancy> & { epci: TAmfEpci }
+
+export const AmfVacancyStep: FC<AmfVacancyStepProps> = ({ epci, value, onChange }) => (
   <RadioButtons
-    legend={<h2 className={fr.cx('fr-mb-2w')}>D&apos;après vous, est-ce une priorité de remobiliser des logements vacants ?</h2>}
+    legend={
+      <h2 className={fr.cx('fr-mb-2w')}>
+        La remobilisation des logements vacants constitue-t-elle une priorité de votre politique locale de l&apos;habitat ?
+      </h2>
+    }
+    hintText={
+      epci.longTermVacancy
+        ? `D'après les données disponibles, votre intercommunalité compte environ ${formatApproximate(epci.longTermVacancy.count)} logements vacants depuis au moins deux ans, en ${epci.longTermVacancy.year} (Fichiers fonciers ${epci.longTermVacancy.year}).`
+        : undefined
+    }
     name="amf-vacancy"
     options={VACANCY_OPTIONS.map((option) => ({
+      label: option.label,
+      nativeInputProps: { value: option.value, checked: value === option.value, onChange: () => onChange(option.value) },
+    }))}
+  />
+)
+
+const SECONDARY_RESIDENCES_OPTIONS: Array<{ value: TAmfSecondaryResidences; label: string }> = [
+  { value: 'hausse', label: 'Un développement qui se poursuit : les résidences secondaires sont de plus en plus nombreuses.' },
+  { value: 'stable', label: "Leur évolution n'impactera pas le besoin en logements." },
+  { value: 'maitrise', label: 'Leur développement sera régulé.' },
+  { value: 'recuperation', label: "Une partie des résidences secondaires doit redevenir des logements occupés à l'année." },
+]
+
+type AmfSecondaryResidencesStepProps = ChoiceStepProps<TAmfSecondaryResidences> & { epci: TAmfEpci }
+
+export const AmfSecondaryResidencesStep: FC<AmfSecondaryResidencesStepProps> = ({ epci, value, onChange }) => (
+  <RadioButtons
+    legend={
+      <h2 className={fr.cx('fr-mb-2w')}>
+        D&apos;ici {epci.horizon}, quels enjeux représentent les résidences secondaires sur votre territoire ?
+      </h2>
+    }
+    hintText={
+      epci.secondaryResidencesCount !== null
+        ? `Votre intercommunalité compte aujourd'hui environ ${formatApproximate(epci.secondaryResidencesCount)} résidences secondaires, soit ${percentFormatter.format(epci.secondaryResidencesShare)} de ses logements.`
+        : `Elles représentent aujourd'hui ${percentFormatter.format(epci.secondaryResidencesShare)} des logements de votre intercommunalité.`
+    }
+    name="amf-secondary-residences"
+    options={SECONDARY_RESIDENCES_OPTIONS.map((option) => ({
       label: option.label,
       nativeInputProps: { value: option.value, checked: value === option.value, onChange: () => onChange(option.value) },
     }))}
@@ -174,62 +299,19 @@ type AmfBadHousingStepProps = {
 }
 
 export const AmfBadHousingStep: FC<AmfBadHousingStepProps> = ({ value, onChange }) => (
-  <RadioButtons
-    legend={<h2 className={fr.cx('fr-mb-2w')}>Le mal-logement est-il une problématique importante sur votre territoire ?</h2>}
-    name="amf-bad-housing"
-    options={[
-      { label: 'Oui', nativeInputProps: { value: 'oui', checked: value === true, onChange: () => onChange(true) } },
-      { label: 'Non', nativeInputProps: { value: 'non', checked: value === false, onChange: () => onChange(false) } },
-    ]}
-  />
-)
-
-const SECONDARY_RESIDENCES_OPTIONS: Array<{ value: TAmfSecondaryResidences; label: string }> = [
-  { value: 'neutre', label: "Ce n'est pas un sujet" },
-  { value: 'reguler', label: 'Je souhaite les réguler' },
-  { value: 'developper', label: 'Je souhaite les développer' },
-]
-
-export const AmfSecondaryResidencesStep: FC<ChoiceStepProps<TAmfSecondaryResidences>> = ({ value, onChange }) => (
-  <RadioButtons
-    legend={<h2 className={fr.cx('fr-mb-2w')}>Quel est votre point de vue sur les résidences secondaires sur votre territoire ?</h2>}
-    name="amf-secondary-residences"
-    options={SECONDARY_RESIDENCES_OPTIONS.map((option) => ({
-      label: option.label,
-      nativeInputProps: { value: option.value, checked: value === option.value, onChange: () => onChange(option.value) },
-    }))}
-  />
-)
-
-type AmfEmailStepProps = {
-  value: string
-  onChange: (value: string) => void
-  error: string | null
-}
-
-export const AmfEmailStep: FC<AmfEmailStepProps> = ({ value, onChange, error }) => (
   <>
-    <h2>Votre e-mail</h2>
-    <Input
-      label="Adresse e-mail (obligatoire pour voir les résultats)"
-      hintText={
-        <>
-          Votre e-mail sera utilisé par l&apos;équipe Otelo pour vous recontacter au sujet de votre besoin en logement.{' '}
-          <Link href="/donnees-personnelles" target="_blank">
-            Données personnelles
-          </Link>
-        </>
-      }
-      state={error ? 'error' : 'default'}
-      stateRelatedMessage={error ?? undefined}
-      nativeInputProps={{
-        type: 'email',
-        name: 'email',
-        autoComplete: 'email',
-        required: true,
-        value,
-        onChange: (event) => onChange(event.target.value),
-      }}
+    <h2>Et les habitants en situation de mal-logement&nbsp;?</h2>
+    <p>
+      Certains habitants n&apos;ont pas de logement personnel ou vivent dans un logement trop petit ou dégradé. Otelo tient aussi compte des
+      besoins de ces habitants dans votre estimation.
+    </p>
+    <RadioButtons
+      legend="Souhaitez-vous considérer le mal-logement dans l'estimation du besoin en logements ?"
+      name="amf-bad-housing"
+      options={[
+        { label: 'Oui', nativeInputProps: { value: 'oui', checked: value === true, onChange: () => onChange(true) } },
+        { label: 'Non', nativeInputProps: { value: 'non', checked: value === false, onChange: () => onChange(false) } },
+      ]}
     />
   </>
 )

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { AccommodationRatesModule } from '~/accommodation-rates/accommodation-rates.module'
+import { NeedsCalculationModule } from '~/calculation/needs-calculation/needs-calculation.module'
 import { ConsumersModule } from '~/consumers/consumers.module'
 import { DataPackVersionsModule } from '~/data-pack-versions/data-pack-versions.module'
 import { PrismaModule } from '~/db/prisma.module'
@@ -9,7 +10,15 @@ import { AmfController } from './amf.controller'
 import { AmfService } from './amf.service'
 
 @Module({
-  imports: [PrismaModule, ConsumersModule, ExternalModule, AccommodationRatesModule, DemographicEvolutionModule, DataPackVersionsModule],
+  imports: [
+    PrismaModule,
+    ConsumersModule,
+    ExternalModule,
+    AccommodationRatesModule,
+    DemographicEvolutionModule,
+    DataPackVersionsModule,
+    NeedsCalculationModule,
+  ],
   controllers: [AmfController],
   providers: [AmfService],
 })

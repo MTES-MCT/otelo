@@ -5,10 +5,12 @@ import Alert from '@codegouvfr/react-dsfr/Alert'
 import Button from '@codegouvfr/react-dsfr/Button'
 import ButtonsGroup from '@codegouvfr/react-dsfr/ButtonsGroup'
 import Input from '@codegouvfr/react-dsfr/Input'
+import Link from 'next/link'
 import { FC, FormEvent, useRef, useState } from 'react'
 import { isValidAmfEmail, TAmfShareContactsBody, TAmfSharedContact } from '~/components/amf/amf-types'
 
 const MAX_CONTACTS = 10
+const INVALID_EMAIL_MESSAGE = 'Veuillez saisir une adresse e-mail valide, par exemple nom@domaine.fr.'
 
 type ContactRow = TAmfSharedContact & { id: number }
 
@@ -18,7 +20,10 @@ type AmfShareFormProps = {
 
 export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
   const nextId = useRef(1)
-  const [rows, setRows] = useState<ContactRow[]>([{ id: 0, role: '', email: '' }])
+  const [email, setEmail] = useState('')
+  const [isEmailInvalid, setIsEmailInvalid] = useState(false)
+  // Les contacts sont facultatifs : aucune ligne tant que l'utilisateur n'en ajoute pas.
+  const [rows, setRows] = useState<ContactRow[]>([])
   const [status, setStatus] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle')
   // Lignes dont l'e-mail serait refusé par l'API, signalées avant tout envoi.
   const [invalidEmails, setInvalidEmails] = useState<Set<number>>(new Set())
@@ -44,15 +49,18 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
     if (submitting.current) {
       return
     }
+    const emailInvalid = !isValidAmfEmail(email.trim())
     const invalid = new Set(rows.filter((row) => !isValidAmfEmail(row.email.trim())).map((row) => row.id))
+    setIsEmailInvalid(emailInvalid)
     setInvalidEmails(invalid)
-    if (invalid.size > 0) {
+    if (emailInvalid || invalid.size > 0) {
       return
     }
     submitting.current = true
     setStatus('submitting')
 
     const body: TAmfShareContactsBody = {
+      email: email.trim(),
       contacts: rows.map(({ role, email }) => ({ role: role.trim(), email: email.trim() })),
     }
 
@@ -73,13 +81,45 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
   return (
     <section className={fr.cx('fr-mt-5w')} aria-labelledby="amf-share-title">
       <h2 id="amf-share-title" className={fr.cx('fr-h4')}>
-        À qui souhaitez-vous partager ces résultats ?
+        Recevoir et partager ces résultats
       </h2>
 
       {status === 'done' ? (
-        <Alert severity="success" small description="Merci, vos contacts ont bien été enregistrés." />
+        <Alert
+          severity="success"
+          small
+          description="Merci, votre demande a bien été enregistrée : l'équipe Otelo vous transmettra ces résultats par e-mail sous 72 heures."
+        />
       ) : (
         <form onSubmit={handleSubmit}>
+          <Input
+            label="Votre e-mail"
+            hintText={
+              <>
+                Votre e-mail sera utilisé par l&apos;équipe Otelo pour vous transmettre ces résultats et vous recontacter au sujet de votre
+                besoin en logement.{' '}
+                <Link href="/donnees-personnelles" target="_blank">
+                  Données personnelles
+                </Link>
+              </>
+            }
+            state={isEmailInvalid ? 'error' : 'default'}
+            stateRelatedMessage={isEmailInvalid ? INVALID_EMAIL_MESSAGE : undefined}
+            nativeInputProps={{
+              type: 'email',
+              name: 'email',
+              autoComplete: 'email',
+              required: true,
+              value: email,
+              onChange: (event) => {
+                setEmail(event.target.value)
+                setIsEmailInvalid(false)
+              },
+            }}
+          />
+
+          <p className={fr.cx('fr-mb-2w')}>Vous pouvez aussi partager ces résultats avec d&apos;autres personnes (facultatif).</p>
+
           {rows.map((row, index) => (
             <fieldset key={row.id} className={fr.cx('fr-fieldset', 'fr-mb-2w')} aria-label={`Contact ${index + 1}`}>
               <div className={fr.cx('fr-fieldset__element')}>
@@ -98,9 +138,7 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
                 <Input
                   label="E-mail"
                   state={invalidEmails.has(row.id) ? 'error' : 'default'}
-                  stateRelatedMessage={
-                    invalidEmails.has(row.id) ? 'Veuillez saisir une adresse e-mail valide, par exemple nom@domaine.fr.' : undefined
-                  }
+                  stateRelatedMessage={invalidEmails.has(row.id) ? INVALID_EMAIL_MESSAGE : undefined}
                   nativeInputProps={{
                     type: 'email',
                     required: true,
@@ -110,19 +148,17 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
                   }}
                 />
               </div>
-              {rows.length > 1 && (
-                <div className={fr.cx('fr-fieldset__element')}>
-                  <Button
-                    type="button"
-                    priority="tertiary no outline"
-                    size="small"
-                    iconId="ri-delete-bin-line"
-                    onClick={() => removeRow(row.id)}
-                  >
-                    Retirer ce contact
-                  </Button>
-                </div>
-              )}
+              <div className={fr.cx('fr-fieldset__element')}>
+                <Button
+                  type="button"
+                  priority="tertiary no outline"
+                  size="small"
+                  iconId="ri-delete-bin-line"
+                  onClick={() => removeRow(row.id)}
+                >
+                  Retirer ce contact
+                </Button>
+              </div>
             </fieldset>
           ))}
 
@@ -131,7 +167,7 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
               className={fr.cx('fr-mb-2w')}
               severity="error"
               small
-              description="Les contacts n'ont pas pu être enregistrés. Veuillez réessayer."
+              description="Votre demande n'a pas pu être envoyée. Veuillez réessayer."
             />
           )}
 
@@ -147,7 +183,7 @@ export const AmfShareForm: FC<AmfShareFormProps> = ({ leadId }) => {
                 disabled: rows.length >= MAX_CONTACTS,
               },
               {
-                children: 'Enregistrer',
+                children: status === 'submitting' ? 'Envoi en cours…' : 'Envoyer',
                 type: 'submit',
                 disabled: status === 'submitting',
               },

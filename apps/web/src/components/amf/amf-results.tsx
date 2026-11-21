@@ -1,109 +1,160 @@
 'use client'
 
 import { fr } from '@codegouvfr/react-dsfr'
-import Alert from '@codegouvfr/react-dsfr/Alert'
+import CallOut from '@codegouvfr/react-dsfr/CallOut'
 import { FC } from 'react'
 import { AmfShareForm } from '~/components/amf/amf-share-form'
-import { formatNumber } from '~/components/amf/amf-steps'
+import { AmfDidYouKnow, formatNumber } from '~/components/amf/amf-steps'
 import { TAmfRange, TAmfResult } from '~/components/amf/amf-types'
 import styles from './amf.module.css'
 
 type AmfResultsProps = {
   result: TAmfResult
+  epciName: string
   leadId: string
 }
 
-/** Signe d'une contribution : « − » pour une fourchette négative, « + » sinon. */
-const isNegative = (range: TAmfRange) => range.min < 0
-
-/** « moins de 50 » ou « 1 000 à 1 500 », sur la valeur absolue des bornes. */
+/** « entre 200 et 300 », « jusqu'à 300 » (borne basse nulle) ou « 300 », sur la valeur absolue des bornes. */
 const formatRange = (range: TAmfRange) => {
   const low = Math.min(Math.abs(range.min), Math.abs(range.max))
   const high = Math.max(Math.abs(range.min), Math.abs(range.max))
-  return low === 0 ? `moins de ${formatNumber(high)}` : `${formatNumber(low)} à ${formatNumber(high)}`
+  if (low === high) return formatNumber(high)
+  // Une fourchette de part et d'autre de 0 ne retient que sa partie positive.
+  if (range.min < 0 && range.max > 0) return `jusqu'à ${formatNumber(range.max)}`
+  if (low === 0) return `jusqu'à ${formatNumber(high)}`
+  return `entre ${formatNumber(low)} et ${formatNumber(high)}`
 }
 
-const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+type Line = { label: string; value: string }
 
-export const AmfResults: FC<AmfResultsProps> = ({ result, leadId }) => {
-  const { total, annualAverage, horizon, baseYear, peakYear, blocks } = result
-  // Le moteur ne compte les besoins que jusqu'au pic de ménages ; un pic à l'année de base signale un territoire déjà en baisse.
-  const isAlreadyDeclining = peakYear !== null && peakYear <= baseYear
-  const hasPeakBeforeHorizon = peakYear !== null && peakYear > baseYear
+const ContributionList: FC<{ lines: Line[]; symbol: '+' | '−'; srPrefix: string }> = ({ lines, symbol, srPrefix }) => (
+  <ul className={styles.blocks}>
+    {lines.map((line) => (
+      <li key={line.label} className={styles.block}>
+        <span className={styles.symbol} aria-hidden="true">
+          {symbol}
+        </span>
+        <span className={styles.label}>{line.label}</span>
+        <span className={styles.value}>
+          {/* Le signe porté par le symbole n'est pas vocalisé : on le restitue pour les lecteurs d'écran. */}
+          <span className={fr.cx('fr-sr-only')}>{srPrefix}</span>
+          {line.value}
+        </span>
+      </li>
+    ))}
+  </ul>
+)
 
-  const lines = blocks
-    ? [
-        { label: 'Évolution de la population', range: blocks.population },
-        { label: 'Logements vacants', range: blocks.vacancy },
-        { label: 'Résidences secondaires', range: blocks.secondaryResidences },
-        { label: 'Résorption du mal-logement', range: blocks.badHousing },
-      ]
-    : []
+const NoNeedResult: FC<{ horizon: number }> = ({ horizon }) => (
+  <>
+    <h1 className={fr.cx('fr-h3')}>Votre besoin en logements</h1>
+
+    <div className={styles.total}>
+      <p className={fr.cx('fr-display--sm', 'fr-mb-1v')}>Aucun</p>
+      <p className={fr.cx('fr-text--lead', 'fr-mb-1v')}>besoin supplémentaire identifié d&apos;ici {horizon}</p>
+      <p className={fr.cx('fr-text--sm', 'fr-mb-0')}>À l&apos;échelle de votre intercommunalité, selon les hypothèses retenues</p>
+    </div>
+
+    <h2 className={fr.cx('fr-h5', 'fr-mt-4w')}>Comment comprendre ce résultat ?</h2>
+    <p>
+      Selon les évolutions démographiques et les hypothèses retenues sur le parc existant, l&apos;estimation ne fait pas apparaître de
+      besoin net de logements supplémentaires d&apos;ici {horizon}.
+    </p>
+    <p>
+      <strong>Cela ne signifie pas qu&apos;il ne faut plus construire !</strong> Des besoins peuvent subsister dans certaines communes ou
+      pour remplacer des logements démolis ou devenus inhabitables.
+    </p>
+
+    <h2 className={fr.cx('fr-h5')}>Une première estimation à approfondir</h2>
+    <p>
+      Ce résultat constitue un point de départ. D&apos;autres facteurs, notamment les évolutions du parc existant, peuvent modifier les
+      besoins. Échangez avec votre intercommunalité ou les services de votre collectivité pour affiner cette estimation dans Otelo.
+    </p>
+  </>
+)
+
+export const AmfResults: FC<AmfResultsProps> = ({ result, epciName, leadId }) => {
+  const { annual, contributions, horizon } = result
+
+  if (!annual || !contributions) {
+    return (
+      <>
+        <NoNeedResult horizon={horizon} />
+        <AmfDidYouKnow />
+        <AmfShareForm leadId={leadId} />
+      </>
+    )
+  }
+
+  const { households, badHousing, fluidity, vacancyRemobilised, secondaryResidences } = contributions
+  const perYear = (range: TAmfRange) => `${formatRange(range)} par an`
+  const fewerPerYear = (range: TAmfRange) => `${formatRange(range)} par an en moins à construire`
+
+  const needs: Line[] = [
+    ...(households && households.max > 0 ? [{ label: "L'évolution du nombre de ménages", value: perYear(households) }] : []),
+    ...(badHousing ? [{ label: 'Mieux loger les personnes qui en ont déjà besoin', value: perYear(badHousing) }] : []),
+    ...(fluidity
+      ? [{ label: 'Garder des logements disponibles pour faciliter la mobilité', value: `${formatNumber(fluidity)} par an` }]
+      : []),
+    ...(secondaryResidences && secondaryResidences.max > 0
+      ? [{ label: "L'évolution des résidences secondaires", value: perYear(secondaryResidences) }]
+      : []),
+  ]
+
+  const existingStock: Line[] = [
+    ...(households && households.max <= 0
+      ? [{ label: 'La baisse du nombre de ménages libère des logements', value: fewerPerYear(households) }]
+      : []),
+    ...(vacancyRemobilised ? [{ label: 'Remettre en occupation des logements vacants', value: fewerPerYear(vacancyRemobilised) }] : []),
+    ...(secondaryResidences && secondaryResidences.max <= 0
+      ? [{ label: "Transformer des résidences secondaires en logements occupés à l'année", value: fewerPerYear(secondaryResidences) }]
+      : []),
+  ]
 
   return (
     <>
-      <h1 className={fr.cx('fr-h3')}>Votre besoin en logements</h1>
+      <h1 className={fr.cx('fr-h3')}>D&apos;ici à {horizon}, combien de logements pour votre territoire&nbsp;?</h1>
 
       <div className={styles.total}>
-        <p className={fr.cx('fr-display--sm', 'fr-mb-1v')}>{total ? capitalize(formatRange(total)) : 'Aucun'}</p>
-        <p className={fr.cx('fr-text--lead', 'fr-mb-1v')}>
-          {total ? 'logements' : 'logement'} à construire d&apos;ici {horizon}
+        <p className={fr.cx('fr-display--sm', 'fr-mb-1v')}>
+          {annual.min === annual.max
+            ? formatNumber(annual.max)
+            : `${annual.min === 0 ? 'Jusqu’à' : `Entre ${formatNumber(annual.min)} et`} ${formatNumber(annual.max)}`}
         </p>
-        {annualAverage && (
-          <p className={fr.cx('fr-mb-0')}>
-            soit {formatRange(annualAverage)} par an{hasPeakBeforeHorizon && <> jusqu&apos;en {peakYear}</>}
-          </p>
-        )}
+        <p className={fr.cx('fr-text--lead', 'fr-mb-1v')}>logements à construire par an</p>
+        <p className={fr.cx('fr-mb-0')}>Une première estimation pour {epciName}.</p>
       </div>
 
-      {hasPeakBeforeHorizon && (
-        <Alert
-          className={fr.cx('fr-mt-3w')}
-          severity="info"
-          small
-          description={
-            <>
-              Le nombre de foyers de votre territoire atteint son maximum en {peakYear}. Au-delà, il diminue&nbsp;: il n&apos;y a plus de
-              besoin en logements supplémentaires, et une partie du mal-logement peut être résorbée dans le parc existant. Otelo permet
-              d&apos;analyser cette situation en détail.
-            </>
-          }
-        />
-      )}
+      <h2 className={fr.cx('fr-h5', 'fr-mt-4w')}>Qu&apos;est-ce qui explique ces besoins ?</h2>
+      <p className={fr.cx('fr-mb-0')}>Pour répondre aux besoins des habitants :</p>
+      <ContributionList lines={needs} symbol="+" srPrefix="en plus : " />
 
-      {blocks ? (
-        <ul className={styles.blocks}>
-          {lines.map((line) => (
-            <li key={line.label} className={styles.block}>
-              <span className={styles.symbol} aria-hidden="true">
-                {isNegative(line.range) ? '−' : '+'}
-              </span>
-              <span className={styles.label}>{line.label}</span>
-              <span className={styles.value}>
-                {/* Le signe porté par le symbole n'est pas vocalisé : on le restitue pour les lecteurs d'écran. */}
-                <span className={fr.cx('fr-sr-only')}>{isNegative(line.range) ? 'en moins : ' : 'en plus : '}</span>
-                {formatRange(line.range)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : isAlreadyDeclining ? (
-        <p className={fr.cx('fr-mt-3w')}>
-          Le nombre de foyers de votre territoire diminue déjà&nbsp;: selon ces hypothèses, le parc actuel suffit à les loger d&apos;ici{' '}
-          {horizon}, et vos choix sur les logements vacants, les résidences secondaires et le mal-logement n&apos;ajoutent pas de besoin en
-          construction. Otelo permet à votre chef de service habitat d&apos;analyser cette situation en détail.
-        </p>
+      {existingStock.length > 0 ? (
+        <>
+          <p className={fr.cx('fr-mt-3w', 'fr-mb-0')}>Le parc existant peut aussi répondre à une partie des besoins :</p>
+          <ContributionList lines={existingStock} symbol="−" srPrefix="en moins : " />
+        </>
       ) : (
         <p className={fr.cx('fr-mt-3w')}>
-          Selon ces hypothèses, votre parc actuel couvre les besoins d&apos;ici {horizon}. Otelo peut aider votre chef de service habitat à
-          travailler la qualité du parc et la remobilisation des logements.
+          D&apos;après votre premier paramétrage, l&apos;ensemble du besoin en logements supplémentaires passera par de la construction
+          neuve.
         </p>
       )}
 
-      <p className={fr.cx('fr-text--sm', 'fr-mt-3w')}>
-        Ces fourchettes donnent un premier ordre de grandeur. Invitez votre chef de service habitat à les affiner dans Otelo pour définir un
-        scénario pleinement pertinent pour votre territoire.
+      <CallOut className={fr.cx('fr-mt-4w')} title="Un autre facteur à prendre en compte" titleAs="h3">
+        Des logements peuvent être démolis, tandis que d&apos;autres peuvent être créés en divisant des logements ou en transformant des
+        bâtiments existants. Ces évolutions peuvent aussi modifier le nombre de logements à construire. Elles méritent d&apos;être étudiées
+        plus précisément à l&apos;échelle de votre territoire.
+      </CallOut>
+
+      <h2 className={fr.cx('fr-h5')}>Et maintenant ?</h2>
+      <p>
+        Cette première estimation est un point de départ pour réfléchir aux besoins en logements de votre territoire. Partagez-la avec votre
+        intercommunalité ou les services de votre collectivité pour approfondir l&apos;analyse et construire un scénario adapté à votre
+        territoire dans Otelo.
       </p>
+
+      <AmfDidYouKnow />
 
       <AmfShareForm leadId={leadId} />
     </>

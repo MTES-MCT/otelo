@@ -4,8 +4,8 @@ import { Suspense } from 'react'
 import { AmfQuestionnaire } from '~/components/amf/amf-questionnaire'
 
 export const metadata: Metadata = {
-  title: 'Votre besoin en logements en 3 minutes',
-  description: "Obtenez une première estimation simplifiée du besoin en logement de votre territoire d'ici 2036.",
+  title: "Quels besoins en logements d'ici 2036 ?",
+  description: "Découvrez une première estimation des besoins en logements d'ici 2036 à l'échelle de votre intercommunalité.",
 }
 
 export default function FlashPage() {
