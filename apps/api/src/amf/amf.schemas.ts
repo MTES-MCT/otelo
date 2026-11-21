@@ -12,7 +12,9 @@ export const ZAmfAnswers = z.object({
   badHousing: z.boolean(),
   secondaryResidences: z.enum(['hausse', 'stable', 'maitrise', 'recuperation']),
 })
-export const ZAmfCreateSimulationBody = ZAmfAnswers.extend({ email: z.email() })
+export const ZAmfCreateSimulationBody = ZAmfAnswers.extend({
+  email: z.email().optional().describe('Facultatif : peut être renseigné après les résultats, avec les contacts'),
+})
 
 export type TAmfAnswers = z.output<typeof ZAmfAnswers>
 export type TAmfCreateSimulationBody = z.output<typeof ZAmfCreateSimulationBody>
@@ -58,15 +60,14 @@ export const ZAmfEpci = z.object({
     basse: z.number().nullable(),
   }),
   secondaryResidencesShare: z.number().describe('Part des résidences secondaires dans le parc, en fraction'),
+  secondaryResidencesCount: z.number().nullable().describe('Nombre approché de résidences secondaires (part × parc total Filocom)'),
   longTermVacancy: z.object({ count: z.number(), year: z.number() }).nullable().describe('Logements vacants depuis au moins deux ans'),
 })
 export type TAmfEpci = z.output<typeof ZAmfEpci>
 
 export const ZAmfShareContactsBody = z.object({
-  contacts: z
-    .array(z.object({ role: z.string().trim().min(1).max(100), email: z.email() }))
-    .min(1)
-    .max(10),
+  email: z.email().describe("E-mail de la personne ayant répondu au questionnaire, s'il n'a pas été donné à la création"),
+  contacts: z.array(z.object({ role: z.string().trim().min(1).max(100), email: z.email() })).max(10),
 })
 export type TAmfShareContactsBody = z.output<typeof ZAmfShareContactsBody>
 

@@ -15,6 +15,7 @@ const observedRates = (v: number) => ({
   longTermVacancyRate: v,
   shortTermVacancyRate: v,
   txRs: v,
+  urbanRenewal: 40000,
   restructuringRate: v,
   disappearanceRate: v,
   longTermVacantCount: 1234,
@@ -111,8 +112,14 @@ describe('AmfService', () => {
         recentEvolution: { fromYear: 2016, toYear: 2022, rate: expect.closeTo(0.03, 5) },
         projectedPopulation: { haute: 473580, central: 457120, basse: 441290 },
         secondaryResidencesShare: 0.05,
+        secondaryResidencesCount: 2000,
         longTermVacancy: { count: 1234, year: 2024 },
       })
+    })
+
+    it('renvoie un nombre de résidences secondaires nul sans parc Filocom', async () => {
+      rates.getAccommodationRates.mockResolvedValue({ [code]: { ...observedRates(0.05), urbanRenewal: 0 } } as never)
+      expect((await service.getEpci(code)).secondaryResidencesCount).toBeNull()
     })
 
     it('renvoie basse null quand la projection basse manque', async () => {
@@ -181,6 +188,13 @@ describe('AmfService', () => {
       expect(arg.data.answers).not.toHaveProperty('email')
     })
 
+    it('enregistre le lead sans e-mail quand il n’est pas encore donné', async () => {
+      const { email: _email, ...withoutEmail } = body
+      await service.createSimulation('consumer-1', withoutEmail)
+      const arg = (prisma.amfLead.create as jest.Mock).mock.calls[0][0]
+      expect(arg.data.email).toBeNull()
+    })
+
     it('renvoie leadId et la fourchette annuelle entre les deux variantes', async () => {
       const response = await service.createSimulation('consumer-1', body)
       expect(response.leadId).toBe('11111111-1111-4111-8111-111111111111')
@@ -194,17 +208,27 @@ describe('AmfService', () => {
       expect(external.createSimulation).not.toHaveBeenCalled()
     })
 
-    it('enregistre les contacts partagés', async () => {
-      ;(prisma.amfLead.findUnique as jest.Mock).mockResolvedValue({ id: 'lead-1' })
-      await service.addContacts('lead-1', { contacts: [{ role: 'Maire', email: 'm@b.fr' }] })
+    it('enregistre l’e-mail du lead et les contacts partagés', async () => {
+      ;(prisma.amfLead.findUnique as jest.Mock).mockResolvedValue({ id: 'lead-1', email: null })
+      await service.addContacts('lead-1', { email: 'a@b.fr', contacts: [{ role: 'Maire', email: 'm@b.fr' }] })
+      expect(prisma.amfLead.update).toHaveBeenCalledWith({ where: { id: 'lead-1' }, data: { email: 'a@b.fr' } })
       expect(prisma.amfSharedContact.createMany).toHaveBeenCalledWith({
         data: [{ leadId: 'lead-1', role: 'Maire', email: 'm@b.fr' }],
       })
     })
 
+    it('n’écrase pas un e-mail déjà connu et accepte une liste de contacts vide', async () => {
+      ;(prisma.amfLead.findUnique as jest.Mock).mockResolvedValue({ id: 'lead-1', email: 'old@b.fr' })
+      await service.addContacts('lead-1', { email: 'a@b.fr', contacts: [] })
+      expect(prisma.amfLead.update).not.toHaveBeenCalled()
+      expect(prisma.amfSharedContact.createMany).not.toHaveBeenCalled()
+    })
+
     it('lève NotFoundException pour un lead inconnu', async () => {
       ;(prisma.amfLead.findUnique as jest.Mock).mockResolvedValue(null)
-      await expect(service.addContacts('nope', { contacts: [{ role: 'Maire', email: 'm@b.fr' }] })).rejects.toThrow(NotFoundException)
+      await expect(service.addContacts('nope', { email: 'a@b.fr', contacts: [{ role: 'Maire', email: 'm@b.fr' }] })).rejects.toThrow(
+        NotFoundException,
+      )
     })
   })
 })

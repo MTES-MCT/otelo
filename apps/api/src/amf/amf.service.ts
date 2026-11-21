@@ -77,6 +77,8 @@ export class AmfService {
             : null,
         projectedPopulation: { haute, central, basse: projected('basse') },
         secondaryResidencesShare: observed.txRs,
+        // `urbanRenewal` porte le parc total Filocom (`parctot`).
+        secondaryResidencesCount: observed.urbanRenewal > 0 ? Math.round(observed.txRs * observed.urbanRenewal) : null,
         longTermVacancy: observed.vacancy.year === undefined ? null : { count: observed.longTermVacantCount, year: observed.vacancy.year },
       },
       rates: {
@@ -118,7 +120,7 @@ export class AmfService {
     const { simulationId, baseYear, contributions } = await this.estimate(consumerId, answers)
 
     const lead = await this.prisma.amfLead.create({
-      data: { email, epciCode: answers.epciCode, simulationId, answers },
+      data: { email: email ?? null, epciCode: answers.epciCode, simulationId, answers },
       select: { id: true },
     })
 
@@ -126,10 +128,16 @@ export class AmfService {
   }
 
   async addContacts(leadId: string, body: TAmfShareContactsBody): Promise<void> {
-    const lead = await this.prisma.amfLead.findUnique({ where: { id: leadId }, select: { id: true } })
+    const lead = await this.prisma.amfLead.findUnique({ where: { id: leadId }, select: { id: true, email: true } })
     if (!lead) throw new NotFoundException(`Lead ${leadId} introuvable`)
-    await this.prisma.amfSharedContact.createMany({
-      data: body.contacts.map((contact) => ({ leadId, role: contact.role, email: contact.email })),
-    })
+    // L'e-mail se renseigne désormais après les résultats ; un e-mail déjà connu n'est pas écrasé.
+    if (!lead.email) {
+      await this.prisma.amfLead.update({ where: { id: leadId }, data: { email: body.email } })
+    }
+    if (body.contacts.length > 0) {
+      await this.prisma.amfSharedContact.createMany({
+        data: body.contacts.map((contact) => ({ leadId, role: contact.role, email: contact.email })),
+      })
+    }
   }
 }

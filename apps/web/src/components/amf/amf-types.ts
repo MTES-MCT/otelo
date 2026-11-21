@@ -21,6 +21,8 @@ export type TAmfEpci = {
   }
   /** Part des résidences secondaires dans le parc, en fraction. */
   secondaryResidencesShare: number
+  /** Nombre approché de résidences secondaires. */
+  secondaryResidencesCount: number | null
   /** Logements vacants depuis au moins deux ans. */
   longTermVacancy: { count: number; year: number } | null
 }
@@ -43,7 +45,8 @@ export type TAmfAnswers = {
   secondaryResidences: TAmfSecondaryResidences
 }
 
-export type TAmfCreateSimulationBody = TAmfAnswers & { email: string }
+/** L'e-mail se renseigne après les résultats, avec les contacts : il n'est pas envoyé à la création. */
+export type TAmfCreateSimulationBody = TAmfAnswers & { email?: string }
 
 /** Fourchette annuelle arrondie entre la variante basse et la variante haute ; une contribution négative a ses deux bornes ≤ 0. */
 export type TAmfRange = {
@@ -80,6 +83,8 @@ export type TAmfSharedContact = {
 }
 
 export type TAmfShareContactsBody = {
+  /** E-mail de la personne ayant répondu au questionnaire. */
+  email: string
   contacts: TAmfSharedContact[]
 }
 
@@ -91,10 +96,9 @@ export type TAmfDraftAnswers = {
   vacancy: TAmfVacancy | null
   badHousing: boolean | null
   secondaryResidences: TAmfSecondaryResidences | null
-  email: string
 }
 
-export const AMF_STEPS = ['intro', 'epci', 'demography', 'vacancy', 'secondaryResidences', 'badHousing', 'email', 'results'] as const
+export const AMF_STEPS = ['intro', 'epci', 'demography', 'vacancy', 'secondaryResidences', 'badHousing', 'results'] as const
 export type TAmfStep = (typeof AMF_STEPS)[number]
 
 /** Même règle que `z.email()` côté API : une adresse refusée par l'API l'est aussi ici. */

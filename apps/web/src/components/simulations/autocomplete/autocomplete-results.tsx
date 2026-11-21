@@ -7,29 +7,42 @@ import { GeoApiCommuneResult, GeoApiEpciResult, GeoApiSearchResults } from '~/ho
 interface AutocompleteResultsProps {
   data: GeoApiSearchResults
   onClick: (item: GeoApiCommuneResult | GeoApiEpciResult) => void
+  /** Affiche les communes avant les EPCI. */
+  communesFirst?: boolean
 }
 
-export const AutocompleteResults = ({ data, onClick }: AutocompleteResultsProps) => {
+export const AutocompleteResults = ({ data, onClick, communesFirst = false }: AutocompleteResultsProps) => {
   const { classes } = useStyles()
   const hasCommunes = data.communes.length > 0
   const hasEpcis = data.epcis.length > 0
 
+  const epcis = hasEpcis && (
+    <>
+      <span className={fr.cx('fr-text--bold')}>Résultat de recherche par EPCI :</span>
+      {data.epcis.map((item) => (
+        <li className={classes.liItem} onClick={() => onClick(item)} key={`epci-${item.code}`}>
+          {item.nom} ({item.code})
+        </li>
+      ))}
+    </>
+  )
+  const communes = hasCommunes && (
+    <>
+      <span className={fr.cx('fr-text--bold')}>Résultat de recherche par commune :</span>
+      {data.communes.map((item) => (
+        <li className={classes.liItem} onClick={() => onClick(item)} key={`commune-${item.code}`}>
+          {item.nom} ({item.code})
+        </li>
+      ))}
+    </>
+  )
+
   return (
     <div className={classes.container}>
       <ul className={classes.ulContainer}>
-        {hasEpcis && <span className={fr.cx('fr-text--bold')}>Résultat de recherche par EPCI :</span>}
-        {data.epcis.map((item) => (
-          <li className={classes.liItem} onClick={() => onClick(item)} key={`epci-${item.code}`}>
-            {item.nom} ({item.code})
-          </li>
-        ))}
+        {communesFirst ? communes : epcis}
         {hasCommunes && hasEpcis && <div className={classes.separator} />}
-        {hasCommunes && <span className={fr.cx('fr-text--bold')}>Résultat de recherche par commune :</span>}
-        {data.communes.map((item) => (
-          <li className={classes.liItem} onClick={() => onClick(item)} key={`commune-${item.code}`}>
-            {item.nom} ({item.code})
-          </li>
-        ))}
+        {communesFirst ? epcis : communes}
       </ul>
     </div>
   )
