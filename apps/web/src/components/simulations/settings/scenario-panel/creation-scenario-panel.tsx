@@ -1,36 +1,36 @@
 'use client'
 
-import { buildEstimationBreakdown, isEpciCountedInTotal } from '@otelo/shared'
+// import { buildEstimationBreakdown, isEpciCountedInTotal } from '@otelo/shared'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { FC } from 'react'
-import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
+// import { useEpcisRates } from '~/app/(authenticated)/simulation/(creation)/(rates-provider)/rates-provider'
 import { useCreationPreviewPayload } from '~/hooks/use-creation-preview-payload'
-import { useEstimationScope } from '~/hooks/use-estimation-scope'
+// import { useEstimationScope } from '~/hooks/use-estimation-scope'
 import { useEstimationTerritory } from '~/hooks/use-estimation-territory'
-import { useSimulationPreview } from '~/hooks/use-simulation-preview'
+// import { useSimulationPreview } from '~/hooks/use-simulation-preview'
 import { useWizardStep } from '../use-wizard-step'
-import { buildScenarioRowDetails, ScenarioEstimation } from './scenario-estimation'
+// import { buildScenarioRowDetails, ScenarioEstimation } from './scenario-estimation'
 import { ScenarioPanel, ScenarioPeriod } from './scenario-panel'
 import { ScenarioTerritory } from './scenario-territory'
 
 export const CreationScenarioPanel: FC = () => {
-  const [{ millesime, omphale, population, projection }] = useQueryStates({
+  const [{ millesime, projection }] = useQueryStates({
     millesime: parseAsString,
     omphale: parseAsString,
     population: parseAsString,
     projection: parseAsInteger,
   })
   const { hasReached } = useWizardStep()
-  const { rates } = useEpcisRates()
-  const { epcis, payload, enabled } = useCreationPreviewPayload()
+  // const { rates } = useEpcisRates()
+  const { epcis } = useCreationPreviewPayload()
   const { epciOptions } = useEstimationTerritory(epcis)
-  const { scopedEpciCode, setScope } = useEstimationScope(epcis)
+  // const { scopedEpciCode, setScope } = useEstimationScope(epcis)
 
-  // Sans projection choisie, l'API retomberait sur ses scénarios par défaut : le chiffre affiché ne
-  // serait pas celui de l'utilisateur. On ne le demande donc même pas.
-  const hasDemographicChoice = Boolean(population && omphale)
-  const showsEstimation = hasReached('parametrages-demographique')
-  const { data, isFetching, error } = useSimulationPreview(payload, { enabled: enabled && hasDemographicChoice && showsEstimation })
+  // // Sans projection choisie, l'API retomberait sur ses scénarios par défaut : le chiffre affiché ne
+  // // serait pas celui de l'utilisateur. On ne le demande donc même pas.
+  // const hasDemographicChoice = Boolean(population && omphale)
+  // const showsEstimation = hasReached('parametrages-demographique')
+  // const { data, isFetching, error } = useSimulationPreview(payload, { enabled: enabled && hasDemographicChoice && showsEstimation })
 
   const showsPeriod = hasReached('cadrage-temporel') && Boolean(projection)
   const showsTerritory = epciOptions.length > 0
@@ -39,6 +39,7 @@ export const CreationScenarioPanel: FC = () => {
     return <ScenarioPanel anchor="scenario-panel" />
   }
 
+  /* Aperçu des résultats temporairement désactivé.
   const displayedEpciCode = scopedEpciCode ?? (epciOptions.length === 1 ? epciOptions[0].code : null)
   const rowDetails = buildScenarioRowDetails(omphale, displayedEpciCode ? rates[displayedEpciCode] : null)
 
@@ -67,11 +68,13 @@ export const CreationScenarioPanel: FC = () => {
     )
   }
 
+  */
+
   return (
     <ScenarioPanel anchor="scenario-panel">
       {showsPeriod && <ScenarioPeriod start={millesime} end={projection} />}
       {showsTerritory && <ScenarioTerritory epciNames={epciOptions.map((epci) => epci.name)} />}
-      {renderEstimation()}
+      {/* Aperçu des résultats temporairement désactivé : {renderEstimation()} */}
     </ScenarioPanel>
   )
 }
