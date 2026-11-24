@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { DemographicSettingsFormWrapper } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/parametrages-demographique/demographic-settings-form-wrapper'
-import { PrefetchModifySimulationPreview } from '~/components/simulations/preview/prefetch-modify-simulation-preview'
+// import { PrefetchModifySimulationPreview } from '~/components/simulations/preview/prefetch-modify-simulation-preview'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { FragileProjectionAlert } from '~/components/simulations/settings/fragile-projection-alert'
 import { NextStepLinkWithoutValidation } from '~/components/simulations/settings/next-step-link'
@@ -63,7 +63,7 @@ export default async function ParametragesDemographiquePage({ params, searchPara
 
   return (
     <>
-      <PrefetchModifySimulationPreview />
+      {/* <PrefetchModifySimulationPreview /> */}
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <DemographicSettingsFormWrapper
           epcis={epcisCodes}

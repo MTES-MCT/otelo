@@ -1,12 +1,12 @@
 'use client'
 
-import { buildEstimationBreakdown, isEpciCountedInTotal } from '@otelo/shared'
+// import { buildEstimationBreakdown, isEpciCountedInTotal } from '@otelo/shared'
 import { FC } from 'react'
 import { useSimulationSettings } from '~/app/(authenticated)/simulation/[id]/modifier/(demographic-modification)/simulation-scenario-modification-provider'
-import { useEstimationScope } from '~/hooks/use-estimation-scope'
-import { useModifyPreviewPayload } from '~/hooks/use-modify-preview-payload'
-import { useSimulationPreview } from '~/hooks/use-simulation-preview'
-import { buildScenarioRowDetails, ScenarioEstimation } from './scenario-estimation'
+// import { useEstimationScope } from '~/hooks/use-estimation-scope'
+// import { useModifyPreviewPayload } from '~/hooks/use-modify-preview-payload'
+// import { useSimulationPreview } from '~/hooks/use-simulation-preview'
+// import { buildScenarioRowDetails, ScenarioEstimation } from './scenario-estimation'
 import { ScenarioPanel, ScenarioPeriod } from './scenario-panel'
 import { ScenarioTerritory } from './scenario-territory'
 
@@ -18,14 +18,15 @@ type ModificationScenarioPanelProps = {
 /** En modification, tout est déjà paramétré : la colonne est remplie dès la première étape. */
 export const ModificationScenarioPanel: FC<ModificationScenarioPanelProps> = ({ epciOptions }) => {
   const { simulationSettings } = useSimulationSettings()
-  const payload = useModifyPreviewPayload()
-  const { scopedEpciCode, setScope } = useEstimationScope(epciOptions.map((epci) => epci.code))
+  // const payload = useModifyPreviewPayload()
+  // const { scopedEpciCode, setScope } = useEstimationScope(epciOptions.map((epci) => epci.code))
 
-  // Le scénario vient de la base et est toujours renseigné ; la règle est la même qu'en création,
-  // pour que la colonne ne puisse jamais afficher une projection démographique implicite.
-  const hasDemographicChoice = Boolean(simulationSettings.b2_scenario)
-  const { data, isFetching, error } = useSimulationPreview(payload, { enabled: hasDemographicChoice })
+  // // Le scénario vient de la base et est toujours renseigné ; la règle est la même qu'en création,
+  // // pour que la colonne ne puisse jamais afficher une projection démographique implicite.
+  // const hasDemographicChoice = Boolean(simulationSettings.b2_scenario)
+  // const { data, isFetching, error } = useSimulationPreview(payload, { enabled: hasDemographicChoice })
 
+  /* Aperçu des résultats temporairement désactivé.
   const displayedEpciCode = scopedEpciCode ?? (epciOptions.length === 1 ? epciOptions[0].code : null)
   const rowDetails = buildScenarioRowDetails(
     simulationSettings.b2_scenario,
@@ -52,11 +53,13 @@ export const ModificationScenarioPanel: FC<ModificationScenarioPanelProps> = ({ 
     )
   }
 
+  */
+
   return (
     <ScenarioPanel anchor="scenario-panel">
       <ScenarioPeriod start={simulationSettings.millesime} end={simulationSettings.projection ?? null} />
       <ScenarioTerritory epciNames={epciOptions.map((epci) => epci.name)} />
-      {renderEstimation()}
+      {/* Aperçu des résultats temporairement désactivé : {renderEstimation()} */}
     </ScenarioPanel>
   )
 }

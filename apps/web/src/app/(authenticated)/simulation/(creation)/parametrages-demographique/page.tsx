@@ -4,7 +4,7 @@ import { searchParamsCache } from '~/app/(authenticated)/simulation/(creation)/s
 import { ChartDownloadWrapper } from '~/components/charts/chart-download-wrapper'
 import { OmphaleScenariosChart } from '~/components/charts/omphale-scenarios-chart'
 import { PopulationScenariosChart } from '~/components/charts/population-scenarios-chart'
-import { PrefetchCreationSimulationPreview } from '~/components/simulations/preview/prefetch-creation-simulation-preview'
+// import { PrefetchCreationSimulationPreview } from '~/components/simulations/preview/prefetch-creation-simulation-preview'
 import { DataSourceLink } from '~/components/simulations/settings/data-source-link'
 import { DemographicSettingsHeader } from '~/components/simulations/settings/demographic-settings-header'
 import { DemographicNextStep } from '~/components/simulations/settings/demographic-transition-modal'
@@ -34,7 +34,7 @@ export default async function DemographicSettingsPage({ searchParams }: PageProp
 
   return (
     <>
-      <PrefetchCreationSimulationPreview />
+      {/* <PrefetchCreationSimulationPreview /> */}
       <div className="fr-flex fr-direction-column fr-background-default--grey shadow">
         <DemographicSettingsHeader notice={<FragileProjectionAlert epciCodes={epcisWithoutInseeProjection} epcisCount={epcis.length} />}>
           <ChartDownloadWrapper fileName="scenarios-population" withFloatingButton={false}>
