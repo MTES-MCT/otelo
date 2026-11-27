@@ -1,5 +1,7 @@
 import { createMock } from '@golevelup/ts-jest'
 import { ForbiddenException } from '@nestjs/common'
+import { CoefficientCalculationService } from '~/calculation/coefficient-calculation/coefficient-calculation.service'
+import { makeCalculationContext } from '~/calculation/needs-calculation/__test-utils__/calculation-test-fixtures'
 import { NeedsCalculationService } from '~/calculation/needs-calculation/needs-calculation.service'
 import { PrismaService } from '~/db/prisma.service'
 import { SimulationsService } from '~/simulations/simulations.service'
@@ -18,7 +20,13 @@ describe('PreviewService', () => {
   beforeEach(() => {
     simulationsService = createMock<SimulationsService>()
     needsCalculationService = createMock<NeedsCalculationService>()
-    service = new PreviewService(createMock<PrismaService>(), simulationsService, needsCalculationService)
+    service = new PreviewService(
+      createMock<PrismaService>(),
+      simulationsService,
+      needsCalculationService,
+      createMock<CoefficientCalculationService>(),
+      makeCalculationContext(),
+    )
   })
 
   it('should refuse to preview a simulation the caller does not own', async () => {

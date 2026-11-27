@@ -1,4 +1,6 @@
-import { ForbiddenException, Injectable } from '@nestjs/common'
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common'
+import { CoefficientCalculationService } from '~/calculation/coefficient-calculation/coefficient-calculation.service'
+import { CalculationContext } from '~/calculation/needs-calculation/base-calculator'
 import { NeedsCalculationService } from '~/calculation/needs-calculation/needs-calculation.service'
 import { PrismaService } from '~/db/prisma.service'
 import { B11Etablissement, B15Surocc } from '~/generated/prisma/client'
@@ -58,6 +60,8 @@ export class PreviewService {
     private readonly prisma: PrismaService,
     private readonly simulationsService: SimulationsService,
     private readonly needsCalculationService: NeedsCalculationService,
+    private readonly coefficientCalculationService: CoefficientCalculationService,
+    @Inject('CalculationContext') private readonly context: CalculationContext,
   ) {}
 
   async calculate(dto: TPreviewSimulationDto, userId: string): Promise<TResults> {
@@ -74,8 +78,12 @@ export class PreviewService {
       baseScenario = persisted.scenario
       epciCodes = dto.epcis && dto.epcis.length > 0 ? dto.epcis : persisted.epcis.map((e) => e.code)
     } else {
+      // Comme `ScenariosService.create` : sans millésime choisi, la simulation enregistrée prendra
+      // celui du pack de données actif.
+      const activePack = await this.prisma.dataPackVersion.findFirstOrThrow({ where: { isActive: true }, select: { millesime: true } })
       baseScenario = {
         ...SCENARIO_DEFAULTS,
+        millesime: activePack.millesime,
         id: 'preview',
         isConfidential: true,
         createdAt: new Date(),
@@ -123,6 +131,19 @@ export class PreviewService {
       epcis,
       scenario: mergedScenario,
     }
+
+    /**
+     * Le contexte de calcul est construit par requête à partir de la simulation désignée dans l'URL :
+     * le pack de données actif en création, la simulation *enregistrée* en modification. Ni l'un ni
+     * l'autre n'est le scénario prévisualisé. On l'aligne donc sur celui-ci, avec la même règle que
+     * pour la page de résultats — sans quoi millésime, année de base et coefficient de résorption
+     * divergent, et l'aperçu avec eux.
+     */
+    Object.assign(this.context, {
+      coefficient: this.coefficientCalculationService.calculateCoefficient(mergedScenario.b1_horizon_resorption, mergedScenario.projection),
+      baseYear: Number(mergedScenario.millesime),
+      millesime: mergedScenario.millesime,
+    })
 
     return this.needsCalculationService.calculate(simulation)
   }
