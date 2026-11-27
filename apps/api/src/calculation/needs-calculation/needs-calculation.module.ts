@@ -31,7 +31,7 @@ interface AuthenticatedRequest extends Request {
 }
 
 @Module({
-  exports: [NeedsCalculationService],
+  exports: [NeedsCalculationService, 'CalculationContext'],
   imports: [
     PrismaModule,
     CoefficientCalculationModule,

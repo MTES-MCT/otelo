@@ -26,7 +26,8 @@
     "prisma": "prisma",
     "test:debug": "node --experimental-vm-modules --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-integration.json --runInBand",
-    "test:e2e": "NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand"
+    "test:e2e": "NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand",
+    "preview-parity": "ts-node -r tsconfig-paths/register --project tsconfig.cli.json src/cli/preview-parity.ts"
   },
   "dependencies": {
     "@golevelup/ts-jest": "^0.7.0",
